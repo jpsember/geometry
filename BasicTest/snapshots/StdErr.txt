@@ -1,0 +1,4 @@
+This is printed to System.out
+
+*** System.err:
+This is printed to System.err

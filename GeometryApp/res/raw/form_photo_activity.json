@@ -1,0 +1,12 @@
+[
+  {
+    "id": "takephoto",
+    "type": "button",
+    "icon": "camera"
+   },
+  {
+    "id": "photo",
+    "type": "imageview",
+    "label": ""
+  }
+]

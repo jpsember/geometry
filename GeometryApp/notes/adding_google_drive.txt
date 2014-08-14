@@ -1,0 +1,27 @@
+Adding Google Drive Android API (GDAA) to a project
+-----------------------------------------------------
+
+See this link:
+
+https://developers.google.com/drive/android/get-started#get_an_android_certificate_and_register_your_application
+
+To change the package name from js.xxx to com.js.xxx, we needed a new Client ID.
+
+[] Go to https://console.developers.google.com/project
+[] Select the RBuddy project
+[] Select APIS & AUTH
+[] Select Credentials
+[] Select 'Create new Client ID'.
+[] Select 'Installed application'; 'Android'
+[] For package name, use 'com.js.rbuddy'; e.g. EXACTLY what appears quoted in the
+   RBuddyApp AndroidManifest.xml file, as the package attribute (package="com.js.rbuddy")
+[] From Terminal, in the RBuddyApp directory, type
+     keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore -list -v
+   For password, use: android
+[] Copy the SHA1 text to the appropriate field in the Google developers console
+[] Leave Deep Linking disabled
+[] Select 'Create Client ID'
+[] Download the JSON for the certificate and store in a safe place; I'm not sure if it's ok to
+   include this in the public GitHub repository; it's the debug version of the certificate, not the development
+   one, but for safety I'm omitting it.
+

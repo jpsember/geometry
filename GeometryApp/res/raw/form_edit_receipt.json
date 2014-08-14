@@ -1,0 +1,32 @@
+[
+  {
+    "id": "date",
+    "type": "date",
+    "label":"Date",
+  },
+  {
+    "id": "cost",
+    "type": "cost",
+    "label": "Amount",
+  },
+  {
+    "id": "receipt",
+    "type": "button",
+    "icon": "camera",
+    "hasimage":true
+  },
+  {
+    "id": "tags",
+    "label": "Tags",
+    "type": "tagset",
+    "minlines": 2
+  },
+  {
+    "id": "summary",
+    "label": "@summary",
+    "type": "text",
+    "minlines": 5,
+    "autocompletion": "single",
+    "hint": "who / where / why / etc."
+  }
+]

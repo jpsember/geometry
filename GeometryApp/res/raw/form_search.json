@@ -1,0 +1,81 @@
+[
+  {
+    "id": "search",
+    "type": "button",
+    "label": "Search",
+    "icon": "search"
+  },
+  {
+    "type": "header",
+    "label": "Dates"
+  },
+  {
+    "id": "mindate",
+    "type": "date",
+    "label": "On or after",
+    "aux": "checkbox"
+  },
+  {
+    "id": "maxdate",
+    "type": "date",
+    "label": "On or before",
+    "aux": "checkbox"
+  },
+  {
+    "type": "header",
+    "label": "Amounts"
+  },
+  {
+    "id": "mincost",
+    "type": "cost",
+    "label": "At least",
+    "hint": "amount",
+    "aux": "checkbox"
+  },
+  // This is how you do a separator without a label; just omit it!
+  // {
+  //   "type": "header",
+  // },
+  {
+    "id": "maxcost",
+    "type": "cost",
+    "label": "At most",
+    "hint": "amount",
+    "aux": "checkbox"
+  },
+  {
+    "type": "header",
+    "label": "Tags"
+  },
+  {
+    "id": "alltags",
+    "type": "tagset",
+    "label": "ALL of these",
+    "aux": "checkbox"
+  },
+  {
+    "id": "anytags",
+    "type": "tagset",
+    "label": "ANY of these",
+    "aux": "checkbox"
+  },
+    {
+    "type": "header",
+    "label": "Incomplete Fields"
+  },
+{
+    "id": "missingphoto",
+    "type": "checkbox",
+    "label": "Missing photo"
+  },
+  {
+    "id": "missingcost",
+    "type": "checkbox",
+    "label": "No amount"
+  },
+  {
+    "id": "missingtags",
+    "type": "checkbox",
+    "label": "No tags"
+  }
+]

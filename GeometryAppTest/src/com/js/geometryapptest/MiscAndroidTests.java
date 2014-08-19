@@ -1,4 +1,4 @@
-package com.js.rbuddy.test;
+package com.js.geometryapptest;
 
 import java.io.File;
 import java.io.IOException;

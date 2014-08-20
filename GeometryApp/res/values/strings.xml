@@ -3,15 +3,5 @@
 
     <string name="app_name">Geometry</string>
     <string name="action_settings">Settings</string>
-    <string name="summary">Details</string>
-    <string name="action_add">Add</string>
-    <string name="action_delete_receipt">Delete Receipt</string>
-    <string name="action_testonly_exit">Exit App</string>
-    <string name="action_testonly_generate">Generate Random Receipts</string>
-    <string name="action_testonly_zap">Delete All Receipts</string>
-    <string name="action_testonly_toggle_google_drive">Toggle Google Drive</string>
-    <string name="action_testonly_toggle_photo_delay">Toggle photo delay</string>
-    <string name="action_testonly_toggle_small_device">Toggle small device</string>
-    <string name="action_testonly_rotate">Rotate</string>
     
 </resources>

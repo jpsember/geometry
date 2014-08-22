@@ -9,8 +9,12 @@ import com.js.basic.Files;
 
 public class MiscAndroidTests extends AndroidTestCase {
 
-	public void testDeletedFileIsDeletedImmediately() throws IOException {
+	public void testExternalFileDeletedFileIsDeletedImmediately()
+			throws IOException {
+
 		File directory = getContext().getExternalFilesDir(null);
+		assertNotNull("getExternalFilesDir returned null", directory);
+
 		File sampleFile = new File(directory, "___xyz___.txt");
 		Files.writeTextFile(sampleFile, "hello");
 

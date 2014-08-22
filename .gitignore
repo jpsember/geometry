@@ -40,3 +40,5 @@ proguard/
 #
 *.launch
 
+unit_test_reports
+

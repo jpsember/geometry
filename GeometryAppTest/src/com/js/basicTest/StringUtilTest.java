@@ -3,9 +3,9 @@ package com.js.basicTest;
 import com.js.basic.StringUtil;
 import com.js.testUtils.*;
 
-public class StringUtilTest extends MyTest {
+public class StringUtilTest extends MyTestCase {
 
-	public void testRandomString() {
+	public void _SKIP_testRandomString() {
 		IOSnapshot.open();
 		for (int i = 0; i < 12; i++) {
 			int len = i * i;

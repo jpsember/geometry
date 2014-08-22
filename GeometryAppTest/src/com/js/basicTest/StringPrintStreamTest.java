@@ -6,7 +6,7 @@ import com.js.testUtils.*;
 
 import static com.js.basic.Tools.*;
 
-public class StringPrintStreamTest extends MyTest {
+public class StringPrintStreamTest extends MyTestCase {
 
 	public void testInterceptor() {
 

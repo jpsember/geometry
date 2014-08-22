@@ -8,6 +8,9 @@
         android:minSdkVersion="14"
         android:targetSdkVersion="20" />
 
+    <!--  This seems to be required for the unit tests; otherwise getExternalFilesDir returns null -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    
     <!-- for an online icon generator, see http://romannurik.github.io/AndroidAssetStudio/icons-launcher.html -->
     <application
         android:allowBackup="true"

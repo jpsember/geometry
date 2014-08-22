@@ -8,7 +8,7 @@ import java.io.IOException;
 import com.js.basic.Files;
 import com.js.testUtils.*;
 
-public class FilesTest extends MyTest {
+public class FilesTest extends MyTestCase {
 	
 	private static void ourWriteTextFile(File path, String content) throws IOException {
 		BufferedWriter w = new BufferedWriter(new FileWriter(path));

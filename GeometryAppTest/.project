@@ -31,11 +31,4 @@
 		<nature>com.android.ide.eclipse.adt.AndroidNature</nature>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>JSTestUtils.src</name>
-			<type>2</type>
-			<locationURI>$%7BWORKSPACE_LOC%7D/JSTestUtils/src</locationURI>
-		</link>
-	</linkedResources>
 </projectDescription>

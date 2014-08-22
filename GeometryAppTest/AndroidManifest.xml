@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- package name must be unique so suffix with "tests" so package loader doesn't ignore us -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.js.rbuddy.tests"
+    package="com.js.geometryapptest"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -27,7 +27,7 @@
     -->
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
-        android:label="Tests for com.js.rbuddy"
-        android:targetPackage="com.js.rbuddy" />
+        android:label="Tests for com.js.geometry"
+        android:targetPackage="com.js.geometry" />
 
 </manifest>

@@ -7,7 +7,7 @@ import java.util.Random;
 import junit.framework.TestCase;
 import static com.js.basic.Tools.*;
 
-public class MyTest extends TestCase {
+public class MyTestCase extends TestCase {
 
 	public static void assertEqualsFloat(double expected, double got) {
 		assertEquals(expected, got, 1e-10);

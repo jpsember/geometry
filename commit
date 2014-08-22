@@ -8,7 +8,8 @@ class ProgramException < Exception; end
 
 class Commit
 
-  ANDROID_PROJECTS = "RBuddyApp"
+  PROJECT_NAME = "GeometryApp"
+  ANDROID_PROJECTS = "#{PROJECT_NAME}"
   GIT_STATE_FILENAME = ".commit_state"
   GIT_MESSAGE_FILENAME = ".commit_git_message"
   COMMIT_MESSAGE_FILENAME = ".commit_editor_message"
@@ -16,29 +17,29 @@ class Commit
 
 
   COMMIT_MESSAGE_TEMPLATE_1=<<-EOS
-Issue #
+  Issue #
 
-# Enter a commit message above, including at least one issue number prefixed with '#'.
-# You can have GitHub close the issue automatically by referring to the issue with
-# one of these (case-insensitive) forms:
-#
-#  'fixes #123', 'resolves #123', 'closes #123'.
-#
+  # Enter a commit message above, including at least one issue number prefixed with '#'.
+  # You can have GitHub close the issue automatically by referring to the issue with
+  # one of these (case-insensitive) forms:
+  #
+  #  'fixes #123', 'resolves #123', 'closes #123'.
+  #
   EOS
 
   COMMIT_MESSAGE_TEMPLATE_2=<<-EOS
 
-# --------------------------------------------------------------------------
-# Previous commit's message:
-# --------------------------------------------------------------------------
+  # --------------------------------------------------------------------------
+  # Previous commit's message:
+  # --------------------------------------------------------------------------
   EOS
 
 
   COMMIT_MESSAGE_TEMPLATE_3=<<-EOS
 
-# --------------------------------------------------------------------------
-# Git repository status:
-# --------------------------------------------------------------------------
+  # --------------------------------------------------------------------------
+  # Git repository status:
+  # --------------------------------------------------------------------------
   EOS
 
   def initialize
@@ -56,30 +57,37 @@ Issue #
 
     begin
 
-      read_old_git_state
-      determine_current_git_state
-
       passed_tests = false
-
       perform_tests = false
+      examine_git_state = !@options[:testonly]
+      if examine_git_state
 
-      if @current_git_state != @previous_git_state
-        puts "...states differ, running unit tests" if @verbose
-        perform_tests = true
+        if !@options[:testonly]
+          read_old_git_state
+          determine_current_git_state
+
+          if @current_git_state != @previous_git_state
+            puts "...states differ, running unit tests" if @verbose
+            perform_tests = true
+          end
+        end
       end
 
       perform_tests ||= @options[:testonly]
 
       if perform_tests
+        # run_java_tests if @options[:java]
+        run_unit_tests if !@options[:omit_tests]
+        if !examine_git_state
+          passed_tests = true
+        else
+          # Only update the state if it passed all tests
+          update_old_git_state
+          passed_tests = true
 
-        run_java_tests if @options[:java]
-        run_android_tests if @options[:android]
+          update_old_git_state
+        end
 
-        # Only update the state if it passed all tests
-        update_old_git_state
-        passed_tests = true
-
-        update_old_git_state
       else
         passed_tests = true
       end
@@ -193,13 +201,13 @@ Issue #
   def parse_arguments(argv)
     p = Trollop::Parser.new do
       banner <<-EOS
-      Runs unit tests, generates commit for RBuddy project
+      Runs unit tests, generates commit for this Android project
       EOS
       opt :clean, "clean projects before running tests"
       opt :detail, "display lots of detail"
       opt :verbose, "display progress"
-      opt :java,   "include Java projects", :default=>true
-      opt :android,"include Android projects",:default=>true
+      # opt :java,   "include Java projects", :default=>true
+      opt :omit_tests,"omit tests"
       opt :testonly,"perform unit tests only, without generating commit"
     end
 
@@ -208,13 +216,13 @@ Issue #
     end
   end
 
-  def run_android_tests
+  def run_unit_tests
 
     # This seems to help with the Eclipse ADT / android cmd line conflict.
     #
-    remove_dir("../adt/sdk/extras/google/google_play_services/libproject/google-play-services_lib/bin/res/crunch")
-    remove_dir("RBuddyApp/bin/res/crunch")
-    remove_dir("RBuddyAppTest/bin/res/crunch")
+    # remove_dir("../adt/sdk/extras/google/google_play_services/libproject/google-play-services_lib/bin/res/crunch")
+    remove_dir("#{PROJECT_NAME}/bin/res/crunch")
+    remove_dir("#{PROJECT_NAME}Test/bin/res/crunch")
 
     ANDROID_PROJECTS.split.each do |project_root|
       proj_main = File.join(@saved_directory,project_root)
@@ -224,17 +232,22 @@ Issue #
       Dir.chdir(proj_test)
 
       runcmd("ant clean","...cleaning") if @options[:clean]
-      runcmd("ant debug","...building")
-      runcmd("ant debug install","...installing")
-      runcmd("ant test","...testing")
-
+      output,_ = runcmd("ant debug install test","...building, installing, and testing")
       Dir.chdir(@saved_directory)
+
+      if output.include?("FAILURES!!!")
+        puts "\n\n\n-----------------------------------------"
+        puts output
+        puts "-----------------------------------------"
+        raise ProgramException,"Problem performing unit tests"
+      end
+
     end
   end
 
-  def run_java_tests
-    runcmd("ant test_all_projects","...running Java project tests")
-  end
+  # def run_java_tests
+  #   runcmd("ant test_all_projects","...running Java project tests")
+  # end
 
   def runcmd(cmd,message)
     if !@verbose

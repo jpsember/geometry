@@ -80,23 +80,15 @@ class Commit
       end
 
       perform_tests ||= @options[:testonly]
+      perform_tests &&= !@options[:omit_tests]
 
       if perform_tests
-        # run_java_tests if @options[:java]
-        run_unit_tests if !@options[:omit_tests]
-        if !examine_git_state
-          passed_tests = true
-        else
-          # Only update the state if it passed all tests
-          update_old_git_state
-          passed_tests = true
-
+        run_unit_tests
+        if examine_git_state
           update_old_git_state
         end
-
-      else
-        passed_tests = true
       end
+      passed_tests = true
 
       if !@options[:testonly] && commit_required
         perform_commit
@@ -212,7 +204,6 @@ class Commit
       opt :clean, "clean projects before running tests"
       opt :detail, "display lots of detail"
       opt :verbose, "display progress"
-      # opt :java,   "include Java projects", :default=>true
       opt :omit_tests,"omit tests"
       opt :testonly,"perform unit tests only, without generating commit"
     end
@@ -251,10 +242,6 @@ class Commit
     end
   end
 
-  # def run_java_tests
-  #   runcmd("ant test_all_projects","...running Java project tests")
-  # end
-
   def runcmd(cmd,message)
     if !@verbose
       echo message
@@ -289,7 +276,6 @@ class Commit
   end
 
 end
-
 
 if __FILE__ == $0
   Commit.new.run(ARGV)

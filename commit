@@ -6,6 +6,12 @@ require 'js_base/text_editor'
 
 class ProgramException < Exception; end
 
+class String
+  def strip_heredoc
+    gsub(/^#{scan(/^\s*/).min_by{|l|l.length}}/, "")
+  end
+end
+
 class Commit
 
   PROJECT_NAME = "GeometryApp"
@@ -16,7 +22,7 @@ class Commit
   PREVIOUS_COMMIT_MESSAGE_FILENAME = ".commit_previous_editor_message"
 
 
-  COMMIT_MESSAGE_TEMPLATE_1=<<-EOS
+  COMMIT_MESSAGE_TEMPLATE_1=<<-EOS.strip_heredoc
   Issue #
 
   # Enter a commit message above, including at least one issue number prefixed with '#'.
@@ -27,7 +33,7 @@ class Commit
   #
   EOS
 
-  COMMIT_MESSAGE_TEMPLATE_2=<<-EOS
+  COMMIT_MESSAGE_TEMPLATE_2=<<-EOS.strip_heredoc
 
   # --------------------------------------------------------------------------
   # Previous commit's message:
@@ -35,7 +41,7 @@ class Commit
   EOS
 
 
-  COMMIT_MESSAGE_TEMPLATE_3=<<-EOS
+  COMMIT_MESSAGE_TEMPLATE_3=<<-EOS.strip_heredoc
 
   # --------------------------------------------------------------------------
   # Git repository status:

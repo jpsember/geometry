@@ -18,10 +18,10 @@ public class AppContextTests extends MyTestCase {
 		AssetManager m = getContext().getAssets();
 		assertNotNull("asset manager null", m);
 
-		InputStream is = m.open("snapshots/example.txt");
+		InputStream is = m.open("snapshots/RandomString.txt");
 		String content = Files.readTextFile(is);
 		is.close();
 		assertTrue("unexpected file contents:\n" + content,
-				content.indexOf("is an example") >= 0);
+				content.indexOf("yeoxvqfl") >= 0);
 	}
 }

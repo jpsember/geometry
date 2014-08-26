@@ -101,7 +101,8 @@ public class IOSnapshot {
 			if (directory == null)
 				die("external files dir is null");
 			// Construct a snapshots directory if necessary
-			File dynamicSnapshotsDir = new File(directory, "snapshots");
+			File dynamicSnapshotsDir = new File(directory,
+					getDynamicFolderName());
 			if (!dynamicSnapshotsDir.exists()) {
 				dynamicSnapshotsDir.mkdirs();
 				if (!dynamicSnapshotsDir.exists())
@@ -113,38 +114,44 @@ public class IOSnapshot {
 		return mDynamicFile;
 	}
 
-	private String readStaticContent() {
-		String content = null;
-
+	private Context getContext() {
 		if (mAndroidTestCase == null)
 			die("no AndroidTestCase defined");
 
 		Context c = mAndroidTestCase.getContext();
 		if (c == null)
 			die("context is null");
+		return c;
+	}
+
+	private String getDynamicFolderName() {
+		String appDataDir = getContext().getApplicationInfo().dataDir;
+
+		if (appDataDir == null)
+			die("dataDir is null");
+
+		// Look for suffix '.XXXXtest'
+		Pattern p = Pattern.compile("\\.(\\w+test)$");
+		Matcher m = p.matcher(appDataDir);
+		if (!m.find())
+			die("can't extract application name from '" + appDataDir + "'");
+		return "snapshots_" + m.group(1);
+	}
+
+	private String readStaticContent() {
+		String content = null;
+
+		Context c = getContext();
 
 		AssetManager m = c.getAssets();
 		if (m == null)
 			die("manager is null");
 
-		if (true) {
-			try {
-				pr("Asset list within snapshots/ folder:");
-				for (String s : m.list("snapshots")) {
-					pr(" " + s);
-				}
-			} catch (IOException e) {
-				die(e);
-			}
-		}
-
 		try {
 			InputStream is = m.open("snapshots/" + mSnapshotName);
 			content = Files.readTextFile(is);
 			is.close();
-			pr("successfully read snapshot file:\n" + content + "\n .........!");
 		} catch (FileNotFoundException e) {
-			pr("...could not find file! " + e);
 		} catch (IOException e) {
 			die(e);
 		}

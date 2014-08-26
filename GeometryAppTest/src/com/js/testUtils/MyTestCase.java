@@ -55,8 +55,7 @@ public class MyTestCase extends AndroidTestCase {
 	protected void setUp() {
 		tempDirectory = null;
 		random = null;
-		// pr("MyTestCase.activity " + this.getActivity());
-		// IOSnapshot.setActivity(getActivity());
+		IOSnapshot.prepareContext(this);
 	}
 
 	@Override

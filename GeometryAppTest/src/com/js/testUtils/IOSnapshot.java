@@ -3,20 +3,18 @@ package com.js.testUtils;
 import static com.js.basic.Tools.*;
 
 import java.io.File;
-//import java.io.FileNotFoundException;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.IOException;
-//import java.io.InputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Field;
 import java.util.regex.*;
 
-//import android.app.Activity;
-//import android.content.res.AssetManager;
-
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.os.Environment;
+import android.test.AndroidTestCase;
 
 import com.js.basic.Files;
-import com.js.geometryapptest.R;
 
 /**
  * Designed to be called from within a unit test. Captures System.out and
@@ -27,6 +25,10 @@ import com.js.geometryapptest.R;
  * be in existence at a time.
  */
 public class IOSnapshot {
+
+	protected static void prepareContext(AndroidTestCase c) {
+		mAndroidTestCase = c;
+	}
 
 	/**
 	 * Open the snapshot; start capturing output
@@ -69,33 +71,14 @@ public class IOSnapshot {
 		}
 	}
 
-	// public static void setActivity(Activity a) {
-	// mActivity = a;
-	// }
-	//
-	// private static Activity mActivity;
-	private static IOSnapshot singleton;
-
 	// Users can't construct objects of this class
 	private IOSnapshot() {
 	}
 
 	private String constructDiff(String s1, String s2) {
 		String diff = null;
-		try {
-			File t1 = File.createTempFile("temp_s1", ".txt");
-			File t2 = File.createTempFile("temp_s2", ".txt");
-			Files.writeTextFile(t1, s1);
-			Files.writeTextFile(t2, s2);
-
-			String[] output = systemCommand("diff " + t1.getPath() + " "
-					+ t2.getPath());
-			diff = output[0];
-			t1.delete();
-			t2.delete();
-		} catch (Throwable e) {
-			diff = "UNABLE TO CONSTRUCT DIFF: " + e;
-		}
+		if (!s1.equals(s2))
+			diff = "s1:\n" + s1 + "\n\ns2:\n" + s2;
 		return diff;
 	}
 
@@ -109,86 +92,73 @@ public class IOSnapshot {
 	}
 
 	private File getDynamicFile() {
-		File directory = Environment.getExternalStorageDirectory();
+		if (mDynamicFile == null) {
+			// TODO: Can we use the test case context to get the external
+			// storage directory?
+			File directory = Environment.getExternalStorageDirectory();
 
-		// File directory = mActivity.getExternalFilesDir(null);
-		if (directory == null)
-			die("external files dir is null");
-		// Construct a snapshots directory if necessary
-		File dynamicSnapshotsDir = new File(directory, "snapshots");
-		if (!dynamicSnapshotsDir.exists()) {
-			dynamicSnapshotsDir.mkdirs();
-			if (!dynamicSnapshotsDir.exists())
-				die("unable to create " + dynamicSnapshotsDir);
+			// File directory = mActivity.getExternalFilesDir(null);
+			if (directory == null)
+				die("external files dir is null");
+			// Construct a snapshots directory if necessary
+			File dynamicSnapshotsDir = new File(directory, "snapshots");
+			if (!dynamicSnapshotsDir.exists()) {
+				dynamicSnapshotsDir.mkdirs();
+				if (!dynamicSnapshotsDir.exists())
+					die("unable to create " + dynamicSnapshotsDir);
+			}
+
+			mDynamicFile = new File(dynamicSnapshotsDir, mSnapshotName);
+		}
+		return mDynamicFile;
+	}
+
+	private String readStaticContent() {
+		String content = null;
+
+		if (mAndroidTestCase == null)
+			die("no AndroidTestCase defined");
+
+		Context c = mAndroidTestCase.getContext();
+		if (c == null)
+			die("context is null");
+
+		AssetManager m = c.getAssets();
+		if (m == null)
+			die("manager is null");
+
+		if (true) {
+			try {
+				pr("Asset list within snapshots/ folder:");
+				for (String s : m.list("snapshots")) {
+					pr(" " + s);
+				}
+			} catch (IOException e) {
+				die(e);
+			}
 		}
 
-		return new File(dynamicSnapshotsDir, mSnapshotName);
+		try {
+			InputStream is = m.open("snapshots/" + mSnapshotName);
+			content = Files.readTextFile(is);
+			is.close();
+			pr("successfully read snapshot file:\n" + content + "\n .........!");
+		} catch (FileNotFoundException e) {
+			pr("...could not find file! " + e);
+		} catch (IOException e) {
+			die(e);
+		}
+		return content;
 	}
 
 	/**
-	 * Read expected snapshot; uses dynamic one, if it exists; otherwise, uses
-	 * static version
+	 * Read expected snapshot; uses static version, if it exists; else returns
+	 * null
 	 * 
 	 * @return
 	 */
 	private String readReference() {
-		mDynamicFile = getDynamicFile();
-		// File directory = Environment.getExternalStorageDirectory();
-		//
-		// // File directory = mActivity.getExternalFilesDir(null);
-		// if (directory == null)
-		// die("external files dir is null");
-		// // Construct a snapshots directory if necessary
-		// File dynamicSnapshotsDir = new File(directory, "snapshots");
-		// if (!dynamicSnapshotsDir.exists()) {
-		// dynamicSnapshotsDir.mkdirs();
-		// if (!dynamicSnapshotsDir.exists())
-		// die("unable to create " + dynamicSnapshotsDir);
-		// }
-		//
-		// mDynamicFile = new File(dynamicSnapshotsDir, mSnapshotName);
-		String content = null;
-		if (mDynamicFile.exists()) {
-			try {
-				content = Files.readTextFile(mDynamicFile);
-			} catch (IOException e) {
-				die(e);
-			}
-		} else {
-			// Read static version, if it exists
-			int resourceId = -1;
-			{
-				Field[] fields = R.raw.class.getFields();
-				pr(" fields=" + d(fields) + " length=" + fields.length);
-
-				for (Field f : fields) {
-					String name = f.getName();
-					pr("Raw Asset: " + name);
-					if (name.equals(mSnapshotName)) {
-						try {
-							resourceId = f.getInt(null);
-						} catch (Throwable e) {
-							die(e);
-						}
-						break;
-					}
-				}
-			}
-
-			if (resourceId > 0) {
-				pr("resource id is " + resourceId);
-				// AssetManager am = mActivity.getAssets();
-				// String dynamicPath = "snapshots/" + mSnapshotName;
-				// InputStream is = null;
-				// try {
-				// is = am.open(dynamicPath);
-				// content = Files.readTextFile(is);
-				// is.close();
-				// } catch (FileNotFoundException e) {
-				// } catch (IOException e) {
-				// die(e);
-			}
-		}
+		String content = readStaticContent();
 		return content;
 	}
 
@@ -202,6 +172,7 @@ public class IOSnapshot {
 
 		boolean write = true;
 		String previousContent = readReference();
+
 		if (previousContent != null) {
 			String diff = constructDiff(previousContent, content);
 			if (diff == null) {
@@ -217,25 +188,10 @@ public class IOSnapshot {
 		}
 
 		try {
-			// File snapshotPath = this.mSnapshotPath;
-			// boolean write = true;
-			// if (snapshotPath.exists()) {
-			// String previousContent = Files.readTextFile(snapshotPath);
-			// String diff = constructDiff(previousContent, content);
-			// if (diff == null) {
-			// write = false;
-			// } else {
-			// if (alwaysReplaceExisting)
-			// pr("...replacing old snapshot content (" + snapshotPath
-			// + ")");
-			// else
-			// die("Output disagrees with snapshot (" + snapshotPath
-			// + "):\n" + diff);
-			// }
-			// }
 			if (write) {
-				System.out.println("...writing new snapshot: " + mDynamicFile);
-				Files.writeTextFile(mDynamicFile, content);
+				File f = getDynamicFile();
+				System.out.println("...writing new snapshot: " + f);
+				Files.writeTextFile(f, content);
 			}
 		} catch (IOException e) {
 			die(e);
@@ -263,47 +219,6 @@ public class IOSnapshot {
 		setSanitizeLineNumbers(true);
 	}
 
-	// private static File mSnapshotsFolder;
-
-	// private static File determineSnapshotDirectory() {
-	// if (snapshotDirectory == null) {
-	// if (mActivity == null)
-	// die("no activity defined");
-	//
-	// // AssetManager am = mActivity.getAssets();
-	// // am.open("snapshots");
-	//
-	// //
-	// // try {
-	// // String[] assets = am.list("snapshots");
-	// // for (String s : assets) {
-	// // pr(" asset: " + s);
-	// // if (s.equals("snapshots")) {
-	// // mSnapshotsFolder = new File(
-	// // }
-	// // }
-	// // } catch (IOException e1) {
-	// // die(e1);
-	// // }
-	//
-	// //
-	// // ActivityManager am =
-	// // (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
-	// // ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-	// //
-	// //
-	// // AssetManager m = this.getAssets();
-	// //
-	//
-	// String userDir = System.getProperty("user.dir");
-	// File d = new File(new File(userDir), "snapshots");
-	// if (!d.isDirectory())
-	// die("cannot find directory: " + d);
-	// snapshotDirectory = d;
-	// }
-	// return snapshotDirectory;
-	// }
-
 	/**
 	 * Examine stack trace to find the name of the calling unit test, and
 	 * extract the test name from it
@@ -323,14 +238,13 @@ public class IOSnapshot {
 	}
 
 	private void calculatePath() {
-		// File snapshotDir = determineSnapshotDirectory();
 		String testName = determineTestName();
 		this.mSnapshotName = testName + ".txt";
-		// this.mSnapshotPath = new File(snapshotDir, testName + ".txt");
 	}
 
-	// private static File snapshotDirectory;
-	// private File mSnapshotPath;
+	private static IOSnapshot singleton;
+	private static AndroidTestCase mAndroidTestCase;
+
 	private File mDynamicFile;
 	private String mSnapshotName;
 	private StringPrintStream capturedStdOut, capturedStdErr;

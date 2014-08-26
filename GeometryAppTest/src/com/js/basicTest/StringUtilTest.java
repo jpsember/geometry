@@ -5,7 +5,7 @@ import com.js.testUtils.*;
 
 public class StringUtilTest extends MyTestCase {
 
-	public void _SKIP_testRandomString() {
+	public void testRandomString() {
 		IOSnapshot.open();
 		for (int i = 0; i < 12; i++) {
 			int len = i * i;

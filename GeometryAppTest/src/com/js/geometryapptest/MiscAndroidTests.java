@@ -3,11 +3,10 @@ package com.js.geometryapptest;
 import java.io.File;
 import java.io.IOException;
 
-import android.test.AndroidTestCase;
-
 import com.js.basic.Files;
+import com.js.testUtils.MyTestCase;
 
-public class MiscAndroidTests extends AndroidTestCase {
+public class MiscAndroidTests extends MyTestCase {
 
 	public void testExternalFileDeletedFileIsDeletedImmediately()
 			throws IOException {

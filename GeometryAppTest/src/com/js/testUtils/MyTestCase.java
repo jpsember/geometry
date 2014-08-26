@@ -3,11 +3,35 @@ package com.js.testUtils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Random;
+//import java.lang.reflect.Field;
+
+//import com.js.geometryapptest.R;
 
 import junit.framework.TestCase;
+
+//import com.js.android.MyActivity;
+//import com.js.basic.Tools;
+
+//import android.test.ActivityUnitTestCase;
+
+//import junit.framework.TestCase;
 import static com.js.basic.Tools.*;
 
 public class MyTestCase extends TestCase {
+
+	public MyTestCase() {
+		// // super(MyActivity.class);
+		// // pr("constructing MyTestCase; activity=" + this.getActivity());
+		// pr("MyTestCase, getting fields...");
+		// {
+		// Field[] fields = R.raw.class.getFields();
+		// pr(" fields=" + d(fields) + " length=" + fields.length);
+		//
+		// for (int count = 0; count < fields.length; count++) {
+		// pr("Raw Asset: " + fields[count].getName());
+		// }
+		// }
+	}
 
 	public static void assertEqualsFloat(double expected, double got) {
 		assertEquals(expected, got, 1e-10);
@@ -28,11 +52,13 @@ public class MyTestCase extends TestCase {
 		IOSnapshot.abandon();
 		fail("expected an exception to be thrown");
 	}
-	
+
 	@Override
 	protected void setUp() {
 		tempDirectory = null;
 		random = null;
+		// pr("MyTestCase.activity " + this.getActivity());
+		// IOSnapshot.setActivity(getActivity());
 	}
 
 	@Override

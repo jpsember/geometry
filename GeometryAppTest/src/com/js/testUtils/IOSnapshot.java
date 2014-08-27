@@ -93,27 +93,20 @@ public class IOSnapshot {
 
 	private void prepareDynamicSnapshotsDir() {
 		if (mDynamicSnapshotsDir == null) {
-			// TODO: Can we use the test case context to get the external
-			// storage directory?
 			File directory = Environment.getExternalStorageDirectory();
-
-			// File directory = mActivity.getExternalFilesDir(null);
 			if (directory == null)
 				die("external files dir is null");
-			// Construct a snapshots directory if necessary
 			mDynamicSnapshotsDir = new File(directory, getDynamicFolderName());
 
 			// Purge any existing snapshots directory
 			if (mDynamicSnapshotsDir.exists()) {
-				pr("...deleting snapshots dir: " + mDynamicSnapshotsDir);
 				Files.deleteDirectory(mDynamicSnapshotsDir);
 			}
 
-			{
-				mDynamicSnapshotsDir.mkdirs();
-				if (!mDynamicSnapshotsDir.exists())
-					die("unable to create " + mDynamicSnapshotsDir);
-			}
+			// Construct a new one
+			mDynamicSnapshotsDir.mkdirs();
+			if (!mDynamicSnapshotsDir.exists())
+				die("unable to create " + mDynamicSnapshotsDir);
 		}
 	}
 

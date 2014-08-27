@@ -91,8 +91,8 @@ public class IOSnapshot {
 		disconnect();
 	}
 
-	private File getDynamicFile() {
-		if (mDynamicFile == null) {
+	private void prepareDynamicSnapshotsDir() {
+		if (mDynamicSnapshotsDir == null) {
 			// TODO: Can we use the test case context to get the external
 			// storage directory?
 			File directory = Environment.getExternalStorageDirectory();
@@ -101,15 +101,26 @@ public class IOSnapshot {
 			if (directory == null)
 				die("external files dir is null");
 			// Construct a snapshots directory if necessary
-			File dynamicSnapshotsDir = new File(directory,
-					getDynamicFolderName());
-			if (!dynamicSnapshotsDir.exists()) {
-				dynamicSnapshotsDir.mkdirs();
-				if (!dynamicSnapshotsDir.exists())
-					die("unable to create " + dynamicSnapshotsDir);
+			mDynamicSnapshotsDir = new File(directory, getDynamicFolderName());
+
+			// Purge any existing snapshots directory
+			if (mDynamicSnapshotsDir.exists()) {
+				pr("...deleting snapshots dir: " + mDynamicSnapshotsDir);
+				Files.deleteDirectory(mDynamicSnapshotsDir);
 			}
 
-			mDynamicFile = new File(dynamicSnapshotsDir, mSnapshotName);
+			{
+				mDynamicSnapshotsDir.mkdirs();
+				if (!mDynamicSnapshotsDir.exists())
+					die("unable to create " + mDynamicSnapshotsDir);
+			}
+		}
+	}
+
+	private File getDynamicFile() {
+		if (mDynamicFile == null) {
+			prepareDynamicSnapshotsDir();
+			mDynamicFile = new File(mDynamicSnapshotsDir, mSnapshotName);
 		}
 		return mDynamicFile;
 	}
@@ -251,6 +262,7 @@ public class IOSnapshot {
 
 	private static IOSnapshot singleton;
 	private static AndroidTestCase mAndroidTestCase;
+	private static File mDynamicSnapshotsDir;
 
 	private File mDynamicFile;
 	private String mSnapshotName;

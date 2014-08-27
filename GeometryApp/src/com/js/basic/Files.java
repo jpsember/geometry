@@ -73,6 +73,22 @@ public class Files {
 		f.close();
 	}
 
+	public static void deleteDirectory(File path) {
+		if (!path.isDirectory())
+			throw new IllegalArgumentException("not a directory: " + path);
+
+		File[] files = path.listFiles();
+
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isDirectory()) {
+				deleteDirectory(files[i]);
+			} else {
+				files[i].delete();
+			}
+		}
+		path.delete();
+	}
+
 	public static void writeTextFile(File file, String content,
 			boolean onlyIfChanged) throws IOException {
 		if (onlyIfChanged) {

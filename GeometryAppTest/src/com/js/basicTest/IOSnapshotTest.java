@@ -4,20 +4,20 @@ import com.js.testUtils.*;
 
 public class IOSnapshotTest extends MyTestCase {
 
-	public void _SKIP_testStdOut() {
+	public void testStdOut() {
 		IOSnapshot.open();
 		System.out.println("This is printed to System.out");
 		IOSnapshot.close();
 	}
 	
-	public void _SKIP_testStdErr() {
+	public void testStdErr() {
 		IOSnapshot.open();
 		System.out.println("This is printed to System.out");
 		System.err.println("This is printed to System.err");
 		IOSnapshot.close();
 	}
 
-	public void _SKIP_testStdErrOnly() {
+	public void testStdErrOnly() {
 		IOSnapshot.open();
 		System.err.println("This is printed to System.err");
 		IOSnapshot.close();

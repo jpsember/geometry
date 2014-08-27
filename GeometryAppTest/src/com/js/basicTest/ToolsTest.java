@@ -33,7 +33,7 @@ public class ToolsTest extends MyTestCase {
 		assertStringsMatch("0000_0000", toHex(null, 0, 8, false, true,false));
 	}
 
-	public void _SKIP_testFormatHexWithSnapshots() {
+	public void testFormatHexWithSnapshots() {
 		IOSnapshot.open();
 		for (int i = 0; i < 32; i++) {
 			int v = 1 << i;
@@ -58,7 +58,7 @@ public class ToolsTest extends MyTestCase {
 		assertStringsMatch("hello", chomp("hello\n\n\n\n"));
 	}
 
-	public void _SKIP_testFormattedNumbersDisplay() {
+	public void testFormattedNumbersDisplay() {
 		double[] v = { 4.2, 4.2222222, 444.2222222, 444.2256, 444.9994,
 				444.9995, 999.9994, 999.9995, 0, 0.0000001,
 

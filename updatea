@@ -17,12 +17,12 @@ class UpdateAssetsApp
   def run(args = ARGV)
 
     options = Trollop::options(args) do
-        opt :project, "specify project (or project directory)", :type => :string
+        opt :project, "specify test project directory", :type => :string
         opt :verbose, "verbose"
     end
 
     @verbose = options[:verbose]
-    find_project(options[:project])
+    find_test_project(options[:project])
     info "Project: #{@project_test_directory}"
     update_project_assets
   end
@@ -31,22 +31,36 @@ class UpdateAssetsApp
   private
 
 
+  def remove_suffix(string,suffix,must_exist = false)
+    if string.end_with?(suffix)
+      string = string[0...-suffix.length]
+    else
+      die "string '#{string}' missing suffix '#{suffix}'" if must_exist
+    end
+    string
+  end
+
   def info(msg)
     puts msg if @verbose
   end
 
-  # Find the Android project directory given user-specified path; use some heuristics if the user was sloppy
+  # Find the Android test project directory given user-specified path; use some heuristics if the user was sloppy
   #
-  def find_project(path)
+  def find_test_project(path)
     path ||= Dir.pwd
 
     success = false
     once_only do
-      pth = Pathname.new(path).cleanpath
-      break if !pth.directory?
-      s = pth.to_s
-      break if !s.end_with?('Test')
-      s2 = s[0...-4]
+      s = Pathname.new(path).cleanpath.to_s
+      break if !File.directory?(s)
+
+      # If it doesn't have the 'Test' suffix, see if such a sibling directory exists
+      if !s.end_with?('Test')
+        s = s+'Test'
+        break if !File.directory?(s)
+      end
+
+      s2 = remove_suffix(s,'Test')
       break if s2.length == 0
       pth2 = Pathname.new(s2)
       break if !pth2.directory?
@@ -107,7 +121,7 @@ class UpdateAssetsApp
     entries = parse_directory_listing(directory_listing)
     entries.each do |entry|
       if entry.end_with?('/')
-        entry = entry[0...-1]
+        entry = remove_suffix(entry,'/')
         fname = dir + '/' + entry
         update_project_assets_aux(device_assets_dir,project_assets_dir,fname)
       else

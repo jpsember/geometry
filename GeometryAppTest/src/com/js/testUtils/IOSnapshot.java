@@ -135,7 +135,7 @@ public class IOSnapshot {
 		Matcher m = p.matcher(appDataDir);
 		if (!m.find())
 			die("can't extract application name from '" + appDataDir + "'");
-		return "snapshots_" + m.group(1);
+		return "assets_" + m.group(1) + "/snapshots";
 	}
 
 	private String readStaticContent() {

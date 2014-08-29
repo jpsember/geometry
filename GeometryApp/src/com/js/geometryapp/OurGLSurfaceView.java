@@ -4,14 +4,17 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.view.MotionEvent;
 import static com.js.basic.Tools.*;
+
 import com.js.geometry.*;
 
 public class OurGLSurfaceView extends GLSurfaceView {
 	public OurGLSurfaceView(Context context) {
 		super(context);
 
-		mRenderer = new OurGLRenderer();
-		setRenderer(mRenderer);
+			setEGLContextClientVersion(2);
+			mRenderer = new OurGLRenderer();
+			setRenderer(mRenderer);
+
 	}
 
 	@Override

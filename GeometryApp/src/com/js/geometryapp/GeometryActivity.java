@@ -2,7 +2,6 @@ package com.js.geometryapp;
 
 import static com.js.basic.Tools.*;
 
-
 import com.js.android.MyActivity;
 import com.js.geometry.R;
 
@@ -12,32 +11,37 @@ import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 public class GeometryActivity extends MyActivity {
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		verifySupportsOpenGL20();
 
 		if (savedInstanceState != null) {
 			restorePreviousSavedState(savedInstanceState);
 		}
 
-		mGLView = new OurGLSurfaceView(this);
-
-		setContentView(mGLView);
-
+		if (supportsOpenGL20()) {
+			mGLView = new OurGLSurfaceView(this);
+			setContentView(mGLView);
+		} else {
+			Toast.makeText(this, "This device does not support OpenGL ES 2.0",
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
-	private void verifySupportsOpenGL20() {
+	/**
+	 * Note: may not work on emulator due to bug with GPU emulation; see 'Open
+	 * GL ES 2 for Android', p.25
+	 */
+	private boolean supportsOpenGL20() {
 		ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-		ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+		ConfigurationInfo configurationInfo = activityManager
+				.getDeviceConfigurationInfo();
 		boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x2000;
-		// Note: above may not work on emulator due to bug with GPU emulation;
-		// see 'Open GL ES 2 for Android', p.25
-		if (!supportsEs2)
-			die("OpenGL ES 2.0 not supported");
+		return supportsEs2;
 	}
 
 	private void restorePreviousSavedState(Bundle savedInstanceState) {
@@ -52,13 +56,15 @@ public class GeometryActivity extends MyActivity {
 	@Override
 	protected void onPause() {
 		super.onPause();
-		mGLView.onPause();
+		if (mGLView != null)
+			mGLView.onPause();
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
-		mGLView.onResume();
+		if (mGLView != null)
+			mGLView.onResume();
 	}
 
 	@Override

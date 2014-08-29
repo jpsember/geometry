@@ -1091,9 +1091,6 @@ public class Tools {
 				Class.forName("com.js.testUtils.MyTest");
 				testing = true;
 			} catch (Throwable e) {
-				pr("testing, caught " + e);
-				//
-				// } catch (ClassNotFoundException e) {
 			}
 			testingKnown = true;
 		}

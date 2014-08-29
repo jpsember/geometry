@@ -6,6 +6,9 @@ import static com.js.basic.Tools.*;
 import com.js.android.MyActivity;
 import com.js.geometry.R;
 
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.pm.ConfigurationInfo;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,6 +18,8 @@ public class GeometryActivity extends MyActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		verifySupportsOpenGL20();
+
 		if (savedInstanceState != null) {
 			restorePreviousSavedState(savedInstanceState);
 		}
@@ -23,6 +28,16 @@ public class GeometryActivity extends MyActivity {
 
 		setContentView(mGLView);
 
+	}
+
+	private void verifySupportsOpenGL20() {
+		ActivityManager activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		ConfigurationInfo configurationInfo = activityManager.getDeviceConfigurationInfo();
+		boolean supportsEs2 = configurationInfo.reqGlEsVersion >= 0x2000;
+		// Note: above may not work on emulator due to bug with GPU emulation;
+		// see 'Open GL ES 2 for Android', p.25
+		if (!supportsEs2)
+			die("OpenGL ES 2.0 not supported");
 	}
 
 	private void restorePreviousSavedState(Bundle savedInstanceState) {

@@ -1,6 +1,7 @@
 package com.js.geometry;
 
 import static com.js.basic.Tools.*;
+import android.graphics.Matrix;
 
 public class MyMath {
 
@@ -177,6 +178,28 @@ public class MyMath {
 
 	public static double squaredDistanceBetween(Point s1, Point s2) {
 		return squaredMagnitudeOfRay(s2.x - s1.x, s2.y - s2.y);
+	}
+
+	public static String dumpMatrix(float[] values, int rows, int columns,
+			boolean rowMajorOrder) {
+		StringBuilder sb = new StringBuilder();
+		for (int row = 0; row < rows; row++) {
+			sb.append("[ ");
+			for (int col = 0; col < columns; col++) {
+				int index = rowMajorOrder ? row * columns + col : col * rows
+						+ row;
+				sb.append(f(values[index], 3, 5));
+				sb.append(' ');
+			}
+			sb.append("]\n");
+		}
+		return sb.toString();
+	}
+
+	public static String dumpMatrix(Matrix m) {
+		float v[] = new float[9];
+		m.getValues(v);
+		return dumpMatrix(v, 3, 3, true);
 	}
 
 }

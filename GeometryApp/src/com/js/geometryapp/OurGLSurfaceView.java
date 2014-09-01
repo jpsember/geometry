@@ -30,8 +30,10 @@ public class OurGLSurfaceView extends GLSurfaceView {
 			break;
 		case MotionEvent.ACTION_UP:
 			pr("up at " + loc);
-			mRenderer.mScale *= 1.2f;
-			mRenderer.mMesh = null;
+			{
+				Mesh m = mRenderer.mesh();
+				m.setScale(m.scale() * 1.2f);
+			}
 			break;
 		case MotionEvent.ACTION_MOVE:
 			break;
@@ -52,6 +54,6 @@ public class OurGLSurfaceView extends GLSurfaceView {
 		return super.performClick();
 	}
 
-	private static boolean mAlwaysFalseFlag;
 	private OurGLRenderer mRenderer;
+	static boolean mAlwaysFalseFlag;
 }

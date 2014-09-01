@@ -13,7 +13,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Tools {
+public final class Tools {
+
+	/**
+	 * A do-nothing method that can be called to avoid 'unused import' warnings
+	 * related to this class
+	 */
+	public static void doNothing() {
+	}
 
 	/**
 	 * Default value for 'db' conditional compilation, in case not provided

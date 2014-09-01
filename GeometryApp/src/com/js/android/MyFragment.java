@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import static com.js.android.Tools.*;
+import static com.js.basic.Tools.*;
 
 public class MyFragment extends Fragment {
 
@@ -15,6 +16,7 @@ public class MyFragment extends Fragment {
 	}
 
 	public MyFragment() {
+		doNothingAndroid();
 		setName(deriveFragmentName(this.getClass()));
 	}
 

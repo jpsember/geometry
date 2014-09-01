@@ -18,12 +18,20 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import static com.js.basic.Tools.*;
 
-public class Tools extends com.js.basic.Tools {
+public final class Tools {
 
-  /**
-   * If true, views can be wrapped with diagnostic labels and colors
-   */
+	/**
+	 * A do-nothing method that can be called to avoid 'unused import' warnings
+	 * related to this class
+	 */
+	public static final void doNothingAndroid() {
+	}
+
+	/**
+	 * If true, views can be wrapped with diagnostic labels and colors
+	 */
 	public static final boolean DEBUG_VIEWS = false;
 
 	public static final int DEVICESIZE_UNKNOWN = 0;

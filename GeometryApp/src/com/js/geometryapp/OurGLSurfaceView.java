@@ -8,13 +8,12 @@ import static com.js.basic.Tools.*;
 import com.js.geometry.*;
 
 public class OurGLSurfaceView extends GLSurfaceView {
+
 	public OurGLSurfaceView(Context context) {
 		super(context);
-
-			setEGLContextClientVersion(2);
-			mRenderer = new OurGLRenderer();
-			setRenderer(mRenderer);
-
+		setEGLContextClientVersion(2);
+		mRenderer = new OurGLRenderer(this.getContext());
+		setRenderer(mRenderer);
 	}
 
 	@Override
@@ -31,6 +30,8 @@ public class OurGLSurfaceView extends GLSurfaceView {
 			break;
 		case MotionEvent.ACTION_UP:
 			pr("up at " + loc);
+			mRenderer.mScale *= 1.2f;
+			mRenderer.mMesh = null;
 			break;
 		case MotionEvent.ACTION_MOVE:
 			break;

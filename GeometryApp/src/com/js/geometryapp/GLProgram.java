@@ -109,16 +109,23 @@ public class GLProgram {
 	 *            2D screen to NDC transformation matrix; it is converted to a
 	 *            3D version, suitable for OpenGL rendering
 	 */
-	public void render(Mesh mesh, Matrix projectionMatrix) {
+	public void render(Mesh mesh, OurGLRenderer renderer) {
+
+		// TODO: If this mesh is static (i.e. it doesn't need an additional
+		// transformation for translation/rotation/scaling), then we can juse
+		// use the renderer's projection matrix. In addition, in this case, we
+		// need only specify a new transformation when the renderer's projection
+		// matrix has changed. We will probably want to use two distinct vertex
+		// shaders: one for static meshes that uses this seldom-changing matrix,
+		// and one for dynamic meshes (whose matrix coefficients change with
+		// each call to render()).
 
 		// Concatenate the mesh matrix to the projection matrix
 		Matrix m;
 
-		// projectionMatrix.getValues(v3);
 		{
-			// float v3b[] = new float[9];
 			m = new Matrix(mesh.getTransformMatrix());
-			m.postConcat(projectionMatrix);
+			m.postConcat(renderer.projectionMatrix());
 		}
 
 		// Transform 2D screen->NDC matrix to a 3D version
@@ -151,7 +158,6 @@ public class GLProgram {
 			glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
 		}
 
-		// Not sure if this needs to be done every time
 		glUseProgram(getId());
 
 		FloatBuffer fb = mesh.asFloatBuffer();

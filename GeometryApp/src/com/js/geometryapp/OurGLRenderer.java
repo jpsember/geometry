@@ -66,7 +66,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 		mMesh.setRotation(mMesh.rotation() + 1.0f);
 
-		mProgram.render(mMesh, mScreenToNDCTransform);
+		mProgram.render(mMesh, this);
 	}
 
 	// These vertices and triangles define a stylized 'J' polygon centered at
@@ -97,6 +97,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public Mesh mesh() {
 		return mMesh;
+	}
+
+	public Matrix projectionMatrix() {
+		return mScreenToNDCTransform;
 	}
 
 	private Mesh mMesh;

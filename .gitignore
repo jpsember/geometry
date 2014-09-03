@@ -39,6 +39,7 @@ proguard/
 # are thus too numerous to put under source code control)
 #
 *.launch
+.metadata
 
 unit_test_reports
 

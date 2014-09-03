@@ -37,6 +37,7 @@ public class GLShader {
 		}
 	}
 
+	// TODO: Issue #6; refactor to avoid use of finalizer
 	@Override
 	protected void finalize() throws Throwable {
 		dispose();

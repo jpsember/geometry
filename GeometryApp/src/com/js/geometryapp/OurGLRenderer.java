@@ -16,7 +16,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public OurGLRenderer(Context context) {
 		mContext = context;
-		createMesh();
+		mMesh = createMesh(0, 0);
+		mMesh2 = createMesh(150, 300);
 		doNothing();
 	}
 
@@ -64,9 +65,19 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		gl.glClearColor(mRed, mGreen, mBlue, 1.0f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		mMesh.setRotation(mMesh.rotation() + 1.0f);
+		Matrix mMatrix = new Matrix();
+		mRotation += 1.0f;
+		mMatrix.setRotate(mRotation);
+		mMatrix.postScale(mScale, mScale);
+		mMatrix.postTranslate(300, 200);
 
-		mProgram.render(mMesh, this);
+		mProgram.render(mMesh, this, mMatrix);
+
+		mProgram.render(mMesh2, this, null);
+	}
+
+	public void bumpScale() {
+		mScale *= 1.2f;
 	}
 
 	// These vertices and triangles define a stylized 'J' polygon centered at
@@ -79,20 +90,20 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 			2, 3, 12, 3, 11, 12, 3, 4, 11, 11, 4, 5, 11, 5, 10, 9, 10, 8, 8,
 			10, 7, 7, 10, 5, 7, 5, 6, };
 
-	private void createMesh() {
+	private Mesh createMesh(float originX, float originY) {
 
-		mMesh = new Mesh();
-		mMesh.setLocation(300, 200);
+		Mesh mMesh = new Mesh();
 
 		for (int i = 0; i < testTriangles.length; i += 3) {
 			for (int s = 0; s < 3; s++) { // 3 vertices per triangle
 				int vi = testTriangles[i + s] * 2; // 2 coordinates per test
 													// vertex
-				float x = (testVertices[vi + 0] - 3) * 10;
-				float y = (testVertices[vi + 1] - 3) * 10;
+				float x = (testVertices[vi + 0] - 3) * 10 + originX;
+				float y = (testVertices[vi + 1] - 3) * 10 + originY;
 				mMesh.add(new Point(x, y));
 			}
 		}
+		return mMesh;
 	}
 
 	public Mesh mesh() {
@@ -103,7 +114,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mScreenToNDCTransform;
 	}
 
+	private float mRotation;
+	private float mScale = 1.0f;
 	private Mesh mMesh;
+	private Mesh mMesh2;
 
 	private GLShader mVertexShader;
 	private GLShader mFragmentShader;

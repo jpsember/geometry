@@ -4,8 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
-import android.graphics.Matrix;
-
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
@@ -52,55 +50,10 @@ public class Mesh {
 		return mBuffer;
 	}
 
-	public int nVertices() {
+	public int vertexCount() {
 		return mArray.size() / 5;
 	}
 
-	public void setScale(float s) {
-		if (s != mScale) {
-			mMatrixValid = false;
-			mScale = s;
-		}
-	}
-
-	public float scale() {
-		return mScale;
-	}
-
-	public float rotation() {
-		return mRotation;
-	}
-
-	public void setRotation(float r) {
-		if (mRotation != r) {
-			mMatrixValid = false;
-			mRotation = r;
-		}
-	}
-
-	public Matrix getTransformMatrix() {
-		if (!mMatrixValid) {
-			mMatrix.setRotate(mRotation);
-			mMatrix.postScale(mScale, mScale);
-			mMatrix.postTranslate(mX, mY);
-			mMatrixValid = true;
-		}
-		return mMatrix;
-	}
-
-	public void setLocation(float x, float y) {
-		if (x != mX || y != mY) {
-			mX = x;
-			mY = y;
-			mMatrixValid = false;
-		}
-	}
-
-	private float mX, mY;
-	private boolean mMatrixValid;
-	private Matrix mMatrix = new Matrix();
-	private float mRotation = 0.0f;
-	private float mScale = 1.0f;
 	private float mRed, mGreen, mBlue;
 	private FloatArray mArray = new FloatArray();
 	private FloatBuffer mBuffer;

@@ -30,22 +30,17 @@ public class OurGLSurfaceView extends GLSurfaceView {
 			break;
 		case MotionEvent.ACTION_UP:
 			pr("up at " + loc);
-			{
-				Mesh m = mRenderer.mesh();
-				m.setScale(m.scale() * 1.2f);
-			}
+			queueEvent(new Runnable() {
+				public void run() {
+					mRenderer.bumpScale();
+				}
+			});
 			break;
+
 		case MotionEvent.ACTION_MOVE:
 			break;
 		}
 
-		// if (false)
-		// queueEvent(new Runnable() {
-		// public void run() {
-		// mRenderer.setColor(event.getX() / getWidth(),
-		// event.getY() / getHeight(), 1.0f);
-		// }
-		// });
 		return true;
 	}
 

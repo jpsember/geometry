@@ -16,8 +16,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public OurGLRenderer(Context context) {
 		mContext = context;
-		mMesh = createMesh(0, 0);
-		mMesh2 = createMesh(150, 300);
+		mRotatingMesh = createMesh(0, 0);
+		mStaticMesh = createMesh(150, 300);
+		mPolyline = createPolyline();
+
 		doNothing();
 	}
 
@@ -32,7 +34,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		mFragmentShader = GLShader.readFragmentShader(mContext,
 				R.raw.simple_fragment_shader);
 		mProgram = GLProgram.build(mVertexShader, mFragmentShader);
-
 	}
 
 	/**
@@ -65,15 +66,23 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		gl.glClearColor(mRed, mGreen, mBlue, 1.0f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
-		Matrix mMatrix = new Matrix();
+		Matrix objectMatrix = new Matrix();
 		mRotation += 1.0f;
-		mMatrix.setRotate(mRotation);
-		mMatrix.postScale(mScale, mScale);
-		mMatrix.postTranslate(300, 200);
+		objectMatrix.setRotate(mRotation);
+		objectMatrix.postScale(mScale, mScale);
+		objectMatrix.postTranslate(300, 200);
 
-		mProgram.render(mMesh, this, mMatrix);
+		mProgram.render(mRotatingMesh, this, objectMatrix);
 
-		mProgram.render(mMesh2, this, null);
+		mProgram.render(mStaticMesh, this, null);
+
+		{
+			objectMatrix = new Matrix();
+			objectMatrix.setRotate(-mRotation * 2.5f);
+			objectMatrix.postScale(mScale * 6.0f, mScale * 6.0f);
+			objectMatrix.postTranslate(220, 300);
+		}
+		mProgram.render(mPolyline, this, objectMatrix);
 	}
 
 	public void bumpScale() {
@@ -107,17 +116,33 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public Mesh mesh() {
-		return mMesh;
+		return mRotatingMesh;
 	}
 
 	public Matrix projectionMatrix() {
 		return mScreenToNDCTransform;
 	}
 
+	private Polyline createPolyline() {
+		Polyline p = new Polyline();
+		p.setColor(.6f, .2f, .2f);
+		float originX = 0;
+		float originY = 0;
+
+		for (int i = 0; i < testVertices.length / 2; i++) {
+			float x = (testVertices[i * 2 + 0] - 3) * 10 + originX;
+			float y = (testVertices[i * 2 + 1] - 3) * 10 + originY;
+			p.add(new Point(x, y));
+		}
+		p.close();
+		return p;
+	}
+
 	private float mRotation;
 	private float mScale = 1.0f;
-	private Mesh mMesh;
-	private Mesh mMesh2;
+	private Mesh mRotatingMesh;
+	private Mesh mStaticMesh;
+	private Polyline mPolyline;
 
 	private GLShader mVertexShader;
 	private GLShader mFragmentShader;

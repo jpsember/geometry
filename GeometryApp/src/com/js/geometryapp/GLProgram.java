@@ -10,7 +10,6 @@ import android.graphics.Matrix;
 public class GLProgram {
 
 	public static GLProgram build(GLShader vertexShader, GLShader fragmentShader) {
-
 		GLProgram p = new GLProgram();
 		p.buildAux(vertexShader, fragmentShader);
 		return p;
@@ -101,17 +100,7 @@ public class GLProgram {
 		return row * 3 + col;
 	}
 
-	/**
-	 * Render mesh
-	 * 
-	 * @param mesh
-	 * @param renderer
-	 *            the renderer whose projection matrix is to be used
-	 * @param transform
-	 *            optional additional transformation to apply, or null
-	 */
-	public void render(Mesh mesh, OurGLRenderer renderer, Matrix transform) {
-
+	private void prepareMatrix(OurGLRenderer renderer, Matrix transform) {
 		// TODO: If this mesh is static (i.e. it doesn't need an additional
 		// transformation for translation/rotation/scaling), then we can just
 		// use the renderer's projection matrix. In addition, in this case, we
@@ -159,9 +148,44 @@ public class GLProgram {
 
 			glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
 		}
+	}
 
-		glUseProgram(getId());
+	public void render(Polyline p, OurGLRenderer renderer, Matrix transform) {
+		glUseProgram(getId()); // It seems this must be done before the call to
+								// glUniformMatrix4fv
+		prepareMatrix(renderer, transform);
+		FloatBuffer fb = p.asFloatBuffer();
+		fb.position(0);
+		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
+				* Mesh.BYTES_PER_FLOAT;
 
+		glVertexAttribPointer(mPositionLocation, Mesh.POSITION_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(mPositionLocation);
+
+		fb.position(Mesh.POSITION_COMPONENT_COUNT);
+		glVertexAttribPointer(mColorLocation, Mesh.COLOR_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(mColorLocation);
+
+		glLineWidth(4.0f);
+
+		glDrawArrays(p.isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
+				p.vertexCount());
+	}
+
+	/**
+	 * Render mesh
+	 * 
+	 * @param mesh
+	 * @param renderer
+	 *            the renderer whose projection matrix is to be used
+	 * @param transform
+	 *            optional additional transformation to apply, or null
+	 */
+	public void render(Mesh mesh, OurGLRenderer renderer, Matrix transform) {
+		glUseProgram(getId()); // do before the call to glUniformMatrix4fv
+		prepareMatrix(renderer, transform);
 		FloatBuffer fb = mesh.asFloatBuffer();
 		fb.position(0);
 		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)

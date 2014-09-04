@@ -78,7 +78,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 		{
 			objectMatrix = new Matrix();
-			objectMatrix.setRotate(-mRotation * 2.5f);
+			objectMatrix.setRotate(-mRotation * 0.2f);
 			objectMatrix.postScale(mScale * 6.0f, mScale * 6.0f);
 			objectMatrix.postTranslate(220, 300);
 		}
@@ -130,6 +130,11 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		float originY = 0;
 
 		for (int i = 0; i < testVertices.length / 2; i++) {
+			if ((i % 2) == 0) {
+				p.setColor(.6f, 0, 0);
+			} else {
+				p.setColor(0, 0, 1.0f);
+			}
 			float x = (testVertices[i * 2 + 0] - 3) * 10 + originX;
 			float y = (testVertices[i * 2 + 1] - 3) * 10 + originY;
 			p.add(new Point(x, y));

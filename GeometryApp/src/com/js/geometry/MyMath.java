@@ -3,19 +3,22 @@ package com.js.geometry;
 import static com.js.basic.Tools.*;
 import android.graphics.Matrix;
 
-public class MyMath {
+public final class MyMath {
 
+	public static final float MAXVALUE = 1e12f;
+
+	public static float PI = (float) Math.PI;
 	/**
 	 * Multiplicative factor that converts angles expressed in degrees to
 	 * radians
 	 */
-	public static final double M_DEG = Math.PI / 180.0;
+	public static final float M_DEG = PI / 180.0f;
 
-	public static final double PSEUDO_ANGLE_RANGE = 8;
-	public static final double PSEUDO_ANGLE_RANGE_12 = (PSEUDO_ANGLE_RANGE * .5);
-	public static final double PSEUDO_ANGLE_RANGE_14 = (PSEUDO_ANGLE_RANGE * .25);
-	public static final double PSEUDO_ANGLE_RANGE_34 = (PSEUDO_ANGLE_RANGE * .75);
-	public static final double PERTURB_AMOUNT_DEFAULT = .5;
+	public static final float PSEUDO_ANGLE_RANGE = 8;
+	public static final float PSEUDO_ANGLE_RANGE_12 = (PSEUDO_ANGLE_RANGE * .5f);
+	public static final float PSEUDO_ANGLE_RANGE_14 = (PSEUDO_ANGLE_RANGE * .25f);
+	public static final float PSEUDO_ANGLE_RANGE_34 = (PSEUDO_ANGLE_RANGE * .75f);
+	public static final float PERTURB_AMOUNT_DEFAULT = .5f;
 
 	public static int myMod(int value, int divisor) {
 		ASSERT(divisor > 0);
@@ -27,19 +30,27 @@ public class MyMath {
 		return k;
 	}
 
-	public static double myMod(double value, double divisor) {
+	public static float myMod(float value, float divisor) {
 		ASSERT(divisor > 0);
-		double scaledValue = value / divisor;
+		float scaledValue = value / divisor;
 		scaledValue -= Math.floor(scaledValue);
 		return scaledValue * divisor;
 	}
 
-	public static double squaredMagnitudeOfRay(double x, double y) {
+	public static float squaredMagnitudeOfRay(float x, float y) {
 		return (x * x) + (y * y);
 	}
 
-	public static double magnitudeOfRay(double x, double y) {
-		return Math.sqrt(squaredMagnitudeOfRay(x, y));
+	public static float magnitudeOfRay(float x, float y) {
+		return (float) Math.sqrt(squaredMagnitudeOfRay(x, y));
+	}
+
+	public static float sin(float angle) {
+		return (float) Math.sin(angle);
+	}
+
+	public static float cos(float angle) {
+		return (float) Math.cos(angle);
 	}
 
 	/**
@@ -51,26 +62,26 @@ public class MyMath {
 	 *            size of grid cells (assumed to be square)
 	 * @return point snapped to nearest cell corner
 	 */
-	public static double snapToGrid(double n, double size) {
+	public static float snapToGrid(float n, float size) {
 		return size * Math.round(n / size);
 	}
 
-	public static double interpolateBetweenScalars(double v1, double v2,
-			double parameter) {
+	public static float interpolateBetweenScalars(float v1, float v2,
+			float parameter) {
 		return (v1 * (1 - parameter)) + v2 * parameter;
 	}
 
-	public static double normalizeAngle(double a) {
-		double kRange = Math.PI * 2;
-		double an = myMod(a, kRange);
+	public static float normalizeAngle(float a) {
+		float kRange = (float) Math.PI * 2;
+		float an = myMod(a, kRange);
 		if (an >= kRange / 2)
 			an -= kRange;
 		return an;
 	}
 
-	public static double interpolateBetweenAngles(double a1, double a2,
-			double parameter) {
-		double aDiff = normalizeAngle(a2 - a1) * parameter;
+	public static float interpolateBetweenAngles(float a1, float a2,
+			float parameter) {
+		float aDiff = normalizeAngle(a2 - a1) * parameter;
 		return normalizeAngle(a1 + aDiff);
 	}
 
@@ -82,7 +93,7 @@ public class MyMath {
 		return value;
 	}
 
-	public static double clamp(double value, double min, double max) {
+	public static float clamp(float value, float min, float max) {
 		if (value < min)
 			value = min;
 		else if (value > max)
@@ -91,25 +102,25 @@ public class MyMath {
 	}
 
 	public static Point clampPointToRect(Point pt, Rect r) {
-		double x = clamp(pt.x, r.x, r.x + r.width);
-		double y = clamp(pt.y, r.y, r.y + r.height);
+		float x = clamp(pt.x, r.x, r.x + r.width);
+		float y = clamp(pt.y, r.y, r.y + r.height);
 		return new Point(x, y);
 	}
 
-	public static double pseudoAngle(double x, double y) {
+	public static float pseudoAngle(float x, float y) {
 		// For consistency, always insist that y is nonnegative
 		boolean negateFlag = (y <= 0);
 		if (negateFlag)
 			y = -y;
 
-		double ret;
+		float ret;
 		if (y > Math.abs(x)) {
-			double rat = x / y;
+			float rat = x / y;
 			ret = PSEUDO_ANGLE_RANGE_14 - rat;
 		} else {
 			if (x == 0)
 				throw new GeometryException("degenerate ray");
-			double rat = y / x;
+			float rat = y / x;
 			if (x < 0) {
 				ret = PSEUDO_ANGLE_RANGE_12 + rat;
 			} else {
@@ -130,7 +141,6 @@ public class MyMath {
 		double b = a;
 		if (b < -PSEUDO_ANGLE_RANGE_12) {
 			b += PSEUDO_ANGLE_RANGE;
-			// TODO: instead of returning NaN, throw exceptions
 			if (b < -PSEUDO_ANGLE_RANGE_12) {
 				throw new GeometryException("range error:" + b);
 			}
@@ -143,8 +153,8 @@ public class MyMath {
 		return b;
 	}
 
-	public static double polarAngleOfSegment(Point s1, Point s2) {
-		return Math.atan2(s2.y - s1.y, s2.x - s1.x);
+	public static float polarAngleOfSegment(Point s1, Point s2) {
+		return (float) Math.atan2(s2.y - s1.y, s2.x - s1.x);
 	}
 
 	// TODO: should these be MyMath functions, and not Point functions?
@@ -157,7 +167,7 @@ public class MyMath {
 	}
 
 	//
-	public static Point interpolateBetween(Point s1, Point s2, double parameter) {
+	public static Point interpolateBetween(Point s1, Point s2, float parameter) {
 		return new Point(
 				MyMath.interpolateBetweenScalars(s1.x, s2.x, parameter),
 				MyMath.interpolateBetweenScalars(s1.y, s2.y, parameter));
@@ -167,17 +177,23 @@ public class MyMath {
 		return Math.atan2(point.y, point.x);
 	}
 
-	public static Point pointOnCircle(Point origin, double angle, double radius) {
-		return new Point(origin.x + radius * Math.cos(angle), origin.y + radius
-				* Math.sin(angle));
+	public static Point pointOnCircle(Point origin, float angle, float radius) {
+		return new Point(origin.x + radius * (float) Math.cos(angle), origin.y
+				+ radius * (float) Math.sin(angle));
 	}
 
 	public static double dotProduct(Point s1, Point s2) {
 		return s1.x() * s2.x() + s1.y() * s2.y();
 	}
 
-	public static double squaredDistanceBetween(Point s1, Point s2) {
+	public static float squaredDistanceBetween(Point s1, Point s2) {
 		return squaredMagnitudeOfRay(s2.x - s1.x, s2.y - s2.y);
+	}
+
+	public static float distanceBetween(Point s1, Point s2) {
+		return (float) Math
+				.sqrt(squaredMagnitudeOfRay(s2.x - s1.x, s2.y
+				- s2.y));
 	}
 
 	public static String dumpMatrix(float[] values, int rows, int columns,
@@ -202,4 +218,37 @@ public class MyMath {
 		return dumpMatrix(v, 3, 3, true);
 	}
 
+	public static Point pointBesideSegment(Point s1, Point s2, float distance) {
+		return pointBesideSegment(s1, s2, distance, .5f);
+	}
+
+	public static Point pointBesideSegment(Point s1, Point s2, float distance,
+			float t) {
+		Point m = interpolateBetween(s1, s2, t);
+		float a = polarAngleOfSegment(s1, s2);
+		return pointOnCircle(m, a - 90 * M_DEG, distance);
+	}
+
+	public static Matrix calcRectFitRectTransform(Rect originalRect,
+			Rect fitRect) {
+		// DBG
+		float scale = Math.min(fitRect.width / originalRect.width,
+				fitRect.height / originalRect.height);
+		float unusedX = fitRect.width - scale * originalRect.width;
+		float unusedY = fitRect.height - scale * originalRect.height;
+
+		Matrix tTranslate1 = new Matrix();
+		tTranslate1.setTranslate(-originalRect.x, -originalRect.y);
+		Matrix tScale = new Matrix();
+		tScale.setScale(scale, scale);
+		Matrix tTranslate2 = new Matrix();
+		tTranslate2.setTranslate(fitRect.x + unusedX / 2, fitRect.y + unusedY
+				/ 2);
+
+		warning("not sure of post/pre concat here");
+		Matrix work = new Matrix(tTranslate1);
+		work.postConcat(tScale);
+		work.postConcat(tTranslate2);
+		return work;
+	}
 }

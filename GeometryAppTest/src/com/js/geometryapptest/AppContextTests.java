@@ -22,6 +22,6 @@ public class AppContextTests extends MyTestCase {
 		String content = Files.readTextFile(is);
 		is.close();
 		assertTrue("unexpected file contents:\n" + content,
-				content.indexOf("yeoxvqfl") >= 0);
+				content.indexOf("jgpgjbyygn") >= 0);
 	}
 }

@@ -3,6 +3,8 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
+import com.js.geometry.GeometryContext;
+import com.js.geometry.Polygon;
 import com.js.geometry.R;
 
 import android.app.ActivityManager;
@@ -15,9 +17,20 @@ import android.widget.Toast;
 
 public class GeometryActivity extends MyActivity {
 
+	private void testPolygonStuff() {
+		GeometryContext c = new GeometryContext(42);
+		Polygon p = Polygon.testPolygon(c, Polygon.TESTPOLY_DRAGON_X + 3);
+		pr("polygon vertices=" + p.numVertices());
+		pr("area=" + p.area());
+		pr("boundary length=" + p.boundaryLength());
+		pr("bounds=" + p.bounds());
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
+		testPolygonStuff();
 
 		if (savedInstanceState != null) {
 			restorePreviousSavedState(savedInstanceState);

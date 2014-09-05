@@ -1,6 +1,5 @@
 package com.js.basic;
 
-import static com.js.basic.JSMath.*;
 import static com.js.basic.Tools.*;
 
 public class StringUtil {
@@ -16,8 +15,7 @@ public class StringUtil {
 
 		StringBuilder sb = new StringBuilder();
 		if (maxLength > 0) {
-			int ln = rnd.nextInt(maxLength);
-			ln = clampInt(ln, 1, maxLength);
+			int ln = 1 + rnd.nextInt(maxLength);
 			for (int i = 0; i < ln; i++) {
 				if (rnd.nextInt(6) == 0 && i > 0 && i < ln - 1
 						&& sb.charAt(i - 1) != ' ')

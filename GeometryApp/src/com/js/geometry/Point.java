@@ -1,31 +1,38 @@
 package com.js.geometry;
 
-import static com.js.geometry.MyMath.*;
 import static com.js.basic.Tools.*;
+import android.graphics.Matrix;
 
 public final class Point {
 
 	public Point() {
 	}
 
-	public Point(double x, double y) {
+	public void apply(Matrix m) {
+		float[] f = new float[9];
+		m.getValues(f);
+		x = f[0] * x + f[1] * y + f[2];
+		y = f[3] * x + f[4] * y + f[5];
+	}
+
+	public Point(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	public double x() {
+	public float x() {
 		return x;
 	}
 
-	public double y() {
+	public float y() {
 		return y;
 	}
 
-	public double magnitude() {
-		return magnitudeOfRay(x, y);
+	public float magnitude() {
+		return MyMath.magnitudeOfRay(x, y);
 	}
 
-	public double pseudoAngle() {
+	public float pseudoAngle() {
 		return MyMath.pseudoAngle(x, y);
 	}
 
@@ -38,6 +45,15 @@ public final class Point {
 		return sb.toString();
 	}
 
-	public double x;
-	public double y;
+	public String dumpUnlabelled() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(d(x));
+		sb.append(' ');
+		sb.append(d(y));
+		sb.append(' ');
+		return sb.toString();
+	}
+
+	public float x;
+	public float y;
 }

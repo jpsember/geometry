@@ -4,11 +4,11 @@ import java.util.List;
 
 public class Rect {
 
-	public double midX() {
+	public float midX() {
 		return (x + width * .5f);
 	}
 
-	public double midY() {
+	public float midY() {
 		return (y + height * .5f);
 	}
 
@@ -17,7 +17,7 @@ public class Rect {
 				&& r.height == height;
 	}
 
-	public Rect(double x, double y, double w, double h) {
+	public Rect(float x, float y, float w, float h) {
 		this.x = x;
 		this.y = y;
 		this.width = w;
@@ -28,7 +28,7 @@ public class Rect {
 		setTo(r.x, r.y, r.width, r.height);
 	}
 
-	public void setTo(double x, double y, double w, double h) {
+	public void setTo(float x, float y, float w, float h) {
 		this.x = x;
 		this.y = y;
 		this.width = w;
@@ -90,11 +90,11 @@ public class Rect {
 		return new Point(endX(), endY());
 	}
 
-	public double endX() {
+	public float endX() {
 		return x + width;
 	}
 
-	public double endY() {
+	public float endY() {
 		return y + height;
 	}
 
@@ -108,7 +108,7 @@ public class Rect {
 	}
 
 	public void include(Point pt) {
-		double ex = endX(), ey = endY();
+		float ex = endX(), ey = endY();
 		x = Math.min(x, pt.x);
 		y = Math.min(y, pt.y);
 		ex = Math.max(ex, pt.x);
@@ -164,9 +164,9 @@ public class Rect {
 		height *= f;
 	}
 
-	public void snapToGrid(double gridSize) {
-		double x2 = endX();
-		double y2 = endY();
+	public void snapToGrid(float gridSize) {
+		float x2 = endX();
+		float y2 = endY();
 		x = MyMath.snapToGrid(x, gridSize);
 		y = MyMath.snapToGrid(y, gridSize);
 		width = MyMath.snapToGrid(x2, gridSize) - x;
@@ -223,6 +223,6 @@ public class Rect {
 		return new Rect(m1.x, m1.y, m2.x - m1.x, m2.y - m1.y);
 	}
 
-	public double x, y, width, height;
+	public float x, y, width, height;
 
 }

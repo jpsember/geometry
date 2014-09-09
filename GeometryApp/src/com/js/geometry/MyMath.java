@@ -193,7 +193,7 @@ public final class MyMath {
 	public static float distanceBetween(Point s1, Point s2) {
 		return (float) Math
 				.sqrt(squaredMagnitudeOfRay(s2.x - s1.x, s2.y
-				- s2.y));
+ - s1.y));
 	}
 
 	public static String dumpMatrix(float[] values, int rows, int columns,

@@ -767,6 +767,10 @@ public final class Tools {
 		System.out.println(obj);
 	}
 
+	public static void prr(Object obj) {
+		System.out.print(obj);
+	}
+
 	/**
 	 * Trim trailing linefeeds from string
 	 * 

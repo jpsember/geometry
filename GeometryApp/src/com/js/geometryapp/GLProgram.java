@@ -3,7 +3,16 @@ package com.js.geometryapp;
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+
+import com.js.geometry.Edge;
+import com.js.geometry.GeometryContext;
+import com.js.geometry.MyMath;
+import com.js.geometry.Point;
+import com.js.geometry.Vertex;
 
 import android.graphics.Matrix;
 
@@ -148,6 +157,103 @@ public class GLProgram {
 
 			glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
 		}
+	}
+
+	static boolean fOneTimeOnly;
+	static FloatBuffer tempBuffer;
+	static int tempBufferUsed;
+
+	/**
+	 * Render the graph represented by a GeometryContext
+	 * 
+	 * @param renderer
+	 * @param transform
+	 */
+	public void render(GeometryContext c, OurGLRenderer renderer,
+			Matrix transform) {
+
+		final boolean db = false; // !fOneTimeOnly;
+		fOneTimeOnly = true;
+		if (db)
+			pr("render GeometryContext");
+		glUseProgram(getId());
+
+		glLineWidth(1.8f);
+
+		prepareMatrix(renderer, transform);
+
+		if (true || tempBuffer == null) {
+			float mRed = .5f;
+			float mGreen = 0f;
+			float mBlue = .8f;
+
+			FloatArray a = new FloatArray();
+			ArrayList<Vertex> vs = c.vertexBuffer();
+			if (db)
+				pr(" vertices count " + vs.size());
+
+			for (Vertex v : vs) {
+				if (db)
+					pr(" vertex " + v);
+				Edge e = v.edges();
+				if (e == null)
+					continue;
+				Edge e1 = e;
+				do {
+					e1 = e1.nextEdge();
+
+					// if (db)
+					// pr("  edge " + e1 + " angle " + e1.angle());
+					if (e1.angle() >= MyMath.PSEUDO_ANGLE_RANGE_12) {
+						// if (db) pr("  skipping, angle is too large");
+						continue;
+					}
+					Point pt = v.point();
+					a.add(pt.x);
+					a.add(pt.y);
+					a.add(mRed);
+					a.add(mGreen);
+					a.add(mBlue);
+
+					Vertex v2 = e1.destVertex();
+					Point pt2 = v2.point();
+					a.add(pt2.x);
+					a.add(pt2.y);
+					a.add(mRed);
+					a.add(mGreen);
+					a.add(mBlue);
+					if (db)
+						pr("   adding line " + pt + " to " + pt2);
+				} while (e1 != e);
+			}
+			if (db)
+				pr(" size of float array: " + a.size());
+
+			tempBuffer = ByteBuffer
+					.allocateDirect(a.size() * Mesh.BYTES_PER_FLOAT)
+					.order(ByteOrder.nativeOrder()).asFloatBuffer();
+			FloatBuffer fb = tempBuffer;
+			fb.put(a.array(), 0, a.size());
+			tempBufferUsed = a.size();
+		}
+
+		FloatBuffer fb = tempBuffer;
+		fb.position(0);
+		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
+				* Mesh.BYTES_PER_FLOAT;
+
+		glVertexAttribPointer(mPositionLocation, Mesh.POSITION_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(mPositionLocation);
+
+		fb.position(Mesh.POSITION_COMPONENT_COUNT);
+		glVertexAttribPointer(mColorLocation, Mesh.COLOR_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(mColorLocation);
+
+		if (db)
+			pr(" glDrawArrays GL_LINES, tempBufferUsed " + tempBufferUsed);
+		glDrawArrays(GL_LINES, 0, tempBufferUsed / (5));
 	}
 
 	public void render(Polyline p, OurGLRenderer renderer, Matrix transform) {

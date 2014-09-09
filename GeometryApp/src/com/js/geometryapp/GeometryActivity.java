@@ -4,8 +4,11 @@ import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
 import com.js.geometry.GeometryContext;
+import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.PolygonTriangulator;
 import com.js.geometry.R;
+import com.js.geometry.Vertex;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -19,11 +22,28 @@ public class GeometryActivity extends MyActivity {
 
 	private void testPolygonStuff() {
 		GeometryContext c = new GeometryContext(42);
-		Polygon p = Polygon.testPolygon(c, Polygon.TESTPOLY_DRAGON_X + 3);
+
+		if (true) {
+			Polygon p = Polygon.testPolygon(c, Polygon.TESTPOLY_DRAGON_X + 7);
 		pr("polygon vertices=" + p.numVertices());
 		pr("area=" + p.area());
 		pr("boundary length=" + p.boundaryLength());
 		pr("bounds=" + p.bounds());
+
+		PolygonTriangulator pt = PolygonTriangulator.triangulator(c, p);
+		pt.triangulate();
+		} else {
+			Vertex v1 = c.addVertex(new Point(50, 50));
+			Vertex v2 = c.addVertex(new Point(500, 76));
+			Vertex v3 = c.addVertex(new Point(480, 370));
+			Vertex v4 = c.addVertex(new Point(72, 385));
+			c.addEdge(null, v1, v2);
+			c.addEdge(null, v2, v3);
+			c.addEdge(null, v3, v4);
+			c.addEdge(null, v4, v1);
+		}
+
+		mSampleContext = c;
 	}
 
 	@Override
@@ -39,6 +59,7 @@ public class GeometryActivity extends MyActivity {
 		if (supportsOpenGL20()) {
 			mGLView = new OurGLSurfaceView(this);
 			setContentView(mGLView);
+			mGLView.setSampleContext(mSampleContext);
 		} else {
 			Toast.makeText(this, "This device does not support OpenGL ES 2.0",
 					Toast.LENGTH_LONG).show();
@@ -124,4 +145,5 @@ public class GeometryActivity extends MyActivity {
 	}
 
 	private OurGLSurfaceView mGLView;
+	private GeometryContext mSampleContext;
 }

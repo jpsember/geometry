@@ -227,15 +227,43 @@ public class Polygon {
 		return mVertices.get(modSize(index));
 	}
 
-	// // Embed the polygon into its context's mesh; returns index of first
-	// vertex within mesh
-	// - (int)embedWithContext:(JSGeometryContext *)context;
-	// - (int)embedWithVertexFlags:(NSUInteger)f1 edgeFlags:(NSUInteger)f2
-	// context:(JSGeometryContext *)context;
+	/**
+	 * Embed the polygon into its context's mesh; returns index of first vertex
+	 * within mesh
+	 */
+	public int embed(GeometryContext context) {
+		return embed(context, 0, 0);
+	}
 
-	// // Embed only the polygon's vertices
-	// - (int)embedVerticesWithFlags:(NSUInteger)f context:(JSGeometryContext
-	// *)context;
+	public int embed(GeometryContext context, int vertexFlags, int edgeFlags) {
+		int baseVertex = embedVertices(context, vertexFlags);
+		//
+		// - (int)embedWithVertexFlags:(NSUInteger)f1 edgeFlags:(NSUInteger)f2
+		// context:(JSGeometryContext *)context {
+		// int baseVertex = [self embedVerticesWithFlags:f1 context:context];
+		Vertex prevVertex = context.vertex(baseVertex + numVertices() - 1);
+		for (int i = 0; i < numVertices(); i++) {
+			Vertex currentVertex = context.vertex(baseVertex + i);
+			Edge edge = context.addEdge(null, prevVertex, currentVertex);
+			edge.addFlags(Edge.FLAG_POLYGON | edgeFlags);
+			edge.dual().addFlags(edgeFlags);
+
+			prevVertex = currentVertex;
+		}
+		return baseVertex;
+	}
+
+public int embedVertices(GeometryContext context, int vertexFlags) {
+
+		int embeddedVertexIndex = context.vertexBuffer().size();
+
+		for (int i = 0; i < numVertices(); i++) {
+			Point pt = vertex(i);
+			Vertex v = context.addVertex(null, pt);
+			v.addFlags(vertexFlags);
+		}
+		return embeddedVertexIndex;
+	}
 
 	public Rect bounds() {
 		if (numVertices() < 1)
@@ -295,12 +323,18 @@ public class Polygon {
 
 	// Returns true iff polygon has ccw orientation
 	public boolean isCCW(GeometryContext context) {
+		final boolean db = true;
+		if (db)
+			pr("isCCW? # vert=" + numVertices());
+
 		if (numVertices() < 3)
 			die("too few vertices");
 		float totalSwept = 0;
 		Point v0 = vertexMod(-2);
 		Point v1 = vertexMod(-1);
 		float angle01 = context.pseudoPolarAngleOfSegment(v0, v1);
+		if (db)
+			pr(" v0=" + v0 + " v1=" + v1 + "  angle01=" + angle01);
 
 		for (int i = 0; i < numVertices(); i++) {
 			Point v2 = vertex(i);
@@ -308,6 +342,9 @@ public class Polygon {
 			float subtendedAngle = context.normalizePseudoAngle(angle12
 					- angle01);
 			totalSwept += subtendedAngle;
+			if (db)
+				pr(" v2=" + v2 + "  angle12=" + angle12 + " subtended="
+						+ subtendedAngle + " totalSwept=" + totalSwept);
 			angle01 = angle12;
 			v1 = v2;
 		}

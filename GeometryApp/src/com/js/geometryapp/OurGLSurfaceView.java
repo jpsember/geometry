@@ -16,6 +16,11 @@ public class OurGLSurfaceView extends GLSurfaceView {
 		setRenderer(mRenderer);
 	}
 
+	public void setSampleContext(GeometryContext c) {
+		ASSERT(mRenderer != null);
+		mRenderer.setSampleContext(c);
+	}
+
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 

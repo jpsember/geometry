@@ -104,6 +104,10 @@ public final class Edge {
 		mDual = d;
 	}
 
+	public void addFlags(int f) {
+		mFlags |= f;
+	}
+
 	public static final int FLAG_INVISIBLE = 1 << 28;
 
 	/**

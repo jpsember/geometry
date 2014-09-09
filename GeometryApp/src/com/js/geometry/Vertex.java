@@ -12,6 +12,14 @@ public final class Vertex {
 		return mPt;
 	}
 
+	public Vertex(Point location) {
+		mPt = location;
+	}
+
+	public void setLocation(Point location) {
+		mPt = location;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("v ");
@@ -42,6 +50,14 @@ public final class Vertex {
 			mFlags &= ~FLAG_DELETED;
 	}
 
+	public void addFlags(int f) {
+		mFlags |= f;
+	}
+
+	public void clearFlags() {
+		mFlags = 0;
+	}
+
 	public void clearFlags(int f) {
 		mFlags &= ~f;
 	}
@@ -52,6 +68,10 @@ public final class Vertex {
 
 	public void setEdges(Edge edge) {
 		mEdges = edge;
+	}
+
+	public int flags() {
+		return mFlags;
 	}
 
 	private Point mPt;

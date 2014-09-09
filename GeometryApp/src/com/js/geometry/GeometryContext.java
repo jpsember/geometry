@@ -182,6 +182,15 @@ public class GeometryContext {
 		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
 	}
 
+	public float pointUnitLineSignedDistance(Point pt, Point s1, Point s2) {
+		// Translate so s1 is at origin
+		float sx = s2.x - s1.x;
+		float sy = s2.y - s1.y;
+		float pt_x = pt.x - s1.x;
+		float pt_y = pt.y - s1.y;
+		return -sy * pt_x + sx * pt_y;
+	}
+
 	public float perturb(float val) {
 		float GRID = mPerturbAmount;
 		float NOISE = GRID * .8f;
@@ -318,6 +327,29 @@ public class GeometryContext {
 		return output;
 	}
 
+	public Vertex vertex(int index) {
+		return mVertexBuffer.get(index);
+	}
+
+	public Vertex addVertex(Point location) {
+		testForOverflow(location.x);
+		testForOverflow(location.y);
+		Vertex v = new Vertex(location);
+		mVertexBuffer.add(v);
+		return v;
+	}
+
+	public Vertex addVertex(Vertex vertex, Point location) {
+		if (vertex == null) {
+			vertex = addVertex(location);
+		} else {
+			ASSERT(vertex.deleted());
+			vertex.clearFlags();
+			vertex.setLocation(location);
+		}
+		return vertex;
+	}
+
 	public void addEdgeToVertex(Edge edge, Vertex vertex) {
 		if (vertex.edges() == null) {
 			vertex.setEdges(edge);
@@ -374,6 +406,29 @@ public class GeometryContext {
 				vertex.setEdges(edge);
 			}
 		}
+	}
+
+	private float mParameter;
+
+	public float getParameter() {
+		return mParameter;
+	}
+
+	public Point segHorzLineIntersection(Point pt1, Point pt2, float yLine) {
+		Point ipt = null;
+
+		float denom = pt2.y - pt1.y;
+		testForZero(denom);
+
+		float numer = yLine - pt1.y;
+		float t = numer / denom;
+
+		if (!(t < 0 || t > 1)) {
+			mParameter = t;
+
+			ipt = new Point(pt1.x + (pt2.x - pt1.x) * t, pt1.y + denom * t);
+		}
+		return ipt;
 	}
 
 	private void insertEdgeAfter(Edge newEdge, Edge previousEdge) {

@@ -5,6 +5,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import static com.js.basic.Tools.*;
 
+import com.js.geometry.GeometryContext;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 
@@ -34,6 +35,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		mFragmentShader = GLShader.readFragmentShader(mContext,
 				R.raw.simple_fragment_shader);
 		mProgram = GLProgram.build(mVertexShader, mFragmentShader);
+
 	}
 
 	/**
@@ -67,22 +69,37 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
 		Matrix objectMatrix = new Matrix();
-		mRotation += 1.0f;
-		objectMatrix.setRotate(mRotation);
-		objectMatrix.postScale(mScale, mScale);
-		objectMatrix.postTranslate(300, 200);
 
-		mProgram.render(mRotatingMesh, this, objectMatrix);
+		mRotation += 1.0f;
+		if (false) {
+			objectMatrix.setRotate(mRotation);
+			objectMatrix.postScale(mScale, mScale);
+			objectMatrix.postTranslate(300, 200);
+
+			mProgram.render(mRotatingMesh, this, objectMatrix);
+		}
 
 		mProgram.render(mStaticMesh, this, null);
 
-		{
-			objectMatrix = new Matrix();
-			objectMatrix.setRotate(-mRotation * 0.2f);
-			objectMatrix.postScale(mScale * 6.0f, mScale * 6.0f);
-			objectMatrix.postTranslate(220, 300);
+		if (true) {
+			{
+				objectMatrix = new Matrix();
+				objectMatrix.setRotate(-mRotation * 0.2f);
+				objectMatrix.postScale(mScale * 6.0f, mScale * 6.0f);
+				objectMatrix.postTranslate(420, 300);
+			}
+			mProgram.render(mPolyline, this, objectMatrix);
 		}
-		mProgram.render(mPolyline, this, objectMatrix);
+
+		if (mSampleContext != null) {
+			{
+				objectMatrix = new Matrix();
+				objectMatrix.postScale(.34f, .34f);
+				objectMatrix.postTranslate(10, 10);
+			}
+			mProgram.render(mSampleContext, this, objectMatrix);
+		}
+
 	}
 
 	public void bumpScale() {
@@ -160,4 +177,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private float mBlue;
 	private int mCounter;
 	private Matrix mScreenToNDCTransform;
+	private GeometryContext mSampleContext;
+
+	public void setSampleContext(GeometryContext c) {
+		pr("setting sample context to " + nameOf(c));
+		mSampleContext = c;
+	}
 }

@@ -1,11 +1,10 @@
 package com.js.basic;
 
-import java.util.ArrayList;
+import java.util.Collection;
+
 import static com.js.basic.Tools.*;
 
-public class Queue {
-
-	private static final Object NULL_OBJECT = Boolean.FALSE;
+public class Queue<T> {
 
 	/**
 	 * By default, items are pushed to the REAR of the queue, and popped from
@@ -13,29 +12,21 @@ public class Queue {
 	 * queue.
 	 */
 
-	public static Queue queue() {
-		return queueWithCapacity(16);
-	}
-
-	public static Queue queueWithArray(ArrayList array) {
-		Queue q = queueWithCapacity(array.size());
-		for (Object item : array) {
-			q.push(item);
-		}
-		return q;
-	}
-
-	public static Queue queueWithCapacity(int capacity) {
-		return new Queue(capacity);
+	public Queue(int capacity) {
+		mArray = construct(1 + capacity);
 	}
 
 	public Queue() {
 		this(16);
 	}
 
-	public Queue(int capacity) {
-		mArray = construct(1 + capacity);
+	public Queue(Collection<T> array) {
+		this(array.size());
+		for (T item : array) {
+			push(item);
+		}
 	}
+
 
 	public boolean isEmpty() {
 		return size() == 0;
@@ -43,69 +34,73 @@ public class Queue {
 
 	public int size() {
 		int n = mTail - mHead;
-		int c = mArray.size();
+		int c = mArray.length;
 		if (n < 0)
 			n += c;
 		return n;
 	}
 
 	private int spaceRemaining() {
-		return mArray.size() - size();
+		return mArray.length - size();
 	}
 
-	public void push(Object item) {
+	public void push(T item) {
 		push(item, false);
 	}
 
-	public void push(Object item, boolean toFront) {
+	public void push(T item, boolean toFront) {
 		if (spaceRemaining() <= 1) {
 			expandBuffer();
 		}
 		if (!toFront) {
-			mArray.set(mTail, item);
+			mArray[mTail] = item;
 			mTail++;
-			if (mTail == mArray.size()) {
+			if (mTail == mArray.length) {
 				mTail = 0;
 			}
 		} else {
 			if (mHead == 0)
-				mHead = mArray.size();
+				mHead = mArray.length;
 			mHead--;
-			mArray.set(mHead, item);
+			mArray[mHead] = item;
 		}
 	}
 
-	public Object peek(boolean atFront) {
+	public T peek(boolean atFront) {
 		return peek(atFront, 0);
 	}
 
-	public Object peek(boolean atFront, int distance) {
+	public T peek(boolean atFront, int distance) {
 		int count = size();
 		if (distance >= count)
 			throw new IllegalArgumentException("queue range error");
 		if (!atFront) {
 			distance = count - 1 - distance;
 		}
-		return mArray.get(calcPos(distance));
+		return (T) mArray[calcPos(distance)];
 	}
 
-	public Object peek() {
+	public T peek(int distance) {
+		return peek(true, distance);
+	}
+
+	public T peek() {
 		return peek(true);
 	}
 
-	public Object pop(boolean fromFront) {
-		Object ret;
+	public T pop(boolean fromFront) {
+		T ret;
 		if (size() == 0)
 			throw new IllegalStateException("pop of empty queue");
 		if (!fromFront) {
 			if (mTail-- == 0)
-				mTail = mArray.size() - 1;
-			ret = mArray.get(mTail);
-			mArray.set(mTail, NULL_OBJECT);
+				mTail = mArray.length - 1;
+			ret = (T) mArray[mTail];
+			mArray[mTail] = null;
 		} else {
-			ret = mArray.get(mHead);
-			mArray.set(mHead, NULL_OBJECT);
-			if (++mHead == mArray.size())
+			ret = (T) mArray[mHead];
+			mArray[mHead] = null;
+			if (++mHead == mArray.length)
 				mHead = 0;
 		}
 		return ret;
@@ -116,27 +111,23 @@ public class Queue {
 			pop();
 	}
 
-	public Object pop() {
+	public T pop() {
 		return pop(true);
 	}
 
-	private ArrayList construct(int capacity) {
-		ArrayList a = new ArrayList(capacity);
-		while (capacity-- > 0) {
-			a.add(NULL_OBJECT);
-		}
-		return a;
+	private Object[] construct(int capacity) {
+		return new Object[capacity];
 	}
 
 	private void expandBuffer() {
 		if (db)
-			pr("expanding buffer from size " + mArray.size() + "; currently "
+			pr("expanding buffer from size " + mArray.length + "; currently "
 				+ this);
-		ArrayList a2 = construct(mArray.size() * 2);
+		Object a2[] = construct(mArray.length * 2);
 
 		for (int i = 0, j = mHead; j != mTail; i++) {
-			a2.set(i, mArray.get(j));
-			if (++j == mArray.size())
+			a2[i] = mArray[j];
+			if (++j == mArray.length)
 				j = 0;
 		}
 		mTail = size();
@@ -148,8 +139,8 @@ public class Queue {
 
 	private int calcPos(int fromStart) {
 		int k = mHead + fromStart;
-		if (k >= mArray.size())
-			k -= mArray.size();
+		if (k >= mArray.length)
+			k -= mArray.length;
 		return k;
 	}
 
@@ -165,6 +156,6 @@ public class Queue {
 		return sb.toString();
 	}
 
-	private ArrayList mArray;
+	private Object[] mArray;
 	private int mHead, mTail;
 }

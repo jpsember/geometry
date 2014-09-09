@@ -192,8 +192,7 @@ public final class MyMath {
 
 	public static float distanceBetween(Point s1, Point s2) {
 		return (float) Math
-				.sqrt(squaredMagnitudeOfRay(s2.x - s1.x, s2.y
- - s1.y));
+				.sqrt(squaredMagnitudeOfRay(s2.x - s1.x, s2.y - s1.y));
 	}
 
 	public static String dumpMatrix(float[] values, int rows, int columns,
@@ -231,7 +230,6 @@ public final class MyMath {
 
 	public static Matrix calcRectFitRectTransform(Rect originalRect,
 			Rect fitRect) {
-		// DBG
 		float scale = Math.min(fitRect.width / originalRect.width,
 				fitRect.height / originalRect.height);
 		float unusedX = fitRect.width - scale * originalRect.width;
@@ -245,7 +243,6 @@ public final class MyMath {
 		tTranslate2.setTranslate(fitRect.x + unusedX / 2, fitRect.y + unusedY
 				/ 2);
 
-		warning("not sure of post/pre concat here");
 		Matrix work = new Matrix(tTranslate1);
 		work.postConcat(tScale);
 		work.postConcat(tTranslate2);

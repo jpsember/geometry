@@ -9,56 +9,52 @@ import static com.js.basic.Tools.*;
 
 public class QueueTest extends MyTestCase {
 
-	private static String s(int charVal) {
-		return Character.toString((char) charVal);
-	}
-
-	private Queue queue;
-
 	@Override
 	protected void setUp() {
 		super.setUp();
-		ArrayList a = new ArrayList();
-		for (int i = 0; i < 5; i++)
-			a.add(s('a' + i));
-		queue = Queue.queueWithArray(a);
+		mQueue = new Queue();
+	}
+
+	private static String buildElement(int characterNumber) {
+		return Character.toString((char) ('A' + characterNumber));
+	}
+
+	private void populateQueue() {
+		for (int i = 0; i < 5; i++) {
+			mQueue.push(buildElement(i));
+		}
 	}
 
 	void testConstructor() {
-		Queue q = Queue.queue();
-		assertTrue(q.isEmpty());
+		assertTrue(mQueue.isEmpty());
 	}
 
 	void testWrap() {
 		IOSnapshot.open();
-		Queue q = new Queue();
 
-		for (int i = 0; i < 5; i++) {
-			q.push(s('A' + i));
-		}
+		populateQueue();
 
 		for (int i = 0; i < 100; i++) {
-			String n = (String) q.pop();
-			q.push(n);
-			pr(q);
+			String n = mQueue.pop();
+			mQueue.push(n);
+			pr(mQueue);
 		}
-		while (!q.isEmpty()) {
-			q.pop();
-			pr(q);
+		while (!mQueue.isEmpty()) {
+			mQueue.pop();
+			pr(mQueue);
 		}
 		IOSnapshot.close();
 	}
 
 	void testGrow() {
 		IOSnapshot.open();
-		Queue q = new Queue();
 		for (int i = 0; i < 20; i++) {
-			q.push(s('A' + i));
-			pr(q);
+			mQueue.push(buildElement(i));
+			pr(mQueue);
 		}
-		while (!q.isEmpty()) {
-			q.pop();
-			pr(q);
+		while (!mQueue.isEmpty()) {
+			mQueue.pop();
+			pr(mQueue);
 		}
 		IOSnapshot.close();
 	}
@@ -67,31 +63,31 @@ public class QueueTest extends MyTestCase {
 		int reps = 100;
 		int maxSize = 70;
 
-		Queue q = new Queue();
+		Queue<Integer> q = new Queue();
 		for (int i = 0; i < reps; i++) {
 			q.push(i);
 			if (q.size() > maxSize)
 				q.pop();
 		}
 		for (int j = 0; j < maxSize; j++) {
-			Integer v = (Integer) q.peek(true, j);
-			assertEquals(j + (reps - maxSize), v.intValue());
-			v = (Integer) q.peek(false, j);
-			assertEquals(reps - 1 - j, v.intValue());
+			int v = q.peek(true, j);
+			assertEquals(j + (reps - maxSize), v);
+			v = q.peek(false, j);
+			assertEquals(reps - 1 - j, v);
 		}
 	}
 
 	public void testPushAndPop() {
 		int nIter = 120;
 		IOSnapshot.open();
-		Queue q = new Queue();
+		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
 			prr(f(i, 3) + ": ");
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
-						Integer v = (Integer) q.pop();
-						pr("popped " + f(v.intValue(), 3) + "; " + q);
+						int v = q.pop();
+						pr("popped " + f(v, 3) + "; " + q);
 						continue;
 					}
 				}
@@ -103,8 +99,8 @@ public class QueueTest extends MyTestCase {
 					pr("queue empty, stopping");
 					break;
 				}
-				Integer v = (Integer) q.pop();
-				pr("popped " + f(v.intValue(), 3) + "; " + q);
+				int v = q.pop();
+				pr("popped " + f(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();
@@ -113,15 +109,15 @@ public class QueueTest extends MyTestCase {
 	public void testPushAndPopRear() {
 		int nIter = 120;
 		IOSnapshot.open();
-		Queue q = new Queue();
+		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
 			prr(f(i, 3) + ": ");
 
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
-						Integer v = (Integer) q.pop(false);
-						pr("popped " + f(v.intValue(), 3) + "; " + q);
+						int v = q.pop(false);
+						pr("popped " + f(v, 3) + "; " + q);
 						continue;
 					}
 				}
@@ -133,8 +129,8 @@ public class QueueTest extends MyTestCase {
 					pr("queue empty, stopping");
 					break;
 				}
-				Integer v = (Integer) q.pop();
-				pr("popped " + f(v.intValue(), 3) + "; " + q);
+				int v = q.pop();
+				pr("popped " + f(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();
@@ -143,15 +139,15 @@ public class QueueTest extends MyTestCase {
 	public void testPushFrontAndPopRear() {
 		int nIter = 120;
 		IOSnapshot.open();
-		Queue q = new Queue();
+		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
 			prr(f(i, 3) + ": ");
 
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
-						Integer v = (Integer) q.pop(false);
-						pr("popped " + f(v.intValue(), 3) + "; " + q);
+						int v = q.pop(false);
+						pr("popped " + f(v, 3) + "; " + q);
 						continue;
 					}
 				}
@@ -163,8 +159,8 @@ public class QueueTest extends MyTestCase {
 					pr("queue empty, stopping");
 					break;
 				}
-				Integer v = (Integer) q.pop(false);
-				pr("popped " + f(v.intValue(), 3) + "; " + q);
+				int v = q.pop(false);
+				pr("popped " + f(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();
@@ -176,7 +172,7 @@ public class QueueTest extends MyTestCase {
 		a.add("b");
 		a.add("c");
 		a.add("d");
-		Queue q = Queue.queueWithArray(a);
+		Queue<String> q = new Queue(a);
 		for (int i = 0; i < 4; i++)
 			q.pop();
 		try {
@@ -187,19 +183,21 @@ public class QueueTest extends MyTestCase {
 	}
 
 	public void testPushToRearByDefault() {
-		Queue q = queue;
-		q.push("zz");
-		assertStringsMatch("zz", q.peek(false));
+		populateQueue();
+		mQueue.push("zz");
+		assertStringsMatch("zz", mQueue.peek(false));
 	}
 
 	public void testPopFromFrontByDefault() {
-		Queue q = queue;
-		assertStringsMatch("a", q.pop());
+		populateQueue();
+		assertStringsMatch("A", mQueue.pop());
 	}
 
 	public void testPeekAtFrontByDefault() {
-		Queue q = queue;
-		assertStringsMatch("a", q.peek());
+		populateQueue();
+		assertStringsMatch("A", mQueue.peek());
 	}
+
+	private Queue<String> mQueue;
 
 }

@@ -253,7 +253,7 @@ public class Polygon {
 		return baseVertex;
 	}
 
-public int embedVertices(GeometryContext context, int vertexFlags) {
+	public int embedVertices(GeometryContext context, int vertexFlags) {
 
 		int embeddedVertexIndex = context.vertexBuffer().size();
 
@@ -454,6 +454,25 @@ public int embedVertices(GeometryContext context, int vertexFlags) {
 
 	public void clear() {
 		mVertices.clear();
+	}
+
+	@Override
+	public String toString() {
+		String prefix = "Polygon: ";
+		StringBuilder sb = new StringBuilder(prefix);
+		int displayed = 0;
+		for (Point pt : mVertices) {
+			if (displayed == 6) {
+				displayed = 0;
+				sb.append("\n" + sp(prefix.length()));
+			}
+			sb.append("    ");
+			sb.append(f((int) pt.x, 4));
+			sb.append(' ');
+			sb.append(f((int) pt.y, 4));
+			displayed++;
+		}
+		return sb.toString();
 	}
 
 	private ArrayList<Point> mVertices = new ArrayList();

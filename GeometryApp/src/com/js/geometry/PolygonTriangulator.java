@@ -9,6 +9,12 @@ import java.util.TreeSet;
 
 import com.js.basic.Queue;
 
+/**
+ * Triangulates a polygon.
+ * 
+ * Polygon must be CCW oriented.
+ * 
+ */
 public class PolygonTriangulator {
 
 	public static PolygonTriangulator triangulator(GeometryContext context,
@@ -24,12 +30,19 @@ public class PolygonTriangulator {
 		mVertexList = new ArrayList();
 	}
 
+	// Vertex flags internal to this algorithm
 	private static final int VERTEXFLAG_MERGE = 1 << 0;
 	private static final int VERTEXFLAG_LEFTSIDE = 1 << 1;
 
-	private static final int VTYPE_START = 0, VTYPE_CONTINUE_UP = 1,
-			VTYPE_CONTINUE_DOWN = 2, VTYPE_END = 3, VTYPE_SPLIT = 4,
-			VTYPE_MERGE = 5, VTYPE_TOTAL = 6;
+	// Characterizations of each polygon vertex.
+	// Derived from http://www.cs.uu.nl/docs/vakken/ga/slides3.pdf, but
+	// with two versions of REGULAR depending upon orientation of the boundary
+	private static final int VTYPE_START = 0;
+	private static final int VTYPE_REGULAR_UP = 1;
+	private static final int VTYPE_REGULAR_DOWN = 2;
+	private static final int VTYPE_END = 3;
+	private static final int VTYPE_SPLIT = 4;
+	private static final int VTYPE_MERGE = 5;
 
 	public void triangulate() {
 		mPolygonMeshBase = mPolygon.embed(mContext);
@@ -99,7 +112,7 @@ public class PolygonTriangulator {
 		Point opt = outgoing.destVertex().point();
 		Point vpt = v.point();
 
-		int type = VTYPE_TOTAL;
+		int type;
 		if (opt.y > vpt.y) {
 			if (ipt.y > vpt.y) {
 				if (mContext.pseudoAngleIsConvex(outgoing.angle(), incoming
@@ -109,7 +122,7 @@ public class PolygonTriangulator {
 					type = VTYPE_SPLIT;
 				}
 			} else {
-				type = VTYPE_CONTINUE_UP;
+				type = VTYPE_REGULAR_UP;
 			}
 		} else {
 			if (ipt.y < vpt.y) {
@@ -120,10 +133,9 @@ public class PolygonTriangulator {
 					type = VTYPE_MERGE;
 				}
 			} else {
-				type = VTYPE_CONTINUE_DOWN;
+				type = VTYPE_REGULAR_DOWN;
 			}
 		}
-		ASSERT(type != VTYPE_TOTAL);
 		return type;
 	}
 
@@ -176,22 +188,10 @@ public class PolygonTriangulator {
 		return found;
 	}
 
-	private Vertex queuePeek(int distance, boolean front) {
-		return (Vertex) mMonotoneQueue.peek(front, distance);
-	}
-
-	private Vertex queuePop(boolean fromFront) {
-		return (Vertex) mMonotoneQueue.pop(fromFront);
-	}
-
-	private void queuePush(Vertex v, boolean f) {
-		mMonotoneQueue.push(v, f);
-	}
-
 	private void processVertexEvent(Vertex vertex) {
 		final boolean db = false;
 		if (db)
-		pr("processVertexEvent " + vertex);
+			pr("processVertexEvent " + vertex);
 		moveSweepLineTo(vertex.point().y);
 		Edge edges[] = new Edge[2];
 		polygonEdgesThroughVertex(vertex, edges);
@@ -207,7 +207,7 @@ public class PolygonTriangulator {
 			newEdge = outgoing;
 			break;
 
-		case VTYPE_CONTINUE_UP:
+		case VTYPE_REGULAR_UP:
 			newEdge = outgoing;
 			delEdge = incoming;
 			break;
@@ -217,7 +217,7 @@ public class PolygonTriangulator {
 			triangulateMonotoneFace(delEdge);
 			break;
 
-		case VTYPE_CONTINUE_DOWN: {
+		case VTYPE_REGULAR_DOWN: {
 			SweepEdge se = findEdgeFollowing(outgoing);
 			replaceHelperForEdge(se, vertex);
 		}
@@ -315,10 +315,8 @@ public class PolygonTriangulator {
 			Vertex v = mVertexList.get(vIndex++);
 			queueIsLeft = (v.flags() & VERTEXFLAG_LEFTSIDE) != 0;
 
-			// We'll consider the rear of the queue to be element 0, and the
-			// front to be element n-1
-			queuePush(v, true);
-			queuePush(mVertexList.get(vIndex++), true);
+			mMonotoneQueue.push(v);
+			mMonotoneQueue.push(mVertexList.get(vIndex++));
 		}
 
 		// We don't want to add edges that already exist. The last edge added
@@ -336,19 +334,19 @@ public class PolygonTriangulator {
 			if (queueIsLeft != ((vertex.flags() & VERTEXFLAG_LEFTSIDE) != 0)) {
 
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
-					// Get q(second)
-					Vertex v2 = queuePeek(1, false);
-					queuePop(false);
+					// Skip the first queued vertex
+					mMonotoneQueue.pop();
+					Vertex v2 = mMonotoneQueue.peek();
 
 					mContext.addEdge(null, v2, vertex);
 					edgesRemaining--;
 				}
-				queuePush(vertex, true);
+				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
 			} else {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
-					Vertex v1 = queuePeek(0, true);
-					Vertex v2 = queuePeek(1, true);
+					Vertex v1 = mMonotoneQueue.peek(false, 0);
+					Vertex v2 = mMonotoneQueue.peek(false, 1);
 					float distance = mContext.pointUnitLineSignedDistance(
 							vertex.point(), v1.point(), v2.point());
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
@@ -356,9 +354,9 @@ public class PolygonTriangulator {
 						break;
 					mContext.addEdge(null, v2, vertex);
 					edgesRemaining--;
-					queuePop(true);
+					mMonotoneQueue.pop(false);
 				}
-				queuePush(vertex, true);
+				mMonotoneQueue.push(vertex);
 			}
 		}
 	}
@@ -368,7 +366,7 @@ public class PolygonTriangulator {
 	private ArrayList<Vertex> mVertexEvents;
 	private TreeSet<SweepEdge> mSweepStatus;
 	private float mSweepLinePosition;
-	private Queue mMonotoneQueue;
+	private Queue<Vertex> mMonotoneQueue;
 	private ArrayList<Vertex> mVertexList;
 	private int mPolygonMeshBase;
 }

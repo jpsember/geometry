@@ -323,18 +323,12 @@ public class Polygon {
 
 	// Returns true iff polygon has ccw orientation
 	public boolean isCCW(GeometryContext context) {
-		final boolean db = true;
-		if (db)
-			pr("isCCW? # vert=" + numVertices());
-
 		if (numVertices() < 3)
 			die("too few vertices");
 		float totalSwept = 0;
 		Point v0 = vertexMod(-2);
 		Point v1 = vertexMod(-1);
 		float angle01 = context.pseudoPolarAngleOfSegment(v0, v1);
-		if (db)
-			pr(" v0=" + v0 + " v1=" + v1 + "  angle01=" + angle01);
 
 		for (int i = 0; i < numVertices(); i++) {
 			Point v2 = vertex(i);
@@ -342,9 +336,6 @@ public class Polygon {
 			float subtendedAngle = context.normalizePseudoAngle(angle12
 					- angle01);
 			totalSwept += subtendedAngle;
-			if (db)
-				pr(" v2=" + v2 + "  angle12=" + angle12 + " subtended="
-						+ subtendedAngle + " totalSwept=" + totalSwept);
 			angle01 = angle12;
 			v1 = v2;
 		}

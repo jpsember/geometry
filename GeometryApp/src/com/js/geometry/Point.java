@@ -45,6 +45,14 @@ public final class Point {
 		return sb.toString();
 	}
 
+	public String toStringAsInts() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(f((int) x, 4));
+		sb.append(' ');
+		sb.append(f((int) y, 4));
+		return sb.toString();
+	}
+
 	public String dumpUnlabelled() {
 		StringBuilder sb = new StringBuilder();
 		sb.append(d(x));

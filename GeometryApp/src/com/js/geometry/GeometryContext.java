@@ -446,6 +446,28 @@ public class GeometryContext {
 				- kMinSeparation);
 	}
 
+	public String dumpMesh() {
+		StringBuilder sb = new StringBuilder("GeometryContext vertices:\n");
+		for (Vertex v : mVertexBuffer) {
+			sb.append(" ");
+			sb.append(v.point().toStringAsInts());
+
+			Edge e = v.edges();
+			if (e != null) {
+				sb.append(" -->");
+				while (true) {
+					sb.append(e.destVertex().point().toStringAsInts());
+					e = e.nextEdge();
+					if (e == v.edges())
+						break;
+					sb.append("   ");
+				}
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+	}
+
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;

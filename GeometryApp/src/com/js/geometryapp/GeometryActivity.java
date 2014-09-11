@@ -8,10 +8,13 @@ import com.js.geometry.*;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class GeometryActivity extends MyActivity {
@@ -41,11 +44,7 @@ public class GeometryActivity extends MyActivity {
 		}
 
 		if (supportsOpenGL20()) {
-			mGLView = new OurGLSurfaceView(this);
-			setContentView(mGLView);
-			mGLView.setSampleContext(mSampleContext);
-			if (true)
-				mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+			setContentView(buildContentView());
 		} else {
 			Toast.makeText(this, "This device does not support OpenGL ES 2.0",
 					Toast.LENGTH_LONG).show();
@@ -130,6 +129,59 @@ public class GeometryActivity extends MyActivity {
 		return super.onPrepareOptionsMenu(menu);
 	}
 
+	private View buildContentView() {
+		LinearLayout layout = new LinearLayout(this);
+		layout.setOrientation(LinearLayout.VERTICAL);
+
+		buildOpenGLView();
+		layout.addView(buildTestView());
+		layout.addView(mGLView);
+		layout.addView(buildControlsView());
+		layout.addView(buildTestView());
+		return layout;
+	}
+
+	private static LinearLayout.LayoutParams param(boolean fillRemaining) {
+		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				LinearLayout.LayoutParams.WRAP_CONTENT);
+		p.weight = fillRemaining ? 1 : 0;
+		p.setMargins(20, 4, 20, 4);
+		return p;
+	}
+
+	private void buildOpenGLView() {
+		mGLView = new OurGLSurfaceView(this);
+		mGLView.setSampleContext(mSampleContext);
+		if (true)
+			mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		mGLView.setLayoutParams(param(true));
+	}
+
+	private View buildControlsView() {
+		return buildTestView();
+	}
+
+	private View buildTestView() {
+		View v;
+
+		// Using 'View' here creates views that try to be very large for
+		// some reason; so use LinearLayout as the basic test view
+		// so treat LinearLayout as the fundamental
+		v = new LinearLayout(this);
+		v.setLayoutParams(param(false));
+		v.setMinimumHeight(50);
+		v.setBackgroundColor(sTestViewColors[mTestViewCount
+				% sTestViewColors.length]);
+
+		mTestViewCount++;
+		return v;
+	}
+
+	private static int sTestViewColors[] = { Color.DKGRAY, Color.GREEN,
+			Color.BLUE, Color.MAGENTA };
+
+	private int mTestViewCount;
 	private OurGLSurfaceView mGLView;
 	private GeometryContext mSampleContext;
 }

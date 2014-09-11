@@ -1,6 +1,12 @@
 package com.js.geometryapp;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.Arrays;
+
+import com.js.geometry.Point;
+
 import static com.js.basic.Tools.*;
 
 
@@ -11,6 +17,11 @@ public class FloatArray {
 		growTo(mSize + 1);
 		mArray[mSize] = f;
 		mSize += 1;
+	}
+
+	public void add(Point point) {
+		add(point.x);
+		add(point.y);
 	}
 
 	public float[] array() {
@@ -32,6 +43,15 @@ public class FloatArray {
 		if (false)
 			pr("ignore unused warning");
 		return mSize;
+	}
+
+	public FloatBuffer asFloatBuffer() {
+		FloatBuffer mBuffer;
+		mBuffer = ByteBuffer
+				.allocateDirect(mArray.length * Mesh.BYTES_PER_FLOAT)
+				.order(ByteOrder.nativeOrder()).asFloatBuffer();
+		mBuffer.put(mArray, 0, mArray.length);
+		return mBuffer;
 	}
 
 	private int mSize;

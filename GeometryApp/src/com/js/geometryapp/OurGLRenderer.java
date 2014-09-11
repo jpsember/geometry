@@ -6,14 +6,18 @@ import javax.microedition.khronos.opengles.GL10;
 import static com.js.basic.Tools.*;
 
 import com.js.geometry.GeometryContext;
+import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.geometry.Rect;
 
 import android.content.Context;
 import android.graphics.Matrix;
 import android.opengl.GLSurfaceView;
 
 public class OurGLRenderer implements GLSurfaceView.Renderer {
+
+	private static Thread sOpenGLThread;
 
 	public OurGLRenderer(Context context) {
 		mContext = context;
@@ -24,9 +28,23 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		doNothing();
 	}
 
+	public static void ensureOpenGLThread() {
+		if (Thread.currentThread() != sOpenGLThread)
+			die("not in OpenGL thread");
+	}
+
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
+
+		sOpenGLThread = Thread.currentThread();
+
+		GLSpriteProgram.prepare(mContext);
+
 		mRed = .2f;
 		mGreen = .6f;
+
+		mRed = 0;
+		mGreen = .2f;
+
 		mCounter += 1;
 		mBlue = .2f + (.1f * (mCounter % 5));
 
@@ -36,6 +54,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 				R.raw.simple_fragment_shader);
 		mProgram = GLProgram.build(mVertexShader, mFragmentShader);
 
+		if (mSprite == null) {
+			GLTexture t = new GLTexture(mContext, R.raw.texture);
+			mSprite = new GLSpriteProgram(t, new Rect(0, 0, 64, 64));
+		}
 	}
 
 	/**
@@ -62,6 +84,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
 		buildProjectionMatrix(w, h);
+		GLSpriteProgram.setProjection(mScreenToNDCTransform);
 	}
 
 	public void onDrawFrame(GL10 gl) {
@@ -81,7 +104,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 		mProgram.render(mStaticMesh, this, null);
 
-		if (true) {
+		if (false) {
 			{
 				objectMatrix = new Matrix();
 				objectMatrix.setRotate(-mRotation * 0.2f);
@@ -100,7 +123,21 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 			mProgram.render(mSampleContext, this, objectMatrix);
 		}
 
+		if (true) {
+			if (mGLText == null)
+				mGLText = new OurGLText("Howdy");
+			mGLText.render(this);
+		}
+
+		if (mSprite != null) {
+			Point pt = MyMath.pointOnCircle(new Point(250, 250), mRotation
+					* MyMath.M_DEG * 1.2f, 100);
+			mSprite.setPosition(pt.x, pt.y);
+			mSprite.render();
+		}
 	}
+
+	private OurGLText mGLText;
 
 	public void bumpScale() {
 		mScale *= 1.2f;
@@ -180,7 +217,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private GeometryContext mSampleContext;
 
 	public void setSampleContext(GeometryContext c) {
-		pr("setting sample context to " + nameOf(c));
 		mSampleContext = c;
 	}
+
+	private GLSpriteProgram mSprite;
 }

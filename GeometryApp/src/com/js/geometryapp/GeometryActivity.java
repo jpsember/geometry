@@ -134,19 +134,33 @@ public class GeometryActivity extends MyActivity {
 		layout.setOrientation(LinearLayout.VERTICAL);
 
 		buildOpenGLView();
-		layout.addView(buildTestView());
+		// layout.addView(buildTestView());
 		layout.addView(mGLView);
-		layout.addView(buildControlsView());
-		layout.addView(buildTestView());
+
+		mStepperView = buildControlsView();
+		layout.addView(mStepperView.view());
+		// layout.addView(buildTestView());
 		return layout;
 	}
 
-	private static LinearLayout.LayoutParams param(boolean fillRemaining) {
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT);
+	public static LinearLayout.LayoutParams layoutParams(boolean horizontal,
+			boolean fillRemaining) {
+		boolean withMargins = false;
+		LinearLayout.LayoutParams p;
+		if (horizontal) {
+			p = new LinearLayout.LayoutParams(
+					LinearLayout.LayoutParams.WRAP_CONTENT,
+					LinearLayout.LayoutParams.MATCH_PARENT);
+			if (withMargins)
+				p.setMargins(20, 4, 20, 4);
+		} else {
+			p = new LinearLayout.LayoutParams(
+					LinearLayout.LayoutParams.MATCH_PARENT,
+					LinearLayout.LayoutParams.WRAP_CONTENT);
+			if (withMargins)
+				p.setMargins(4, 20, 4, 20);
+		}
 		p.weight = fillRemaining ? 1 : 0;
-		p.setMargins(20, 4, 20, 4);
 		return p;
 	}
 
@@ -155,21 +169,22 @@ public class GeometryActivity extends MyActivity {
 		mGLView.setSampleContext(mSampleContext);
 		if (true)
 			mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		mGLView.setLayoutParams(param(true));
+		mGLView.setLayoutParams(layoutParams(false, true));
 	}
 
-	private View buildControlsView() {
-		return buildTestView();
+	private AlgorithmStepperView buildControlsView() {
+		AlgorithmStepperView v = new AlgorithmStepperView(this);
+		return v;
 	}
 
-	private View buildTestView() {
+	/* private */View buildTestView() {
 		View v;
 
 		// Using 'View' here creates views that try to be very large for
 		// some reason; so use LinearLayout as the basic test view
 		// so treat LinearLayout as the fundamental
 		v = new LinearLayout(this);
-		v.setLayoutParams(param(false));
+		v.setLayoutParams(layoutParams(false, false));
 		v.setMinimumHeight(50);
 		v.setBackgroundColor(sTestViewColors[mTestViewCount
 				% sTestViewColors.length]);
@@ -184,4 +199,5 @@ public class GeometryActivity extends MyActivity {
 	private int mTestViewCount;
 	private OurGLSurfaceView mGLView;
 	private GeometryContext mSampleContext;
+	private AlgorithmStepperView mStepperView;
 }

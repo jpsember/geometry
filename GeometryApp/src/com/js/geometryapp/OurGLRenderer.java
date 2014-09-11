@@ -37,6 +37,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 		sOpenGLThread = Thread.currentThread();
 
+		disposeResources();
+
 		GLSpriteProgram.prepare(mContext);
 
 		mRed = .2f;
@@ -54,10 +56,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 				R.raw.simple_fragment_shader);
 		mProgram = GLProgram.build(mVertexShader, mFragmentShader);
 
-		if (mSprite == null) {
-			GLTexture t = new GLTexture(mContext, R.raw.texture);
-			mSprite = new GLSpriteProgram(t, new Rect(0, 0, 64, 64));
-		}
+		GLTexture t = new GLTexture(mContext, R.raw.texture);
+		mSprite = new GLSpriteProgram(t, new Rect(0, 0, 64, 64));
 	}
 
 	/**
@@ -137,8 +137,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		}
 	}
 
-	private OurGLText mGLText;
-
 	public void bumpScale() {
 		mScale *= 1.2f;
 	}
@@ -197,6 +195,15 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return p;
 	}
 
+	public void setSampleContext(GeometryContext c) {
+		mSampleContext = c;
+	}
+
+	private void disposeResources() {
+		mSprite = null;
+		mGLText = null;
+	}
+
 	private float mRotation;
 	private float mScale = 1.0f;
 	private Mesh mRotatingMesh;
@@ -216,9 +223,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private Matrix mScreenToNDCTransform;
 	private GeometryContext mSampleContext;
 
-	public void setSampleContext(GeometryContext c) {
-		mSampleContext = c;
-	}
-
 	private GLSpriteProgram mSprite;
+	private OurGLText mGLText;
 }

@@ -29,19 +29,9 @@ public class GeometryActivity extends MyActivity {
 		mSampleContext = c;
 	}
 
-	// private void testTextureStuff() {
-	// pr("testTextureStuff");
-	// OurGLText.setContext(this);
-	// OurGLText.loadJPEG();
-	// }
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
-		// if (false) {
-		// testTextureStuff();
-		// }
 
 		if (false)
 			testPolygonStuff();

@@ -58,6 +58,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 		GLTexture t = new GLTexture(mContext, R.raw.texture);
 		mSprite = new GLSpriteProgram(t, new Rect(0, 0, 64, 64));
+
+		mFont = new Font(32);
 	}
 
 	/**
@@ -135,6 +137,15 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 			mSprite.setPosition(pt.x, pt.y);
 			mSprite.render();
 		}
+
+		if (mFont != null) {
+			mFont.render(" !\"#$%&'()* Bravo", new Point(30, 0));
+			mFont.render("The quick brown fox jumped",
+					new Point(30, 0 + mFont.lineHeight()));
+			mFont.render("over the lazy dog",
+					new Point(30, 0 + 2 * mFont.lineHeight()));
+		}
+
 	}
 
 	public void bumpScale() {
@@ -202,6 +213,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private void disposeResources() {
 		mSprite = null;
 		mGLText = null;
+		mFont = null;
 	}
 
 	private float mRotation;
@@ -225,4 +237,5 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	private GLSpriteProgram mSprite;
 	private OurGLText mGLText;
+	private Font mFont;
 }

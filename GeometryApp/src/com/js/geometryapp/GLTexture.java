@@ -1,9 +1,6 @@
 package com.js.geometryapp;
 
-import static android.opengl.GLES20.glBindTexture;
-import static android.opengl.GLES20.glGenTextures;
-import static android.opengl.GLES20.glGetError;
-import static android.opengl.GLES20.glTexParameterf;
+import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
 import java.io.InputStream;
@@ -87,6 +84,10 @@ public class GLTexture {
 				GL10.GL_REPEAT);
 		glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
 				GL10.GL_REPEAT);
+
+    // Let alpha channel actually have an effect
+		glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL10.GL_BLEND);
 
 		// Use the Android GLUtils to specify a two-dimensional texture image
 		// from our bitmap

@@ -44,7 +44,7 @@ public class GeometryActivity extends MyActivity {
 			mGLView = new OurGLSurfaceView(this);
 			setContentView(mGLView);
 			mGLView.setSampleContext(mSampleContext);
-			if (false)
+			if (true)
 				mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		} else {
 			Toast.makeText(this, "This device does not support OpenGL ES 2.0",

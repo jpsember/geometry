@@ -59,7 +59,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		GLTexture t = new GLTexture(mContext, R.raw.texture);
 		mSprite = new GLSpriteProgram(t, new Rect(0, 0, 64, 64));
 
-		mFont = new Font(32);
+		mFont = new Font(24);
 	}
 
 	/**
@@ -125,12 +125,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 			mProgram.render(mSampleContext, this, objectMatrix);
 		}
 
-		if (true) {
-			if (mGLText == null)
-				mGLText = new OurGLText("Howdy");
-			mGLText.render(this);
-		}
-
 		if (mSprite != null) {
 			Point pt = MyMath.pointOnCircle(new Point(250, 250), mRotation
 					* MyMath.M_DEG * 1.2f, 100);
@@ -144,6 +138,9 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 					new Point(30, 0 + mFont.lineHeight()));
 			mFont.render("over the lazy dog",
 					new Point(30, 0 + 2 * mFont.lineHeight()));
+
+			mFont.render("This spans\nmultiple lines\non screen", new Point(0,
+					mFont.lineHeight() * 5));
 		}
 
 	}
@@ -212,7 +209,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	private void disposeResources() {
 		mSprite = null;
-		mGLText = null;
 		mFont = null;
 	}
 
@@ -236,6 +232,5 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private GeometryContext mSampleContext;
 
 	private GLSpriteProgram mSprite;
-	private OurGLText mGLText;
 	private Font mFont;
 }

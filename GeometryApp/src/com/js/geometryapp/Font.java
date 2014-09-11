@@ -52,10 +52,9 @@ public class Font {
 		mAdvanceWidthF = advanceWidths[0];
 		mAdvanceWidthI = (int) Math.ceil(mAdvanceWidthF);
 		calculateLetterSize();
-		mBaseLineOffset = (-mFontMetrics.top + mFontMetrics.bottom)
-				+ mFontMetrics.ascent;
 		mLineHeight = mFontMetrics.leading + mFontMetrics.descent
 				- mFontMetrics.ascent;
+		mBaseLineOffset = mLineHeight;
 
 		if (false) {
 			pr("top=" + mFontMetrics.top);
@@ -112,15 +111,21 @@ public class Font {
 	}
 
 	public void render(String text, Point location) {
+		Point loc = new Point(location.x, location.y - mBaseLineOffset);
 		for (int i = 0; i < text.length(); i++) {
-			int j = text.charAt(i) - PRINTABLE_START;
-			if (j < 0 || j >= PRINTABLE_TOTAL)
-				continue;
-			Point loc = new Point(location.x + i * mAdvanceWidthI, location.y
-					- mBaseLineOffset);
-			GLSpriteProgram sp = mSprites[j];
-			sp.setPosition(loc);
-			sp.render();
+			char c = text.charAt(i);
+			int j = c - PRINTABLE_START;
+			if (j >= 0 && j < PRINTABLE_TOTAL) {
+				GLSpriteProgram sp = mSprites[j];
+				sp.setPosition(loc);
+				sp.render();
+			}
+			if (c == '\n') {
+				loc.x = location.x;
+				loc.y -= mBaseLineOffset;
+			} else {
+				loc.x += mAdvanceWidthI;
+			}
 		}
 	}
 

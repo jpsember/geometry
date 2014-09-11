@@ -21,19 +21,30 @@ public class GLSpriteProgram {
 	private static final int TOTAL_COMPONENTS = POSITION_COMPONENT_COUNT
 			+ TEXTURE_COMPONENT_COUNT;
 
+	/**
+	 * Must be called by onSurfaceCreated()
+	 * 
+	 * @param context
+	 */
 	public static void prepare(Context context) {
 		prepareShaders(context);
 		prepareProgram();
 		sPrepared = true;
 	}
 
-	public static void setProjection(Matrix m) {
+	/**
+	 * Set projection matrix to use for every sprite drawn to this view; should
+	 * be called by onSurfaceChanged()
+	 * 
+	 * @param projectionMatrix
+	 */
+	public static void setProjection(Matrix projectionMatrix) {
 		ensurePrepared();
 		glUseProgram(sProgramObjectId);
 
 		// Transform 2D screen->NDC matrix to a 3D version
 		float v3[] = new float[9];
-		m.getValues(v3);
+		projectionMatrix.getValues(v3);
 
 		float v4[] = new float[16];
 
@@ -138,13 +149,19 @@ public class GLSpriteProgram {
 		return row * 3 + col;
 	}
 
-
 	private static void ensurePrepared() {
 		if (!sPrepared)
 			throw new IllegalStateException("GLSpriteProgram not prepared");
-
 	}
 
+	/**
+	 * Constructor
+	 * 
+	 * @param texture
+	 *            texture containing sprite
+	 * @param textureWindow
+	 *            subrectangle within texture representing sprite
+	 */
 	public GLSpriteProgram(GLTexture texture, Rect textureWindow) {
 		ensurePrepared();
 		mTexture = texture;
@@ -185,23 +202,33 @@ public class GLSpriteProgram {
 		mVertexData = mMesh.asFloatBuffer();
 	}
 
-	private Point mPosition = new Point();
-
+	/**
+	 * Set offset of bottom left corner of sprite within view
+	 * 
+	 * @param x
+	 * @param y
+	 */
 	public void setPosition(float x, float y) {
 		mPosition.x = x;
 		mPosition.y = y;
 	}
 
 	/**
+	 * Set offset of bottom left corner of sprite within view
+	 */
+	public void setPosition(Point position) {
+		setPosition(position.x, position.y);
+	}
+
+	/**
+	 * Draw the sprite
 	 */
 	public void render() {
 		ASSERT(sMatrixPrepared);
 		glUseProgram(sProgramObjectId);
 
 		// Specify offset
-		{
-			glUniform2f(sSpritePositionLocation, mPosition.x, mPosition.y);
-		}
+		glUniform2f(sSpritePositionLocation, mPosition.x, mPosition.y);
 
 		mTexture.select();
 
@@ -209,25 +236,18 @@ public class GLSpriteProgram {
 		fb.position(0);
 		int stride = TOTAL_COMPONENTS * Mesh.BYTES_PER_FLOAT;
 
-		glVertexAttribPointer(sPositionLocation,
- POSITION_COMPONENT_COUNT,
-				GL_FLOAT, false, stride,
-				fb);
+		glVertexAttribPointer(sPositionLocation, POSITION_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(sPositionLocation);
 
 		fb.position(POSITION_COMPONENT_COUNT);
 		glVertexAttribPointer(sTextureCoordinateLocation,
-				TEXTURE_COMPONENT_COUNT, GL_FLOAT, false, stride,
-				fb);
+				TEXTURE_COMPONENT_COUNT, GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(sTextureCoordinateLocation);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	private FloatBuffer mVertexData;
-
 	private static boolean sPrepared;
-	private GLTexture mTexture;
-	private Rect mTextureWindow;
 	private static int sProgramObjectId;
 	private static int sPositionLocation;
 	private static int sTextureCoordinateLocation;
@@ -236,4 +256,9 @@ public class GLSpriteProgram {
 	private static GLShader sVertexShader;
 	private static GLShader sFragmentShader;
 	private static boolean sMatrixPrepared;
+
+	private FloatBuffer mVertexData;
+	private GLTexture mTexture;
+	private Rect mTextureWindow;
+	private Point mPosition = new Point();
 }

@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class GeometryActivity extends MyActivity {
+	public static final boolean ANIMATED = false;
 
 	private void testPolygonStuff() {
 		GeometryContext c = new GeometryContext(42);
@@ -36,15 +37,15 @@ public class GeometryActivity extends MyActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+		mAlgorithmStepper = AlgorithmStepper.sharedInstance();
+		mAlgorithmStepper.restoreInstanceState(savedInstanceState);
+
 		if (false)
 			testPolygonStuff();
 
-		if (savedInstanceState != null) {
-			restorePreviousSavedState(savedInstanceState);
-		}
-
 		if (supportsOpenGL20()) {
 			setContentView(buildContentView());
+
 		} else {
 			Toast.makeText(this, "This device does not support OpenGL ES 2.0",
 					Toast.LENGTH_LONG).show();
@@ -63,13 +64,11 @@ public class GeometryActivity extends MyActivity {
 		return supportsEs2;
 	}
 
-	private void restorePreviousSavedState(Bundle savedInstanceState) {
-	}
-
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
+		mAlgorithmStepper.saveInstanceState(outState);
 
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
@@ -88,6 +87,8 @@ public class GeometryActivity extends MyActivity {
 
 	@Override
 	protected void onDestroy() {
+		mAlgorithmStepper.destroy();
+
 		super.onDestroy();
 	}
 
@@ -134,12 +135,40 @@ public class GeometryActivity extends MyActivity {
 		layout.setOrientation(LinearLayout.VERTICAL);
 
 		buildOpenGLView();
-		// layout.addView(buildTestView());
 		layout.addView(mGLView);
 
-		mStepperView = buildControlsView();
-		layout.addView(mStepperView.view());
-		// layout.addView(buildTestView());
+		layout.addView(mAlgorithmStepper.controllerView(this));
+
+		mAlgorithmStepper.setDelegate(new AlgorithmStepper.Delegate() {
+
+			@Override
+			public void runAlgorithm() {
+				AlgorithmStepper s = AlgorithmStepper.sharedInstance();
+
+				// To synchronize between the UI (algorithm) and OpenGL thread,
+				// we'll just lock on this activity class. This is good enough
+				// for algorithm test purposes.
+
+				synchronized (GeometryActivity.class) {
+					int lastFrame = 40;
+					for (int i = 0; i <= lastFrame; i++) {
+						sAnimFrame = i;
+						if (s.update()) {
+							String prefix = "";
+							if (i % 3 == 2)
+								prefix = "*";
+							s.show(prefix + "Algorithm step #" + i);
+						}
+					}
+				}
+			}
+
+			@Override
+			public void displayResults() {
+				mGLView.requestRender();
+			}
+		});
+
 		return layout;
 	}
 
@@ -167,14 +196,9 @@ public class GeometryActivity extends MyActivity {
 	private void buildOpenGLView() {
 		mGLView = new OurGLSurfaceView(this);
 		mGLView.setSampleContext(mSampleContext);
-		if (true)
+		if (!ANIMATED)
 			mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		mGLView.setLayoutParams(layoutParams(false, true));
-	}
-
-	private AlgorithmStepperView buildControlsView() {
-		AlgorithmStepperView v = new AlgorithmStepperView(this);
-		return v;
 	}
 
 	/* private */View buildTestView() {
@@ -193,11 +217,13 @@ public class GeometryActivity extends MyActivity {
 		return v;
 	}
 
+	public static int sAnimFrame;
+
 	private static int sTestViewColors[] = { Color.DKGRAY, Color.GREEN,
 			Color.BLUE, Color.MAGENTA };
 
 	private int mTestViewCount;
 	private OurGLSurfaceView mGLView;
 	private GeometryContext mSampleContext;
-	private AlgorithmStepperView mStepperView;
+	private AlgorithmStepper mAlgorithmStepper;
 }

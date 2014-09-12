@@ -1,28 +1,33 @@
 package com.js.geometryapp;
 
-import com.js.geometry.MyMath;
-
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import static com.js.basic.Tools.*;
 
-public class AlgorithmStepperView {
+class AlgorithmStepperView {
 
 	private static final String BUTTON_JUMP_BWD = "<<";
 	private static final String BUTTON_JUMP_FWD = ">>";
 	private static final String BUTTON_STEP_BWD = "<";
 	private static final String BUTTON_STEP_FWD = ">";
 
-	public AlgorithmStepperView(Context context) {
+	public AlgorithmStepperView(Context context, AlgorithmStepper stepper) {
+		doNothing();
 		mContext = context;
-		setTotalSteps(100);
+		mStepperController = stepper;
+		mStepperController.setStepperView(this);
 	}
 
 	public void setTotalSteps(int totalSteps) {
-		mTotalSteps = totalSteps;
+		mSeekBar.setMax(totalSteps - 1);
+	}
+
+	public void setTargetStep(int s) {
+		mSeekBar.setProgress(s);
 	}
 
 	private LinearLayout linearLayout(boolean horizontal) {
@@ -32,31 +37,28 @@ public class AlgorithmStepperView {
 		return v;
 	}
 
-	public int totalSteps() {
-		return mTotalSteps;
-	}
-
 	private void buildSeekBar() {
 		SeekBar seekBar = new SeekBar(mContext);
 		mSeekBar = seekBar;
-		seekBar.setMax(totalSteps());
 
 		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-
+			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 			}
 
+			@Override
 			public void onStartTrackingTouch(SeekBar seekBar) {
 			}
 
+			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress,
 					boolean fromUser) {
-				mCurrentStep = progress;
+				mStepperController.setTargetStep(progress);
 			}
 		});
 	}
 
-	public View view() {
+	protected View view() {
 		if (mView == null) {
 			LinearLayout layout = linearLayout(true);
 			buildSeekBar();
@@ -83,18 +85,14 @@ public class AlgorithmStepperView {
 	}
 
 	private void processButtonPress(String label) {
-		int delta = 0;
 		if (label == BUTTON_STEP_FWD)
-			delta = 1;
+			mStepperController.adjustTargetStep(1);
 		else if (label == BUTTON_STEP_BWD)
-			delta = -1;
-		int val = currentStep() + delta;
-		val = MyMath.clamp(val, 0, totalSteps() - 1);
-		mSeekBar.setProgress(val);
-	}
-
-	public int currentStep() {
-		return mCurrentStep;
+			mStepperController.adjustTargetStep(-1);
+		else if (label == BUTTON_JUMP_FWD)
+			mStepperController.adjustDisplayedMilestone(1);
+		else if (label == BUTTON_JUMP_BWD)
+			mStepperController.adjustDisplayedMilestone(-1);
 	}
 
 	private Button button(final String label) {
@@ -108,9 +106,8 @@ public class AlgorithmStepperView {
 		return b;
 	}
 
-	private int mCurrentStep;
 	private SeekBar mSeekBar;
 	private View mView;
 	private Context mContext;
-	private int mTotalSteps;
+	private AlgorithmStepper mStepperController;
 }

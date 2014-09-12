@@ -21,6 +21,7 @@ public class OurGLSurfaceView extends GLSurfaceView {
 		mRenderer.setSampleContext(c);
 	}
 
+
 	@Override
 	public boolean onTouchEvent(final MotionEvent event) {
 

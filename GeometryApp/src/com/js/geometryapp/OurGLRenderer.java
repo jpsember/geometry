@@ -24,7 +24,6 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		mRotatingMesh = createMesh(0, 0);
 		mStaticMesh = createMesh(150, 300);
 		mPolyline = createPolyline();
-
 		doNothing();
 	}
 
@@ -90,6 +89,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public void onDrawFrame(GL10 gl) {
+
 		gl.glClearColor(mRed, mGreen, mBlue, 1.0f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
@@ -125,11 +125,14 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 			mProgram.render(mSampleContext, this, objectMatrix);
 		}
 
-		if (mSprite != null) {
-			Point pt = MyMath.pointOnCircle(new Point(250, 250), mRotation
-					* MyMath.M_DEG * 1.2f, 100);
-			mSprite.setPosition(pt.x, pt.y);
-			mSprite.render();
+		synchronized (GeometryActivity.class) {
+			int frame = GeometryActivity.sAnimFrame;
+			if (mSprite != null) {
+				Point pt = MyMath.pointOnCircle(new Point(250, 100), frame
+						* 7.0f * MyMath.M_DEG, 100);
+				mSprite.setPosition(pt.x, pt.y);
+				mSprite.render();
+			}
 		}
 
 		if (mFont != null) {

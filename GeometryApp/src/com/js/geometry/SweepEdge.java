@@ -27,12 +27,29 @@ public class SweepEdge {
 		return sb.toString();
 	}
 
+	/**
+	 * Calculate intersection point of edge with horizontal sweep line
+	 * 
+	 * @param sweepLinePosition
+	 * @param context
+	 * @param clampWithinRange
+	 *            if true, clamps sweep line to lie within edge's vertical range
+	 * @return intersection point
+	 */
 	public Point positionOnSweepLine(float sweepLinePosition,
-			GeometryContext context) {
+			GeometryContext context, boolean clampWithinRange) {
 		Edge edge = mPolygonEdge;
 
-		Point ipt = context.segHorzLineIntersection(edge.destVertex().point(),
-				edge.sourceVertex().point(), sweepLinePosition);
+		Point v1 = edge.sourceVertex().point();
+		Point v2 = edge.destVertex().point();
+
+		if (clampWithinRange) {
+			float y0 = Math.min(v1.y, v2.y);
+			float y1 = Math.max(v1.y, v2.y);
+			sweepLinePosition = MyMath.clamp(sweepLinePosition, y0, y1);
+		}
+
+		Point ipt = context.segHorzLineIntersection(v1, v2, sweepLinePosition);
 
 		if (context.checkError(ipt == null)) {
 			GeometryException.raise("Sweep " + d(sweepLinePosition)

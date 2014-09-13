@@ -11,8 +11,8 @@ public class Polyline {
 
 	public Polyline() {
 		setColor(.3f, .3f, .9f);
-		if (false)
-			pr("suppress warning");
+		setLineWidth(1.0f);
+		doNothing();
 	}
 
 	/**
@@ -26,6 +26,14 @@ public class Polyline {
 		mRed = r;
 		mGreen = g;
 		mBlue = b;
+	}
+
+	public void setLineWidth(float lineWidth) {
+		mLineWidth = lineWidth;
+	}
+
+	public float lineWidth() {
+		return mLineWidth;
 	}
 
 	public void add(Point vertexLocation) {
@@ -66,5 +74,5 @@ public class Polyline {
 	private FloatArray mArray = new FloatArray();
 	private FloatBuffer mBuffer;
 	private boolean mClosed;
-
+	private float mLineWidth;
 }

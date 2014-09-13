@@ -10,13 +10,7 @@ public class AlgDisplayPoint extends AlgDisplayElement {
 
 	@Override
 	public void render() {
-		int r = 5;
-		extendPolyline(mPoint.x - r, mPoint.y - r);
-		extendPolyline(mPoint.x + r, mPoint.y - r);
-		extendPolyline(mPoint.x + r, mPoint.y + r);
-		extendPolyline(mPoint.x - r, mPoint.y + r);
-		closePolyline();
-		renderPolyline();
+		renderPoint(mPoint);
 	}
 
 	private Point mPoint;

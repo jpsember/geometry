@@ -268,7 +268,7 @@ public class GLProgram {
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(mColorLocation);
 
-		glLineWidth(2.0f);
+		glLineWidth(p.lineWidth());
 
 		glDrawArrays(p.isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
 				p.vertexCount());

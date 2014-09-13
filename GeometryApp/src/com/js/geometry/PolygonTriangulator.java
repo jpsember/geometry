@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import com.js.basic.Queue;
+import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 
 /**
@@ -54,8 +55,11 @@ public class PolygonTriangulator {
 		mStepper.show(message);
 	}
 
+	private static final String BGND_ELEMENT_POLYGON = "Polygon";
+	private static final String BGND_ELEMENT_SWEEPSTATUS = "Status";
+
 	public void triangulate() {
-		mStepper.plotToBackground("Polygon");
+		mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
 		mStepper.plot(mPolygon);
 
 		if (update())
@@ -68,8 +72,8 @@ public class PolygonTriangulator {
 		for (Vertex v : mVertexEvents) {
 			processVertexEvent(v);
 		}
-
-		mStepper.removeBackgroundElement("Polygon");
+		mStepper.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
+		mStepper.removeBackgroundElement(BGND_ELEMENT_POLYGON);
 		if (update())
 			show("*Done triagulating polygon");
 
@@ -79,11 +83,16 @@ public class PolygonTriangulator {
 		mSweepStatus = new TreeSet<SweepEdge>(new Comparator<SweepEdge>() {
 			@Override
 			public int compare(SweepEdge a, SweepEdge b) {
-				Point sa = a.positionOnSweepLine(mSweepLinePosition, mContext);
-				Point sb = b.positionOnSweepLine(mSweepLinePosition, mContext);
+				Point sa = a.positionOnSweepLine(mSweepLinePosition, mContext,
+						false);
+				Point sb = b.positionOnSweepLine(mSweepLinePosition, mContext,
+						false);
 				return (int) Math.signum(sa.x - sb.x);
 			}
 		});
+		mSweepLineVisible = false;
+		mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
+		mStepper.plotElement(new AlgDisplaySweepStatus());
 	}
 
 	private void createEventList() {
@@ -107,6 +116,7 @@ public class PolygonTriangulator {
 
 	private void moveSweepLineTo(float y) {
 		mSweepLinePosition = y;
+		mSweepLineVisible = true;
 	}
 
 	private Edge polygonEdgeLeavingVertex(Vertex vertex) {
@@ -382,11 +392,41 @@ public class PolygonTriangulator {
 		}
 	}
 
+	/**
+	 * Custom display element for sweep status
+	 */
+	private class AlgDisplaySweepStatus extends AlgDisplayElement {
+
+		@Override
+		public void render() {
+			if (!mSweepLineVisible)
+				return;
+			renderLine(0, mSweepLinePosition, 1000, mSweepLinePosition);
+			for (SweepEdge e : mSweepStatus) {
+
+				// Extrapolate a little above and below the sweep line
+				setLineWidthState(8.0f);
+				float EXTENT = 20;
+				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT,
+						mContext, true);
+				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT,
+						mContext, true);
+				renderLine(p1, p2);
+
+				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,
+						false);
+				renderPoint(pt);
+
+			}
+		}
+	}
+
 	private AlgorithmStepper mStepper;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;
 	private TreeSet<SweepEdge> mSweepStatus;
+	private boolean mSweepLineVisible;
 	private float mSweepLinePosition;
 	private Queue<Vertex> mMonotoneQueue;
 	private ArrayList<Vertex> mVertexList;

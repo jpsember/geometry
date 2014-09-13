@@ -4,6 +4,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 
 public class AlgDisplayRay extends AlgDisplayElement {
+
 	public AlgDisplayRay(Point p1, Point p2) {
 		mPoint1 = p1;
 		mPoint2 = p2;
@@ -11,6 +12,8 @@ public class AlgDisplayRay extends AlgDisplayElement {
 
 	@Override
 	public void render() {
+
+		setLineWidthState(lineWidth());
 
 		extendPolyline(mPoint1);
 		extendPolyline(mPoint2);

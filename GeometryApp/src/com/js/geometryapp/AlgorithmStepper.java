@@ -116,7 +116,7 @@ public class AlgorithmStepper {
 				addMilestone(mCurrentStep - 1);
 			}
 		} else {
-			sFrameTitle = displayedMessageString;
+			mFrameTitle = displayedMessageString;
 			throw new DesiredStepReachedException("reached desired step; "
 					+ displayedMessageString);
 		}
@@ -129,6 +129,33 @@ public class AlgorithmStepper {
 	public void destroy() {
 		mTotalStepsKnown = false;
 		mStepperView = null;
+	}
+
+	/**
+	 * Add an element to be displayed with this algorithm frame
+	 * 
+	 * @param element
+	 * @return an empty string, as a convenience so elements can be added as a
+	 *         side effect of constructing show(...) message arguments
+	 */
+	public String plotElement(AlgDisplayElement element) {
+		mDisplayElements.add(element);
+		return "";
+	}
+
+	/**
+	 * Render algorithm frame, by plotting (and disposing of) any added
+	 * elements, as well as the frame's title
+	 */
+	public void render() {
+		for (AlgDisplayElement element : mDisplayElements) {
+			element.render();
+		}
+		mDisplayElements.clear();
+		if (mFrameTitle != null) {
+			AlgDisplayElement.renderFrameTitle(mFrameTitle);
+			mFrameTitle = null;
+		}
 	}
 
 	public String plotRay(Point p1, Point p2) {
@@ -243,30 +270,15 @@ public class AlgorithmStepper {
 		return mTotalSteps;
 	}
 
-	protected static void clearDisplayList() {
-		sDisplayElements.clear();
+	private void clearDisplayList() {
+		mDisplayElements.clear();
 	}
 
-	public static String plotElement(AlgDisplayElement element) {
-		sDisplayElements.add(element);
-		return "";
-	}
-
-	public void render() {
-		for (AlgDisplayElement element : sDisplayElements) {
-			element.render();
-		}
-		sDisplayElements.clear();
-		if (sFrameTitle != null) {
-			AlgDisplayElement.renderFrameTitle(sFrameTitle);
-			sFrameTitle = null;
-		}
-	}
-
+	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
-	private static ArrayList<AlgDisplayElement> sDisplayElements = new ArrayList();
-	private static String sFrameTitle;
 
+	private ArrayList<AlgDisplayElement> mDisplayElements = new ArrayList();
+	private String mFrameTitle;
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private int mTargetStep;

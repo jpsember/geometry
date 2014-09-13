@@ -85,6 +85,8 @@ class AlgorithmStepperView {
 	}
 
 	private void processButtonPress(String label) {
+		mStepperController.verifyDelegateDefined();
+
 		if (label == BUTTON_STEP_FWD)
 			mStepperController.adjustTargetStep(1);
 		else if (label == BUTTON_STEP_BWD)

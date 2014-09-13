@@ -13,9 +13,8 @@ public class Mesh {
 	public static final int COLOR_COMPONENT_COUNT = 3; // r g b
 
 	public Mesh() {
+		doNothing();
 		setColor(.3f, .3f, .9f);
-		if (false)
-			pr("suppress warning");
 	}
 
 	/**

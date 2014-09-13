@@ -159,7 +159,6 @@ public class GLProgram {
 		}
 	}
 
-	static boolean fOneTimeOnly;
 	static FloatBuffer tempBuffer;
 	static int tempBufferUsed;
 
@@ -171,11 +170,6 @@ public class GLProgram {
 	 */
 	public void render(GeometryContext c, OurGLRenderer renderer,
 			Matrix transform) {
-
-		final boolean db = false; // !fOneTimeOnly;
-		fOneTimeOnly = true;
-		if (db)
-			pr("render GeometryContext");
 		glUseProgram(getId());
 
 		glLineWidth(1.8f);
@@ -274,7 +268,7 @@ public class GLProgram {
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(mColorLocation);
 
-		glLineWidth(8.0f);
+		glLineWidth(2.0f);
 
 		glDrawArrays(p.isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
 				p.vertexCount());

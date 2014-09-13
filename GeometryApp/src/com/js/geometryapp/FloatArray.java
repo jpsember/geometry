@@ -7,13 +7,10 @@ import java.util.Arrays;
 
 import com.js.geometry.Point;
 
-import static com.js.basic.Tools.*;
-
 
 public class FloatArray {
 
 	public void add(float f) {
-		// pr("add " + f + " (size=" + mSize + ")");
 		growTo(mSize + 1);
 		mArray[mSize] = f;
 		mSize += 1;
@@ -40,8 +37,6 @@ public class FloatArray {
 	}
 
 	public int size() {
-		if (false)
-			pr("ignore unused warning");
 		return mSize;
 	}
 

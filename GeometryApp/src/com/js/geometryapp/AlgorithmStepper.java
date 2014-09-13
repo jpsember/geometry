@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.js.geometry.MyMath;
+import com.js.geometry.Point;
 
 public class AlgorithmStepper {
 
@@ -55,6 +56,15 @@ public class AlgorithmStepper {
 	}
 
 	/**
+	 * Print a warning if no delegate has been defined
+	 */
+	protected void verifyDelegateDefined() {
+		if (mDelegate == null) {
+			warning("no algorithm delegate defined");
+		}
+	}
+
+	/**
 	 * Get the stepper controller view, constructing it if necessary
 	 * 
 	 * @param context
@@ -81,6 +91,7 @@ public class AlgorithmStepper {
 			return true;
 		} else {
 			if (mCurrentStep == mTargetStep) {
+				clearDisplayList();
 				return true;
 			}
 		}
@@ -102,9 +113,10 @@ public class AlgorithmStepper {
 		if (!mTotalStepsKnown) {
 			// We're only examining the message to see if it's a milestone
 			if (displayedMessageString != messageString) {
-				addMilestone(mCurrentStep);
+				addMilestone(mCurrentStep - 1);
 			}
 		} else {
+			sFrameTitle = displayedMessageString;
 			throw new DesiredStepReachedException("reached desired step; "
 					+ displayedMessageString);
 		}
@@ -117,6 +129,10 @@ public class AlgorithmStepper {
 	public void destroy() {
 		mTotalStepsKnown = false;
 		mStepperView = null;
+	}
+
+	public String plotRay(Point p1, Point p2) {
+		return plotElement(new AlgDisplayRay(p1, p2));
 	}
 
 	/**
@@ -227,7 +243,29 @@ public class AlgorithmStepper {
 		return mTotalSteps;
 	}
 
+	protected static void clearDisplayList() {
+		sDisplayElements.clear();
+	}
+
+	public static String plotElement(AlgDisplayElement element) {
+		sDisplayElements.add(element);
+		return "";
+	}
+
+	protected static void render() {
+		for (AlgDisplayElement element : sDisplayElements) {
+			element.render();
+		}
+		sDisplayElements.clear();
+		if (sFrameTitle != null) {
+			AlgDisplayElement.renderFrameTitle(sFrameTitle);
+			sFrameTitle = null;
+		}
+	}
+
 	private static AlgorithmStepper sStepper;
+	private static ArrayList<AlgDisplayElement> sDisplayElements = new ArrayList();
+	private static String sFrameTitle;
 
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();

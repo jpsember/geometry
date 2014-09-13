@@ -56,5 +56,4 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
 	private int sAnimFrame;
 	private GLSurfaceView mView;
-
 }

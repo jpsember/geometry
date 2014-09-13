@@ -11,6 +11,7 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgDisplayElement;
+import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLProgram;
 import com.js.geometryapp.GLShader;
 import com.js.geometryapp.GLSpriteProgram;
@@ -26,6 +27,7 @@ public class SampleRenderer extends OurGLRenderer {
 
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
 		super(context);
+		mStepper = AlgorithmStepper.sharedInstance();
 		mRotatingMesh = createMesh(0, 0);
 		mStaticMesh = createMesh(150, 300);
 		mPolyline = createPolyline();
@@ -37,6 +39,9 @@ public class SampleRenderer extends OurGLRenderer {
 		super.onSurfaceCreated(gl, config);
 
 		disposeResources();
+
+		// Let the algorithm stepper elements prepare using this renderer
+		AlgDisplayElement.setRenderer(this);
 
 		mVertexShader = GLShader.readVertexShader(context(),
 				R.raw.simple_vertex_shader);
@@ -84,7 +89,7 @@ public class SampleRenderer extends OurGLRenderer {
 		}
 
 		synchronized (mAlgorithm) {
-			AlgDisplayElement.renderAlgorithm(this);
+			mStepper.render();
 
 			int frame = mAlgorithm.getFrameNumber();
 			if (mSprite != null) {
@@ -163,14 +168,11 @@ public class SampleRenderer extends OurGLRenderer {
 	private Mesh mRotatingMesh;
 	private Mesh mStaticMesh;
 	private Polyline mPolyline;
-
 	private GLShader mVertexShader;
 	private GLShader mFragmentShader;
 	private GLProgram mProgram;
-
 	private GeometryContext mSampleContext;
-
 	private GLSpriteProgram mSprite;
-
 	private SampleAlgorithm mAlgorithm;
+	private AlgorithmStepper mStepper;
 }

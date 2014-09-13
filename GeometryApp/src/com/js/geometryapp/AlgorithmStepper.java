@@ -252,7 +252,7 @@ public class AlgorithmStepper {
 		return "";
 	}
 
-	protected static void render() {
+	public void render() {
 		for (AlgDisplayElement element : sDisplayElements) {
 			element.render();
 		}

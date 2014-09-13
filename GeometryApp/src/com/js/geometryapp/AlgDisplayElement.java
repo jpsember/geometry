@@ -4,7 +4,6 @@ import android.content.Context;
 
 import com.js.geometry.Point;
 import com.js.geometry.R;
-import static com.js.basic.Tools.*;
 
 public abstract class AlgDisplayElement {
 
@@ -27,24 +26,21 @@ public abstract class AlgDisplayElement {
 		sPolyline = null;
 	}
 
-	private static void prepareRenderer(OurGLRenderer renderer) {
+	/**
+	 * Have the algorithm stepper display elements prepare to use an OpenGL
+	 * renderer; i.e. setting up shaders and fonts. Should be called within
+	 * onSurfaceCreated(...)
+	 */
+	public static void setRenderer(OurGLRenderer renderer) {
+		OurGLRenderer.ensureOpenGLThread();
 		sRenderer = renderer;
 		Context sContext = renderer.context();
-		// GLSpriteProgram.prepare(sContext);
 		sVertexShader = GLShader.readVertexShader(sContext,
 				R.raw.simple_vertex_shader);
 		sFragmentShader = GLShader.readFragmentShader(sContext,
 				R.raw.simple_fragment_shader);
 		sProgram = GLProgram.build(sVertexShader, sFragmentShader);
 		sFont = new Font(24);
-	}
-
-	public static void renderAlgorithm(OurGLRenderer ourGLRenderer) {
-		unimp("need some ability to shut this down");
-		if (ourGLRenderer != sRenderer) {
-			prepareRenderer(ourGLRenderer);
-		}
-		AlgorithmStepper.render();
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {

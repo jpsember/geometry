@@ -3,6 +3,9 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -10,6 +13,7 @@ import android.view.View;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Polygon;
 
 public class AlgorithmStepper {
 
@@ -83,19 +87,19 @@ public class AlgorithmStepper {
 	 * algorithm; should be followed by a call to update() if this returns true
 	 */
 	public boolean update() {
-		if (!mTotalStepsKnown) {
-			// We need to see what the message is, to determine if it's a
-			// milestone. We won't throw an exception to end the algorithm
-			// in this case.
-			mCurrentStep++;
-			return true;
-		} else {
-			if (mCurrentStep == mTargetStep) {
+		if (isActive()) {
+			if (!mTotalStepsKnown) {
+				// We need to see what the message is, to determine if it's a
+				// milestone. We won't throw an exception to end the algorithm
+				// in this case.
+				mCurrentStep++;
+				return true;
+			} else if (mCurrentStep == mTargetStep) {
 				clearDisplayList();
 				return true;
 			}
+			mCurrentStep++;
 		}
-		mCurrentStep++;
 		return false;
 	}
 
@@ -139,7 +143,14 @@ public class AlgorithmStepper {
 	 *         side effect of constructing show(...) message arguments
 	 */
 	public String plotElement(AlgDisplayElement element) {
-		mDisplayElements.add(element);
+		// If there's an active background plot key, store as background element
+		// instead of adding to this frame
+		if (mNextPlotKey != null) {
+			mBackgroundElements.put(mNextPlotKey, element);
+			mNextPlotKey = null;
+		} else {
+			mDisplayElements.add(element);
+		}
 		return "";
 	}
 
@@ -148,6 +159,7 @@ public class AlgorithmStepper {
 	 * elements, as well as the frame's title
 	 */
 	public void render() {
+		renderBackgroundElements();
 		for (AlgDisplayElement element : mDisplayElements) {
 			element.render();
 		}
@@ -158,8 +170,52 @@ public class AlgorithmStepper {
 		}
 	}
 
+	/**
+	 * Render persistent (background) elements, in order of sorted keys
+	 */
+	private void renderBackgroundElements() {
+		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
+		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
+		for (String key : keys) {
+			AlgDisplayElement element = mBackgroundElements.get(key);
+			element.render();
+		}
+	}
+
+	/**
+	 * Add the next plotted element to the background (if algorithm is active)
+	 * 
+	 * @param key
+	 *            key to identify this background element from others
+	 */
+	public void plotToBackground(String key) {
+		if (!isActive())
+			return;
+		mNextPlotKey = key;
+	}
+
+	/**
+	 * Remove a background element (if algorithm is active)
+	 * 
+	 * @param key
+	 *            element key
+	 */
+	public void removeBackgroundElement(String key) {
+		if (!isActive())
+			return;
+		mBackgroundElements.remove(key);
+	}
+
 	public String plotRay(Point p1, Point p2) {
 		return plotElement(new AlgDisplayRay(p1, p2));
+	}
+
+	public String plot(Point point) {
+		return plotElement(new AlgDisplayPoint(point));
+	}
+
+	public String plot(Polygon polygon) {
+		return plotElement(new AlgDisplayPolygon(polygon));
 	}
 
 	/**
@@ -173,19 +229,25 @@ public class AlgorithmStepper {
 	}
 
 	private void performAlgorithm() {
-		mCurrentStep = 0;
-
-		if (!mTotalStepsKnown) {
-			mMilestones.clear();
-			addMilestone(mCurrentStep);
-		}
-
 		try {
+			setActive(true);
+
+			mCurrentStep = 0;
+			mNextPlotKey = null;
+			mBackgroundElements.clear();
+
+			if (!mTotalStepsKnown) {
+				mMilestones.clear();
+				addMilestone(mCurrentStep);
+			}
+
 			mDelegate.runAlgorithm();
 			if (!mTotalStepsKnown) {
 				addMilestone(mCurrentStep);
 			}
 		} catch (DesiredStepReachedException e) {
+		} finally {
+			setActive(false);
 		}
 	}
 
@@ -274,17 +336,29 @@ public class AlgorithmStepper {
 		mDisplayElements.clear();
 	}
 
+	private void setActive(boolean active) {
+		mActive = active;
+	}
+
+	private boolean isActive() {
+		return mActive;
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 
 	private ArrayList<AlgDisplayElement> mDisplayElements = new ArrayList();
+	private Map<String, AlgDisplayElement> mBackgroundElements = new HashMap();
 	private String mFrameTitle;
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private int mTargetStep;
 	private int mCurrentStep;
 	private int mTotalSteps;
+	// If false, all calls to update() return false
+	private boolean mActive;
 	private boolean mTotalStepsKnown;
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
+	private String mNextPlotKey;
 }

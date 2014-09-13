@@ -21,6 +21,14 @@ public abstract class AlgDisplayElement {
 		sPolyline.add(point);
 	}
 
+	public static void extendPolyline(float x, float y) {
+		extendPolyline(new Point(x, y));
+	}
+
+	public static void closePolyline() {
+		sPolyline.close();
+	}
+
 	public static void renderPolyline() {
 		sProgram.render(sPolyline, sRenderer, null);
 		sPolyline = null;

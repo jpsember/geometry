@@ -35,6 +35,11 @@ public class Polygon {
 	public Polygon() {
 	}
 
+	public Polygon(Polygon polygon) {
+		for (int i = 0; i < polygon.numVertices(); i++)
+			add(polygon.vertex(i));
+	}
+
 	private static ArrayList<String> extractTokens(String s) {
 		ArrayList<String> list = new ArrayList();
 		StringTokenizer st = new StringTokenizer(s);

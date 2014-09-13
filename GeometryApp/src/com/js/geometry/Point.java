@@ -20,6 +20,10 @@ public final class Point {
 		this.y = y;
 	}
 
+	public Point(Point point) {
+		this(point.x, point.y);
+	}
+
 	public float x() {
 		return x;
 	}

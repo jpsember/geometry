@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import com.js.basic.Queue;
+import com.js.geometryapp.AlgorithmStepper;
 
 /**
  * Triangulates a polygon.
@@ -23,6 +24,7 @@ public class PolygonTriangulator {
 	}
 
 	private PolygonTriangulator(GeometryContext context, Polygon polygon) {
+		mStepper = AlgorithmStepper.sharedInstance();
 		mContext = context;
 		mPolygon = polygon;
 		ASSERT(polygon.isCCW(context));
@@ -44,7 +46,21 @@ public class PolygonTriangulator {
 	private static final int VTYPE_SPLIT = 4;
 	private static final int VTYPE_MERGE = 5;
 
+	private boolean update() {
+		return mStepper.update();
+	}
+
+	private void show(Object message) {
+		mStepper.show(message);
+	}
+
 	public void triangulate() {
+		mStepper.plotToBackground("Polygon");
+		mStepper.plot(mPolygon);
+
+		if (update())
+			show("*Triangulating polygon");
+
 		mPolygonMeshBase = mPolygon.embed(mContext);
 		createEventList();
 		createSweepStatus();
@@ -52,6 +68,11 @@ public class PolygonTriangulator {
 		for (Vertex v : mVertexEvents) {
 			processVertexEvent(v);
 		}
+
+		mStepper.removeBackgroundElement("Polygon");
+		if (update())
+			show("*Done triagulating polygon");
+
 	}
 
 	private void createSweepStatus() {
@@ -189,9 +210,9 @@ public class PolygonTriangulator {
 	}
 
 	private void processVertexEvent(Vertex vertex) {
-		final boolean db = false;
-		if (db)
-			pr("processVertexEvent " + vertex);
+		if (update())
+			show("processVertexEvent" + mStepper.plot(vertex.point()));
+
 		moveSweepLineTo(vertex.point().y);
 		Edge edges[] = new Edge[2];
 		polygonEdgesThroughVertex(vertex, edges);
@@ -361,6 +382,7 @@ public class PolygonTriangulator {
 		}
 	}
 
+	private AlgorithmStepper mStepper;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;

@@ -159,8 +159,10 @@ public class AlgorithmStepper {
 	/**
 	 * Render algorithm frame, by plotting (and disposing of) any added
 	 * elements, as well as the frame's title
+	 * 
+	 * Sychronized in case renderer is running in non-UI (e.g. OpenGL) thread
 	 */
-	public void render() {
+	public synchronized void render() {
 		renderBackgroundElements();
 		for (AlgDisplayElement element : mDisplayElements) {
 			element.render();
@@ -180,8 +182,10 @@ public class AlgorithmStepper {
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
 			AlgDisplayElement element = mBackgroundElements.get(key);
-			if (element == null) {
-				warning("element is null for key " + key);
+			if (element == null) { // Issue #19: probably fixed now
+				warning("element is null for key '" + key + "' : keys="
+						+ d(keys) + " elements=" + d(mBackgroundElements)
+						+ " elem=" + nameOf(mBackgroundElements));
 				return;
 			}
 			element.render();
@@ -232,7 +236,6 @@ public class AlgorithmStepper {
 		return plotElement(new AlgDisplayPoint(point, radius));
 	}
 
-
 	public String plot(Polygon polygon) {
 		return plotElement(new AlgDisplayPolygon(polygon));
 	}
@@ -261,7 +264,10 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private void performAlgorithm() {
+	/**
+	 * Synchronized in case renderer is running in different thread
+	 */
+	private synchronized void performAlgorithm() {
 		try {
 			setActive(true);
 

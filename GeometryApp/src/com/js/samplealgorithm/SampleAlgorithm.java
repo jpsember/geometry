@@ -11,26 +11,18 @@ import com.js.geometryapp.AlgorithmStepper;
 
 public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
-
 	public void setView(GLSurfaceView view) {
 		mView = view;
 	}
 
 	@Override
 	public void runAlgorithm() {
+		prepareInput();
 
-		// To synchronize between the UI (algorithm) and OpenGL thread,
-		// we'll just lock on the algorithm object. This is good enough
-		// for test purposes.
+		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
+				mPolygon);
 
-		synchronized (this) {
-			prepareInput();
-
-			PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
-					mPolygon);
-			
-			t.triangulate();
-		}
+		t.triangulate();
 	}
 
 	@Override

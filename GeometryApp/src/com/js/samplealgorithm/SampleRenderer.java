@@ -49,16 +49,14 @@ public class SampleRenderer extends OurGLRenderer {
 			mProgram.render(mSampleContext, this, objectMatrix);
 		}
 
-		synchronized (mAlgorithm) {
-			mStepper.render();
+		mStepper.render();
 
-			int frame = mAlgorithm.getFrameNumber();
-			if (mSprite != null) {
-				Point pt = MyMath.pointOnCircle(new Point(250, 100), frame
-						* 7.0f * MyMath.M_DEG, 100);
-				mSprite.setPosition(pt.x, pt.y);
-				mSprite.render();
-			}
+		int frame = mAlgorithm.getFrameNumber();
+		if (mSprite != null) {
+			Point pt = MyMath.pointOnCircle(new Point(250, 100), frame * 7.0f
+					* MyMath.M_DEG, 100);
+			mSprite.setPosition(pt.x, pt.y);
+			mSprite.render();
 		}
 	}
 

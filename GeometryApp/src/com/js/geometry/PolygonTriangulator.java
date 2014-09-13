@@ -416,7 +416,6 @@ public class PolygonTriangulator {
 				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,
 						false);
 				renderPoint(pt);
-
 			}
 		}
 	}

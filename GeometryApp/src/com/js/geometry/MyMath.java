@@ -230,15 +230,24 @@ public final class MyMath {
 
 	public static Matrix calcRectFitRectTransform(Rect originalRect,
 			Rect fitRect) {
-		float scale = Math.min(fitRect.width / originalRect.width,
-				fitRect.height / originalRect.height);
-		float unusedX = fitRect.width - scale * originalRect.width;
-		float unusedY = fitRect.height - scale * originalRect.height;
+		return calcRectFitRectTransform(originalRect, fitRect, true);
+	}
+
+	public static Matrix calcRectFitRectTransform(Rect originalRect,
+			Rect fitRect, boolean preserveAspectRatio) {
+		float scaleX = fitRect.width / originalRect.width;
+		float scaleY = fitRect.height / originalRect.height;
+		if (preserveAspectRatio) {
+			scaleX = Math.min(scaleX, scaleY);
+			scaleY = scaleX;
+		}
+		float unusedX = fitRect.width - scaleX * originalRect.width;
+		float unusedY = fitRect.height - scaleY * originalRect.height;
 
 		Matrix tTranslate1 = new Matrix();
 		tTranslate1.setTranslate(-originalRect.x, -originalRect.y);
 		Matrix tScale = new Matrix();
-		tScale.setScale(scale, scale);
+		tScale.setScale(scaleX, scaleY);
 		Matrix tTranslate2 = new Matrix();
 		tTranslate2.setTranslate(fitRect.x + unusedX / 2, fitRect.y + unusedY
 				/ 2);

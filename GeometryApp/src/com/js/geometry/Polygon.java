@@ -163,7 +163,7 @@ public class Polygon {
 
 		int pad = 80;
 		poly.transformToFitRect(new Rect(pad, pad, 1400 - pad * 2,
-				1000 - pad * 2));
+				1000 - pad * 2), true);
 		return poly;
 	}
 
@@ -435,9 +435,10 @@ public class Polygon {
 		apply(m);
 	}
 
-	public void transformToFitRect(Rect rect) {
+	public void transformToFitRect(Rect rect, boolean preserveAspectRatio) {
 		Rect bounds = bounds();
-		Matrix t = MyMath.calcRectFitRectTransform(bounds, rect);
+		Matrix t = MyMath.calcRectFitRectTransform(bounds, rect,
+				preserveAspectRatio);
 		apply(t);
 	}
 

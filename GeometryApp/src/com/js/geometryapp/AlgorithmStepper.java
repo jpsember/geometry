@@ -11,9 +11,11 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 
+import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.Vertex;
 
 public class AlgorithmStepper {
 
@@ -178,6 +180,10 @@ public class AlgorithmStepper {
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
 			AlgDisplayElement element = mBackgroundElements.get(key);
+			if (element == null) {
+				warning("element is null for key " + key);
+				return;
+			}
 			element.render();
 		}
 	}
@@ -210,12 +216,39 @@ public class AlgorithmStepper {
 		return plotElement(new AlgDisplayRay(p1, p2));
 	}
 
-	public String plot(Point point) {
-		return plotElement(new AlgDisplayPoint(point));
+	public String plotLine(Point p1, Point p2) {
+		return plotElement(new AlgDisplayLine(p1, p2));
 	}
+
+	public String plot(Point point) {
+		return plot(point, 3.0f);
+	}
+
+	public String plot(Vertex vertex) {
+		return plot(vertex.point());
+	}
+
+	public String plot(Point point, float radius) {
+		return plotElement(new AlgDisplayPoint(point, radius));
+	}
+
 
 	public String plot(Polygon polygon) {
 		return plotElement(new AlgDisplayPolygon(polygon));
+	}
+
+	public String plot(GeometryContext meshContext) {
+		return plotElement(new AlgDisplayMesh(meshContext));
+	}
+
+	public String setColor(int color) {
+		AlgDisplayElement.setColorState(color);
+		return "";
+	}
+
+	public String setLineWidth(float lineWidth) {
+		AlgDisplayElement.setLineWidthState(lineWidth);
+		return "";
 	}
 
 	/**

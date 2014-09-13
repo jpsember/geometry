@@ -1,21 +1,26 @@
 package com.js.geometryapp;
 
 import android.content.Context;
+import android.graphics.Color;
 
+import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import static com.js.basic.Tools.*;
 
 public abstract class AlgDisplayElement {
 
 	public AlgDisplayElement() {
+		doNothing();
 		mLineWidth = sLineWidth;
+		mColor = sColor;
 	}
 
 	public abstract void render();
 
 	public static void startPolyline(Point point) {
 		sPolyline = new Polyline();
-		sPolyline.setColor(1.0f, 0.3f, 0.3f);
+		sPolyline.setColor(sColor);
 		sPolyline.setLineWidth(sLineWidth);
 		extendPolyline(point);
 	}
@@ -49,6 +54,24 @@ public abstract class AlgDisplayElement {
 		renderLine(p1.x, p1.y, p2.x, p2.y);
 	}
 
+	public static void renderRay(Point p1, Point p2) {
+		extendPolyline(p1);
+		extendPolyline(p2);
+		renderPolyline();
+		float angleOfRay = MyMath.polarAngleOfSegment(p1, p2);
+
+		float arrowHeadAngle = MyMath.PI * .8f;
+		float arrowHeadLength = 15.0f;
+		Point p3 = MyMath.pointOnCircle(p2, angleOfRay - arrowHeadAngle,
+				arrowHeadLength);
+		Point p4 = MyMath.pointOnCircle(p2, angleOfRay + arrowHeadAngle,
+				arrowHeadLength);
+		extendPolyline(p3);
+		extendPolyline(p2);
+		extendPolyline(p4);
+		renderPolyline();
+	}
+
 	/**
 	 * Set the line width state (as opposed to an instance's line width)
 	 * 
@@ -58,14 +81,21 @@ public abstract class AlgDisplayElement {
 		sLineWidth = lineWidth;
 	}
 
+	public static void setColorState(int color) {
+		sColor = color;
+	}
+
 	public static void renderPoint(Point point) {
+		renderPoint(point, 3.0f);
+	}
+
+	public static void renderPoint(Point point, float radius) {
 		setLineWidthState(2.0f);
 
-		int pointSize = 5;
-		extendPolyline(point.x - pointSize, point.y - pointSize);
-		extendPolyline(point.x + pointSize, point.y - pointSize);
-		extendPolyline(point.x + pointSize, point.y + pointSize);
-		extendPolyline(point.x - pointSize, point.y + pointSize);
+		extendPolyline(point.x - radius, point.y - radius);
+		extendPolyline(point.x + radius, point.y - radius);
+		extendPolyline(point.x + radius, point.y + radius);
+		extendPolyline(point.x - radius, point.y + radius);
 		closePolyline();
 		renderPolyline();
 	}
@@ -86,13 +116,14 @@ public abstract class AlgDisplayElement {
 		sProgram = GLProgram.build(sVertexShader, sFragmentShader);
 		sFont = new Font(24);
 		sLineWidth = 1.0f;
+		sColor = Color.WHITE;
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
 		sFont.render(sFrameTitle, new Point(10, 10 + sFont.lineHeight()));
 	}
 
-	public void setLineWidth0(float lineWidth) {
+	public void setLineWidth(float lineWidth) {
 		mLineWidth = lineWidth;
 	}
 
@@ -100,6 +131,15 @@ public abstract class AlgDisplayElement {
 		return mLineWidth;
 	}
 
+	public int color() {
+		return mColor;
+	}
+
+	public void setColor(int color) {
+		mColor = color;
+	}
+
+	private int mColor;
 	private float mLineWidth;
 
 	private static Font sFont;
@@ -109,4 +149,5 @@ public abstract class AlgDisplayElement {
 	private static GLProgram sProgram;
 	private static Polyline sPolyline;
 	private static float sLineWidth;
+	private static int sColor;
 }

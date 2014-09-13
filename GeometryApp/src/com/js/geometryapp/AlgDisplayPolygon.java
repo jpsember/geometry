@@ -9,6 +9,8 @@ public class AlgDisplayPolygon extends AlgDisplayElement {
 
 	@Override
 	public void render() {
+		setColorState(color());
+		setLineWidthState(lineWidth());
 		for (int i = 0; i < mPolygon.numVertices(); i++)
 			extendPolyline(mPolygon.vertex(i));
 		closePolyline();

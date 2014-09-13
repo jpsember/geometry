@@ -2,9 +2,9 @@ package com.js.geometryapp;
 
 import com.js.geometry.Point;
 
-public class AlgDisplayRay extends AlgDisplayElement {
+public class AlgDisplayLine extends AlgDisplayElement {
 
-	public AlgDisplayRay(Point p1, Point p2) {
+	public AlgDisplayLine(Point p1, Point p2) {
 		mPoint1 = p1;
 		mPoint2 = p2;
 	}
@@ -13,7 +13,7 @@ public class AlgDisplayRay extends AlgDisplayElement {
 	public void render() {
 		setColorState(color());
 		setLineWidthState(lineWidth());
-		renderRay(mPoint1, mPoint2);
+		renderLine(mPoint1, mPoint2);
 	}
 
 	private Point mPoint1, mPoint2;

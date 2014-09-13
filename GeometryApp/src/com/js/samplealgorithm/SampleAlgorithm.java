@@ -3,6 +3,7 @@ package com.js.samplealgorithm;
 import android.opengl.GLSurfaceView;
 
 import com.js.geometry.GeometryContext;
+import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometry.Rect;
@@ -23,38 +24,12 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 		// for test purposes.
 
 		synchronized (this) {
-			// AlgorithmStepper s = AlgorithmStepper.sharedInstance();
-
 			prepareInput();
 
-			// if (s.update()) {
-			// s.show("*Triangulating polygon"+s.plot(mPolygon));
-			// }
 			PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
 					mPolygon);
 			
 			t.triangulate();
-			
-//			int lastFrame = 40;
-//
-//			Point origin = new Point(180, 220);
-//			Point prevPoint = origin;
-//
-//			for (int i = 0; i <= lastFrame; i++) {
-//				mAnimFrame = i;
-//
-//				Point currPoint = MyMath.pointOnCircle(origin, i * 13
-//						* MyMath.M_DEG, 150);
-//				if (i % 3 == 2) {
-//					if (s.update())
-//						s.show("*Milestone at " + i);
-//				}
-//
-//				if (s.update()) {
-//					s.show("Algorithm step #" + i
-//							+ s.plotRay(prevPoint, currPoint));
-//				}
-//				prevPoint = currPoint;
 		}
 	}
 
@@ -69,8 +44,10 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
 	private void prepareInput() {
 		mContext = GeometryContext.contextWithRandomSeed(1965);
-		mPolygon = Polygon.testPolygon(mContext, Polygon.TESTPOLY_DRAGON_X + 3);
-		mPolygon.transformToFitRect(new Rect(20, 20, 400, 600));
+		mPolygon = Polygon.testPolygon(mContext, Polygon.TESTPOLY_DRAGON_X + 5);
+		mPolygon.rotateBy(16 * MyMath.M_DEG);
+		mPolygon.transformToFitRect(new Rect(20, 50, 480 - 2 * 20, 540 - 70),
+				false);
 	}
 
 	private GeometryContext mContext;

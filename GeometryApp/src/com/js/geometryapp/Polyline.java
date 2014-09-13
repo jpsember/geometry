@@ -4,13 +4,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
+import android.graphics.Color;
+
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
 public class Polyline {
 
 	public Polyline() {
-		setColor(.3f, .3f, .9f);
+		mBlue = 1.0f;
 		setLineWidth(1.0f);
 		doNothing();
 	}
@@ -22,10 +24,11 @@ public class Polyline {
 	 * @param g
 	 * @param b
 	 */
-	public void setColor(float r, float g, float b) {
-		mRed = r;
-		mGreen = g;
-		mBlue = b;
+	public void setColor(int color) {
+		mRed = Color.red(color) / 255.0f;
+		mGreen = Color.green(color) / 255.0f;
+		mBlue = Color.blue(color) / 255.0f;
+		// mAlpha = Color.alpha(color) / 255.0f;
 	}
 
 	public void setLineWidth(float lineWidth) {
@@ -42,6 +45,7 @@ public class Polyline {
 		mArray.add(mRed);
 		mArray.add(mGreen);
 		mArray.add(mBlue);
+		// TODO: add this later; mArray.add(mAlpha);
 		mBuffer = null;
 	}
 
@@ -67,10 +71,10 @@ public class Polyline {
 	}
 
 	public int vertexCount() {
-		return mArray.size() / 5;
+		return mArray.size() / 5; // TODO: adjust once alpha channel added
 	}
 
-	private float mRed, mGreen, mBlue;
+	private float mRed, mGreen, mBlue; // , mAlpha;
 	private FloatArray mArray = new FloatArray();
 	private FloatBuffer mBuffer;
 	private boolean mClosed;

@@ -7,6 +7,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.TreeSet;
 
+import android.graphics.Color;
+
 import com.js.basic.Queue;
 import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
@@ -57,10 +59,22 @@ public class PolygonTriangulator {
 
 	private static final String BGND_ELEMENT_POLYGON = "Polygon";
 	private static final String BGND_ELEMENT_SWEEPSTATUS = "Status";
+	private static final String BGND_ELEMENT_MESH = "Mesh";
+	private static final float LINEWIDTH_HIGHLIGHTED = 6.0f;
+	private static final float LINEWIDTH_THICK = 4.0f;
+	private static final float LINEWIDTH_NORMAL = 2.0f;
+	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 
 	public void triangulate() {
 		mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
+		mStepper.setLineWidth(LINEWIDTH_NORMAL);
+		mStepper.setColor(Color.BLUE);
 		mStepper.plot(mPolygon);
+
+		mStepper.plotToBackground(BGND_ELEMENT_MESH);
+		mStepper.setLineWidth(LINEWIDTH_NORMAL);
+		mStepper.setColor(COLOR_LIGHTBLUE);
+		mStepper.plot(mContext);
 
 		if (update())
 			show("*Triangulating polygon");
@@ -175,9 +189,13 @@ public class PolygonTriangulator {
 	 */
 	private Edge replaceHelperForEdge(SweepEdge s, Vertex newHelper) {
 		Vertex prevHelper = s.helper();
+		if (update())
+			show("replace edge helper" + plot(prevHelper) + plot(newHelper)
+					+ plot(s));
+
 		Edge newEdge = null;
 		if ((prevHelper.flags() & VERTEXFLAG_MERGE) != 0) {
-			newEdge = mContext.addEdge(null, newHelper, prevHelper);
+			newEdge = addEdge(newHelper, prevHelper);
 			ASSERT(newEdge.angle() < 0);
 
 			// Test if we've formed a new 'end' vertex to either side of the new
@@ -221,7 +239,7 @@ public class PolygonTriangulator {
 
 	private void processVertexEvent(Vertex vertex) {
 		if (update())
-			show("processVertexEvent" + mStepper.plot(vertex.point()));
+			show("process vertex event" + plot(vertex));
 
 		moveSweepLineTo(vertex.point().y);
 		Edge edges[] = new Edge[2];
@@ -267,7 +285,7 @@ public class PolygonTriangulator {
 			Vertex oldHelper = se.helper();
 			Edge mergeEdge = replaceHelperForEdge(se, vertex);
 			if (mergeEdge == null) {
-				mContext.addEdge(null, vertex, oldHelper);
+				addEdge(vertex, oldHelper);
 			}
 			newEdge = outgoing;
 		}
@@ -276,9 +294,9 @@ public class PolygonTriangulator {
 
 		if (delEdge != null) {
 			SweepEdge se = findExistingEdge(delEdge);
-			if (db)
-				pr(" replacing helper for edge " + se + " with " + vertex);
 			replaceHelperForEdge(se, vertex);
+			if (update())
+				show("removing status edge" + plot(se));
 			boolean existed = mSweepStatus.remove(se);
 			if (mContext.checkError(!existed)) {
 				GeometryException.raise("could not find item in sweep status");
@@ -287,8 +305,8 @@ public class PolygonTriangulator {
 
 		if (newEdge != null) {
 			SweepEdge se = SweepEdge.edge(newEdge, vertex);
-			if (db)
-				pr(" adding new sweep edge " + se);
+			if (update())
+				show("adding status edge" + plot(se));
 			mSweepStatus.add(se);
 		}
 	}
@@ -328,14 +346,20 @@ public class PolygonTriangulator {
 	// http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 	//
 	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
-
+		if (update())
+			show("*triangulating monotone face"
+					+ plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
+			if (update())
+				show("edge already visited");
 			return;
 		}
 		edgePointingToHighestVertex.setVisited(true);
 
 		buildVertexList(edgePointingToHighestVertex);
 		if (mVertexList.size() == 3) {
+			if (update())
+				show("already a triangle");
 			return;
 		}
 
@@ -347,7 +371,10 @@ public class PolygonTriangulator {
 			queueIsLeft = (v.flags() & VERTEXFLAG_LEFTSIDE) != 0;
 
 			mMonotoneQueue.push(v);
-			mMonotoneQueue.push(mVertexList.get(vIndex++));
+			Vertex v2 = mVertexList.get(vIndex++);
+			if (update())
+				show("queuing vertex" + plot(v2));
+			mMonotoneQueue.push(v2);
 		}
 
 		// We don't want to add edges that already exist. The last edge added
@@ -366,12 +393,15 @@ public class PolygonTriangulator {
 
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					// Skip the first queued vertex
-					mMonotoneQueue.pop();
+					Vertex v1 = mMonotoneQueue.pop();
+					if (update())
+						show("skipping first queued vertex" + plot(v1));
 					Vertex v2 = mMonotoneQueue.peek();
-
-					mContext.addEdge(null, v2, vertex);
+					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
+				if (update())
+					show("queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
 			} else {
@@ -381,15 +411,27 @@ public class PolygonTriangulator {
 					float distance = mContext.pointUnitLineSignedDistance(
 							vertex.point(), v1.point(), v2.point());
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
+					if (update())
+						show("test for convex angle"
+								+ plot(v1) + plot(v2));
+
 					if (!isConvex)
 						break;
-					mContext.addEdge(null, v2, vertex);
+					addEdge(v2, vertex);
 					edgesRemaining--;
 					mMonotoneQueue.pop(false);
 				}
+				if (update())
+					show("queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 			}
 		}
+	}
+
+	private Edge addEdge(Vertex v1, Vertex v2) {
+		if (update())
+			show("adding mesh edge" + plotEdge(v1, v2));
+		return mContext.addEdge(null, v1, v2);
 	}
 
 	/**
@@ -401,23 +443,51 @@ public class PolygonTriangulator {
 		public void render() {
 			if (!mSweepLineVisible)
 				return;
+			setColorState(Color.GREEN);
 			renderLine(0, mSweepLinePosition, 1000, mSweepLinePosition);
+			setColorState(COLOR_LIGHTBLUE);
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
-				setLineWidthState(8.0f);
+				setLineWidthState(LINEWIDTH_THICK * 2);
+
 				float EXTENT = 20;
 				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT,
 						mContext, true);
 				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT,
 						mContext, true);
-				renderLine(p1, p2);
+				renderRay(p1, p2);
 
 				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,
 						false);
 				renderPoint(pt);
 			}
 		}
+	}
+
+	// Convenience methods for displaying algorithm objects
+
+	private String plot(SweepEdge edge) {
+		return plot(edge.polygonEdge());
+	}
+
+	private String plot(Edge edge) {
+		return plotEdge(edge.sourceVertex(), edge.destVertex());
+	}
+
+	private String plotEdge(Point p1, Point p2) {
+		mStepper.setLineWidth(LINEWIDTH_HIGHLIGHTED);
+		mStepper.setColor(Color.RED);
+		return mStepper.plotLine(p1, p2);
+	}
+
+	private String plotEdge(Vertex v1, Vertex v2) {
+		return plotEdge(v1.point(), v2.point());
+	}
+
+	private String plot(Vertex v) {
+		mStepper.setColor(Color.RED);
+		return mStepper.plot(v.point(), 6.0f);
 	}
 
 	private AlgorithmStepper mStepper;

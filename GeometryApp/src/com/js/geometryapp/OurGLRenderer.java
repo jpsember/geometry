@@ -28,17 +28,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		sOpenGLThread = Thread.currentThread();
-
 		GLSpriteProgram.prepare(mContext);
-
-		mRed = .2f;
-		mGreen = .6f;
-
-		mRed = 0;
-		mGreen = .2f;
-
-		mCounter += 1;
-		mBlue = .2f + (.1f * (mCounter % 5));
 	}
 
 	/**
@@ -69,7 +59,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	}
 
 	public void onDrawFrame(GL10 gl) {
-		gl.glClearColor(mRed, mGreen, mBlue, 1.0f);
+		gl.glClearColor(0, 0, 0, 1.0f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -79,9 +69,5 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	private final Context mContext;
 
-	private float mRed;
-	private float mGreen;
-	private float mBlue;
-	private int mCounter;
 	private Matrix mScreenToNDCTransform;
 }

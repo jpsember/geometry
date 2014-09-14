@@ -2,7 +2,6 @@ package com.js.geometryapp;
 
 import static com.js.basic.Tools.*;
 
-//import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.js.geometry.MyMath;
@@ -46,7 +45,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		mDeviceRect = new Rect(0, 0, mDeviceSize.x, mDeviceSize.y);
 
 		// Add a bit of padding to the device rectangle
-		// Rect a = new Rect(algorithmRect());
 		float paddingInset = Math.max(10, mDeviceSize.x / 40);
 		float titleInset = Math.max(60, mDeviceSize.y / 10);
 

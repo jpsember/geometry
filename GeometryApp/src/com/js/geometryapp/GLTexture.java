@@ -85,7 +85,7 @@ public class GLTexture {
 		glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_T,
 				GL10.GL_REPEAT);
 
-    // Let alpha channel actually have an effect
+		// Let alpha channel actually have an effect
 		glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL10.GL_BLEND);
 

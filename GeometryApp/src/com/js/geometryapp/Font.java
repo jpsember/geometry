@@ -116,6 +116,7 @@ public class Font {
 
 	public void render(String text, Point location) {
 		Point loc = new Point(location.x, location.y - mBaseLineOffset);
+
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
 			int j = c - PRINTABLE_START;

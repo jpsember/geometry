@@ -6,6 +6,8 @@ import android.graphics.Color;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.geometry.Rect;
+
 import static com.js.basic.Tools.*;
 
 public abstract class AlgDisplayElement {
@@ -105,7 +107,7 @@ public abstract class AlgDisplayElement {
 	 * renderer; i.e. setting up shaders and fonts. Should be called within
 	 * onSurfaceCreated(...)
 	 */
-	public static void setRenderer(OurGLRenderer renderer) {
+	public static void setRenderer(AlgorithmRenderer renderer) {
 		OurGLRenderer.ensureOpenGLThread();
 		sRenderer = renderer;
 		Context sContext = renderer.context();
@@ -120,7 +122,21 @@ public abstract class AlgDisplayElement {
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
-		sFont.render(sFrameTitle, new Point(10, 10 + sFont.lineHeight()));
+
+		Rect deviceRect = sRenderer.deviceRect();
+
+		Point p = new Point(10, 10 + sFont.lineHeight());
+
+		// TODO: all font rendering seems to ignore algorithm space, and occur
+		// in device space already; this was not my intention. For instance,
+		// enabling this
+		// should not produce text at the top of the view, since it should be
+		// interpreting it as algorithm space
+		if (false) {
+			p.y = deviceRect.endY() - 10;
+		}
+
+		sFont.render(sFrameTitle, p);
 	}
 
 	public void setLineWidth(float lineWidth) {
@@ -143,7 +159,7 @@ public abstract class AlgDisplayElement {
 	private float mLineWidth;
 
 	private static Font sFont;
-	private static OurGLRenderer sRenderer;
+	private static AlgorithmRenderer sRenderer;
 	private static GLShader sVertexShader;
 	private static GLShader sFragmentShader;
 	private static GLProgram sProgram;

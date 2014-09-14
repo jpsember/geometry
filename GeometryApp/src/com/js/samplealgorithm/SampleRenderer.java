@@ -9,15 +9,15 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgDisplayElement;
+import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLProgram;
 import com.js.geometryapp.GLSpriteProgram;
-import com.js.geometryapp.OurGLRenderer;
 
 import android.content.Context;
 import android.graphics.Matrix;
 
-public class SampleRenderer extends OurGLRenderer {
+public class SampleRenderer extends AlgorithmRenderer {
 
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
 		super(context);

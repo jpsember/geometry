@@ -78,6 +78,13 @@ public class Rect {
 		return new Point(endX(), y);
 	}
 
+	public void inset(float dx, float dy) {
+		x += dx;
+		y += dy;
+		width -= 2 * dx;
+		height -= 2 * dy;
+	}
+
 	public Point topLeft() {
 		return new Point(x, endY());
 	}

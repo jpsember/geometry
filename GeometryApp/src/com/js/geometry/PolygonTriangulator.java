@@ -11,6 +11,7 @@ import android.graphics.Color;
 
 import com.js.basic.Queue;
 import com.js.geometryapp.AlgDisplayElement;
+import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 
 /**
@@ -444,7 +445,8 @@ public class PolygonTriangulator {
 			if (!mSweepLineVisible)
 				return;
 			setColorState(COLOR_DARKGREEN);
-			renderLine(0, mSweepLinePosition, 1000, mSweepLinePosition);
+			renderLine(0, mSweepLinePosition,
+					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH, mSweepLinePosition);
 			setColorState(COLOR_LIGHTBLUE);
 			for (SweepEdge e : mSweepStatus) {
 

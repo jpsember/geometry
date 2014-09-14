@@ -6,13 +6,14 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
-import com.js.geometry.Rect;
+import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 
 public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
-	public void setView(GLSurfaceView view) {
+	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
 		mView = view;
+		mRenderer = renderer;
 	}
 
 	@Override
@@ -38,12 +39,12 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, Polygon.TESTPOLY_DRAGON_X + 5);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
-		mPolygon.transformToFitRect(new Rect(20, 50, 480 - 2 * 20, 540 - 70),
-				false);
+		mPolygon.transformToFitRect(mRenderer.algorithmRect(), false);
 	}
 
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private int mAnimFrame;
 	private GLSurfaceView mView;
+	private AlgorithmRenderer mRenderer;
 }

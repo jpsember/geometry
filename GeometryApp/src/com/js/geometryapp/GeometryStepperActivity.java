@@ -36,7 +36,8 @@ public class GeometryStepperActivity extends GeometryActivity {
 	}
 
 	protected GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = super.buildOpenGLView();
+		GLSurfaceView v = new OurGLSurfaceView(this,
+				new AlgorithmRenderer(this));
 		v.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		return v;
 	}

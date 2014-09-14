@@ -72,7 +72,11 @@ public class Font {
 		Canvas canvas = new Canvas(sBitmap);
 
 		paint.setAntiAlias(true);
-		paint.setARGB(0xff, 0xff, 0xff, 0xff);
+
+		// Draw the font in black, so it shows up on the white background
+		// TODO: Issue #20, figure out how to plot text in different colors, without baking
+		// it into the font
+		paint.setARGB(255, 0, 0, 0);
 
 		resetCursor();
 		for (int i = PRINTABLE_START; i < PRINTABLE_START + PRINTABLE_TOTAL; i++) {

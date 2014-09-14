@@ -64,6 +64,7 @@ public class PolygonTriangulator {
 	private static final float LINEWIDTH_THICK = 4.0f;
 	private static final float LINEWIDTH_NORMAL = 2.0f;
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
+	private static final int COLOR_DARKGREEN = Color.argb(80, 0, 128, 0);
 
 	public void triangulate() {
 		mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
@@ -412,8 +413,7 @@ public class PolygonTriangulator {
 							vertex.point(), v1.point(), v2.point());
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (update())
-						show("test for convex angle"
-								+ plot(v1) + plot(v2));
+						show("test for convex angle" + plot(v1) + plot(v2));
 
 					if (!isConvex)
 						break;
@@ -443,7 +443,7 @@ public class PolygonTriangulator {
 		public void render() {
 			if (!mSweepLineVisible)
 				return;
-			setColorState(Color.GREEN);
+			setColorState(COLOR_DARKGREEN);
 			renderLine(0, mSweepLinePosition, 1000, mSweepLinePosition);
 			setColorState(COLOR_LIGHTBLUE);
 			for (SweepEdge e : mSweepStatus) {

@@ -13,6 +13,10 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import android.graphics.Matrix;
+
+import com.js.geometry.MyMath;
+
 public final class Tools {
 
 	/**
@@ -460,6 +464,10 @@ public final class Tools {
 	 */
 	public static String d(CharSequence s) {
 		return d(s, "80eqt");
+	}
+
+	public static String d(Matrix matrix) {
+		return MyMath.dumpMatrix(matrix);
 	}
 
 	/**

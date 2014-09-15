@@ -5,7 +5,6 @@ import static com.js.basic.Tools.*;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.js.geometry.MyMath;
-import com.js.geometry.Point;
 import com.js.geometry.Rect;
 
 import android.content.Context;
@@ -32,21 +31,20 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		return mDeviceRect;
 	}
 
+	@Override
 	/**
 	 * Construct matrix to transform from screen coordinates to OpenGL's
 	 * normalized device coordinates (-1,-1 ... 1,1)
-	 * 
-	 * @param w
-	 *            width of view, pixels
-	 * @param h
-	 *            height of view, pixels
 	 */
-	private void buildProjectionMatrix() {
-		mDeviceRect = new Rect(0, 0, mDeviceSize.x, mDeviceSize.y);
+	protected void buildProjectionMatrix() {
+		float deviceWidth = deviceSize().x;
+		float deviceHeight = deviceSize().y;
+
+		mDeviceRect = new Rect(0, 0, deviceWidth, deviceHeight);
 
 		// Add a bit of padding to the device rectangle
-		float paddingInset = Math.max(10, mDeviceSize.x / 40);
-		float titleInset = Math.max(60, mDeviceSize.y / 10);
+		float paddingInset = Math.max(10, deviceWidth / 40);
+		float titleInset = Math.max(60, deviceHeight / 10);
 
 		Rect paddedDeviceRect = new Rect(mDeviceRect);
 		paddedDeviceRect.x += paddingInset;
@@ -59,23 +57,16 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		Matrix m = new Matrix();
 
-		float sx = 2.0f / mDeviceSize.x;
-		float sy = 2.0f / mDeviceSize.y;
+		float sx = 2.0f / deviceWidth;
+		float sy = 2.0f / deviceHeight;
 
 		m.setScale(sx, sy);
-		m.preTranslate(-mDeviceSize.x / 2.0f, -mDeviceSize.y / 2.0f);
+		m.preTranslate(-deviceWidth / 2.0f, -deviceHeight / 2.0f);
 
 		mDeviceToNDCTransform = m;
 
 		mAlgorithmToNDCTransform = new Matrix(mAlgorithmToDeviceTransform);
 		mAlgorithmToNDCTransform.postConcat(mDeviceToNDCTransform);
-	}
-
-	public void onSurfaceChanged(GL10 gl, int w, int h) {
-		mDeviceSize = new Point(w, h);
-		gl.glViewport(0, 0, w, h);
-		buildProjectionMatrix();
-		GLSpriteProgram.setProjection(mDeviceToNDCTransform);
 	}
 
 	public void onDrawFrame(GL10 gl) {
@@ -89,8 +80,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 	private Rect mAlgorithmRect;
 	private Rect mDeviceRect;
-	private Point mDeviceSize;
-	private Matrix mDeviceToNDCTransform;
+	private Matrix mDeviceToNDCTransform = new Matrix();
 	private Matrix mAlgorithmToDeviceTransform;
 	private Matrix mAlgorithmToNDCTransform;
 }

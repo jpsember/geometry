@@ -42,7 +42,7 @@ public abstract class AlgDisplayElement {
 	}
 
 	public static void renderPolyline() {
-		sProgram.render(sPolyline, sRenderer, null);
+		sProgram.render(sPolyline, null);
 		sPolyline = null;
 	}
 
@@ -115,26 +115,18 @@ public abstract class AlgDisplayElement {
 				R.raw.simple_vertex_shader);
 		sFragmentShader = GLShader.readFragmentShader(sContext,
 				R.raw.simple_fragment_shader);
-		sProgram = GLProgram.build(sVertexShader, sFragmentShader);
+		sProgram = GLProgram.build(renderer, sVertexShader, sFragmentShader);
 		sFont = new Font(24);
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
-
-		Rect deviceRect = sRenderer.deviceRect();
-
 		Point p = new Point(10, 10 + sFont.lineHeight());
 
-		// TODO: all font rendering seems to ignore algorithm space, and occur
-		// in device space already; this was not my intention. For instance,
-		// enabling this
-		// should not produce text at the top of the view, since it should be
-		// interpreting it as algorithm space
-		if (false) {
-			p.y = deviceRect.endY() - 10;
-		}
+		// TODO: Issue #13: we must use a device-space, not algorithm-space,
+		// transform when rendering text; currently the text is not in the right
+		// location and is very tiny
 
 		sFont.render(sFrameTitle, p);
 	}

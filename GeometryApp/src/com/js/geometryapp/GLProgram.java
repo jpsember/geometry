@@ -9,13 +9,16 @@ import android.graphics.Matrix;
 
 public class GLProgram {
 
-	public static GLProgram build(GLShader vertexShader, GLShader fragmentShader) {
+	public static GLProgram build(OurGLRenderer renderer,
+			GLShader vertexShader, GLShader fragmentShader) {
 		GLProgram p = new GLProgram();
-		p.buildAux(vertexShader, fragmentShader);
+		p.buildAux(renderer, vertexShader, fragmentShader);
 		return p;
 	}
 
-	private void buildAux(GLShader vertexShader, GLShader fragmentShader) {
+	private void buildAux(OurGLRenderer renderer, GLShader vertexShader,
+			GLShader fragmentShader) {
+		mRenderer = renderer;
 		mProgramObjectId = glCreateProgram();
 		if (mProgramObjectId == 0) {
 			die("unable to create program");
@@ -100,59 +103,58 @@ public class GLProgram {
 		return row * 3 + col;
 	}
 
-	private void prepareMatrix(OurGLRenderer renderer, Matrix transform) {
-		// TODO: If this mesh is static (i.e. it doesn't need an additional
-		// transformation for translation/rotation/scaling), then we can just
-		// use the renderer's projection matrix. In addition, in this case, we
-		// need only specify a new transformation when the renderer's projection
-		// matrix has changed. We will probably want to use two distinct vertex
-		// shaders: one for static meshes that uses this seldom-changing matrix,
-		// and one for dynamic meshes (whose matrix coefficients change with
-		// each call to render()).
+	private void prepareMatrix(Matrix transform) {
+		// Only do this if the previously prepared matrix is no longer valid, or
+		// if we need to include an object-specific transformation
+		if (mRenderer.projectionMatrixId() != mPreparedProjectionMatrixId
+				|| transform != null) {
+			Matrix m;
+			if (transform != null) {
+				// We won't want to reuse this particular prepared matrix again
+				mPreparedProjectionMatrixId = 0;
+				// Concatenate the mesh matrix to the projection matrix
+				m = new Matrix(transform);
+				m.postConcat(mRenderer.projectionMatrix());
+			} else {
+				mPreparedProjectionMatrixId = mRenderer.projectionMatrixId();
+				m = mRenderer.projectionMatrix();
+			}
 
-		Matrix m;
-		if (transform != null) {
-			// Concatenate the mesh matrix to the projection matrix
-			m = new Matrix(transform);
-			m.postConcat(renderer.projectionMatrix());
-		} else {
-			m = renderer.projectionMatrix();
-		}
+			// Transform 2D screen->NDC matrix to a 3D version
+			{
+				float v3[] = new float[9];
+				m.getValues(v3);
 
-		// Transform 2D screen->NDC matrix to a 3D version
-		{
-			float v3[] = new float[9];
-			m.getValues(v3);
+				float v4[] = new float[16];
 
-			float v4[] = new float[16];
+				v4[i4(0, 0)] = v3[i3(0, 0)];
+				v4[i4(0, 1)] = v3[i3(0, 1)];
+				v4[i4(0, 2)] = 0;
+				v4[i4(0, 3)] = v3[i3(0, 2)];
 
-			v4[i4(0, 0)] = v3[i3(0, 0)];
-			v4[i4(0, 1)] = v3[i3(0, 1)];
-			v4[i4(0, 2)] = 0;
-			v4[i4(0, 3)] = v3[i3(0, 2)];
+				v4[i4(1, 0)] = v3[i3(1, 0)];
+				v4[i4(1, 1)] = v3[i3(1, 1)];
+				v4[i4(1, 2)] = 0;
+				v4[i4(1, 3)] = v3[i3(1, 2)];
 
-			v4[i4(1, 0)] = v3[i3(1, 0)];
-			v4[i4(1, 1)] = v3[i3(1, 1)];
-			v4[i4(1, 2)] = 0;
-			v4[i4(1, 3)] = v3[i3(1, 2)];
+				v4[i4(2, 0)] = 0;
+				v4[i4(2, 1)] = 0;
+				v4[i4(2, 2)] = 1;
+				v4[i4(2, 3)] = 0;
 
-			v4[i4(2, 0)] = 0;
-			v4[i4(2, 1)] = 0;
-			v4[i4(2, 2)] = 1;
-			v4[i4(2, 3)] = 0;
+				v4[i4(3, 0)] = v3[i3(2, 0)];
+				v4[i4(3, 1)] = v3[i3(2, 1)];
+				v4[i4(3, 2)] = 0;
+				v4[i4(3, 3)] = v3[i3(2, 2)];
 
-			v4[i4(3, 0)] = v3[i3(2, 0)];
-			v4[i4(3, 1)] = v3[i3(2, 1)];
-			v4[i4(3, 2)] = 0;
-			v4[i4(3, 3)] = v3[i3(2, 2)];
-
-			glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
+				glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
+			}
 		}
 	}
 
-	public void render(Polyline p, OurGLRenderer renderer, Matrix transform) {
+	public void render(Polyline p, Matrix transform) {
 		glUseProgram(getId());
-		prepareMatrix(renderer, transform);
+		prepareMatrix(transform);
 		FloatBuffer fb = p.asFloatBuffer();
 		fb.position(0);
 		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
@@ -183,9 +185,10 @@ public class GLProgram {
 	 * @param transform
 	 *            optional additional transformation to apply, or null
 	 */
-	public void render(Mesh mesh, OurGLRenderer renderer, Matrix transform) {
+	public void render(Mesh mesh, Matrix transform) {
 		glUseProgram(getId());
-		prepareMatrix(renderer, transform);
+		// I'm assuming that each program remembers its own projection matrix
+		prepareMatrix(transform);
 		FloatBuffer fb = mesh.asFloatBuffer();
 		fb.position(0);
 		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
@@ -203,6 +206,8 @@ public class GLProgram {
 		glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
 	}
 
+	private OurGLRenderer mRenderer;
+	private int mPreparedProjectionMatrixId;
 	private int mProgramObjectId;
 	private int mPositionLocation;
 	private int mColorLocation;

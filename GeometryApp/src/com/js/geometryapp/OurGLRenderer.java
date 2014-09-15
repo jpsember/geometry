@@ -3,6 +3,8 @@ package com.js.geometryapp;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+import com.js.geometry.Point;
+
 import static com.js.basic.Tools.*;
 
 import android.content.Context;
@@ -28,7 +30,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		sOpenGLThread = Thread.currentThread();
-		GLSpriteProgram.prepare(mContext);
+		GLSpriteProgram.prepare(this);
 	}
 
 	/**
@@ -40,22 +42,21 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	 * @param h
 	 *            height of view, pixels
 	 */
-	private void buildProjectionMatrix(int w, int h) {
-		Matrix m = new Matrix();
-
+	protected void buildProjectionMatrix() {
+		float w = mDeviceSize.x;
+		float h = mDeviceSize.y;
 		float sx = 2.0f / w;
 		float sy = 2.0f / h;
 
-		m.setScale(sx, sy);
-		m.preTranslate(-w / 2.0f, -h / 2.0f);
-
-		mScreenToNDCTransform = m;
+		mScreenToNDCTransform.setScale(sx, sy);
+		mScreenToNDCTransform.preTranslate(-w / 2.0f, -h / 2.0f);
 	}
 
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
+		mDeviceSize.setTo(w, h);
+		mMatrixId += 1;
 		gl.glViewport(0, 0, w, h);
-		buildProjectionMatrix(w, h);
-		GLSpriteProgram.setProjection(mScreenToNDCTransform);
+		buildProjectionMatrix();
 	}
 
 	public void onDrawFrame(GL10 gl) {
@@ -67,7 +68,24 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mScreenToNDCTransform;
 	}
 
+	/**
+	 * Get the projection matrix identifier. This changes each time the
+	 * projection matrix changes, and can be used to determine if a previously
+	 * cached matrix is valid
+	 * 
+	 * @return id, a positive integer (if surface has been created)
+	 */
+	public int projectionMatrixId() {
+		return mMatrixId;
+	}
+
+	public Point deviceSize() {
+		return mDeviceSize;
+	}
+
 	private final Context mContext;
 
-	private Matrix mScreenToNDCTransform;
+	private Point mDeviceSize = new Point();
+	private Matrix mScreenToNDCTransform = new Matrix();
+	private int mMatrixId;
 }

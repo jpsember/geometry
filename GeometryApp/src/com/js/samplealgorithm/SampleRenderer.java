@@ -25,12 +25,9 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		super.onSurfaceCreated(gl, config);
-
 		disposeResources();
-
 		// Let the algorithm stepper elements prepare using this renderer
 		AlgDisplayElement.setRenderer(this);
-
 	}
 
 	public void onDrawFrame(GL10 gl) {

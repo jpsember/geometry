@@ -5,14 +5,11 @@ import static com.js.basic.Tools.*;
 
 import java.nio.FloatBuffer;
 
-//import javax.microedition.khronos.opengles.GL10;
-
 import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 
 import android.content.Context;
-import android.graphics.Matrix;
 
 public class GLSpriteProgram {
 
@@ -26,53 +23,14 @@ public class GLSpriteProgram {
 	 * 
 	 * @param context
 	 */
-	public static void prepare(Context context) {
-		prepareShaders(context);
+	public static void prepare(OurGLRenderer renderer) {
+		sRenderer = renderer;
+		prepareShaders();
 		prepareProgram();
-		sPrepared = true;
 	}
 
-	/**
-	 * Set projection matrix to use for every sprite drawn to this view; should
-	 * be called by onSurfaceChanged()
-	 * 
-	 * @param projectionMatrix
-	 */
-	public static void setProjection(Matrix projectionMatrix) {
-		ensurePrepared();
-		glUseProgram(sProgramObjectId);
-
-		// Transform 2D screen->NDC matrix to a 3D version
-		float v3[] = new float[9];
-		projectionMatrix.getValues(v3);
-
-		float v4[] = new float[16];
-
-		v4[i4(0, 0)] = v3[i3(0, 0)];
-		v4[i4(0, 1)] = v3[i3(0, 1)];
-		v4[i4(0, 2)] = 0;
-		v4[i4(0, 3)] = v3[i3(0, 2)];
-
-		v4[i4(1, 0)] = v3[i3(1, 0)];
-		v4[i4(1, 1)] = v3[i3(1, 1)];
-		v4[i4(1, 2)] = 0;
-		v4[i4(1, 3)] = v3[i3(1, 2)];
-
-		v4[i4(2, 0)] = 0;
-		v4[i4(2, 1)] = 0;
-		v4[i4(2, 2)] = 1;
-		v4[i4(2, 3)] = 0;
-
-		v4[i4(3, 0)] = v3[i3(2, 0)];
-		v4[i4(3, 1)] = v3[i3(2, 1)];
-		v4[i4(3, 2)] = 0;
-		v4[i4(3, 3)] = v3[i3(2, 2)];
-
-		glUniformMatrix4fv(sMatrixLocation, 1, false, v4, 0);
-		sMatrixPrepared = true;
-	}
-
-	private static void prepareShaders(Context context) {
+	private static void prepareShaders() {
+		Context context = sRenderer.context();
 		sVertexShader = GLShader.readVertexShader(context,
 				R.raw.vertex_shader_texture);
 		sFragmentShader = GLShader.readFragmentShader(context,
@@ -149,11 +107,6 @@ public class GLSpriteProgram {
 		return row * 3 + col;
 	}
 
-	private static void ensurePrepared() {
-		if (!sPrepared)
-			throw new IllegalStateException("GLSpriteProgram not prepared");
-	}
-
 	/**
 	 * Constructor
 	 * 
@@ -163,7 +116,6 @@ public class GLSpriteProgram {
 	 *            subrectangle within texture representing sprite
 	 */
 	public GLSpriteProgram(GLTexture texture, Rect textureWindow) {
-		ensurePrepared();
 		mTexture = texture;
 		mTextureWindow = textureWindow;
 
@@ -220,12 +172,47 @@ public class GLSpriteProgram {
 		setPosition(position.x, position.y);
 	}
 
+	private static void prepareProjection() {
+		glUseProgram(sProgramObjectId);
+
+		if (sRenderer.projectionMatrixId() != sPreparedProjectionMatrixId) {
+			sPreparedProjectionMatrixId = sRenderer.projectionMatrixId();
+			// Transform 2D screen->NDC matrix to a 3D version
+			float v3[] = new float[9];
+			sRenderer.projectionMatrix().getValues(v3);
+
+			float v4[] = new float[16];
+
+			v4[i4(0, 0)] = v3[i3(0, 0)];
+			v4[i4(0, 1)] = v3[i3(0, 1)];
+			v4[i4(0, 2)] = 0;
+			v4[i4(0, 3)] = v3[i3(0, 2)];
+
+			v4[i4(1, 0)] = v3[i3(1, 0)];
+			v4[i4(1, 1)] = v3[i3(1, 1)];
+			v4[i4(1, 2)] = 0;
+			v4[i4(1, 3)] = v3[i3(1, 2)];
+
+			v4[i4(2, 0)] = 0;
+			v4[i4(2, 1)] = 0;
+			v4[i4(2, 2)] = 1;
+			v4[i4(2, 3)] = 0;
+
+			v4[i4(3, 0)] = v3[i3(2, 0)];
+			v4[i4(3, 1)] = v3[i3(2, 1)];
+			v4[i4(3, 2)] = 0;
+			v4[i4(3, 3)] = v3[i3(2, 2)];
+
+			glUniformMatrix4fv(sMatrixLocation, 1, false, v4, 0);
+		}
+
+	}
+
 	/**
 	 * Draw the sprite
 	 */
 	public void render() {
-		ASSERT(sMatrixPrepared);
-		glUseProgram(sProgramObjectId);
+		prepareProjection();
 
 		// Specify offset
 		glUniform2f(sSpritePositionLocation, mPosition.x, mPosition.y);
@@ -247,7 +234,8 @@ public class GLSpriteProgram {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 	}
 
-	private static boolean sPrepared;
+	private static OurGLRenderer sRenderer;
+	private static int sPreparedProjectionMatrixId;
 	private static int sProgramObjectId;
 	private static int sPositionLocation;
 	private static int sTextureCoordinateLocation;
@@ -255,7 +243,6 @@ public class GLSpriteProgram {
 	private static int sSpritePositionLocation;
 	private static GLShader sVertexShader;
 	private static GLShader sFragmentShader;
-	private static boolean sMatrixPrepared;
 
 	private FloatBuffer mVertexData;
 	private GLTexture mTexture;

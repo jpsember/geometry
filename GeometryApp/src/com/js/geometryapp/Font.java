@@ -74,8 +74,8 @@ public class Font {
 		paint.setAntiAlias(true);
 
 		// Draw the font in black, so it shows up on the white background
-		// TODO: Issue #20, figure out how to plot text in different colors, without baking
-		// it into the font
+		// TODO: Issue #20, figure out how to plot text in different colors,
+		// without baking it into the font
 		paint.setARGB(255, 0, 0, 0);
 
 		resetCursor();
@@ -103,12 +103,17 @@ public class Font {
 	}
 
 	private void generateSprites() {
+		unimp("finish customizing SpriteContext");
+		SpriteContext fontSpriteContext = new SpriteContext() {
+		};
+
 		mSprites = new GLSpriteProgram[PRINTABLE_TOTAL];
 		resetCursor();
 		for (int i = 0; i < PRINTABLE_TOTAL; i++) {
 			Rect bounds = new Rect(mCursor.x, mCursor.y, mLetterSize.x,
 					mLetterSize.y);
-			GLSpriteProgram s = new GLSpriteProgram(mTexture, bounds);
+			GLSpriteProgram s = new GLSpriteProgram(fontSpriteContext,
+					mTexture, bounds);
 			mSprites[i] = s;
 			advanceCursor();
 		}

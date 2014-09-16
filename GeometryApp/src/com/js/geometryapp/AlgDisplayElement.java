@@ -6,7 +6,6 @@ import android.graphics.Color;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
-import com.js.geometry.Rect;
 
 import static com.js.basic.Tools.*;
 
@@ -109,7 +108,6 @@ public abstract class AlgDisplayElement {
 	 */
 	public static void setRenderer(AlgorithmRenderer renderer) {
 		OurGLRenderer.ensureOpenGLThread();
-		sRenderer = renderer;
 		Context sContext = renderer.context();
 		sVertexShader = GLShader.readVertexShader(sContext,
 				R.raw.simple_vertex_shader);
@@ -122,6 +120,10 @@ public abstract class AlgDisplayElement {
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
+		if (true) {
+			warning("omitting frame title while debugging sprite context issues");
+			return;
+		}
 		Point p = new Point(10, 10 + sFont.lineHeight());
 
 		// TODO: Issue #13: we must use a device-space, not algorithm-space,
@@ -151,7 +153,6 @@ public abstract class AlgDisplayElement {
 	private float mLineWidth;
 
 	private static Font sFont;
-	private static AlgorithmRenderer sRenderer;
 	private static GLShader sVertexShader;
 	private static GLShader sFragmentShader;
 	private static GLProgram sProgram;

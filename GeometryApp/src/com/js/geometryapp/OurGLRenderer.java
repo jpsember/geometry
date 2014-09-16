@@ -30,7 +30,8 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		sOpenGLThread = Thread.currentThread();
-		GLSpriteProgram.prepare(this);
+		mSurfaceId += 1;
+		SpriteContext.prepare(this);
 	}
 
 	/**
@@ -76,7 +77,17 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	 * @return id, a positive integer (if surface has been created)
 	 */
 	public int projectionMatrixId() {
+		// TODO: consider renaming this to 'Surface Id' or something, since in
+		// addition to projection matrices,
+		// OpenGL programs and shaders are also no longer valid.. or are they
+		// only no longer valid when a surface is created as opposed to changed?
+		ensureOpenGLThread();
 		return mMatrixId;
+	}
+
+	public int surfaceId() {
+		ensureOpenGLThread();
+		return mSurfaceId;
 	}
 
 	public Point deviceSize() {
@@ -88,4 +99,5 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	private Point mDeviceSize = new Point();
 	private Matrix mScreenToNDCTransform = new Matrix();
 	private int mMatrixId;
+	private int mSurfaceId;
 }

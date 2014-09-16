@@ -28,6 +28,7 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
 	@Override
 	public void displayResults() {
+		mAnimFrame++;
 		mView.requestRender();
 	}
 

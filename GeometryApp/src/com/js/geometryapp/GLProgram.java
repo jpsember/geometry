@@ -34,11 +34,10 @@ public class GLProgram {
 	}
 
 	private void prepareAttributes() {
-    // TODO: have OurGLTools wrappers for these that look for errors
-		// Must agree with simple_vertex_shader.glsl
-		mPositionLocation = glGetAttribLocation(mProgramObjectId, "a_Position");
-		mColorLocation = glGetAttribLocation(mProgramObjectId, "a_Color");
-		mMatrixLocation = glGetUniformLocation(mProgramObjectId, "u_Matrix");
+		OurGLTools.setProgram(mProgramObjectId);
+		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
+		mColorLocation = OurGLTools.getProgramLocation("a_Color");
+		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
 	}
 
 	/**

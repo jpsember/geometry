@@ -122,18 +122,16 @@ public class SpriteContext {
 	}
 
 	private void prepareAttributes() {
-		// Must agree with vertex_shader_texture.glsl
-		mPositionLocation = glGetAttribLocation(mProgramObjectId, "a_Position");
-		mSpritePositionLocation = glGetUniformLocation(mProgramObjectId,
-				"u_SpritePosition");
-		mTextureCoordinateLocation = glGetAttribLocation(mProgramObjectId,
-				"a_TexCoordinate");
-		mMatrixLocation = glGetUniformLocation(mProgramObjectId, "u_Matrix");
+		OurGLTools.setProgram(mProgramObjectId);
+		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
+		mSpritePositionLocation = OurGLTools
+				.getProgramLocation("u_SpritePosition");
+		mTextureCoordinateLocation = OurGLTools
+				.getProgramLocation("a_TexCoordinate");
+		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
 
 		if (mTintMode) {
-			// This must agree with fragment_shader_texture.glsl
-			mColorLocation = glGetUniformLocation(mProgramObjectId,
-					"u_InputColor");
+			mColorLocation = OurGLTools.getProgramLocation("u_InputColor");
 		}
 	}
 

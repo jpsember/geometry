@@ -58,10 +58,50 @@ public class OurGLTools {
 		verifyNoProgramError(programId, GL_VALIDATE_STATUS);
 	}
 
+	public static void compileShader(int programId) {
+		glCompileShader(programId);
+		glGetShaderiv(programId, GL_COMPILE_STATUS, sResultCode, 0);
+		if (!success()) {
+			die("OpenGL errror! Problem compiling shader: "
+					+ glGetShaderInfoLog(programId));
+		}
+	}
+
 	private static boolean success() {
 		return sResultCode[0] != 0;
 	}
 
+	/**
+	 * Specify program to use in subsequent calls to getProgramLocation()
+	 */
+	public static void setProgram(int programId) {
+		sProgramId = programId;
+	}
+
+	/**
+	 * Get location of attribute or uniform within program; die if not found.
+	 * Program id must have been previously set via setProgram()
+	 * 
+	 * @param attributeOrUniformName
+	 *            name; must have prefix 'a_' or 'u_'
+	 * @return
+	 */
+	public static int getProgramLocation(String attributeOrUniformName) {
+		int location = -1;
+		if (attributeOrUniformName.startsWith("a_")) {
+			location = glGetAttribLocation(sProgramId, attributeOrUniformName);
+		} else if (attributeOrUniformName.startsWith("u_")) {
+			location = glGetUniformLocation(sProgramId, attributeOrUniformName);
+		} else
+			die("unsupported prefix: " + attributeOrUniformName);
+		if (location < 0)
+			die("OpenGL error! No attribute/uniform found: "
+					+ attributeOrUniformName);
+		verifyNoError();
+		return location;
+	}
+
 	private static int sResultCode[] = new int[1];
 	private static Thread sOpenGLThread;
+	private static int sProgramId;
 }

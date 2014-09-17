@@ -21,13 +21,7 @@ public class GLShader {
 		if (getId() == 0)
 			die("unable to create shader object: " + this);
 		glShaderSource(getId(), mSource);
-		glCompileShader(getId());
-
-		glGetShaderiv(getId(), GL_COMPILE_STATUS, sResultCode, 0);
-		if (!success()) {
-			String logInfo = glGetShaderInfoLog(getId());
-			warning("failed to compile shader source:\n" + logInfo);
-		}
+		OurGLTools.compileShader(getId());
 	}
 
 	private void dispose() {
@@ -71,12 +65,6 @@ public class GLShader {
 	public final int getId() {
 		return mShaderObjectId;
 	}
-
-	private static boolean success() {
-		return sResultCode[0] != 0;
-	}
-
-	private static int sResultCode[] = new int[1];
 
 	private int mType;
 	private String mSource;

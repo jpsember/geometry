@@ -5,29 +5,38 @@ import static com.js.basic.Tools.*;
 
 import android.opengl.GLUtils;
 
-public class OurGLTools {
+public final class OurGLTools {
+
+	/**
+	 * Generate code that should be 'debug only', i.e., preproduction?
+	 */
+	public static final boolean DEBUG_ONLY_FEATURES = true;
 
 	/**
 	 * Store current thread as the OpenGL rendering thread, for later calls to
 	 * ensureRenderThread()
 	 */
 	public static void defineOpenGLThread() {
+		if (DEBUG_ONLY_FEATURES)
 		sOpenGLThread = Thread.currentThread();
 	}
 
 	/**
 	 * Throw an exception if the current thread is not the OpenGL rendering
-	 * thread (defined by call to defineOpenGLThread())
+	 * thread (defined by call to defineOpenGLThread()).
 	 */
 	public static void ensureRenderThread() {
-		if (Thread.currentThread() != sOpenGLThread)
+		if (DEBUG_ONLY_FEATURES) {
+			if (Thread.currentThread() != sOpenGLThread)
 			die("not in OpenGL rendering thread");
+		}
 	}
 
 	/**
 	 * Throw an exception if an OpenGL error has been generated
 	 */
 	public static void verifyNoError() {
+		ensureRenderThread();
 		int err = glGetError();
 		if (err != 0) {
 			die("OpenGL error! " + err + " : " + GLUtils.getEGLErrorString(err));
@@ -43,9 +52,24 @@ public class OurGLTools {
 	}
 
 	/**
+	 * Create a program; die if unsuccessful
+	 * 
+	 * @return program id
+	 */
+	public static int createProgram() {
+		ensureRenderThread();
+		int programId = glCreateProgram();
+		if (programId == 0) {
+			die("OpenGL error! Unable to create program");
+		}
+		return programId;
+	}
+
+	/**
 	 * Link a program; die if unsuccessful
 	 */
 	public static void linkProgram(int programId) {
+		ensureRenderThread();
 		glLinkProgram(programId);
 		verifyNoProgramError(programId, GL_LINK_STATUS);
 	}
@@ -54,11 +78,13 @@ public class OurGLTools {
 	 * Validate a program; die if unsuccessful
 	 */
 	public static void validateProgram(int programId) {
+		ensureRenderThread();
 		glValidateProgram(programId);
 		verifyNoProgramError(programId, GL_VALIDATE_STATUS);
 	}
 
 	public static void compileShader(int programId) {
+		ensureRenderThread();
 		glCompileShader(programId);
 		glGetShaderiv(programId, GL_COMPILE_STATUS, sResultCode, 0);
 		if (!success()) {
@@ -75,6 +101,7 @@ public class OurGLTools {
 	 * Specify program to use in subsequent calls to getProgramLocation()
 	 */
 	public static void setProgram(int programId) {
+		ensureRenderThread();
 		sProgramId = programId;
 	}
 
@@ -87,6 +114,7 @@ public class OurGLTools {
 	 * @return
 	 */
 	public static int getProgramLocation(String attributeOrUniformName) {
+		ensureRenderThread();
 		int location = -1;
 		if (attributeOrUniformName.startsWith("a_")) {
 			location = glGetAttribLocation(sProgramId, attributeOrUniformName);

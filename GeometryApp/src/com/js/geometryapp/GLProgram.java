@@ -1,7 +1,6 @@
 package com.js.geometryapp;
 
 import static android.opengl.GLES20.*;
-import static com.js.basic.Tools.*;
 
 import java.nio.FloatBuffer;
 
@@ -17,10 +16,7 @@ public class GLProgram {
 			GLShader fragmentShader) {
 		setTransformName(OurGLRenderer.TRANSFORM_NAME_DEVICE_TO_NDC);
 		mRenderer = renderer;
-		mProgramObjectId = glCreateProgram();
-		if (mProgramObjectId == 0) {
-			die("unable to create program");
-		}
+		mProgramObjectId = OurGLTools.createProgram();
 		glAttachShader(mProgramObjectId, vertexShader.getId());
 		glAttachShader(mProgramObjectId, fragmentShader.getId());
 		OurGLTools.linkProgram(mProgramObjectId);

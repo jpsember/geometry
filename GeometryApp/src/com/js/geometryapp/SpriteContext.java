@@ -110,10 +110,7 @@ public class SpriteContext {
 	}
 
 	private void prepareProgram() {
-		mProgramObjectId = glCreateProgram();
-		if (mProgramObjectId == 0) {
-			die("unable to create program");
-		}
+		mProgramObjectId = OurGLTools.createProgram();
 		glAttachShader(mProgramObjectId, mVertexShader.getId());
 		glAttachShader(mProgramObjectId, mFragmentShader.getId());
 		OurGLTools.linkProgram(mProgramObjectId);

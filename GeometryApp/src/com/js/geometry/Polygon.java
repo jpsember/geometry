@@ -167,6 +167,18 @@ public class Polygon {
 		return poly;
 	}
 
+	public static Polygon discPolygon(Point origin, float radius,
+			int numberOfSides) {
+		Polygon polygon = new Polygon();
+
+		for (int i = 0; i < numberOfSides; i++) {
+			Point v = MyMath.pointOnCircle(new Point(300, 300), MyMath.M_DEG
+					* i * (360.0f / numberOfSides), 100);
+			polygon.add(v);
+		}
+		return polygon;
+	}
+
 	private static Polygon dragonPolygon(GeometryContext context, int depth) {
 
 		String startScript = "200 500 800 510 700 705 880 780 890 250 300 260 310 600 180 610 180 500";

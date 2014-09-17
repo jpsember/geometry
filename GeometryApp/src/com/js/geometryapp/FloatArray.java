@@ -7,8 +7,11 @@ import java.util.Arrays;
 
 import com.js.geometry.Point;
 
-
 public class FloatArray {
+
+	public void clear() {
+		mSize = 0;
+	}
 
 	public void add(float f) {
 		growTo(mSize + 1);
@@ -42,10 +45,9 @@ public class FloatArray {
 
 	public FloatBuffer asFloatBuffer() {
 		FloatBuffer mBuffer;
-		mBuffer = ByteBuffer
-				.allocateDirect(mArray.length * OurGLTools.BYTES_PER_FLOAT)
+		mBuffer = ByteBuffer.allocateDirect(mSize * OurGLTools.BYTES_PER_FLOAT)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
-		mBuffer.put(mArray, 0, mArray.length);
+		mBuffer.put(mArray, 0, mSize);
 		return mBuffer;
 	}
 

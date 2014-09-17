@@ -43,7 +43,7 @@ public class FloatArray {
 	public FloatBuffer asFloatBuffer() {
 		FloatBuffer mBuffer;
 		mBuffer = ByteBuffer
-				.allocateDirect(mArray.length * Mesh.BYTES_PER_FLOAT)
+				.allocateDirect(mArray.length * OurGLTools.BYTES_PER_FLOAT)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
 		mBuffer.put(mArray, 0, mArray.length);
 		return mBuffer;

@@ -7,28 +7,34 @@ import java.nio.FloatBuffer;
 import android.graphics.Color;
 
 import com.js.geometry.Point;
+import com.js.geometry.R;
+
+import static android.opengl.GLES20.GL_FLOAT;
+import static android.opengl.GLES20.GL_LINE_LOOP;
+import static android.opengl.GLES20.GL_LINE_STRIP;
+import static android.opengl.GLES20.glDrawArrays;
+import static android.opengl.GLES20.glEnableVertexAttribArray;
+import static android.opengl.GLES20.glLineWidth;
+import static android.opengl.GLES20.glUniform4fv;
+import static android.opengl.GLES20.glUseProgram;
+import static android.opengl.GLES20.glVertexAttribPointer;
 import static com.js.basic.Tools.*;
 
 public class Polyline {
 
+	private static final int POSITION_COMPONENT_COUNT = 2; // x y
+
 	public Polyline() {
-		mBlue = 1.0f;
+		mColor = Color.BLUE;
 		setLineWidth(1.0f);
 		doNothing();
 	}
 
 	/**
-	 * Set color for subsequent vertices
-	 * 
-	 * @param r
-	 * @param g
-	 * @param b
+	 * Set color for polyline
 	 */
 	public void setColor(int color) {
-		mRed = Color.red(color) / 255.0f;
-		mGreen = Color.green(color) / 255.0f;
-		mBlue = Color.blue(color) / 255.0f;
-		// mAlpha = Color.alpha(color) / 255.0f;
+		mColor = color;
 	}
 
 	public void setLineWidth(float lineWidth) {
@@ -40,12 +46,7 @@ public class Polyline {
 	}
 
 	public void add(Point vertexLocation) {
-		mArray.add((float) vertexLocation.x);
-		mArray.add((float) vertexLocation.y);
-		mArray.add(mRed);
-		mArray.add(mGreen);
-		mArray.add(mBlue);
-		// TODO: add this later; mArray.add(mAlpha);
+		mArray.add(vertexLocation);
 		mBuffer = null;
 	}
 
@@ -60,10 +61,10 @@ public class Polyline {
 		return mClosed;
 	}
 
-	public FloatBuffer asFloatBuffer() {
+	private FloatBuffer asFloatBuffer() {
 		if (mBuffer == null) {
 			mBuffer = ByteBuffer
-					.allocateDirect(mArray.size() * Mesh.BYTES_PER_FLOAT)
+					.allocateDirect(mArray.size() * OurGLTools.BYTES_PER_FLOAT)
 					.order(ByteOrder.nativeOrder()).asFloatBuffer();
 			mBuffer.put(mArray.array(), 0, mArray.size());
 		}
@@ -71,10 +72,60 @@ public class Polyline {
 	}
 
 	public int vertexCount() {
-		return mArray.size() / 5; // TODO: adjust once alpha channel added
+		return mArray.size() / POSITION_COMPONENT_COUNT;
 	}
 
-	private float mRed, mGreen, mBlue; // , mAlpha;
+	public static void prepareRenderer(OurGLRenderer renderer,
+			String transformName) {
+		GLShader vertexShader = GLShader.readVertexShader(renderer.context(),
+				R.raw.polyline_vertex_shader);
+		GLShader fragmentShader = GLShader.readFragmentShader(
+				renderer.context(), R.raw.polyline_fragment_shader);
+		sProgram = new GLProgram(renderer, vertexShader, fragmentShader);
+		sProgram.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		prepareAttributes();
+	}
+
+	private static void prepareAttributes() {
+		OurGLTools.setProgram(sProgram.getId());
+		sPositionLocation = OurGLTools.getProgramLocation("a_Position");
+		sColorLocation = OurGLTools.getProgramLocation("u_InputColor");
+		sMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
+	}
+
+	public void render() {
+		glUseProgram(sProgram.getId());
+		sProgram.prepareMatrix(null, sMatrixLocation);
+
+		sColor[0] = Color.red(mColor) / 255.0f;
+		sColor[1] = Color.green(mColor) / 255.0f;
+		sColor[2] = Color.blue(mColor) / 255.0f;
+		sColor[3] = Color.alpha(mColor) / 255.0f;
+
+		glUniform4fv(sColorLocation, 1, sColor, 0);
+
+		FloatBuffer fb = asFloatBuffer();
+		fb.position(0);
+		int stride = (POSITION_COMPONENT_COUNT) * OurGLTools.BYTES_PER_FLOAT;
+
+		glVertexAttribPointer(sPositionLocation, POSITION_COMPONENT_COUNT,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(sPositionLocation);
+
+		// Until issue #18 is fixed, bump up line widths using this hack
+		glLineWidth(lineWidth() * 1.5f);
+
+		glDrawArrays(isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
+				vertexCount());
+	}
+
+	private static GLProgram sProgram;
+	private static int sPositionLocation;
+	private static int sColorLocation;
+	private static int sMatrixLocation;
+	private static float[] sColor = new float[4];
+
+	private int mColor;
 	private FloatArray mArray = new FloatArray();
 	private FloatBuffer mBuffer;
 	private boolean mClosed;

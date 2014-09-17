@@ -7,6 +7,8 @@ import android.opengl.GLUtils;
 
 public final class OurGLTools {
 
+	public static final int BYTES_PER_FLOAT = 4;
+
 	/**
 	 * Generate code that should be 'debug only', i.e., preproduction?
 	 */

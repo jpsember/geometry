@@ -1,11 +1,9 @@
 package com.js.geometryapp;
 
-import android.content.Context;
 import android.graphics.Color;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import com.js.geometry.R;
 
 import static com.js.basic.Tools.*;
 
@@ -41,7 +39,7 @@ public abstract class AlgDisplayElement {
 	}
 
 	public static void renderPolyline() {
-		sProgram.render(sPolyline, null);
+		sPolyline.render();
 		sPolyline = null;
 	}
 
@@ -108,13 +106,8 @@ public abstract class AlgDisplayElement {
 	 */
 	public static void setRenderer(AlgorithmRenderer renderer) {
 		OurGLTools.ensureRenderThread();
-		Context sContext = renderer.context();
-		sVertexShader = GLShader.readVertexShader(sContext,
-				R.raw.simple_vertex_shader);
-		sFragmentShader = GLShader.readFragmentShader(sContext,
-				R.raw.simple_fragment_shader);
-		sProgram = new GLProgram(renderer, sVertexShader, sFragmentShader);
-		sProgram.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		Polyline.prepareRenderer(renderer,
+				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sFont = new Font(24);
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
@@ -147,9 +140,6 @@ public abstract class AlgDisplayElement {
 	private float mLineWidth;
 
 	private static Font sFont;
-	private static GLShader sVertexShader;
-	private static GLShader sFragmentShader;
-	private static GLProgram sProgram;
 	private static Polyline sPolyline;
 	private static float sLineWidth;
 	private static int sColor;

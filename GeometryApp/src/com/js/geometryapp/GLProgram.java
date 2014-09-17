@@ -2,8 +2,6 @@ package com.js.geometryapp;
 
 import static android.opengl.GLES20.*;
 
-import java.nio.FloatBuffer;
-
 import android.graphics.Matrix;
 
 public class GLProgram {
@@ -21,19 +19,10 @@ public class GLProgram {
 		glAttachShader(mProgramObjectId, fragmentShader.getId());
 		OurGLTools.linkProgram(mProgramObjectId);
 		OurGLTools.validateProgram(mProgramObjectId);
-
-		prepareAttributes();
 	}
 
 	public int getId() {
 		return mProgramObjectId;
-	}
-
-	private void prepareAttributes() {
-		OurGLTools.setProgram(mProgramObjectId);
-		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
-		mColorLocation = OurGLTools.getProgramLocation("a_Color");
-		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
 	}
 
 	/**
@@ -60,9 +49,20 @@ public class GLProgram {
 		return row * 3 + col;
 	}
 
-	private void prepareMatrix(Matrix transform) {
+	/**
+	 * Prepare transform matrix for program, if necessary
+	 * 
+	 * @param transform
+	 *            optional additional transformation matrix to concatenate to
+	 *            the render's prepared matrix
+	 * @param matrixLocation
+	 *            location of matrix within program
+	 */
+	protected void prepareMatrix(Matrix transform, int matrixLocation) {
+
 		// Only do this if the previously prepared matrix is no longer valid, or
 		// if we need to include an object-specific transformation
+
 		if (mRenderer.projectionMatrixId() != mPreparedProjectionMatrixId
 				|| transform != null) {
 			Matrix mainTransform = mRenderer.getTransform(mTransformName);
@@ -105,70 +105,13 @@ public class GLProgram {
 				v4[i4(3, 2)] = 0;
 				v4[i4(3, 3)] = v3[i3(2, 2)];
 
-				glUniformMatrix4fv(mMatrixLocation, 1, false, v4, 0);
+				glUniformMatrix4fv(matrixLocation, 1, false, v4, 0);
 			}
 		}
-	}
-
-	public void render(Polyline p, Matrix transform) {
-		glUseProgram(getId());
-		prepareMatrix(transform);
-		FloatBuffer fb = p.asFloatBuffer();
-		fb.position(0);
-		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
-				* Mesh.BYTES_PER_FLOAT;
-
-		glVertexAttribPointer(mPositionLocation, Mesh.POSITION_COMPONENT_COUNT,
-				GL_FLOAT, false, stride, fb);
-		glEnableVertexAttribArray(mPositionLocation);
-
-		fb.position(Mesh.POSITION_COMPONENT_COUNT);
-		glVertexAttribPointer(mColorLocation, Mesh.COLOR_COMPONENT_COUNT,
-				GL_FLOAT, false, stride, fb);
-		glEnableVertexAttribArray(mColorLocation);
-
-		// Until issue #18 is fixed, bump up line widths using this hack
-		glLineWidth(p.lineWidth() * 1.5f);
-
-		glDrawArrays(p.isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
-				p.vertexCount());
-	}
-
-	/**
-	 * Render mesh
-	 * 
-	 * @param mesh
-	 * @param renderer
-	 *            the renderer whose projection matrix is to be used
-	 * @param transform
-	 *            optional additional transformation to apply, or null
-	 */
-	public void render(Mesh mesh, Matrix transform) {
-		glUseProgram(getId());
-		// I'm assuming that each program remembers its own projection matrix
-		prepareMatrix(transform);
-		FloatBuffer fb = mesh.asFloatBuffer();
-		fb.position(0);
-		int stride = (Mesh.POSITION_COMPONENT_COUNT + Mesh.COLOR_COMPONENT_COUNT)
-				* Mesh.BYTES_PER_FLOAT;
-
-		glVertexAttribPointer(mPositionLocation, Mesh.POSITION_COMPONENT_COUNT,
-				GL_FLOAT, false, stride, fb);
-		glEnableVertexAttribArray(mPositionLocation);
-
-		fb.position(Mesh.POSITION_COMPONENT_COUNT);
-		glVertexAttribPointer(mColorLocation, Mesh.COLOR_COMPONENT_COUNT,
-				GL_FLOAT, false, stride, fb);
-		glEnableVertexAttribArray(mColorLocation);
-
-		glDrawArrays(GL_TRIANGLES, 0, mesh.vertexCount());
 	}
 
 	private OurGLRenderer mRenderer;
 	private int mPreparedProjectionMatrixId;
 	private int mProgramObjectId;
-	private int mPositionLocation;
-	private int mColorLocation;
-	private int mMatrixLocation;
 	private String mTransformName;
 }

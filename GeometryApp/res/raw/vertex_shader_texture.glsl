@@ -1,5 +1,5 @@
 uniform mat4 u_Matrix;  
-uniform vec2 u_SpritePosition;  // per-sprite offset 
+uniform vec2 u_SpritePosition;
 
 attribute vec4 a_Position;      
 attribute vec2 a_TexCoordinate; 

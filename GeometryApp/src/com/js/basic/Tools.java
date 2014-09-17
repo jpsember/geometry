@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 
 import android.graphics.Matrix;
 
+// TODO: remove dependence on this package
 import com.js.geometry.MyMath;
 
 public final class Tools {
@@ -341,6 +342,24 @@ public final class Tools {
 
 	public static String d(Boolean b) {
 		return b.booleanValue() ? "T" : "F";
+	}
+
+	public static String d(float[] f) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i = 0; i < f.length; i++) {
+			sb.append(f(f[i]));
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	public static String d(int[] f) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i = 0; i < f.length; i++) {
+			sb.append(f(f[i]));
+		}
+		sb.append(']');
+		return sb.toString();
 	}
 
 	public static String d(Object obj) {

@@ -20,6 +20,8 @@ import android.content.Context;
 
 public class SampleRenderer extends AlgorithmRenderer {
 
+	private static final boolean ADD_TEST_SPRITE = false;
+
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
 		super(context);
 		mStepper = AlgorithmStepper.sharedInstance();
@@ -32,7 +34,8 @@ public class SampleRenderer extends AlgorithmRenderer {
 		super.onSurfaceCreated(gl, config);
 		// Let the algorithm stepper elements prepare using this renderer
 		AlgDisplayElement.setRenderer(this);
-		if (true) {
+
+		if (ADD_TEST_SPRITE) {
 			warning("adding sprite for test purposes");
 			GLTexture t = new GLTexture(context(), R.raw.texture);
 			Rect window = new Rect(0, 0, t.width(), t.height());

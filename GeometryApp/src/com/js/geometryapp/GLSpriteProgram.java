@@ -19,6 +19,7 @@ public class GLSpriteProgram {
 	 */
 	public GLSpriteProgram(SpriteContext spriteContext, GLTexture texture,
 			Rect textureWindow) {
+		doNothing();
 		mSpriteContext = spriteContext;
 		mTexture = texture;
 		mTextureWindow = textureWindow;
@@ -31,11 +32,6 @@ public class GLSpriteProgram {
 
 		float textureWidth = mTextureWindow.width;
 		float textureHeight = mTextureWindow.height;
-		if (true) {
-			warning("making textures big");
-			textureWidth *= 8;
-			textureHeight *= 8;
-		}
 
 		Point p0 = new Point(0, 0);
 		Point p2 = new Point(textureWidth, textureHeight);

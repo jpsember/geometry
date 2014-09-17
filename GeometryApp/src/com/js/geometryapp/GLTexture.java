@@ -18,7 +18,7 @@ import android.opengl.GLUtils;
 public class GLTexture {
 
 	public GLTexture(Bitmap bitmap) {
-		OurGLRenderer.ensureOpenGLThread();
+		OurGLTools.ensureRenderThread();
 		initWithBitmap(bitmap);
 	}
 
@@ -41,20 +41,13 @@ public class GLTexture {
 	 * @param resourceId
 	 */
 	public GLTexture(Context context, int resourceId) {
-		OurGLRenderer.ensureOpenGLThread();
+		OurGLTools.ensureRenderThread();
 
 		doNothing();
 
 		InputStream is = context.getResources().openRawResource(resourceId);
 		Bitmap bitmap = BitmapFactory.decodeStream(is);
 		initWithBitmap(bitmap);
-	}
-
-	public static void reportAnyError() {
-		int err = glGetError();
-		if (err != 0) {
-			pr("OpenGL error! " + err + " : " + GLUtils.getEGLErrorString(err));
-		}
 	}
 
 	private int textureId() {
@@ -93,7 +86,7 @@ public class GLTexture {
 		// from our bitmap
 		GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, mBitmap, 0);
 
-		reportAnyError();
+		OurGLTools.verifyNoError();
 	}
 
 	public int width() {

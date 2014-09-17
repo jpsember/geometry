@@ -1,117 +1,46 @@
 package com.js.geometryapp;
 
-import static android.opengl.GLES20.GL_FLOAT;
-import static android.opengl.GLES20.GL_LINK_STATUS;
-import static android.opengl.GLES20.GL_TRIANGLES;
-import static android.opengl.GLES20.GL_VALIDATE_STATUS;
-import static android.opengl.GLES20.glAttachShader;
-import static android.opengl.GLES20.glCreateProgram;
-import static android.opengl.GLES20.glDrawArrays;
-import static android.opengl.GLES20.glEnableVertexAttribArray;
-import static android.opengl.GLES20.glGetAttribLocation;
-import static android.opengl.GLES20.glGetProgramInfoLog;
-import static android.opengl.GLES20.glGetProgramiv;
-import static android.opengl.GLES20.glGetUniformLocation;
-import static android.opengl.GLES20.glLinkProgram;
-import static android.opengl.GLES20.glUniform2f;
-import static android.opengl.GLES20.glUniformMatrix4fv;
-import static android.opengl.GLES20.glUseProgram;
-import static android.opengl.GLES20.glValidateProgram;
-import static android.opengl.GLES20.glVertexAttribPointer;
+import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
 import java.nio.FloatBuffer;
 
 import android.content.Context;
+import android.graphics.Color;
 
 import com.js.geometry.Point;
 import com.js.geometry.R;
 
 public class SpriteContext {
-	private static final int POSITION_COMPONENT_COUNT = 2; // x y
-	private static final int TEXTURE_COMPONENT_COUNT = 2; // u v
-	private static final int TOTAL_COMPONENTS = POSITION_COMPONENT_COUNT
+  // TODO: we're still referring to Mesh.xxx constants in some places; maybe refactor
+	protected static final int POSITION_COMPONENT_COUNT = 2; // x y
+	protected static final int TEXTURE_COMPONENT_COUNT = 2; // u v
+	protected static final int TOTAL_COMPONENTS = POSITION_COMPONENT_COUNT
 			+ TEXTURE_COMPONENT_COUNT;
 
-	/**
-	 * Must be called by onSurfaceCreated()
-	 * 
-	 * @param context
-	 */
-	public static void prepare(OurGLRenderer renderer) {
-		sRenderer = renderer;
-
-		sNormalContext = new SpriteContext();
-	}
-
-	private void prepareShaders() {
-		Context context = sRenderer.context();
-		mVertexShader = GLShader.readVertexShader(context,
-				R.raw.vertex_shader_texture);
-		mFragmentShader = GLShader.readFragmentShader(context,
-				R.raw.fragment_shader_texture);
+	public SpriteContext(String transformName, boolean tintMode) {
+		mTransformName = transformName;
+		if (tintMode)
+			setTintMode();
 	}
 
 	/**
-	 * Select this context's OpenGL program. Also, prepares the program (and
-	 * associated shaders) if it hasn't already been done. We don't do this in
-	 * the constructor, since it must be done within the OpenGL thread
+	 * Make this sprite context generate tinted sprites
 	 */
-	private void activateProgram() {
-		int currentSurfaceId = sRenderer.surfaceId();
-		if (currentSurfaceId != mPreparedSurfaceId) {
-			mPreparedSurfaceId = currentSurfaceId;
-			prepareShaders();
-			prepareProgram();
-		}
-
-		glUseProgram(mProgramObjectId);
+	private void setTintMode() {
+		mTintMode = true;
+		mTextColor = new float[4];
 	}
 
-	private int mPreparedSurfaceId;
-
-	private void prepareProgram() {
-		mProgramObjectId = glCreateProgram();
-		if (mProgramObjectId == 0) {
-			die("unable to create program");
-		}
-		glAttachShader(mProgramObjectId, mVertexShader.getId());
-		glAttachShader(mProgramObjectId, mFragmentShader.getId());
-		glLinkProgram(mProgramObjectId);
-
-		glGetProgramiv(mProgramObjectId, GL_LINK_STATUS, sResultCode, 0);
-		if (!success()) {
-			warning("failed to link program:\n"
-					+ glGetProgramInfoLog(mProgramObjectId));
-			return;
-		}
-		validate();
-		prepareAttributes();
-	}
-
-	private void validate() {
-		glValidateProgram(mProgramObjectId);
-
-		glGetProgramiv(mProgramObjectId, GL_VALIDATE_STATUS, sResultCode, 0);
-		if (!success()) {
-			warning("failed to validate program:\n"
-					+ glGetProgramInfoLog(mProgramObjectId));
-			return;
-		}
-	}
-
-	private boolean success() {
-		return sResultCode[0] != 0;
-	}
-
-	private void prepareAttributes() {
-		// Must agree with vertex_shader_texture.glsl
-		mPositionLocation = glGetAttribLocation(mProgramObjectId, "a_Position");
-		mSpritePositionLocation = glGetUniformLocation(mProgramObjectId,
-				"u_SpritePosition");
-		mTextureCoordinateLocation = glGetAttribLocation(mProgramObjectId,
-				"a_TexCoordinate");
-		mMatrixLocation = glGetUniformLocation(mProgramObjectId, "u_Matrix");
+	/**
+	 * Set tint color; context must have tint mode set
+	 */
+	public void setTintColor(int color) {
+		ASSERT(mTintMode);
+		mTextColor[0] = Color.red(color) / 255.0f;
+		mTextColor[1] = Color.green(color) / 255.0f;
+		mTextColor[2] = Color.blue(color) / 255.0f;
+		mTextColor[3] = Color.alpha(color) / 255.0f;
 	}
 
 	public void renderSprite(GLTexture mTexture, FloatBuffer vertexData,
@@ -120,8 +49,12 @@ public class SpriteContext {
 
 		prepareProjection();
 
-		// Specify offset
 		glUniform2f(mSpritePositionLocation, mPosition.x, mPosition.y);
+
+		if (mTintMode) {
+			// Send one vec4 (the second parameter; this was a gotcha)
+			glUniform4fv(mColorLocation, 1, mTextColor, 0);
+		}
 
 		mTexture.select();
 
@@ -137,6 +70,71 @@ public class SpriteContext {
 				TEXTURE_COMPONENT_COUNT, GL_FLOAT, false, stride, vertexData);
 		glEnableVertexAttribArray(mTextureCoordinateLocation);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	/**
+	 * Must be called by onSurfaceCreated()
+	 * 
+	 * @param context
+	 */
+	public static void prepare(OurGLRenderer renderer) {
+		sRenderer = renderer;
+
+		sNormalContext = new SpriteContext(
+				OurGLRenderer.TRANSFORM_NAME_DEVICE_TO_NDC, false);
+	}
+
+	private void prepareShaders() {
+		Context context = sRenderer.context();
+		mVertexShader = GLShader.readVertexShader(context,
+				R.raw.vertex_shader_texture);
+		mFragmentShader = GLShader.readFragmentShader(context,
+				mTintMode ? R.raw.fragment_shader_mask
+						: R.raw.fragment_shader_texture);
+	}
+
+	/**
+	 * Select this context's OpenGL program. Also, prepares the program (and
+	 * associated shaders) if it hasn't already been done. We don't do this in
+	 * the constructor, since it must be done within the OpenGL thread
+	 */
+	protected void activateProgram() {
+		int currentSurfaceId = sRenderer.surfaceId();
+		if (currentSurfaceId != mPreparedSurfaceId) {
+			mPreparedSurfaceId = currentSurfaceId;
+			prepareShaders();
+			prepareProgram();
+		}
+
+		glUseProgram(mProgramObjectId);
+	}
+
+	private void prepareProgram() {
+		mProgramObjectId = glCreateProgram();
+		if (mProgramObjectId == 0) {
+			die("unable to create program");
+		}
+		glAttachShader(mProgramObjectId, mVertexShader.getId());
+		glAttachShader(mProgramObjectId, mFragmentShader.getId());
+		OurGLTools.linkProgram(mProgramObjectId);
+		OurGLTools.validateProgram(mProgramObjectId);
+		prepareAttributes();
+	}
+
+	private void prepareAttributes() {
+		// Must agree with vertex_shader_texture.glsl
+		mPositionLocation = glGetAttribLocation(mProgramObjectId, "a_Position");
+		mSpritePositionLocation = glGetUniformLocation(mProgramObjectId,
+				"u_SpritePosition");
+		mTextureCoordinateLocation = glGetAttribLocation(mProgramObjectId,
+				"a_TexCoordinate");
+		mMatrixLocation = glGetUniformLocation(mProgramObjectId, "u_Matrix");
+
+		if (mTintMode) {
+			// This must agree with fragment_shader_texture.glsl
+			mColorLocation = glGetUniformLocation(mProgramObjectId,
+					"u_InputColor");
+		}
 	}
 
 	/**
@@ -159,7 +157,7 @@ public class SpriteContext {
 
 		// Transform 2D screen->NDC matrix to a 3D version
 		float v3[] = new float[9];
-		sRenderer.projectionMatrix().getValues(v3);
+		sRenderer.getTransform(mTransformName).getValues(v3);
 
 		float v4[] = new float[16];
 		v4[i4(0, 0)] = v3[i3(0, 0)];
@@ -201,17 +199,20 @@ public class SpriteContext {
 		return sNormalContext;
 	}
 
-	private static int sResultCode[] = new int[1];
 	private static OurGLRenderer sRenderer;
 	private static SpriteContext sNormalContext;
 
 	private int mPreparedProjectionMatrixId;
+	private int mPreparedSurfaceId;
 	private int mProgramObjectId;
 	private int mPositionLocation;
 	private int mTextureCoordinateLocation;
 	private int mMatrixLocation;
 	private int mSpritePositionLocation;
+	private boolean mTintMode;
 	private GLShader mVertexShader;
 	private GLShader mFragmentShader;
-
+	private String mTransformName;
+	private int mColorLocation;
+	private float[] mTextColor;
 }

@@ -107,29 +107,23 @@ public abstract class AlgDisplayElement {
 	 * onSurfaceCreated(...)
 	 */
 	public static void setRenderer(AlgorithmRenderer renderer) {
-		OurGLRenderer.ensureOpenGLThread();
+		OurGLTools.ensureRenderThread();
 		Context sContext = renderer.context();
 		sVertexShader = GLShader.readVertexShader(sContext,
 				R.raw.simple_vertex_shader);
 		sFragmentShader = GLShader.readFragmentShader(sContext,
 				R.raw.simple_fragment_shader);
-		sProgram = GLProgram.build(renderer, sVertexShader, sFragmentShader);
+		sProgram = new GLProgram(renderer, sVertexShader, sFragmentShader);
+		sProgram.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sFont = new Font(24);
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
-		if (true) {
-			warning("omitting frame title while debugging sprite context issues");
-			return;
-		}
 		Point p = new Point(10, 10 + sFont.lineHeight());
 
-		// TODO: Issue #13: we must use a device-space, not algorithm-space,
-		// transform when rendering text; currently the text is not in the right
-		// location and is very tiny
-
+		sFont.setColor(Color.BLACK);
 		sFont.render(sFrameTitle, p);
 	}
 

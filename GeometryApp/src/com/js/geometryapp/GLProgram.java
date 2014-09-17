@@ -9,15 +9,13 @@ import android.graphics.Matrix;
 
 public class GLProgram {
 
-	public static GLProgram build(OurGLRenderer renderer,
-			GLShader vertexShader, GLShader fragmentShader) {
-		GLProgram p = new GLProgram();
-		p.buildAux(renderer, vertexShader, fragmentShader);
-		return p;
+	public void setTransformName(String name) {
+		mTransformName = name;
 	}
 
-	private void buildAux(OurGLRenderer renderer, GLShader vertexShader,
+	public GLProgram(OurGLRenderer renderer, GLShader vertexShader,
 			GLShader fragmentShader) {
+		setTransformName(OurGLRenderer.TRANSFORM_NAME_DEVICE_TO_NDC);
 		mRenderer = renderer;
 		mProgramObjectId = glCreateProgram();
 		if (mProgramObjectId == 0) {
@@ -25,59 +23,23 @@ public class GLProgram {
 		}
 		glAttachShader(mProgramObjectId, vertexShader.getId());
 		glAttachShader(mProgramObjectId, fragmentShader.getId());
-		glLinkProgram(mProgramObjectId);
-
-		glGetProgramiv(mProgramObjectId, GL_LINK_STATUS, sResultCode, 0);
-		if (!success()) {
-			warning("failed to link program:\n" + glGetProgramInfoLog(getId()));
-			return;
-		}
-
-		validate();
+		OurGLTools.linkProgram(mProgramObjectId);
+		OurGLTools.validateProgram(mProgramObjectId);
 
 		prepareAttributes();
-	}
-
-	private void validate() {
-		glValidateProgram(getId());
-
-		glGetProgramiv(mProgramObjectId, GL_VALIDATE_STATUS, sResultCode, 0);
-		if (!success()) {
-			warning("failed to validate program:\n"
-					+ glGetProgramInfoLog(getId()));
-			return;
-		}
 	}
 
 	public int getId() {
 		return mProgramObjectId;
 	}
 
-	private void dispose() {
-		if (mProgramObjectId != 0) {
-			glDeleteProgram(mProgramObjectId);
-			mProgramObjectId = 0;
-		}
-	}
-
-	@Override
-	protected void finalize() throws Throwable {
-		dispose();
-		super.finalize();
-	}
-
-	private static boolean success() {
-		return sResultCode[0] != 0;
-	}
-
 	private void prepareAttributes() {
+    // TODO: have OurGLTools wrappers for these that look for errors
 		// Must agree with simple_vertex_shader.glsl
 		mPositionLocation = glGetAttribLocation(mProgramObjectId, "a_Position");
 		mColorLocation = glGetAttribLocation(mProgramObjectId, "a_Color");
 		mMatrixLocation = glGetUniformLocation(mProgramObjectId, "u_Matrix");
 	}
-
-	private static int sResultCode[] = new int[1];
 
 	/**
 	 * Convenience methods to calculate index of matrix element from
@@ -108,16 +70,17 @@ public class GLProgram {
 		// if we need to include an object-specific transformation
 		if (mRenderer.projectionMatrixId() != mPreparedProjectionMatrixId
 				|| transform != null) {
+			Matrix mainTransform = mRenderer.getTransform(mTransformName);
 			Matrix m;
 			if (transform != null) {
 				// We won't want to reuse this particular prepared matrix again
 				mPreparedProjectionMatrixId = 0;
 				// Concatenate the mesh matrix to the projection matrix
 				m = new Matrix(transform);
-				m.postConcat(mRenderer.projectionMatrix());
+				m.postConcat(mainTransform);
 			} else {
 				mPreparedProjectionMatrixId = mRenderer.projectionMatrixId();
-				m = mRenderer.projectionMatrix();
+				m = mainTransform;
 			}
 
 			// Transform 2D screen->NDC matrix to a 3D version
@@ -212,4 +175,5 @@ public class GLProgram {
 	private int mPositionLocation;
 	private int mColorLocation;
 	private int mMatrixLocation;
+	private String mTransformName;
 }

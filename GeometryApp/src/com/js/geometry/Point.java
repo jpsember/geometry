@@ -5,6 +5,8 @@ import android.graphics.Matrix;
 
 public final class Point {
 
+	public static final Point ZERO = new Point();
+	
 	public Point() {
 	}
 

@@ -1,5 +1,8 @@
 package com.js.geometryapp;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -13,7 +16,7 @@ import android.opengl.GLSurfaceView;
 
 public class OurGLRenderer implements GLSurfaceView.Renderer {
 
-	private static Thread sOpenGLThread;
+	public static final String TRANSFORM_NAME_DEVICE_TO_NDC = "device->ndc";
 
 	public OurGLRenderer(Context context) {
 		mContext = context;
@@ -23,50 +26,70 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mContext;
 	}
 
-	public static void ensureOpenGLThread() {
-		if (Thread.currentThread() != sOpenGLThread)
-			die("not in OpenGL thread");
-	}
-
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		sOpenGLThread = Thread.currentThread();
+		OurGLTools.defineOpenGLThread();
 		mSurfaceId += 1;
 		SpriteContext.prepare(this);
 	}
 
 	/**
-	 * Construct matrix to transform from screen coordinates to OpenGL's
+	 * Construct matrix to transform from device coordinates to OpenGL's
 	 * normalized device coordinates (-1,-1 ... 1,1)
-	 * 
-	 * @param w
-	 *            width of view, pixels
-	 * @param h
-	 *            height of view, pixels
 	 */
-	protected void buildProjectionMatrix() {
+	private Matrix buildDeviceToNDCProjectionMatrix() {
 		float w = mDeviceSize.x;
 		float h = mDeviceSize.y;
 		float sx = 2.0f / w;
 		float sy = 2.0f / h;
-
+		Matrix mScreenToNDCTransform = new Matrix();
 		mScreenToNDCTransform.setScale(sx, sy);
 		mScreenToNDCTransform.preTranslate(-w / 2.0f, -h / 2.0f);
+		return mScreenToNDCTransform;
 	}
 
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
+		gl.glViewport(0, 0, w, h);
 		mDeviceSize.setTo(w, h);
 		mMatrixId += 1;
-		gl.glViewport(0, 0, w, h);
-		buildProjectionMatrix();
+		constructTransforms();
 	}
 
+	/**
+	 * Add a transformation matrix
+	 * 
+	 * @param name
+	 *            unique name for the matrix
+	 * @param transform
+	 *            the matrix
+	 */
+	protected void addTransform(String name, Matrix transform) {
+		mTransformMap.put(name, transform);
+	}
+
+	/**
+	 * Construct transformation matrices for the current surface. Default
+	 * implementation throws out any old transforms, and generates
+	 * TRANSFORM_NAME_DEVICE_TO_NDC which converts from device space to
+	 * normalized device coordinates (see
+	 * https://github.com/jpsember/geometry/issues/22)
+	 */
+	protected void constructTransforms() {
+		mTransformMap.clear();
+		addTransform(TRANSFORM_NAME_DEVICE_TO_NDC,
+				buildDeviceToNDCProjectionMatrix());
+	}
+
+	@Override
 	public void onDrawFrame(GL10 gl) {
-		gl.glClearColor(1f, 1f, 1f, 1f);
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
+		gl.glClearColor(0, 0, 0, 1);
+		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 	}
 
-	public Matrix projectionMatrix() {
-		return mScreenToNDCTransform;
+	public Matrix getTransform(String key) {
+		Matrix m = mTransformMap.get(key);
+		if (m == null)
+			die("transform not found for key: " + key);
+		return m;
 	}
 
 	/**
@@ -81,12 +104,12 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		// addition to projection matrices,
 		// OpenGL programs and shaders are also no longer valid.. or are they
 		// only no longer valid when a surface is created as opposed to changed?
-		ensureOpenGLThread();
+		OurGLTools.ensureRenderThread();
 		return mMatrixId;
 	}
 
 	public int surfaceId() {
-		ensureOpenGLThread();
+		OurGLTools.ensureRenderThread();
 		return mSurfaceId;
 	}
 
@@ -94,10 +117,10 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mDeviceSize;
 	}
 
+  // TODO: what do we think of these 'final' attributes?
 	private final Context mContext;
-
-	private Point mDeviceSize = new Point();
-	private Matrix mScreenToNDCTransform = new Matrix();
+	private final Map<String, Matrix> mTransformMap = new HashMap();
+	private final Point mDeviceSize = new Point();
 	private int mMatrixId;
 	private int mSurfaceId;
 }

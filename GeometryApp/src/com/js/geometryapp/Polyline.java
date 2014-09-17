@@ -97,10 +97,7 @@ public class Polyline {
 		glUseProgram(sProgram.getId());
 		sProgram.prepareMatrix(null, sMatrixLocation);
 
-		sColor[0] = Color.red(mColor) / 255.0f;
-		sColor[1] = Color.green(mColor) / 255.0f;
-		sColor[2] = Color.blue(mColor) / 255.0f;
-		sColor[3] = Color.alpha(mColor) / 255.0f;
+		OurGLTools.convertColorToOpenGL(mColor, sColor);
 
 		glUniform4fv(sColorLocation, 1, sColor, 0);
 

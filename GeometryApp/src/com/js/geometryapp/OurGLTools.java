@@ -3,6 +3,7 @@ package com.js.geometryapp;
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
+import android.graphics.Color;
 import android.opengl.GLUtils;
 
 public final class OurGLTools {
@@ -20,7 +21,7 @@ public final class OurGLTools {
 	 */
 	public static void defineOpenGLThread() {
 		if (DEBUG_ONLY_FEATURES)
-		sOpenGLThread = Thread.currentThread();
+			sOpenGLThread = Thread.currentThread();
 	}
 
 	/**
@@ -30,7 +31,7 @@ public final class OurGLTools {
 	public static void ensureRenderThread() {
 		if (DEBUG_ONLY_FEATURES) {
 			if (Thread.currentThread() != sOpenGLThread)
-			die("not in OpenGL rendering thread");
+				die("not in OpenGL rendering thread");
 		}
 	}
 
@@ -129,6 +130,13 @@ public final class OurGLTools {
 					+ attributeOrUniformName);
 		verifyNoError();
 		return location;
+	}
+
+	public static void convertColorToOpenGL(int color, float[] rgba) {
+		rgba[0] = Color.red(color) * (1.0f / 255.0f);
+		rgba[1] = Color.green(color) * (1.0f / 255.0f);
+		rgba[2] = Color.blue(color) * (1.0f / 255.0f);
+		rgba[3] = Color.alpha(color) * (1.0f / 255.0f);
 	}
 
 	private static int sResultCode[] = new int[1];

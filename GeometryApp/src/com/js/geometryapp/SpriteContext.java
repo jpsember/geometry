@@ -6,7 +6,6 @@ import static com.js.basic.Tools.*;
 import java.nio.FloatBuffer;
 
 import android.content.Context;
-import android.graphics.Color;
 
 import com.js.geometry.Point;
 import com.js.geometry.R;
@@ -29,7 +28,7 @@ public class SpriteContext {
 	 */
 	private void setTintMode() {
 		mTintMode = true;
-		mTextColor = new float[4];
+		mTintColor = new float[4];
 	}
 
 	/**
@@ -37,10 +36,7 @@ public class SpriteContext {
 	 */
 	public void setTintColor(int color) {
 		ASSERT(mTintMode);
-		mTextColor[0] = Color.red(color) / 255.0f;
-		mTextColor[1] = Color.green(color) / 255.0f;
-		mTextColor[2] = Color.blue(color) / 255.0f;
-		mTextColor[3] = Color.alpha(color) / 255.0f;
+		OurGLTools.convertColorToOpenGL(color, mTintColor);
 	}
 
 	public void renderSprite(GLTexture mTexture, FloatBuffer vertexData,
@@ -53,7 +49,7 @@ public class SpriteContext {
 
 		if (mTintMode) {
 			// Send one vec4 (the second parameter; this was a gotcha)
-			glUniform4fv(mColorLocation, 1, mTextColor, 0);
+			glUniform4fv(mColorLocation, 1, mTintColor, 0);
 		}
 
 		mTexture.select();
@@ -209,5 +205,5 @@ public class SpriteContext {
 	private GLShader mFragmentShader;
 	private String mTransformName;
 	private int mColorLocation;
-	private float[] mTextColor;
+	private float[] mTintColor;
 }

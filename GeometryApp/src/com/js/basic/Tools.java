@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 
 import android.graphics.Matrix;
 
-// TODO: remove dependence on this package
 import com.js.geometry.MyMath;
 
 public final class Tools {

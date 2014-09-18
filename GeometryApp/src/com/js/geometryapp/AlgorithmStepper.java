@@ -380,12 +380,21 @@ public class AlgorithmStepper {
 	}
 
 	private boolean isActive() {
-		return mActive;
+		return mActive && (mDisableCounter == 0);
+	}
+
+	/**
+	 * This is a temporary solution for issue #25
+	 */
+	public void adjustDisable(int amount) {
+		mDisableCounter += amount;
+		ASSERT(mDisableCounter >= 0);
 	}
 
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 
+	private int mDisableCounter;
 	private ArrayList<AlgDisplayElement> mDisplayElements = new ArrayList();
 	private Map<String, AlgDisplayElement> mBackgroundElements = new HashMap();
 	private String mFrameTitle;

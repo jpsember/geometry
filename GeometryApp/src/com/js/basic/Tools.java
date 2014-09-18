@@ -375,10 +375,16 @@ public final class Tools {
 	}
 
 	public static String nameOf(Object obj) {
+		return nameOf(obj, true);
+	}
+
+	public static String nameOf(Object obj, boolean includeClassName) {
 		if (obj == null)
 			return "<null>";
-		return obj.getClass().getSimpleName() + ":"
-				+ UniqueIdentifier.nameFor(obj);
+		String identifier = UniqueIdentifier.nameFor(obj);
+		if (!includeClassName)
+			return identifier;
+		return obj.getClass().getSimpleName() + ":" + identifier;
 	}
 
 	public static String d(Map m) {

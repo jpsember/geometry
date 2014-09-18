@@ -5,6 +5,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import static com.js.basic.Tools.*;
 
+import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -49,6 +50,16 @@ public class SampleRenderer extends AlgorithmRenderer {
 			mSamplePolygon2 = Polygon.discPolygon(Point.ZERO, 100, 13);
 			mSamplePolygon2.transformToFitRect(new Rect(300, 200, 400, 350),
 					false);
+
+			GeometryContext c = new GeometryContext(11);
+			mSamplePolygon3 = Polygon.testPolygon(c,
+					true ? Polygon.TESTPOLY_CONCAVE_BLOB
+							: Polygon.TESTPOLY_DRAGON_X + 8);
+			if (false) {
+				warning("perturbing sample polygon");
+				mSamplePolygon3.perturb(c);
+			}
+			mSamplePolygon3.transformToFitRect(algorithmRect(), false);
 
 			mPolygonRenderer = null;
 		}
@@ -97,7 +108,7 @@ public class SampleRenderer extends AlgorithmRenderer {
 				int step = mFrame % (duration * 2);
 				if (step >= duration) {
 					additionalTransform = new Matrix();
-					float s = 1.0f + ((step - duration) / (float) duration);
+					float s = 1.5f + ((step - duration) / (float) duration);
 					additionalTransform.setScale(s, s);
 				}
 			}
@@ -105,11 +116,19 @@ public class SampleRenderer extends AlgorithmRenderer {
 			{
 				int duration = 11;
 				if (mFrame >= duration) {
-					int step = mFrame % (duration * 2);
+					int step = mFrame % (duration * 4);
 					if (step % duration == 0) {
-						mPolygonRenderer
-								.setConvexPolygon(step == 0 ? mSamplePolygon2
-										: mSamplePolygon);
+						boolean convex = (step / (duration * 2)) == 0;
+						convex = false;
+						Polygon sourcePolygon = (step % duration) != 0 ? mSamplePolygon2
+								: mSamplePolygon;
+						if (!convex)
+							sourcePolygon = mSamplePolygon3;
+						if (convex) {
+							mPolygonRenderer.setConvexPolygon(sourcePolygon);
+						} else {
+							mPolygonRenderer.setPolygon(sourcePolygon);
+						}
 					}
 				}
 			}
@@ -125,6 +144,7 @@ public class SampleRenderer extends AlgorithmRenderer {
 	private GLSpriteProgram mSprite;
 	private Polygon mSamplePolygon;
 	private Polygon mSamplePolygon2;
+	private Polygon mSamplePolygon3;
 	private SampleAlgorithm mAlgorithm;
 	private AlgorithmStepper mStepper;
 }

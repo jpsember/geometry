@@ -3,6 +3,8 @@ package com.js.geometryapp;
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
+import com.js.geometry.MyMath;
+
 import android.graphics.Color;
 import android.opengl.GLUtils;
 
@@ -139,6 +141,31 @@ public final class OurGLTools {
 		rgba[3] = Color.alpha(color) * (1.0f / 255.0f);
 	}
 
+	private static int debugColors[] = {
+			//
+			// check out http://www.colorpicker.com/
+			//
+			0x10, 0x10, 0xe0, // dark blue
+			0x37, 0x87, 0x3E, // dark green
+			0x73, 0x5E, 0x22, // brown
+			0xC7, 0x32, 0x00, // dark red
+			0x8C, 0x26, 0xBF, // purple
+			0x82, 0xB6, 0xBA, // blue/gray
+			0xA3, 0x62, 0x84, // plum
+			0xC7, 0x92, 0x00, // burnt orange
+	};
+
+	public static int debugColor() {
+		return debugColor(sDebugColorIndex++);
+	}
+
+	public static int debugColor(int index) {
+		index = MyMath.myMod(index, debugColors.length / 3) * 3;
+		return Color.argb(255, debugColors[index], debugColors[index + 1],
+				debugColors[index + 2]);
+	}
+
+	private static int sDebugColorIndex;
 	private static int sResultCode[] = new int[1];
 	private static Thread sOpenGLThread;
 	private static int sProgramId;

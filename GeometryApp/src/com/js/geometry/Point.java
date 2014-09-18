@@ -66,9 +66,9 @@ public final class Point {
 
 	public String dumpUnlabelled() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(d(x));
+		sb.append(f(x));
 		sb.append(' ');
-		sb.append(d(y));
+		sb.append(f(y));
 		sb.append(' ');
 		return sb.toString();
 	}

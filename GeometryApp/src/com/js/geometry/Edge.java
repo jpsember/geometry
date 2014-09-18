@@ -18,10 +18,12 @@ public final class Edge {
 		sb.append(" ");
 		sb.append(destVert.point().dumpUnlabelled());
 		sb.append(" ");
-		sb.append(nameOf(sourceVert));
+		sb.append(nameOf(sourceVert, false));
 		sb.append(" --> ");
-		sb.append(nameOf(destVert));
+		sb.append(nameOf(destVert, false));
 		sb.append(" ");
+		// sb.append(fh(mFlags) + " ");
+
 		return sb.toString();
 	}
 
@@ -31,7 +33,22 @@ public final class Edge {
 	}
 
 	public boolean visited() {
-		return 0 != (mFlags & FLAG_VISITED);
+		return hasFlags(FLAG_VISITED);
+	}
+
+	/**
+	 * Determine if flags contains all of a particular subset of flags
+	 * 
+	 * @param flags
+	 *            subset of flags to test
+	 * @return true if every bit in flags is set in this edge
+	 */
+	public boolean hasFlags(int flags) {
+		return (mFlags & flags) == flags;
+	}
+
+	public int flags() {
+		return mFlags;
 	}
 
 	public void setVisited(boolean v) {
@@ -42,7 +59,7 @@ public final class Edge {
 	}
 
 	public boolean deleted() {
-		return 0 != (mFlags & FLAG_DELETED);
+		return hasFlags(FLAG_DELETED);
 	}
 
 	public void setDeleted(boolean d) {
@@ -73,7 +90,7 @@ public final class Edge {
 	}
 
 	public boolean isPolygon() {
-		return 0 != (mFlags & FLAG_POLYGON);
+		return hasFlags(FLAG_POLYGON);
 	}
 
 	public void setAngle(float angle) {

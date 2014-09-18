@@ -49,7 +49,6 @@ public class AlgorithmStepper {
 
 	/**
 	 * Set the delegate, which actually performs the algorithm, and displays it
-	 * 
 	 */
 	public void setDelegate(Delegate delegate) {
 		mDelegate = delegate;
@@ -159,10 +158,8 @@ public class AlgorithmStepper {
 	/**
 	 * Render algorithm frame, by plotting (and disposing of) any added
 	 * elements, as well as the frame's title
-	 * 
-	 * Sychronized in case renderer is running in non-UI (e.g. OpenGL) thread
 	 */
-	public synchronized void render() {
+	public void render() {
 		renderBackgroundElements();
 		for (AlgDisplayElement element : mDisplayElements) {
 			element.render();
@@ -182,37 +179,27 @@ public class AlgorithmStepper {
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
 			AlgDisplayElement element = mBackgroundElements.get(key);
-			if (element == null) { // Issue #19: probably fixed now
-				warning("element is null for key '" + key + "' : keys="
-						+ d(keys) + " elements=" + d(mBackgroundElements)
-						+ " elem=" + nameOf(mBackgroundElements));
-				return;
-			}
 			element.render();
 		}
 	}
 
 	/**
-	 * Add the next plotted element to the background (if algorithm is active)
+	 * Add the next plotted element to the background
 	 * 
 	 * @param key
 	 *            key to identify this background element from others
 	 */
 	public void plotToBackground(String key) {
-		if (!isActive())
-			return;
 		mNextPlotKey = key;
 	}
 
 	/**
-	 * Remove a background element (if algorithm is active)
+	 * Remove a background element
 	 * 
 	 * @param key
 	 *            element key
 	 */
 	public void removeBackgroundElement(String key) {
-		if (!isActive())
-			return;
 		mBackgroundElements.remove(key);
 	}
 
@@ -357,8 +344,6 @@ public class AlgorithmStepper {
 		if (!mMilestones.isEmpty()) {
 			lastMilestone = mMilestones.get(mMilestones.size() - 1);
 		}
-		ASSERT(n >= lastMilestone, "addMilestone " + n + ", last "
-				+ lastMilestone + ", list " + mMilestones);
 		if (n != lastMilestone)
 			mMilestones.add(n);
 	}
@@ -379,22 +364,13 @@ public class AlgorithmStepper {
 		mActive = active;
 	}
 
-	private boolean isActive() {
-		return mActive && (mDisableCounter == 0);
-	}
-
-	/**
-	 * This is a temporary solution for issue #25
-	 */
-	public void adjustDisable(int amount) {
-		mDisableCounter += amount;
-		ASSERT(mDisableCounter >= 0);
+	public boolean isActive() {
+		return mActive;
 	}
 
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 
-	private int mDisableCounter;
 	private ArrayList<AlgDisplayElement> mDisplayElements = new ArrayList();
 	private Map<String, AlgDisplayElement> mBackgroundElements = new HashMap();
 	private String mFrameTitle;

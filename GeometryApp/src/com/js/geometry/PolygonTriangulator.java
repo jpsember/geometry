@@ -68,15 +68,17 @@ public class PolygonTriangulator {
 	private static final int COLOR_DARKGREEN = Color.argb(80, 0, 128, 0);
 
 	public void triangulate() {
-		mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
-		mStepper.setLineWidth(LINEWIDTH_NORMAL);
-		mStepper.setColor(Color.BLUE);
-		mStepper.plot(mPolygon);
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
+			mStepper.setLineWidth(LINEWIDTH_NORMAL);
+			mStepper.setColor(Color.BLUE);
+			mStepper.plot(mPolygon);
 
-		mStepper.plotToBackground(BGND_ELEMENT_MESH);
-		mStepper.setLineWidth(LINEWIDTH_NORMAL);
-		mStepper.setColor(COLOR_LIGHTBLUE);
-		mStepper.plot(mContext);
+			mStepper.plotToBackground(BGND_ELEMENT_MESH);
+			mStepper.setLineWidth(LINEWIDTH_NORMAL);
+			mStepper.setColor(COLOR_LIGHTBLUE);
+			mStepper.plot(mContext);
+		}
 
 		if (update())
 			show("*Triangulating polygon");
@@ -88,8 +90,12 @@ public class PolygonTriangulator {
 		for (Vertex v : mVertexEvents) {
 			processVertexEvent(v);
 		}
-		mStepper.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
-		mStepper.removeBackgroundElement(BGND_ELEMENT_POLYGON);
+
+		if (mStepper.isActive()) {
+			mStepper.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
+			mStepper.removeBackgroundElement(BGND_ELEMENT_POLYGON);
+		}
+
 		if (update())
 			show("*Done triagulating polygon");
 
@@ -107,8 +113,11 @@ public class PolygonTriangulator {
 			}
 		});
 		mSweepLineVisible = false;
-		mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
-		mStepper.plotElement(new AlgDisplaySweepStatus());
+    
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
+	  	mStepper.plotElement(new AlgDisplaySweepStatus());
+		}
 	}
 
 	private void createEventList() {

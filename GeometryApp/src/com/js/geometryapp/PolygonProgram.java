@@ -98,9 +98,7 @@ public class PolygonProgram {
 	private void triangulatePolygon() {
 		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
 				mPolygon);
-		AlgorithmStepper.sharedInstance().adjustDisable(1);
 		t.triangulate();
-		AlgorithmStepper.sharedInstance().adjustDisable(1);
 	}
 
 	private void extractStrips() {

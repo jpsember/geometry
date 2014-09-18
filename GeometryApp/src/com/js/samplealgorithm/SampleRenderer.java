@@ -75,68 +75,74 @@ public class SampleRenderer extends AlgorithmRenderer {
 	}
 
 	public void onDrawFrame(GL10 gl) {
-		super.onDrawFrame(gl);
 
-		mStepper.render();
+		// Synchronize with stepper, so no race conditions with UI thread.
 
-		if (mSprite != null) {
-			int frame = mAlgorithm.getFrameNumber();
-			Point pt = MyMath.pointOnCircle(new Point(250, 100), frame * 7.0f
-					* MyMath.M_DEG, 100);
-			mSprite.setPosition(pt.x, pt.y);
-			mSprite.render();
-		}
+		synchronized (mStepper) {
+			super.onDrawFrame(gl);
 
-		if (mSamplePolygon != null) {
-			if (mPolygonRenderer == null) {
-				mPolygonRenderer = new PolygonProgram(this,
-						TRANSFORM_NAME_ALGORITHM_TO_NDC);
-				mPolygonRenderer.setConvexPolygon(mSamplePolygon);
+			mStepper.render();
+
+			if (mSprite != null) {
+				int frame = mAlgorithm.getFrameNumber();
+				Point pt = MyMath.pointOnCircle(new Point(250, 100), frame
+						* 7.0f * MyMath.M_DEG, 100);
+				mSprite.setPosition(pt.x, pt.y);
+				mSprite.render();
 			}
-			{
-				int duration = 8;
-				int step = mFrame % (duration * 2);
-				if (step % duration == 0) {
-					mPolygonRenderer.setColor(step > 0 ? Color.DKGRAY : Color
-							.argb(120, 200, 200, 200));
+
+			if (mSamplePolygon != null) {
+				if (mPolygonRenderer == null) {
+					mPolygonRenderer = new PolygonProgram(this,
+							TRANSFORM_NAME_ALGORITHM_TO_NDC);
+					mPolygonRenderer.setConvexPolygon(mSamplePolygon);
 				}
-			}
-
-			Matrix additionalTransform = null;
-			{
-				int duration = 13;
-				int step = mFrame % (duration * 2);
-				if (step >= duration) {
-					additionalTransform = new Matrix();
-					float s = 1.5f + ((step - duration) / (float) duration);
-					additionalTransform.setScale(s, s);
-				}
-			}
-
-			{
-				int duration = 11;
-				if (mFrame >= duration) {
-					int step = mFrame % (duration * 4);
+				{
+					int duration = 8;
+					int step = mFrame % (duration * 2);
 					if (step % duration == 0) {
-						boolean convex = (step / (duration * 2)) == 0;
-						convex = false;
-						Polygon sourcePolygon = (step % duration) != 0 ? mSamplePolygon2
-								: mSamplePolygon;
-						if (!convex)
-							sourcePolygon = mSamplePolygon3;
-						if (convex) {
-							mPolygonRenderer.setConvexPolygon(sourcePolygon);
-						} else {
-							mPolygonRenderer.setPolygon(sourcePolygon);
+						mPolygonRenderer.setColor(step > 0 ? Color.DKGRAY
+								: Color.argb(120, 200, 200, 200));
+					}
+				}
+
+				Matrix additionalTransform = null;
+				{
+					int duration = 13;
+					int step = mFrame % (duration * 2);
+					if (step >= duration) {
+						additionalTransform = new Matrix();
+						float s = 1.5f + ((step - duration) / (float) duration);
+						additionalTransform.setScale(s, s);
+					}
+				}
+
+				{
+					int duration = 11;
+					if (mFrame >= duration) {
+						int step = mFrame % (duration * 4);
+						if (step % duration == 0) {
+							boolean convex = (step / (duration * 2)) == 0;
+							convex = false;
+							Polygon sourcePolygon = (step % duration) != 0 ? mSamplePolygon2
+									: mSamplePolygon;
+							if (!convex)
+								sourcePolygon = mSamplePolygon3;
+							if (convex) {
+								mPolygonRenderer
+										.setConvexPolygon(sourcePolygon);
+							} else {
+								mPolygonRenderer.setPolygon(sourcePolygon);
+							}
 						}
 					}
 				}
+
+				mPolygonRenderer.render(additionalTransform);
 			}
 
-			mPolygonRenderer.render(additionalTransform);
+			mFrame++;
 		}
-
-		mFrame++;
 	}
 
 	private int mFrame;

@@ -41,43 +41,46 @@ public class SampleRenderer extends AlgorithmRenderer {
 		// Let the algorithm stepper elements prepare using this renderer
 		AlgDisplayElement.setRenderer(this);
 
-		if (ADD_TEST_POLYGON) {
-			warning("adding polygon for test purposes");
-			mSamplePolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
-			mSamplePolygon.transformToFitRect(new Rect(200, 200, 500, 250),
-					false);
+		// Synchronize with stepper, so no race conditions with UI thread.
+		synchronized (mStepper) {
 
-			mSamplePolygon2 = Polygon.discPolygon(Point.ZERO, 100, 13);
-			mSamplePolygon2.transformToFitRect(new Rect(300, 200, 400, 350),
-					false);
+			if (ADD_TEST_POLYGON) {
+				warning("adding polygon for test purposes");
+				mSamplePolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
+				mSamplePolygon.transformToFitRect(new Rect(200, 200, 500, 250),
+						false);
 
-			GeometryContext c = new GeometryContext(11);
-			mSamplePolygon3 = Polygon.testPolygon(c,
-					true ? Polygon.TESTPOLY_CONCAVE_BLOB
-							: Polygon.TESTPOLY_DRAGON_X + 8);
-			if (false) {
-				warning("perturbing sample polygon");
-				mSamplePolygon3.perturb(c);
+				mSamplePolygon2 = Polygon.discPolygon(Point.ZERO, 100, 13);
+				mSamplePolygon2.transformToFitRect(
+						new Rect(300, 200, 400, 350), false);
+
+				GeometryContext c = new GeometryContext(11);
+				mSamplePolygon3 = Polygon.testPolygon(c,
+						true ? Polygon.TESTPOLY_CONCAVE_BLOB
+								: Polygon.TESTPOLY_DRAGON_X + 8);
+				if (false) {
+					warning("perturbing sample polygon");
+					mSamplePolygon3.perturb(c);
+				}
+				mSamplePolygon3.transformToFitRect(algorithmRect(), false);
+
+				mPolygonRenderer = null;
 			}
-			mSamplePolygon3.transformToFitRect(algorithmRect(), false);
 
-			mPolygonRenderer = null;
-		}
+			if (ADD_TEST_SPRITE) {
+				warning("adding sprite for test purposes");
+				GLTexture t = new GLTexture(context(), R.raw.texture);
+				Rect window = new Rect(0, 0, t.width(), t.height());
 
-		if (ADD_TEST_SPRITE) {
-			warning("adding sprite for test purposes");
-			GLTexture t = new GLTexture(context(), R.raw.texture);
-			Rect window = new Rect(0, 0, t.width(), t.height());
-
-			mSprite = new GLSpriteProgram(SpriteContext.normalContext(), t,
-					window);
+				mSprite = new GLSpriteProgram(SpriteContext.normalContext(), t,
+						window);
+			}
 		}
 	}
 
 	public void onDrawFrame(GL10 gl) {
 
 		// Synchronize with stepper, so no race conditions with UI thread.
-
 		synchronized (mStepper) {
 			super.onDrawFrame(gl);
 

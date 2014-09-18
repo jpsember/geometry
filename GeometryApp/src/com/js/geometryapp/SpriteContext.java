@@ -11,7 +11,6 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 
 public class SpriteContext {
-  // TODO: we're still referring to Mesh.xxx constants in some places; maybe refactor
 	protected static final int POSITION_COMPONENT_COUNT = 2; // x y
 	protected static final int TEXTURE_COMPONENT_COUNT = 2; // u v
 	protected static final int TOTAL_COMPONENTS = POSITION_COMPONENT_COUNT

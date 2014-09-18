@@ -108,8 +108,6 @@ public abstract class AlgDisplayElement {
 		OurGLTools.ensureRenderThread();
 		Polyline.prepareRenderer(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		PolygonRenderer.prepareRenderer(renderer,
-				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 
 		sFont = new Font(24);
 		sLineWidth = 1.0f;

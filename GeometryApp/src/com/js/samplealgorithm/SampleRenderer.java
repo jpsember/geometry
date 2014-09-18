@@ -15,11 +15,12 @@ import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLSpriteProgram;
 import com.js.geometryapp.GLTexture;
-import com.js.geometryapp.PolygonRenderer;
+import com.js.geometryapp.PolygonProgram;
 import com.js.geometryapp.SpriteContext;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Matrix;
 
 public class SampleRenderer extends AlgorithmRenderer {
 
@@ -44,6 +45,12 @@ public class SampleRenderer extends AlgorithmRenderer {
 			mSamplePolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
 			mSamplePolygon.transformToFitRect(new Rect(200, 200, 500, 250),
 					false);
+
+			mSamplePolygon2 = Polygon.discPolygon(Point.ZERO, 100, 13);
+			mSamplePolygon2.transformToFitRect(new Rect(300, 200, 400, 350),
+					false);
+
+			mPolygonRenderer = null;
 		}
 
 		if (ADD_TEST_SPRITE) {
@@ -70,13 +77,54 @@ public class SampleRenderer extends AlgorithmRenderer {
 		}
 
 		if (mSamplePolygon != null) {
-			PolygonRenderer.setColor(Color.DKGRAY);
-			PolygonRenderer.renderConvex(mSamplePolygon);
+			if (mPolygonRenderer == null) {
+				mPolygonRenderer = new PolygonProgram(this,
+						TRANSFORM_NAME_ALGORITHM_TO_NDC);
+				mPolygonRenderer.setConvexPolygon(mSamplePolygon);
+			}
+			{
+				int duration = 8;
+				int step = mFrame % (duration * 2);
+				if (step % duration == 0) {
+					mPolygonRenderer.setColor(step > 0 ? Color.DKGRAY : Color
+							.argb(120, 200, 200, 200));
+				}
+			}
+
+			Matrix additionalTransform = null;
+			{
+				int duration = 13;
+				int step = mFrame % (duration * 2);
+				if (step >= duration) {
+					additionalTransform = new Matrix();
+					float s = 1.0f + ((step - duration) / (float) duration);
+					additionalTransform.setScale(s, s);
+				}
+			}
+
+			{
+				int duration = 11;
+				if (mFrame >= duration) {
+					int step = mFrame % (duration * 2);
+					if (step % duration == 0) {
+						mPolygonRenderer
+								.setConvexPolygon(step == 0 ? mSamplePolygon2
+										: mSamplePolygon);
+					}
+				}
+			}
+
+			mPolygonRenderer.render(additionalTransform);
 		}
+
+		mFrame++;
 	}
 
+	private int mFrame;
+	private PolygonProgram mPolygonRenderer;
 	private GLSpriteProgram mSprite;
 	private Polygon mSamplePolygon;
+	private Polygon mSamplePolygon2;
 	private SampleAlgorithm mAlgorithm;
 	private AlgorithmStepper mStepper;
 }

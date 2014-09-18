@@ -82,7 +82,7 @@ public class Polyline {
 		GLShader fragmentShader = GLShader.readFragmentShader(
 				renderer.context(), R.raw.polyline_fragment_shader);
 		sProgram = new GLProgram(renderer, vertexShader, fragmentShader);
-		sProgram.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		sProgram.setTransformName(transformName);
 		prepareAttributes();
 	}
 

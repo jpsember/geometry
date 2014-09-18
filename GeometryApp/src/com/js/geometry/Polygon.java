@@ -318,21 +318,30 @@ public class Polygon {
 		return a;
 	}
 
-	// Determine if polygon is convex. Undefined result if polygon isn't simple
-	public boolean isConvex(GeometryContext context) {
-		if (numVertices() < 3)
+	/**
+	 * Determine if this polygon is convex. Undefined result if polygon isn't
+	 * simple, or doesn't have a ccw winding
+	 */
+	public boolean isConvex() {
+		int j = numVertices();
+		if (j < 3)
 			return false;
-		Point vNext = vertex(0);
-		Point vPrev = vertexMod(-1);
-		float prevAngle = context.pseudoPolarAngleOfSegment(vPrev, vNext);
-		float nextAngle = prevAngle;
-		for (int i = 0; i < numVertices(); i++) {
-			vPrev = vNext;
-			prevAngle = nextAngle;
 
-			vNext = vertexMod(i + 1);
-			nextAngle = context.pseudoPolarAngleOfSegment(vPrev, vNext);
-			if (!context.pseudoAngleIsConvex(prevAngle, nextAngle))
+		Point vPrev = vertex(j - 2);
+		Point vNext = vertex(j - 1);
+		float dx2 = vNext.x - vPrev.x;
+		float dy2 = vNext.y - vPrev.y;
+
+		for (int i = 0; i < j; i++) {
+			vPrev = vNext;
+			vNext = vertex(i);
+
+			float dx1 = dx2;
+			float dy1 = dy2;
+			dx2 = vNext.x - vPrev.x;
+			dy2 = vNext.y - vPrev.y;
+			float crossProduct = dx1 * dy2 - dy1 * dx2;
+			if (crossProduct <= 0)
 				return false;
 		}
 		return true;

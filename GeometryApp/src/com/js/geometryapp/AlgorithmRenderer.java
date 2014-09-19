@@ -4,6 +4,7 @@ import static com.js.basic.Tools.*;
 
 import javax.microedition.khronos.opengles.GL10;
 
+import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
@@ -32,12 +33,10 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	@Override
 	protected void constructTransforms() {
 		super.constructTransforms();
-		float deviceWidth = deviceSize().x;
-		float deviceHeight = deviceSize().y;
 
 		// Add a bit of padding to the device rectangle
-		float paddingInset = Math.max(10, deviceWidth / 40);
-		float titleInset = Math.max(60, deviceHeight / 10);
+		float paddingInset = MyActivity.displayMetrics().density * 10;
+		float titleInset = MyActivity.displayMetrics().density * 30;
 
 		Rect paddedDeviceRect = new Rect(Point.ZERO, deviceSize());
 		paddedDeviceRect.x += paddingInset;

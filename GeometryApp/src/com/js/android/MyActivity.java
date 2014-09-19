@@ -9,6 +9,7 @@ import java.util.Map;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import static com.js.basic.Tools.*;
 
 public abstract class MyActivity extends Activity {
@@ -38,6 +39,7 @@ public abstract class MyActivity extends Activity {
 		}
 		AppPreferences.prepare(this);
 		addResourceMappings();
+		prepareDisplayMetrics();
 		log("onCreate savedInstanceState=" + nameOf(savedInstanceState));
 		super.onCreate(savedInstanceState);
 	}
@@ -147,6 +149,15 @@ public abstract class MyActivity extends Activity {
 		return id.intValue();
 	}
 
+	private void prepareDisplayMetrics() {
+		sDisplayMetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(sDisplayMetrics);
+	}
+
+	public static DisplayMetrics displayMetrics() {
+		return sDisplayMetrics;
+	}
+
 	private void addResourceMappings() {
 		addResource("photo", android.R.drawable.ic_menu_gallery);
 		addResource("camera", android.R.drawable.ic_menu_camera);
@@ -158,4 +169,5 @@ public abstract class MyActivity extends Activity {
 	private Map<String, Integer> mResourceMap = new HashMap();
 
 	private static boolean sConsoleGreetingPrinted;
+	private static DisplayMetrics sDisplayMetrics;
 }

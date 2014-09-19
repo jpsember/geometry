@@ -16,12 +16,12 @@ import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLSpriteProgram;
 import com.js.geometryapp.GLTexture;
+import com.js.geometryapp.PolygonMesh;
 import com.js.geometryapp.PolygonProgram;
 import com.js.geometryapp.SpriteContext;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.Matrix;
 
 public class SampleRenderer extends AlgorithmRenderer {
 
@@ -46,25 +46,24 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 			if (ADD_TEST_POLYGON) {
 				warning("adding polygon for test purposes");
-				mSamplePolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
-				mSamplePolygon.transformToFitRect(new Rect(200, 200, 500, 250),
+				mConvexPolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
+				mConvexPolygon.transformToFitRect(new Rect(200, 200, 300, 120),
 						false);
-
-				mSamplePolygon2 = Polygon.discPolygon(Point.ZERO, 100, 13);
-				mSamplePolygon2.transformToFitRect(
-						new Rect(300, 200, 400, 350), false);
+				mConvexPolygonMesh = PolygonMesh
+						.meshForConvexPolygon(mConvexPolygon);
 
 				GeometryContext c = new GeometryContext(11);
-				mSamplePolygon3 = Polygon.testPolygon(c,
-						true ? Polygon.TESTPOLY_CONCAVE_BLOB
-								: Polygon.TESTPOLY_DRAGON_X + 8);
-				if (false) {
-					warning("perturbing sample polygon");
-					mSamplePolygon3.perturb(c);
-				}
-				mSamplePolygon3.transformToFitRect(algorithmRect(), false);
+				mNonConvexPolygon = Polygon.testPolygon(c,
+						Polygon.TESTPOLY_CONCAVE_BLOB);
+				mNonConvexPolygon.transformToFitRect(new Rect(0, 300,
+						algorithmRect().width, algorithmRect().height - 300),
+						false);
+				mNonConvexPolygonMesh = PolygonMesh
+						.meshForSimplePolygon(mNonConvexPolygon);
 
-				mPolygonRenderer = null;
+				mPolygonRenderer = new PolygonProgram(this,
+						TRANSFORM_NAME_ALGORITHM_TO_NDC);
+
 			}
 
 			if (ADD_TEST_SPRITE) {
@@ -94,54 +93,30 @@ public class SampleRenderer extends AlgorithmRenderer {
 				mSprite.render();
 			}
 
-			if (mSamplePolygon != null) {
-				if (mPolygonRenderer == null) {
-					mPolygonRenderer = new PolygonProgram(this,
-							TRANSFORM_NAME_ALGORITHM_TO_NDC);
-					mPolygonRenderer.setConvexPolygon(mSamplePolygon);
-				}
+			if (mConvexPolygon != null) {
 				{
 					int duration = 8;
 					int step = mFrame % (duration * 2);
 					if (step % duration == 0) {
-						mPolygonRenderer.setColor(step > 0 ? Color.DKGRAY
-								: Color.argb(120, 200, 200, 200));
+						mPolygonRenderer
+								.setColor(step > 0 ? Color.argb(120, 120, 120,
+										250) : Color.argb(120, 200, 200, 200));
 					}
 				}
 
-				Matrix additionalTransform = null;
+				Point offset = null;
 				{
 					int duration = 13;
 					int step = mFrame % (duration * 2);
 					if (step >= duration) {
-						additionalTransform = new Matrix();
-						float s = 1.5f + ((step - duration) / (float) duration);
-						additionalTransform.setScale(s, s);
+						float t = ((step - duration) / (float) duration)
+								* algorithmRect().width;
+						offset = new Point(t, t * .3f);
 					}
 				}
 
-				{
-					int duration = 11;
-					if (mFrame >= duration) {
-						int step = mFrame % (duration * 4);
-						if (step % duration == 0) {
-							boolean convex = (step / (duration * 2)) == 0;
-							convex = false;
-							Polygon sourcePolygon = (step % duration) != 0 ? mSamplePolygon2
-									: mSamplePolygon;
-							if (!convex)
-								sourcePolygon = mSamplePolygon3;
-							if (convex) {
-								mPolygonRenderer
-										.setConvexPolygon(sourcePolygon);
-							} else {
-								mPolygonRenderer.setPolygon(sourcePolygon);
-							}
-						}
-					}
-				}
-
-				mPolygonRenderer.render(additionalTransform);
+				mPolygonRenderer.render(mConvexPolygonMesh, offset);
+				mPolygonRenderer.render(mNonConvexPolygonMesh);
 			}
 
 			mFrame++;
@@ -151,9 +126,10 @@ public class SampleRenderer extends AlgorithmRenderer {
 	private int mFrame;
 	private PolygonProgram mPolygonRenderer;
 	private GLSpriteProgram mSprite;
-	private Polygon mSamplePolygon;
-	private Polygon mSamplePolygon2;
-	private Polygon mSamplePolygon3;
+	private Polygon mConvexPolygon;
+	private Polygon mNonConvexPolygon;
+	private PolygonMesh mConvexPolygonMesh;
+	private PolygonMesh mNonConvexPolygonMesh;
 	private SampleAlgorithm mAlgorithm;
 	private AlgorithmStepper mStepper;
 }

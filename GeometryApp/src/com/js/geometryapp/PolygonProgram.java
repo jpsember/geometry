@@ -8,7 +8,6 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 
 import static android.opengl.GLES20.*;
-import static com.js.basic.Tools.*;
 
 /**
  * A program to render polygons
@@ -84,25 +83,16 @@ public class PolygonProgram {
 			mColorValid = true;
 		}
 
-		for (CompiledTriangleSet strip : mesh.triangleSets()) {
-			if (false) {
-				warning("coloring strips to see what's being generated");
-				float f[] = new float[4];
-				OurGLTools.convertColorToOpenGL(OurGLTools.debugColor(), f);
-				glUniform4fv(mColorLocation, 1, f, 0);
-			}
+		CompiledTriangleSet strip = mesh.triangleSet();
+		FloatBuffer fb = strip.floatBuffer();
+		fb.position(0);
+		int stride = PolygonMesh.VERTEX_COMPONENTS * OurGLTools.BYTES_PER_FLOAT;
 
-			FloatBuffer fb = strip.floatBuffer();
-			fb.position(0);
-			int stride = PolygonMesh.VERTEX_COMPONENTS
-					* OurGLTools.BYTES_PER_FLOAT;
-
-			glVertexAttribPointer(mPositionLocation,
-					PolygonMesh.VERTEX_COMPONENTS, GL_FLOAT, false, stride, fb);
-			glEnableVertexAttribArray(mPositionLocation);
-			glDrawArrays(mesh.usesStrips() ? GL_TRIANGLE_STRIP
-					: GL_TRIANGLE_FAN, 0, strip.numVertices());
-		}
+		glVertexAttribPointer(mPositionLocation, PolygonMesh.VERTEX_COMPONENTS,
+				GL_FLOAT, false, stride, fb);
+		glEnableVertexAttribArray(mPositionLocation);
+		glDrawArrays(mesh.usesStrip() ? GL_TRIANGLE_STRIP : GL_TRIANGLE_FAN,
+				0, strip.numVertices());
 	}
 
 	private void prepareAttributes() {

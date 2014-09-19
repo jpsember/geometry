@@ -447,16 +447,34 @@ public class GeometryContext {
 	}
 
 	public String dumpMesh() {
+		return dumpMesh(true, false);
+	}
+
+	public String dumpMesh(boolean withVertexLocations, boolean withVertexNames) {
 		StringBuilder sb = new StringBuilder("GeometryContext vertices:\n");
 		for (Vertex v : mVertexBuffer) {
 			sb.append(" ");
-			sb.append(v.point().toStringAsInts());
+			Point source = v.point();
+			if (withVertexNames) {
+				sb.append(nameOf(source, false));
+				sb.append(' ');
+			}
+			if (withVertexLocations) {
+				sb.append(source.toStringAsInts());
+			}
 
 			Edge e = v.edges();
 			if (e != null) {
 				sb.append(" -->");
 				while (true) {
-					sb.append(e.destVertex().point().toStringAsInts());
+					Point dest = e.destVertex().point();
+					if (withVertexNames) {
+						sb.append(nameOf(dest, false));
+						sb.append(' ');
+					}
+					if (withVertexLocations) {
+						sb.append(dest.toStringAsInts());
+					}
 					e = e.nextEdge();
 					if (e == v.edges())
 						break;

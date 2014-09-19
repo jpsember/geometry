@@ -46,7 +46,7 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 			if (ADD_TEST_POLYGON) {
 				warning("adding polygon for test purposes");
-				mConvexPolygon = Polygon.discPolygon(Point.ZERO, 100, 13);
+				mConvexPolygon = Polygon.discPolygon(Point.ZERO, 100, 23);
 				mConvexPolygon.transformToFitRect(new Rect(200, 200, 300, 120),
 						false);
 				mConvexPolygonMesh = PolygonMesh
@@ -54,7 +54,8 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 				GeometryContext c = new GeometryContext(11);
 				mNonConvexPolygon = Polygon.testPolygon(c,
-						Polygon.TESTPOLY_CONCAVE_BLOB);
+						false ? Polygon.TESTPOLY_DRAGON_X + 5
+								: Polygon.TESTPOLY_CONCAVE_BLOB);
 				mNonConvexPolygon.transformToFitRect(new Rect(0, 300,
 						algorithmRect().width, algorithmRect().height - 300),
 						false);

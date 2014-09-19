@@ -1,14 +1,15 @@
 package com.js.geometryapp;
 
-import static com.js.basic.Tools.warning;
-
 import java.util.ArrayList;
 
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
+import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
+
+import static com.js.basic.Tools.*;
 
 /**
  * Note: this class can be easily adapted to generate triangle strips for
@@ -37,17 +38,17 @@ public class PolygonMesh {
 	}
 
 	/**
-	 * Determine if the compiled triangle sets represent strips or fans
+	 * Determine if the compiled triangle set represents a strip or a fan
 	 */
-	public boolean usesStrips() {
+	public boolean usesStrip() {
 		return !mFanFlag;
 	}
 
 	/**
-	 * Get the list of compiled triangle sets
+	 * Get the compiled triangle set
 	 */
-	public ArrayList<CompiledTriangleSet> triangleSets() {
-		return mTriangleSets;
+	public CompiledTriangleSet triangleSet() {
+		return mTriangleSet;
 	}
 
 	/**
@@ -78,9 +79,8 @@ public class PolygonMesh {
 	 * the compiled triangle set to our list, then clears the float array
 	 */
 	private void compileTriangleSet() {
-		mTriangleSets.add(new CompiledTriangleSet(mFloatArray.asFloatBuffer(),
-				mFloatArray.size() / VERTEX_COMPONENTS));
-		mFloatArray.clear();
+		mTriangleSet = new CompiledTriangleSet(mFloatArray.asFloatBuffer(),
+				mFloatArray.size() / VERTEX_COMPONENTS);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class PolygonMesh {
 		try {
 			mContext = new GeometryContext(1965);
 			triangulatePolygon(polygon);
-			extractStrips();
+			extractStrip();
 		} catch (GeometryException e) {
 			warning("caught: " + e);
 			mException = e;
@@ -115,8 +115,7 @@ public class PolygonMesh {
 		t.triangulate();
 	}
 
-	private void extractStrips() {
-		mTriangleSets.clear();
+	private void extractStrip() {
 		mTrianglesExtracted = 0;
 
 		findInteriorEdges();
@@ -144,47 +143,80 @@ public class PolygonMesh {
 		if (mTrianglesExtracted != mTrianglesExpected)
 			GeometryException
 					.raise("unexpected number of triangles generated for strips");
+		compileTriangleSet();
+	}
+
+	private boolean stripParity() {
+		return (mFloatArray.size() / VERTEX_COMPONENTS) % 1 != 0;
 	}
 
 	/**
 	 * Build a triangle strip. Throws exception if the number of triangles
-	 * extracted ever exceeds the expected number
+	 * extracted ever exceeds the expected number. Extends a previous strip, if
+	 * necessary, by adding duplicate vertices to produce degenerate triangles
 	 * 
-	 * @param baseEdge
+	 * @param ccwBaseEdge
 	 *            edge with first triangle to its left
 	 */
-	private void buildTriangleStrip(Edge baseEdge) {
-		mFloatArray.add(baseEdge.sourceVertex().point());
-		mFloatArray.add(baseEdge.destVertex().point());
-		boolean parity = false;
+	private void buildTriangleStrip(Edge ccwBaseEdge) {
+
+		// For simplicity, we maintain both the ccwBaseEdge, and its the
+		// corresponding edge that alternates between ccw and cw orientations.
+
+		Edge baseEdge = ccwBaseEdge;
+		if (stripParity())
+			baseEdge = ccwBaseEdge.dual();
+
+		{
+			Point firstPoint, secondPoint;
+			firstPoint = baseEdge.sourceVertex().point();
+			secondPoint = baseEdge.destVertex().point();
+
+			// If we're continuing a previous strip, add degenerate
+			// triangles to bridge the gap
+			if (mLastVertexGenerated != null) {
+				// Special case if last vertex generated equals new start vertex
+				if (mLastVertexGenerated != firstPoint) {
+					mFloatArray.add(mLastVertexGenerated);
+				}
+				mFloatArray.add(firstPoint);
+			}
+			mFloatArray.add(firstPoint);
+			mFloatArray.add(secondPoint);
+		}
 
 		while (true) {
-			baseEdge.setVisited(true);
+			// If edge is not interior, or is already part of an earlier strip,
+			// stop the strip
+			if (ccwBaseEdge.visited()
+					|| !ccwBaseEdge.hasFlags(EDGE_FLAG_INTERIOR))
+				break;
+			ccwBaseEdge.setVisited(true);
+
 			mTrianglesExtracted++;
 			if (mTrianglesExtracted > mTrianglesExpected)
 				GeometryException
 						.raise("too many triangles generated for strips");
 
-			Edge edge2 = nextEdgeInTriangle(baseEdge);
-			Edge edge3 = prevEdgeInTriangle(baseEdge);
-
-			mFloatArray.add(edge2.destVertex().point());
-			edge2.setVisited(true);
-			edge3.setVisited(true);
-
-			// See if we can extend this strip further
-			Edge nextEdge = parity ? edge3 : edge2;
-			nextEdge = nextEdge.dual();
-
-			// If edge is not interior, or is already part of an earlier strip,
-			// no.
-			if (nextEdge.visited() || !nextEdge.hasFlags(EDGE_FLAG_INTERIOR))
-				break;
-
-			parity ^= true;
-			baseEdge = nextEdge;
+			if (!stripParity()) {
+				Edge nextBaseEdge = nextEdgeInTriangle(baseEdge);
+				nextBaseEdge.setVisited(true);
+				Edge edge3 = prevEdgeInTriangle(baseEdge);
+				edge3.setVisited(true);
+				ccwBaseEdge = nextBaseEdge;
+				baseEdge = nextBaseEdge;
+			} else {
+				Edge nextBaseEdge = nextEdgeInCWTriangle(baseEdge);
+				nextBaseEdge.dual().setVisited(true);
+				Edge edge3 = prevEdgeInCWTriangle(baseEdge);
+				edge3.dual().setVisited(true);
+				ccwBaseEdge = nextBaseEdge.dual();
+				baseEdge = nextBaseEdge;
+			}
+			Point point = baseEdge.destVertex().point();
+			mFloatArray.add(point);
+			mLastVertexGenerated = point;
 		}
-		compileTriangleSet();
 	}
 
 	/**
@@ -267,8 +299,16 @@ public class PolygonMesh {
 		return edge.nextEdge().dual();
 	}
 
+	private static Edge nextEdgeInCWTriangle(Edge edge) {
+		return edge.dual().nextEdge();
+	}
+
+	private static Edge prevEdgeInCWTriangle(Edge edge) {
+		return edge.prevEdge().dual();
+	}
+
 	private final boolean mFanFlag;
-	private final ArrayList<CompiledTriangleSet> mTriangleSets = new ArrayList();
+	private CompiledTriangleSet mTriangleSet;
 	private GeometryException mException;
 	private FloatArray mFloatArray = new FloatArray();
 
@@ -278,4 +318,5 @@ public class PolygonMesh {
 	private ArrayList<Edge> mInteriorEdgeStack = new ArrayList();
 	private int mInteriorEdgeCount;
 	private int mTrianglesExpected;
+	private Point mLastVertexGenerated;
 }

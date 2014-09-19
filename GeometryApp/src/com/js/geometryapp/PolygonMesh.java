@@ -10,6 +10,11 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 
+/**
+ * Note: this class can be easily adapted to generate triangle strips for
+ * arbitrary (planar) meshes within GeometryContexts, so long as certain edges
+ * are flagged as polygon edges.
+ */
 public class PolygonMesh {
 
 	/**
@@ -20,13 +25,13 @@ public class PolygonMesh {
 	private static final int EDGE_FLAG_INTERIOR = 1 << 0;
 
 	public static PolygonMesh meshForConvexPolygon(Polygon p) {
-		PolygonMesh m = new PolygonMesh();
+		PolygonMesh m = new PolygonMesh(true);
 		m.setConvexPolygon(p);
 		return m;
 	}
 
 	public static PolygonMesh meshForSimplePolygon(Polygon p) {
-		PolygonMesh m = new PolygonMesh();
+		PolygonMesh m = new PolygonMesh(false);
 		m.setPolygon(p);
 		return m;
 	}
@@ -53,18 +58,14 @@ public class PolygonMesh {
 		return mException;
 	}
 
-	/**
-	 * Prevent construction of these objects by the user
-	 */
-	private PolygonMesh() {
+	private PolygonMesh(boolean usesFan) {
+		mFanFlag = usesFan;
 	}
 
 	/**
 	 * Set convex polygon as source
 	 */
 	private void setConvexPolygon(Polygon p) {
-		mFanFlag = true;
-
 		for (int i = 0; i < p.numVertices(); i++) {
 			mFloatArray.add(p.vertex(i));
 		}
@@ -266,8 +267,8 @@ public class PolygonMesh {
 		return edge.nextEdge().dual();
 	}
 
-	private boolean mFanFlag;
-	private ArrayList<CompiledTriangleSet> mTriangleSets = new ArrayList();
+	private final boolean mFanFlag;
+	private final ArrayList<CompiledTriangleSet> mTriangleSets = new ArrayList();
 	private GeometryException mException;
 	private FloatArray mFloatArray = new FloatArray();
 

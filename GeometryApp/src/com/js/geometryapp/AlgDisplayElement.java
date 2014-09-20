@@ -98,7 +98,7 @@ public abstract class AlgDisplayElement {
 	public static void renderPoint(Point point, float radius) {
 		Matrix matrix = null;
 		Point translation = null;
-    // If no scaling required, we can just use a translation vector
+		// If no scaling required, we can just use a translation vector
 		if (radius == 1) {
 			translation = point;
 		} else {

@@ -51,31 +51,32 @@ public class PolygonProgram {
 	 * @param offset
 	 *            optional offset to apply to mesh
 	 */
-	public void render(PolygonMesh mesh, Point offset) {
-		Matrix t = null;
-		if (offset != null) {
-			t = sUtilityMatrix;
-			t.setTranslate(offset.x, offset.y);
-		}
-		render(mesh, t);
+	public void render(PolygonMesh mesh, Point translation) {
+		render(mesh, translation, null);
 	}
 
 	public void render(PolygonMesh mesh) {
-		render(mesh, (Matrix) null);
+		render(mesh, null, null);
 	}
 
 	/**
 	 * Render the polygon
 	 * 
+	 * @param translation
+	 *            optional translation to apply (before further transformations)
 	 * @param additionalTransform
 	 *            optional additional transformation to apply
 	 */
-	public void render(PolygonMesh mesh, Matrix additionalTransform) {
+	public void render(PolygonMesh mesh, Point translation,
+			Matrix additionalTransform) {
 		if (mesh.getError() != null)
 			return;
 
 		glUseProgram(mProgram.getId());
 		mProgram.prepareMatrix(additionalTransform, mMatrixLocation);
+		if (translation == null)
+			translation = Point.ZERO;
+		glUniform2f(mTranslationLocation, translation.x, translation.y);
 
 		// We only need to send color when it changes
 		if (!mColorValid) {
@@ -91,8 +92,8 @@ public class PolygonProgram {
 		glVertexAttribPointer(mPositionLocation, PolygonMesh.VERTEX_COMPONENTS,
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(mPositionLocation);
-		glDrawArrays(mesh.usesStrip() ? GL_TRIANGLE_STRIP : GL_TRIANGLE_FAN,
-				0, strip.numVertices());
+		glDrawArrays(mesh.usesStrip() ? GL_TRIANGLE_STRIP : GL_TRIANGLE_FAN, 0,
+				strip.numVertices());
 	}
 
 	private void prepareAttributes() {
@@ -100,14 +101,14 @@ public class PolygonProgram {
 		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
 		mColorLocation = OurGLTools.getProgramLocation("u_InputColor");
 		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
+		mTranslationLocation = OurGLTools.getProgramLocation("u_Translation");
 	}
-
-	private static Matrix sUtilityMatrix = new Matrix();
 
 	private GLProgram mProgram;
 	private int mPositionLocation;
 	private int mColorLocation;
 	private int mMatrixLocation;
+	private int mTranslationLocation;
 	private float[] mColor = new float[4];
 	private boolean mColorValid;
 }

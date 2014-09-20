@@ -69,7 +69,7 @@ public abstract class AlgDisplayElement {
 			Matrix m = buildRotationMatrix(angleOfRay);
 			m.postConcat(buildTranslationMatrix(p2));
 			sArrowheadProgram.setColor(sColor);
-			sArrowheadProgram.render(sArrowheadMesh, m);
+			sArrowheadProgram.render(sArrowheadMesh, null, m);
 		}
 		extendPolyline(p1);
 		extendPolyline(p2b);

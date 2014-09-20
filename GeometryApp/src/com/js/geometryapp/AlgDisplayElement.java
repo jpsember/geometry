@@ -165,12 +165,9 @@ public abstract class AlgDisplayElement {
 	private static void buildArrowheads(OurGLRenderer renderer) {
 		sArrowheadProgram = new PolygonProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		// Until issue #27 fixed
-		Polygon p = Polygon.polygonWithScript("0 0 -3 2 -3 -2");
-		// Polygon p = Polygon.polygonWithScript("0 0 -1 .3 -1 -.3");
+		Polygon p = Polygon.polygonWithScript("0 0 -1 .6 -1 -.6");
 		p.apply(buildScaleMatrix(ARROW_HEAD_LENGTH
-				* MyActivity.displayMetrics().density * .3f));
-		pr("scaled: " + p);
+				* MyActivity.displayMetrics().density));
 		sArrowheadMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 

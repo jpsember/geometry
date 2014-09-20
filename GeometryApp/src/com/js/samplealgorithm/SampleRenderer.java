@@ -25,7 +25,7 @@ import android.graphics.Color;
 public class SampleRenderer extends AlgorithmRenderer {
 
 	private static final boolean ADD_TEST_SPRITE = false;
-	private static final boolean ADD_TEST_POLYGON = true;
+	private static final boolean ADD_TEST_POLYGON = false;
 
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
 		super(context);

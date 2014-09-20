@@ -122,10 +122,12 @@ class UpdateAssetsApp
     entries.each do |entry|
       if entry.end_with?('/')
         entry = remove_suffix(entry,'/')
-        fname = dir + '/' + entry
+        fname = entry
+        fname = dir + '/' + fname if dir.length != 0
         update_project_assets_aux(device_assets_dir,project_assets_dir,fname)
       else
         fname = dir + '/' + entry
+        info "Pulling #{project_assets_dir}/#{fname}"
         scall("adb pull '#{device_assets_dir}/#{fname}' '#{project_assets_dir}/#{fname}'")
       end
     end

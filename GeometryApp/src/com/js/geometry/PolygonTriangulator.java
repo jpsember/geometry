@@ -59,24 +59,21 @@ public class PolygonTriangulator {
 		mStepper.show(message);
 	}
 
-	private static final String BGND_ELEMENT_POLYGON = "Polygon";
-	private static final String BGND_ELEMENT_SWEEPSTATUS = "Status";
-	private static final String BGND_ELEMENT_MESH = "Mesh";
-	private static final float LINEWIDTH_HIGHLIGHTED = 6.0f;
-	private static final float LINEWIDTH_THICK = 4.0f;
-	private static final float LINEWIDTH_NORMAL = 2.0f;
+	private static final String BGND_ELEMENT_POLYGON = "1_Polygon";
+	private static final String BGND_ELEMENT_SWEEPSTATUS = "2_Status";
+	private static final String BGND_ELEMENT_MESH = "0_Mesh";
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
-	private static final int COLOR_DARKGREEN = Color.argb(80, 0, 128, 0);
+	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	public void triangulate() {
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
-			mStepper.setLineWidth(LINEWIDTH_NORMAL);
+			mStepper.setLineWidth(1);
 			mStepper.setColor(Color.BLUE);
 			mStepper.plot(mPolygon);
 
 			mStepper.plotToBackground(BGND_ELEMENT_MESH);
-			mStepper.setLineWidth(LINEWIDTH_NORMAL);
+			mStepper.setLineWidth(1);
 			mStepper.setColor(COLOR_LIGHTBLUE);
 			mStepper.plot(mContext);
 		}
@@ -94,7 +91,6 @@ public class PolygonTriangulator {
 
 		if (mStepper.isActive()) {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
-			mStepper.removeBackgroundElement(BGND_ELEMENT_POLYGON);
 		}
 
 		if (update())
@@ -455,14 +451,14 @@ public class PolygonTriangulator {
 			if (!mSweepLineVisible)
 				return;
 			setColorState(COLOR_DARKGREEN);
+			setLineWidthState(1);
 			renderLine(0, mSweepLinePosition,
 					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH, mSweepLinePosition);
 			setColorState(COLOR_DARKGREEN);
+			setLineWidthState(2);
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
-				setLineWidthState(LINEWIDTH_THICK * 1.5f);
-
 				float EXTENT = 50 * MyActivity.displayMetrics().density;
 				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT
 						* .8f, mContext, true);
@@ -488,7 +484,7 @@ public class PolygonTriangulator {
 	}
 
 	private String plotEdge(Point p1, Point p2) {
-		mStepper.setLineWidth(LINEWIDTH_HIGHLIGHTED);
+		mStepper.setLineWidth(2);
 		mStepper.setColor(Color.RED);
 		return mStepper.plotLine(p1, p2);
 	}

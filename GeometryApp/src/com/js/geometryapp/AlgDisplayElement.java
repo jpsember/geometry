@@ -121,7 +121,7 @@ public abstract class AlgDisplayElement {
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads(renderer);
 		buildPoints(renderer);
-		sFont = new Font(24);
+		sFont = new Font((int) (14 * MyActivity.displayMetrics().density));
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
 	}

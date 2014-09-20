@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 
 import android.graphics.Color;
 
+import com.js.android.MyActivity;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 
@@ -109,9 +110,7 @@ public class Polyline {
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(sPositionLocation);
 
-		// Until issues #18 and #26 are fixed, bump up line widths using this
-		// hack
-		glLineWidth(lineWidth() * 1.5f);
+		glLineWidth(lineWidth() * MyActivity.displayMetrics().density * 2f);
 
 		glDrawArrays(isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
 				vertexCount());

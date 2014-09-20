@@ -31,6 +31,13 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	}
 
 	@Override
+	public void onSurfaceChanged(GL10 gl, int w, int h) {
+		super.onSurfaceChanged(gl, w, h);
+		// Let the algorithm stepper elements prepare using this renderer
+		AlgDisplayElement.setRenderer(this);
+	}
+
+	@Override
 	protected void constructTransforms() {
 		super.constructTransforms();
 

@@ -11,7 +11,6 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLSpriteProgram;
@@ -38,14 +37,11 @@ public class SampleRenderer extends AlgorithmRenderer {
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		super.onSurfaceCreated(gl, config);
-		// Let the algorithm stepper elements prepare using this renderer
-		AlgDisplayElement.setRenderer(this);
 
 		// Synchronize with stepper, so no race conditions with UI thread.
 		synchronized (mStepper) {
 
 			if (ADD_TEST_POLYGON) {
-				warning("adding polygon for test purposes");
 				mConvexPolygon = Polygon.discPolygon(Point.ZERO, 100, 23);
 				mConvexPolygon.transformToFitRect(new Rect(200, 200, 300, 120),
 						false);
@@ -68,7 +64,6 @@ public class SampleRenderer extends AlgorithmRenderer {
 			}
 
 			if (ADD_TEST_SPRITE) {
-				warning("adding sprite for test purposes");
 				GLTexture t = new GLTexture(context(), R.raw.texture);
 				Rect window = new Rect(0, 0, t.width(), t.height());
 

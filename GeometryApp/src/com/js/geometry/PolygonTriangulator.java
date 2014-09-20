@@ -9,6 +9,7 @@ import java.util.TreeSet;
 
 import android.graphics.Color;
 
+import com.js.android.MyActivity;
 import com.js.basic.Queue;
 import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
@@ -113,10 +114,10 @@ public class PolygonTriangulator {
 			}
 		});
 		mSweepLineVisible = false;
-    
+
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
-	  	mStepper.plotElement(new AlgDisplaySweepStatus());
+			mStepper.plotElement(new AlgDisplaySweepStatus());
 		}
 	}
 
@@ -456,17 +457,17 @@ public class PolygonTriangulator {
 			setColorState(COLOR_DARKGREEN);
 			renderLine(0, mSweepLinePosition,
 					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH, mSweepLinePosition);
-			setColorState(COLOR_LIGHTBLUE);
+			setColorState(COLOR_DARKGREEN);
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
-				setLineWidthState(LINEWIDTH_THICK * 2);
+				setLineWidthState(LINEWIDTH_THICK * 1.5f);
 
-				float EXTENT = 20;
-				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT,
-						mContext, true);
-				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT,
-						mContext, true);
+				float EXTENT = 50 * MyActivity.displayMetrics().density;
+				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT
+						* .8f, mContext, true);
+				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT
+						* 1.2f, mContext, true);
 				renderRay(p1, p2);
 
 				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,

@@ -26,6 +26,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mContext;
 	}
 
+	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		OurGLTools.defineOpenGLThread();
 		mSurfaceId += 1;
@@ -47,6 +48,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mScreenToNDCTransform;
 	}
 
+	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
 		mDeviceSize.setTo(w, h);

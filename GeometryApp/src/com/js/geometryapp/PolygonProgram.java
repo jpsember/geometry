@@ -8,6 +8,7 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 
 import static android.opengl.GLES20.*;
+import static com.js.basic.Tools.*;
 
 /**
  * A program to render polygons
@@ -69,8 +70,10 @@ public class PolygonProgram {
 	 */
 	public void render(PolygonMesh mesh, Point translation,
 			Matrix additionalTransform) {
-		if (mesh.getError() != null)
+		if (mesh.getError() != null) {
+			warning("mesh error " + mesh.getError());
 			return;
+		}
 
 		glUseProgram(mProgram.getId());
 		mProgram.prepareMatrix(additionalTransform, mMatrixLocation);

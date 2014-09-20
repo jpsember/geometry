@@ -11,6 +11,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLSpriteProgram;
@@ -26,6 +27,7 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 	private static final boolean ADD_TEST_SPRITE = false;
 	private static final boolean ADD_TEST_POLYGON = false;
+	private static final boolean ADD_TEST_POINTS = false;
 
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
 		super(context);
@@ -113,6 +115,22 @@ public class SampleRenderer extends AlgorithmRenderer {
 
 				mPolygonRenderer.render(mConvexPolygonMesh, offset);
 				mPolygonRenderer.render(mNonConvexPolygonMesh);
+			}
+
+			if (ADD_TEST_POINTS) {
+				AlgDisplayElement.setColorState(Color.BLUE);
+
+				Point origin = new Point(500, 500);
+				AlgDisplayElement.renderPoint(origin);
+				AlgDisplayElement.renderPoint(MyMath.pointOnCircle(origin,
+						(mFrame / 60.0f) * MyMath.PI * 2, 100));
+
+				// Do same thing, with different origin and radius
+				origin = new Point(500, 800);
+				AlgDisplayElement.renderPoint(origin, 2.5f);
+				AlgDisplayElement.renderPoint(
+						MyMath.pointOnCircle(origin, (mFrame / 60.0f)
+								* MyMath.PI * 2, 100), 2.5f);
 			}
 
 			mFrame++;

@@ -92,18 +92,22 @@ public abstract class AlgDisplayElement {
 	}
 
 	public static void renderPoint(Point point) {
-		renderPoint(point, 3.0f);
+		renderPoint(point, 1);
 	}
 
 	public static void renderPoint(Point point, float radius) {
-		setLineWidthState(2.0f);
-
-		extendPolyline(point.x - radius, point.y - radius);
-		extendPolyline(point.x + radius, point.y - radius);
-		extendPolyline(point.x + radius, point.y + radius);
-		extendPolyline(point.x - radius, point.y + radius);
-		closePolyline();
-		renderPolyline();
+		Matrix matrix = null;
+		Point translation = null;
+    // If no scaling required, we can just use a translation vector
+		if (radius == 1) {
+			translation = point;
+		} else {
+			Matrix translationMatrix = buildTranslationMatrix(point);
+			matrix = buildScaleMatrix(radius);
+			matrix.postConcat(translationMatrix);
+		}
+		sPointProgram.setColor(sColor);
+		sPointProgram.render(sPointMesh, translation, matrix);
 	}
 
 	/**
@@ -116,6 +120,7 @@ public abstract class AlgDisplayElement {
 		Polyline.prepareRenderer(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads(renderer);
+		buildPoints(renderer);
 		sFont = new Font(24);
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
@@ -171,11 +176,23 @@ public abstract class AlgDisplayElement {
 		sArrowheadMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
+	private static void buildPoints(OurGLRenderer renderer) {
+		sPointProgram = new PolygonProgram(renderer,
+				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		final float POINT_RADIUS = 12.0f;
+		int POINT_VERTICES = 10;
+		Polygon p = Polygon.circleWithOrigin(Point.ZERO, POINT_RADIUS
+				* MyActivity.displayMetrics().density, POINT_VERTICES);
+		sPointMesh = PolygonMesh.meshForConvexPolygon(p);
+	}
+
 	private int mColor;
 	private float mLineWidth;
 
 	private static PolygonProgram sArrowheadProgram;
 	private static PolygonMesh sArrowheadMesh;
+	private static PolygonProgram sPointProgram;
+	private static PolygonMesh sPointMesh;
 	private static Font sFont;
 	private static Polyline sPolyline;
 	private static float sLineWidth;

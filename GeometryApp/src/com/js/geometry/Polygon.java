@@ -394,20 +394,6 @@ public class Polygon {
 
 	}
 
-	// #if GEOM_DRIVERS
-	//
-	// // If stepper is nil, uses the context's stepper
-	// // flags = LAYERFLAG_xxx
-	// - (void)addLayerTo:(JSAlgorithmStepper *)stepper name:(NSString *)name
-	// depth:(int)depth flags:(int)flags;
-	// - (void)renderTo:(JSAlgorithmStepper *)stepper flags:(int)flags;
-	// #endif
-
-	// #if DEBUG
-	// - (void)encodeInput:(NSMutableString *)destination;
-	// - (void)decodeInput:(NSScanner *)scanner;
-	// #endif
-
 	// These methods mutate the polygon:
 	public void perturb(GeometryContext context) {
 		for (Point pt : mVertices) {

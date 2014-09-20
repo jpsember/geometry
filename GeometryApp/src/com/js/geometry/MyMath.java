@@ -212,6 +212,8 @@ public final class MyMath {
 	}
 
 	public static String dumpMatrix(Matrix m) {
+		if (m == null)
+			return "<null>";
 		float v[] = new float[9];
 		m.getValues(v);
 		return dumpMatrix(v, 3, 3, true);

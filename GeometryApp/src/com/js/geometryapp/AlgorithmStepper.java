@@ -212,7 +212,7 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Point point) {
-		return plot(point, 3.0f);
+		return plot(point, 1);
 	}
 
 	public String plot(Vertex vertex) {

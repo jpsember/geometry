@@ -499,7 +499,7 @@ public class PolygonTriangulator {
 
 	private String plot(Vertex v) {
 		mStepper.setColor(Color.RED);
-		return mStepper.plot(v.point(), 6.0f);
+		return mStepper.plot(v.point());
 	}
 
 	private AlgorithmStepper mStepper;

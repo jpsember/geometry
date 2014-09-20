@@ -52,26 +52,26 @@ public class GLProgram {
 	/**
 	 * Prepare transform matrix for program, if necessary
 	 * 
-	 * @param transform
+	 * @param optionalTransform
 	 *            optional additional transformation matrix to concatenate to
 	 *            the render's prepared matrix
 	 * @param matrixLocation
 	 *            location of matrix within program
 	 */
-	protected void prepareMatrix(Matrix transform, int matrixLocation) {
+	protected void prepareMatrix(Matrix optionalTransform, int matrixLocation) {
 
 		// Only do this if the previously prepared matrix is no longer valid, or
 		// if we need to include an object-specific transformation
 
 		if (mRenderer.projectionMatrixId() != mPreparedProjectionMatrixId
-				|| transform != null) {
+				|| optionalTransform != null) {
 			Matrix mainTransform = mRenderer.getTransform(mTransformName);
 			Matrix m;
-			if (transform != null) {
+			if (optionalTransform != null) {
 				// We won't want to reuse this particular prepared matrix again
 				mPreparedProjectionMatrixId = 0;
 				// Concatenate the mesh matrix to the projection matrix
-				m = new Matrix(transform);
+				m = new Matrix(optionalTransform);
 				m.postConcat(mainTransform);
 			} else {
 				mPreparedProjectionMatrixId = mRenderer.projectionMatrixId();

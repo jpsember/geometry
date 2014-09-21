@@ -29,7 +29,7 @@ public final class Vertex {
 	}
 
 	public boolean visited() {
-		return 0 != (mFlags & FLAG_VISITED);
+		return hasFlags(FLAG_VISITED);
 	}
 
 	public void setVisited(boolean v) {
@@ -40,7 +40,7 @@ public final class Vertex {
 	}
 
 	public boolean deleted() {
-		return 0 != (mFlags & FLAG_DELETED);
+		return hasFlags(FLAG_DELETED);
 	}
 
 	public void setDeleted(boolean d) {
@@ -72,6 +72,17 @@ public final class Vertex {
 
 	public int flags() {
 		return mFlags;
+	}
+
+	/**
+	 * Determine if flags contains all of a particular subset of flags
+	 * 
+	 * @param flags
+	 *            subset of flags to test
+	 * @return true if every bit in flags is set in this edge
+	 */
+	public boolean hasFlags(int flags) {
+		return (mFlags & flags) == flags;
 	}
 
 	private Point mPt;

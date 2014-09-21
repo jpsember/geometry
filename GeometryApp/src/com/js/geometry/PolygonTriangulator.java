@@ -58,10 +58,12 @@ public class PolygonTriangulator {
 		mStepper.show(message);
 	}
 
-	private static final String BGND_ELEMENT_POLYGON_FILLED = "1_Polygon";
-	private static final String BGND_ELEMENT_POLYGON_OUTLINE = "1_Polygon2";
-	private static final String BGND_ELEMENT_SWEEPSTATUS = "2_Status";
-	private static final String BGND_ELEMENT_MESH = "0_Mesh";
+	private static final String BGND_ELEMENT_POLYGON_FILLED = "10";
+	private static final String BGND_ELEMENT_POLYGON_OUTLINE = "11";
+	private static final String BGND_ELEMENT_MONOTONE_FACE = "15";
+	private static final String BGND_ELEMENT_SWEEPSTATUS = "20";
+	private static final String BGND_ELEMENT_MESH = "00";
+
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
@@ -354,10 +356,38 @@ public class PolygonTriangulator {
 		}
 	}
 
+	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
+		// have stepper display the face while triangulating it
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_MONOTONE_FACE);
+			// Construct CCW-ordered polygon from monotone face's vertices
+			buildVertexList(edgePointingToHighestVertex);
+			Polygon facePolygon = new Polygon();
+			ArrayList<Point> leftSideVertices = new ArrayList();
+			for (Vertex vertex : mVertexList) {
+				if (!vertex.hasFlags(VERTEXFLAG_LEFTSIDE)) {
+					leftSideVertices.add(vertex.point());
+				} else
+					facePolygon.add(vertex.point());
+			}
+			Collections.reverse(leftSideVertices);
+			for (Point pt : leftSideVertices)
+				facePolygon.add(pt);
+			mStepper.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
+			mStepper.plot(facePolygon, true);
+		}
+
+		// call an auxilliary function to do the actual triangulation
+		triangulateMonotoneFaceAux(edgePointingToHighestVertex);
+
+		if (mStepper.isActive())
+			mStepper.removeBackgroundElement(BGND_ELEMENT_MONOTONE_FACE);
+	}
+
 	// See:
 	// http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 	//
-	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
+	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
 		if (update())
 			show("*Triangulating monotone face"
 					+ plot(edgePointingToHighestVertex));
@@ -389,10 +419,9 @@ public class PolygonTriangulator {
 			mMonotoneQueue.push(v2);
 		}
 
-		// We don't want to add edges that already exist. The last edge added
-		// (if we follow the
-		// pseudocode) actually already exists in the mesh; so use a counter to
-		// determine when we're done.
+		// We don't want to add edges that already exist. The last edge
+		// added (if we follow the pseudocode) actually already exists in
+		// the mesh; so use a counter to determine when we're done.
 
 		ASSERT(mVertexList.size() >= 3);
 		int edgesRemaining = mVertexList.size() - 3;

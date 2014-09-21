@@ -347,8 +347,12 @@ public class Polygon {
 		return true;
 	}
 
-	// Returns true iff polygon has ccw orientation
-	public boolean isCCW(GeometryContext context) {
+	/**
+	 * Determine if polygon is CCW or CW oriented
+	 * 
+	 * @return 1 if CCW, -1 if CW, 0 if unknown (e.g. nonsimple)
+	 */
+	public int orientation(GeometryContext context) {
 		if (numVertices() < 3)
 			die("too few vertices");
 		float totalSwept = 0;
@@ -367,14 +371,21 @@ public class Polygon {
 		}
 
 		if (Math.abs(totalSwept - (-MyMath.PSEUDO_ANGLE_RANGE)) < .01f) {
-			return false;
+			return -1;
 		}
 		if (context.checkError(!(Math.abs(totalSwept
 				- MyMath.PSEUDO_ANGLE_RANGE) < .01f))) {
-			GeometryException.raise("Polygon winding number unknown: "
-					+ totalSwept);
+			return 0;
 		}
-		return true;
+		return 1;
+	}
+
+	// Returns true iff polygon has ccw orientation
+	public boolean isCCW(GeometryContext context) {
+		int orientation = orientation(context);
+		if (orientation == 0)
+			GeometryException.raise("Polygon winding number unknown");
+		return (orientation == 1);
 	}
 
 	public boolean neighbors(int i1, int i2) {

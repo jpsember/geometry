@@ -148,7 +148,7 @@ public class AlgorithmStepper {
 		// instead of adding to this frame
 		if (mNextPlotKey != null) {
 			mBackgroundElements.put(mNextPlotKey, element);
-			mNextPlotKey = null;
+			clearPlotToBackground();
 		} else {
 			mDisplayElements.add(element);
 		}
@@ -191,6 +191,14 @@ public class AlgorithmStepper {
 	 */
 	public void plotToBackground(String key) {
 		mNextPlotKey = key;
+	}
+
+	/**
+	 * Cancel the flag that causes the next element to be plotted to the
+	 * background
+	 */
+	public void clearPlotToBackground() {
+		mNextPlotKey = null;
 	}
 
 	/**

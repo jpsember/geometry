@@ -363,16 +363,13 @@ public class PolygonTriangulator {
 			// Construct CCW-ordered polygon from monotone face's vertices
 			buildVertexList(edgePointingToHighestVertex);
 			Polygon facePolygon = new Polygon();
-			ArrayList<Point> leftSideVertices = new ArrayList();
+			Queue<Point> points = new Queue();
 			for (Vertex vertex : mVertexList) {
-				if (!vertex.hasFlags(VERTEXFLAG_LEFTSIDE)) {
-					leftSideVertices.add(vertex.point());
-				} else
-					facePolygon.add(vertex.point());
+				points.push(vertex.point(),
+						!vertex.hasFlags(VERTEXFLAG_LEFTSIDE));
 			}
-			Collections.reverse(leftSideVertices);
-			for (Point pt : leftSideVertices)
-				facePolygon.add(pt);
+			while (!points.isEmpty())
+				facePolygon.add(points.pop());
 			mStepper.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
 			mStepper.plot(facePolygon, true);
 		}
@@ -399,11 +396,6 @@ public class PolygonTriangulator {
 		edgePointingToHighestVertex.setVisited(true);
 
 		buildVertexList(edgePointingToHighestVertex);
-		if (mVertexList.size() == 3) {
-			if (update())
-				show("Already a triangle");
-			return;
-		}
 
 		boolean queueIsLeft;
 		int vIndex = 0;
@@ -423,7 +415,6 @@ public class PolygonTriangulator {
 		// added (if we follow the pseudocode) actually already exists in
 		// the mesh; so use a counter to determine when we're done.
 
-		ASSERT(mVertexList.size() >= 3);
 		int edgesRemaining = mVertexList.size() - 3;
 
 		while (edgesRemaining != 0) {

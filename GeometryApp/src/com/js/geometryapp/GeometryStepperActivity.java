@@ -1,10 +1,11 @@
 package com.js.geometryapp;
 
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.ViewGroup;
 
-public class GeometryStepperActivity extends GeometryActivity {
+public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,12 +36,13 @@ public class GeometryStepperActivity extends GeometryActivity {
 		return layout;
 	}
 
-	protected GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = new OurGLSurfaceView(this,
-				new AlgorithmRenderer(this));
+	protected final GLSurfaceView buildOpenGLView() {
+		GLSurfaceView v = new OurGLSurfaceView(this, buildRenderer(this));
 		v.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		return v;
 	}
+
+	protected abstract AlgorithmRenderer buildRenderer(Context context);
 
 	private AlgorithmStepper mAlgorithmStepper;
 }

@@ -2,6 +2,7 @@ package com.js.geometryapp;
 
 import static com.js.basic.Tools.*;
 
+import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.js.android.MyActivity;
@@ -12,7 +13,7 @@ import com.js.geometry.Rect;
 import android.content.Context;
 import android.graphics.Matrix;
 
-public class AlgorithmRenderer extends OurGLRenderer {
+public abstract class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final int ALGORITHM_SPACE_WIDTH = 1000;
 	public static final int ALGORITHM_SPACE_HEIGHT = 1200;
@@ -30,12 +31,55 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		return mAlgorithmRect;
 	}
 
+	/**
+	 * Marked final to prevent user from overriding. Any user initialization
+	 * should be done within onSurfaceChanged() instead
+	 */
 	@Override
-	public void onSurfaceChanged(GL10 gl, int w, int h) {
-		super.onSurfaceChanged(gl, w, h);
-		// Let the algorithm stepper elements prepare using this renderer
-		AlgDisplayElement.setRenderer(this);
+	public final void onSurfaceCreated(GL10 gl, EGLConfig config) {
+		synchronized (AlgorithmStepper.sharedInstance()) {
+			super.onSurfaceCreated(gl, config);
+		}
 	}
+
+	/**
+	 * Marked final to prevent user from overriding. User should perform
+	 * initialization within onSurfaceChanged()
+	 */
+	@Override
+	public final void onSurfaceChanged(GL10 gl, int w, int h) {
+		synchronized (AlgorithmStepper.sharedInstance()) {
+			super.onSurfaceChanged(gl, w, h);
+			// Let the algorithm stepper elements prepare using this renderer
+			AlgDisplayElement.setRenderer(this);
+			// Call user method, now that synchronized
+			onSurfaceChanged();
+		}
+	}
+
+	/**
+	 * Marked final to prevent user from overriding. User should do rendering
+	 * within onDrawFrame()
+	 */
+	@Override
+	public final void onDrawFrame(GL10 gl) {
+		synchronized (AlgorithmStepper.sharedInstance()) {
+			gl.glClearColor(1f, 1f, 1f, 1f);
+			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			// Call user method, now that synchronized
+			onDrawFrame();
+		}
+	}
+
+	/**
+	 * Subclass must implement this method to initialize render resources
+	 */
+	public abstract void onSurfaceChanged();
+
+	/**
+	 * Subclass must implement this method to perform rendering
+	 */
+	public abstract void onDrawFrame();
 
 	@Override
 	protected void constructTransforms() {
@@ -70,11 +114,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	 */
 	public static float algorithmToDensityPixels() {
 		return sAlgorithmToDensityPixels;
-	}
-
-	public void onDrawFrame(GL10 gl) {
-		gl.glClearColor(1f, 1f, 1f, 1f);
-		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 	}
 
 	private static float sAlgorithmToDensityPixels;

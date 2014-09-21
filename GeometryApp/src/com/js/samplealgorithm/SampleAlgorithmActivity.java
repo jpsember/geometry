@@ -2,7 +2,7 @@ package com.js.samplealgorithm;
 
 import static com.js.basic.Tools.*;
 
-import android.opengl.GLSurfaceView;
+import android.content.Context;
 import android.os.Bundle;
 
 import com.js.geometryapp.AlgorithmRenderer;
@@ -24,13 +24,9 @@ public class SampleAlgorithmActivity extends GeometryStepperActivity {
 	}
 
 	@Override
-	protected GLSurfaceView buildOpenGLView() {
-		mRenderer = new SampleRenderer(this, mAlgorithm);
-		GLSurfaceView v = new OurGLSurfaceView(this, mRenderer);
-		v.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		return v;
+	protected AlgorithmRenderer buildRenderer(Context context) {
+		return new SampleRenderer(this, mAlgorithm);
 	}
 
-	private AlgorithmRenderer mRenderer;
 	private SampleAlgorithm mAlgorithm;
 }

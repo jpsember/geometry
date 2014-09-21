@@ -224,8 +224,13 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Polygon polygon) {
-		return plotElement(new PolygonElement(polygon));
+		return plot(polygon, false);
 	}
+
+	public String plot(Polygon polygon, boolean filled) {
+		return plotElement(new PolygonElement(polygon, filled));
+	}
+
 
 	public String plot(GeometryContext meshContext) {
 		return plotElement(new MeshElement(meshContext));

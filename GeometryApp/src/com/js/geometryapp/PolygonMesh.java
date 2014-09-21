@@ -21,10 +21,10 @@ public class PolygonMesh {
 
 	// For investigating issue #34, strip efficiency
 	// Dumps vertices to output as XYZ(GAP)ABC...
-	private static final boolean DUMP_STRIP = true;
+	private static final boolean DUMP_STRIP = false;
 
 	// Warps vertices to emphasize strip boundaries
-	private static final boolean CONTRACT_STRIP_VERTICES = true;
+	private static final boolean CONTRACT_STRIP_VERTICES = false;
 
 	/**
 	 * The number of floats per vertex

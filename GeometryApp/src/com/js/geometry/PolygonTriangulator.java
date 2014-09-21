@@ -67,6 +67,9 @@ public class PolygonTriangulator {
 	public void triangulate() {
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
+			mStepper.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
+			mStepper.plot(mPolygon, true);
+
 			mStepper.setLineWidth(1);
 			mStepper.setColor(Color.BLUE);
 			mStepper.plot(mPolygon);

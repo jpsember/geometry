@@ -1,12 +1,14 @@
 package com.js.geometryapp;
 
 import com.js.geometry.Polygon;
+import static com.js.basic.Tools.*;
 
 public class PolygonElement extends AlgorithmDisplayElement {
 
 	public PolygonElement(Polygon polygon, boolean filled) {
 		mPolygon = new Polygon(polygon);
 		mFilled = filled;
+		doNothing();
 	}
 
 	@Override

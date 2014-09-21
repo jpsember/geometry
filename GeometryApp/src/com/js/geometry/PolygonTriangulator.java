@@ -58,7 +58,8 @@ public class PolygonTriangulator {
 		mStepper.show(message);
 	}
 
-	private static final String BGND_ELEMENT_POLYGON = "1_Polygon";
+	private static final String BGND_ELEMENT_POLYGON_FILLED = "1_Polygon";
+	private static final String BGND_ELEMENT_POLYGON_OUTLINE = "1_Polygon2";
 	private static final String BGND_ELEMENT_SWEEPSTATUS = "2_Status";
 	private static final String BGND_ELEMENT_MESH = "0_Mesh";
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
@@ -66,10 +67,11 @@ public class PolygonTriangulator {
 
 	public void triangulate() {
 		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_POLYGON);
+			mStepper.plotToBackground(BGND_ELEMENT_POLYGON_FILLED);
 			mStepper.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 			mStepper.plot(mPolygon, true);
 
+			mStepper.plotToBackground(BGND_ELEMENT_POLYGON_OUTLINE);
 			mStepper.setLineWidth(1);
 			mStepper.setColor(Color.BLUE);
 			mStepper.plot(mPolygon);
@@ -200,7 +202,7 @@ public class PolygonTriangulator {
 	private Edge replaceHelperForEdge(SweepEdge s, Vertex newHelper) {
 		Vertex prevHelper = s.helper();
 		if (update())
-			show("replace edge helper" + plot(prevHelper) + plot(newHelper)
+			show("Replace edge helper" + plot(prevHelper) + plot(newHelper)
 					+ plot(s));
 
 		Edge newEdge = null;
@@ -249,7 +251,7 @@ public class PolygonTriangulator {
 
 	private void processVertexEvent(Vertex vertex) {
 		if (update())
-			show("process vertex event" + plot(vertex));
+			show("Process vertex event" + plot(vertex));
 
 		moveSweepLineTo(vertex.point().y);
 		Edge edges[] = new Edge[2];
@@ -306,7 +308,7 @@ public class PolygonTriangulator {
 			SweepEdge se = findExistingEdge(delEdge);
 			replaceHelperForEdge(se, vertex);
 			if (update())
-				show("removing status edge" + plot(se));
+				show("Removing status edge" + plot(se));
 			boolean existed = mSweepStatus.remove(se);
 			if (mContext.checkError(!existed)) {
 				GeometryException.raise("could not find item in sweep status");
@@ -316,7 +318,7 @@ public class PolygonTriangulator {
 		if (newEdge != null) {
 			SweepEdge se = SweepEdge.edge(newEdge, vertex);
 			if (update())
-				show("adding status edge" + plot(se));
+				show("Adding status edge" + plot(se));
 			mSweepStatus.add(se);
 		}
 	}
@@ -357,11 +359,11 @@ public class PolygonTriangulator {
 	//
 	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
 		if (update())
-			show("*triangulating monotone face"
+			show("*Triangulating monotone face"
 					+ plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
 			if (update())
-				show("edge already visited");
+				show("Edge already visited");
 			return;
 		}
 		edgePointingToHighestVertex.setVisited(true);
@@ -369,7 +371,7 @@ public class PolygonTriangulator {
 		buildVertexList(edgePointingToHighestVertex);
 		if (mVertexList.size() == 3) {
 			if (update())
-				show("already a triangle");
+				show("Already a triangle");
 			return;
 		}
 
@@ -383,7 +385,7 @@ public class PolygonTriangulator {
 			mMonotoneQueue.push(v);
 			Vertex v2 = mVertexList.get(vIndex++);
 			if (update())
-				show("queuing vertex" + plot(v2));
+				show("Queuing vertex" + plot(v2));
 			mMonotoneQueue.push(v2);
 		}
 
@@ -405,13 +407,13 @@ public class PolygonTriangulator {
 					// Skip the first queued vertex
 					Vertex v1 = mMonotoneQueue.pop();
 					if (update())
-						show("skipping first queued vertex" + plot(v1));
+						show("Skipping first queued vertex" + plot(v1));
 					Vertex v2 = mMonotoneQueue.peek();
 					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
 				if (update())
-					show("queuing vertex" + plot(vertex));
+					show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
 			} else {
@@ -422,7 +424,7 @@ public class PolygonTriangulator {
 							vertex.point(), v1.point(), v2.point());
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (update())
-						show("test for convex angle" + plot(v1) + plot(v2));
+						show("Test for convex angle" + plot(v1) + plot(v2));
 
 					if (!isConvex)
 						break;
@@ -431,7 +433,7 @@ public class PolygonTriangulator {
 					mMonotoneQueue.pop(false);
 				}
 				if (update())
-					show("queuing vertex" + plot(vertex));
+					show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 			}
 		}
@@ -439,7 +441,7 @@ public class PolygonTriangulator {
 
 	private Edge addEdge(Vertex v1, Vertex v2) {
 		if (update())
-			show("adding mesh edge" + plotEdge(v1, v2));
+			show("Adding mesh edge" + plotEdge(v1, v2));
 		return mContext.addEdge(null, v1, v2);
 	}
 

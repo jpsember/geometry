@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
+import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
@@ -17,6 +18,13 @@ import static com.js.basic.Tools.*;
  * are flagged as polygon edges.
  */
 public class PolygonMesh {
+
+	// For investigating issue #34, strip efficiency
+	// Dumps vertices to output as XYZ(GAP)ABC...
+	private static final boolean DUMP_STRIP = true;
+
+	// Warps vertices to emphasize strip boundaries
+	private static final boolean CONTRACT_STRIP_VERTICES = true;
 
 	/**
 	 * The number of floats per vertex
@@ -75,12 +83,19 @@ public class PolygonMesh {
 	}
 
 	/**
+	 * Get the number of vertices within mFloatArray
+	 */
+	private int bufferedVertexCount() {
+		return mFloatArray.size() / VERTEX_COMPONENTS;
+	}
+
+	/**
 	 * Construct a CompiledTriangleSet. Reads points from the float array, adds
 	 * the compiled triangle set to our list, then clears the float array
 	 */
 	private void compileTriangleSet() {
 		mTriangleSet = new CompiledTriangleSet(mFloatArray.asFloatBuffer(),
-				mFloatArray.size() / VERTEX_COMPONENTS);
+				bufferedVertexCount());
 	}
 
 	/**
@@ -130,6 +145,11 @@ public class PolygonMesh {
 		// edges, to see if this reduced the strip count. It doesn't have much
 		// of an effect.
 
+		if (CONTRACT_STRIP_VERTICES)
+			warning("contracting strip vertices for demonstration purposes");
+
+		if (DUMP_STRIP)
+			prr("Strip: ");
 		for (Edge edge : mContext.edgeBuffer()) {
 			if (edge.visited())
 				continue;
@@ -139,15 +159,29 @@ public class PolygonMesh {
 			// Start a strip with the triangle to the left of this edge
 			buildTriangleStrip(edge);
 		}
-
 		if (mTrianglesExtracted != mTrianglesExpected)
 			GeometryException
 					.raise("unexpected number of triangles generated for strips");
+		if (DUMP_STRIP) {
+			pr("");
+			int vertices = bufferedVertexCount();
+			pr("triangles=" + mTrianglesExtracted);
+			pr(" vertices=" + vertices);
+			int max = mTrianglesExtracted * 3;
+			pr("  maximum=" + max);
+		}
+
 		compileTriangleSet();
 	}
 
 	private boolean stripParity() {
-		return (mFloatArray.size() / VERTEX_COMPONENTS) % 1 != 0;
+		return bufferedVertexCount() % 1 != 0;
+	}
+
+	private void addPointToStrip(Point point) {
+		if (DUMP_STRIP)
+			prr(nameOf(point, false).substring(0, 1));
+		mFloatArray.add(point);
 	}
 
 	/**
@@ -175,14 +209,18 @@ public class PolygonMesh {
 			// If we're continuing a previous strip, add degenerate
 			// triangles to bridge the gap
 			if (mLastVertexGenerated != null) {
+				if (DUMP_STRIP)
+					prr("(");
 				// Special case if last vertex generated equals new start vertex
 				if (mLastVertexGenerated != firstPoint) {
-					mFloatArray.add(mLastVertexGenerated);
+					addPointToStrip(mLastVertexGenerated);
 				}
-				mFloatArray.add(firstPoint);
+				addPointToStrip(firstPoint);
+				if (DUMP_STRIP)
+					prr(")");
 			}
-			mFloatArray.add(firstPoint);
-			mFloatArray.add(secondPoint);
+			addPointToStrip(firstPoint);
+			addPointToStrip(secondPoint);
 		}
 
 		while (true) {
@@ -214,9 +252,31 @@ public class PolygonMesh {
 				baseEdge = nextBaseEdge;
 			}
 			Point point = baseEdge.destVertex().point();
-			mFloatArray.add(point);
+			if (CONTRACT_STRIP_VERTICES) {
+				Point p1 = peekLastPoint(2);
+				Point p2 = peekLastPoint(1);
+				Point mid = MyMath.interpolateBetween(p1, p2, .5f);
+				float distance = MyMath.distanceBetween(mid, point);
+				float distance2 = Math.max(0, distance - 30);
+				point = MyMath.interpolateBetween(mid, point, distance2
+						/ distance);
+			}
+			addPointToStrip(point);
 			mLastVertexGenerated = point;
 		}
+	}
+
+	/**
+	 * Get one of the last points added to mFloatArray
+	 * 
+	 * @param distanceFromEnd
+	 *            1:last point; 2:second to last; etc
+	 * @return Point
+	 */
+	private Point peekLastPoint(int distanceFromEnd) {
+		int position = mFloatArray.size() - distanceFromEnd * VERTEX_COMPONENTS;
+		float[] array = mFloatArray.array();
+		return new Point(array[position], array[position + 1]);
 	}
 
 	/**

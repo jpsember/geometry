@@ -23,7 +23,7 @@ import android.graphics.Color;
 public class SampleRenderer extends AlgorithmRenderer {
 
 	private static final boolean ADD_TEST_SPRITE = false;
-	private static final boolean ADD_TEST_POLYGON = false;
+	private static final boolean ADD_TEST_POLYGON = true;
 	private static final boolean ADD_TEST_POINTS = false;
 
 	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
@@ -36,7 +36,8 @@ public class SampleRenderer extends AlgorithmRenderer {
 	@Override
 	public void onSurfaceChanged() {
 
-		if (ADD_TEST_POLYGON) {
+		// Only generate test polygons if we're in landscape mode
+		if (ADD_TEST_POLYGON && deviceSize().x > deviceSize().y) {
 			mConvexPolygon = Polygon.discPolygon(Point.ZERO, 100, 23);
 			mConvexPolygon.transformToFitRect(new Rect(200, 200, 300, 120),
 					false);

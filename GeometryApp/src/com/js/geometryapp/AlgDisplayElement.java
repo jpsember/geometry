@@ -59,8 +59,7 @@ public abstract class AlgDisplayElement {
 	public static void renderRay(Point p1, Point p2) {
 		float angleOfRay = MyMath.polarAngleOfSegment(p1, p2);
 		float length = MyMath.distanceBetween(p1, p2);
-		float setback = ARROW_HEAD_LENGTH * .3f
-				* MyActivity.displayMetrics().density;
+		float setback = sArrowheadLength * .3f;
 		boolean drawArrowhead = (length > 2 * setback);
 		Point p2b = p2;
 		if (drawArrowhead) {
@@ -68,15 +67,13 @@ public abstract class AlgDisplayElement {
 					.interpolateBetween(p1, p2, (length - setback) / length);
 			Matrix m = buildRotationMatrix(angleOfRay);
 			m.postConcat(buildTranslationMatrix(p2));
-			sArrowheadProgram.setColor(sColor);
-			sArrowheadProgram.render(sArrowheadMesh, null, m);
+			sPolygonProgram.setColor(sColor);
+			sPolygonProgram.render(sArrowheadMesh, null, m);
 		}
 		extendPolyline(p1);
 		extendPolyline(p2b);
 		renderPolyline();
 	}
-
-	private static final float ARROW_HEAD_LENGTH = 35;
 
 	/**
 	 * Set the line width state (as opposed to an instance's line width)
@@ -106,8 +103,8 @@ public abstract class AlgDisplayElement {
 			matrix = buildScaleMatrix(radius);
 			matrix.postConcat(translationMatrix);
 		}
-		sPointProgram.setColor(sColor);
-		sPointProgram.render(sPointMesh, translation, matrix);
+		sPolygonProgram.setColor(sColor);
+		sPolygonProgram.render(sPointMesh, translation, matrix);
 	}
 
 	/**
@@ -119,9 +116,11 @@ public abstract class AlgDisplayElement {
 		OurGLTools.ensureRenderThread();
 		Polyline.prepareRenderer(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		sPolygonProgram = new PolygonProgram(renderer,
+				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads(renderer);
 		buildPoints(renderer);
-		sFont = new Font((int) (14 * MyActivity.displayMetrics().density));
+		sFont = new Font((int) (18 * MyActivity.density()));
 		sLineWidth = 1.0f;
 		sColor = Color.WHITE;
 	}
@@ -167,31 +166,28 @@ public abstract class AlgDisplayElement {
 		return m;
 	}
 
-	private static void buildArrowheads(OurGLRenderer renderer) {
-		sArrowheadProgram = new PolygonProgram(renderer,
-				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		Polygon p = Polygon.polygonWithScript("0 0 -1 .6 -1 -.6");
-		p.apply(buildScaleMatrix(ARROW_HEAD_LENGTH
-				* MyActivity.displayMetrics().density));
+	private static void buildArrowheads(AlgorithmRenderer renderer) {
+		sArrowheadLength = AlgorithmRenderer.algorithmToDensityPixels() * 18;
+
+		Polygon p = Polygon.polygonWithScript("0 0 -1 .4 -1 -.4");
+		p.apply(buildScaleMatrix(sArrowheadLength));
 		sArrowheadMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
-	private static void buildPoints(OurGLRenderer renderer) {
-		sPointProgram = new PolygonProgram(renderer,
-				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		final float POINT_RADIUS = 12.0f;
+	private static void buildPoints(AlgorithmRenderer renderer) {
 		int POINT_VERTICES = 10;
-		Polygon p = Polygon.circleWithOrigin(Point.ZERO, POINT_RADIUS
-				* MyActivity.displayMetrics().density, POINT_VERTICES);
+		Polygon p = Polygon.circleWithOrigin(Point.ZERO,
+				4.0f * AlgorithmRenderer.algorithmToDensityPixels(),
+				POINT_VERTICES);
 		sPointMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
 	private int mColor;
 	private float mLineWidth;
 
-	private static PolygonProgram sArrowheadProgram;
+	private static float sArrowheadLength;
+	private static PolygonProgram sPolygonProgram;
 	private static PolygonMesh sArrowheadMesh;
-	private static PolygonProgram sPointProgram;
 	private static PolygonMesh sPointMesh;
 	private static Font sFont;
 	private static Polyline sPolyline;

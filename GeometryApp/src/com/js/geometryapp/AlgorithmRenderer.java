@@ -42,8 +42,8 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		super.constructTransforms();
 
 		// Add a bit of padding to the device rectangle
-		float paddingInset = MyActivity.displayMetrics().density * 10;
-		float titleInset = MyActivity.displayMetrics().density * 30;
+		float paddingInset = MyActivity.density() * 10;
+		float titleInset = MyActivity.density() * 30;
 
 		Rect paddedDeviceRect = new Rect(Point.ZERO, deviceSize());
 		paddedDeviceRect.x += paddingInset;
@@ -53,6 +53,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		Matrix mAlgorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
 				algorithmRect(), paddedDeviceRect);
+		float[] v = new float[9];
+		mAlgorithmToDeviceTransform.getValues(v);
+		sAlgorithmToDensityPixels = (1.0f / v[0]) * MyActivity.density();
 
 		Matrix mAlgorithmToNDCTransform = new Matrix(
 				mAlgorithmToDeviceTransform);
@@ -61,10 +64,20 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		addTransform(TRANSFORM_NAME_ALGORITHM_TO_NDC, mAlgorithmToNDCTransform);
 	}
 
+	/**
+	 * Determine multiplicative factor for converting from algorithm pixels to
+	 * density pixels
+	 */
+	public static float algorithmToDensityPixels() {
+		return sAlgorithmToDensityPixels;
+	}
+
 	public void onDrawFrame(GL10 gl) {
 		gl.glClearColor(1f, 1f, 1f, 1f);
 		gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 	}
+
+	private static float sAlgorithmToDensityPixels;
 
 	private Rect mAlgorithmRect;
 }

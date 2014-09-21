@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import com.js.geometry.Point;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -150,12 +152,32 @@ public abstract class MyActivity extends Activity {
 	}
 
 	private void prepareDisplayMetrics() {
-		sDisplayMetrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(sDisplayMetrics);
+		DisplayMetrics m = new DisplayMetrics();
+		sDisplayMetrics = m;
+		getWindowManager().getDefaultDisplay().getMetrics(m);
+		sDensity = m.density;
+
+		if (db) {
+			pr("dpi        " + new Point(m.xdpi, m.ydpi));
+			pr("pixels     " + new Point(m.widthPixels, m.heightPixels));
+			Point ps = new Point(m.widthPixels / m.xdpi, m.heightPixels
+					/ m.ydpi);
+			pr("phys sz    " + ps);
+			pr("densityDPI " + m.densityDpi);
+			pr("density    " + m.density);
+			pr("sDensity   " + sDensity);
+		}
 	}
 
 	public static DisplayMetrics displayMetrics() {
 		return sDisplayMetrics;
+	}
+
+	/**
+	 * Get the the DisplayMetrics.density value
+	 */
+	public static float density() {
+		return sDensity;
 	}
 
 	private void addResourceMappings() {
@@ -170,4 +192,5 @@ public abstract class MyActivity extends Activity {
 
 	private static boolean sConsoleGreetingPrinted;
 	private static DisplayMetrics sDisplayMetrics;
+	private static float sDensity;
 }

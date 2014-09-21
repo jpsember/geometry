@@ -110,7 +110,7 @@ public class Polyline {
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(sPositionLocation);
 
-		glLineWidth(lineWidth() * MyActivity.displayMetrics().density * 2f);
+		glLineWidth(lineWidth() * MyActivity.density() * 2f);
 
 		glDrawArrays(isClosed() ? GL_LINE_LOOP : GL_LINE_STRIP, 0,
 				vertexCount());

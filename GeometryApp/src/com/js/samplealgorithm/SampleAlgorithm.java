@@ -38,7 +38,7 @@ public class SampleAlgorithm implements AlgorithmStepper.Delegate {
 
 	private void prepareInput() {
 		mContext = GeometryContext.contextWithRandomSeed(1965);
-		mPolygon = Polygon.testPolygon(mContext, Polygon.TESTPOLY_DRAGON_X + 5);
+		mPolygon = Polygon.testPolygon(mContext, Polygon.TESTPOLY_DRAGON_X + 6);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
 		mPolygon.transformToFitRect(mRenderer.algorithmRect(), false);
 	}

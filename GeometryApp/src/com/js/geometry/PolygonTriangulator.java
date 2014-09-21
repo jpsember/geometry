@@ -9,7 +9,6 @@ import java.util.TreeSet;
 
 import android.graphics.Color;
 
-import com.js.android.MyActivity;
 import com.js.basic.Queue;
 import com.js.geometryapp.AlgDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
@@ -459,7 +458,8 @@ public class PolygonTriangulator {
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
-				float EXTENT = 50 * MyActivity.displayMetrics().density;
+				float EXTENT = 22 * AlgorithmRenderer
+						.algorithmToDensityPixels();
 				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT
 						* .8f, mContext, true);
 				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT

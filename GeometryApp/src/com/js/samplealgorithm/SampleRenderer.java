@@ -8,7 +8,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgDisplayElement;
+import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GLSpriteProgram;
@@ -107,17 +107,17 @@ public class SampleRenderer extends AlgorithmRenderer {
 		}
 
 		if (ADD_TEST_POINTS) {
-			AlgDisplayElement.setColorState(Color.BLUE);
+			AlgorithmDisplayElement.setColorState(Color.BLUE);
 
 			Point origin = new Point(500, 500);
-			AlgDisplayElement.renderPoint(origin);
-			AlgDisplayElement.renderPoint(MyMath.pointOnCircle(origin,
+			AlgorithmDisplayElement.renderPoint(origin);
+			AlgorithmDisplayElement.renderPoint(MyMath.pointOnCircle(origin,
 					(mFrame / 60.0f) * MyMath.PI * 2, 100));
 
 			// Do same thing, with different origin and radius
 			origin = new Point(500, 800);
-			AlgDisplayElement.renderPoint(origin, 2.5f);
-			AlgDisplayElement.renderPoint(
+			AlgorithmDisplayElement.renderPoint(origin, 2.5f);
+			AlgorithmDisplayElement.renderPoint(
 					MyMath.pointOnCircle(origin, (mFrame / 60.0f) * MyMath.PI
 							* 2, 100), 2.5f);
 		}

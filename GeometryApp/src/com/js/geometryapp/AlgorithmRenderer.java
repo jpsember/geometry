@@ -51,7 +51,7 @@ public abstract class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (AlgorithmStepper.sharedInstance()) {
 			super.onSurfaceChanged(gl, w, h);
 			// Let the algorithm stepper elements prepare using this renderer
-			AlgDisplayElement.setRenderer(this);
+			AlgorithmDisplayElement.setRenderer(this);
 			// Call user method, now that synchronized
 			onSurfaceChanged();
 		}

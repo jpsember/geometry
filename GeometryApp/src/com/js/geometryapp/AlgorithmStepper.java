@@ -143,7 +143,7 @@ public class AlgorithmStepper {
 	 * @return an empty string, as a convenience so elements can be added as a
 	 *         side effect of constructing show(...) message arguments
 	 */
-	public String plotElement(AlgDisplayElement element) {
+	public String plotElement(AlgorithmDisplayElement element) {
 		// If there's an active background plot key, store as background element
 		// instead of adding to this frame
 		if (mNextPlotKey != null) {
@@ -161,12 +161,12 @@ public class AlgorithmStepper {
 	 */
 	public void render() {
 		renderBackgroundElements();
-		for (AlgDisplayElement element : mDisplayElements) {
+		for (AlgorithmDisplayElement element : mDisplayElements) {
 			element.render();
 		}
 		mDisplayElements.clear();
 		if (mFrameTitle != null) {
-			AlgDisplayElement.renderFrameTitle(mFrameTitle);
+			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
 			mFrameTitle = null;
 		}
 	}
@@ -178,7 +178,7 @@ public class AlgorithmStepper {
 		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
-			AlgDisplayElement element = mBackgroundElements.get(key);
+			AlgorithmDisplayElement element = mBackgroundElements.get(key);
 			element.render();
 		}
 	}
@@ -204,11 +204,11 @@ public class AlgorithmStepper {
 	}
 
 	public String plotRay(Point p1, Point p2) {
-		return plotElement(new AlgDisplayRay(p1, p2));
+		return plotElement(new RayElement(p1, p2));
 	}
 
 	public String plotLine(Point p1, Point p2) {
-		return plotElement(new AlgDisplayLine(p1, p2));
+		return plotElement(new LineElement(p1, p2));
 	}
 
 	public String plot(Point point) {
@@ -220,24 +220,24 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Point point, float radius) {
-		return plotElement(new AlgDisplayPoint(point, radius));
+		return plotElement(new PointElement(point, radius));
 	}
 
 	public String plot(Polygon polygon) {
-		return plotElement(new AlgDisplayPolygon(polygon));
+		return plotElement(new PolygonElement(polygon));
 	}
 
 	public String plot(GeometryContext meshContext) {
-		return plotElement(new AlgDisplayMesh(meshContext));
+		return plotElement(new MeshElement(meshContext));
 	}
 
 	public String setColor(int color) {
-		AlgDisplayElement.setColorState(color);
+		AlgorithmDisplayElement.setColorState(color);
 		return "";
 	}
 
 	public String setLineWidth(float lineWidth) {
-		AlgDisplayElement.setLineWidthState(lineWidth);
+		AlgorithmDisplayElement.setLineWidthState(lineWidth);
 		return "";
 	}
 
@@ -371,8 +371,8 @@ public class AlgorithmStepper {
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 
-	private ArrayList<AlgDisplayElement> mDisplayElements = new ArrayList();
-	private Map<String, AlgDisplayElement> mBackgroundElements = new HashMap();
+	private ArrayList<AlgorithmDisplayElement> mDisplayElements = new ArrayList();
+	private Map<String, AlgorithmDisplayElement> mBackgroundElements = new HashMap();
 	private String mFrameTitle;
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();

@@ -10,7 +10,7 @@ import java.util.TreeSet;
 import android.graphics.Color;
 
 import com.js.basic.Queue;
-import com.js.geometryapp.AlgDisplayElement;
+import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 
@@ -443,7 +443,7 @@ public class PolygonTriangulator {
 	/**
 	 * Custom display element for sweep status
 	 */
-	private class AlgDisplaySweepStatus extends AlgDisplayElement {
+	private class AlgDisplaySweepStatus extends AlgorithmDisplayElement {
 
 		@Override
 		public void render() {

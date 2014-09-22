@@ -100,7 +100,7 @@ public class PolygonTriangulator {
 		}
 
 		if (update())
-			show("*Done triagulating polygon");
+			show("*Done triangulating polygon");
 
 	}
 

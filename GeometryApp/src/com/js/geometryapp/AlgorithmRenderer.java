@@ -66,6 +66,7 @@ public abstract class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (AlgorithmStepper.sharedInstance()) {
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			AlgorithmStepper.sharedInstance().render();
 			// Call user method, now that synchronized
 			onDrawFrame();
 		}

@@ -23,6 +23,11 @@ public class AlgorithmStepper {
 		public void runAlgorithm();
 
 		public void displayResults();
+
+		/**
+		 * User has changed some options
+		 */
+		public void optionsChanged();
 	}
 
 	private static final String PERSIST_KEY_TARGET_STEP = "_alg_step";
@@ -52,6 +57,10 @@ public class AlgorithmStepper {
 	 */
 	public void setDelegate(Delegate delegate) {
 		mDelegate = delegate;
+		resetStep();
+	}
+
+	public void resetStep() {
 		// Run algorithm to completion to determine the number of steps
 		mTotalStepsKnown = false;
 		performAlgorithm();
@@ -239,7 +248,6 @@ public class AlgorithmStepper {
 		return plotElement(new PolygonElement(polygon, filled));
 	}
 
-
 	public String plot(GeometryContext meshContext) {
 		return plotElement(new MeshElement(meshContext));
 	}
@@ -381,6 +389,21 @@ public class AlgorithmStepper {
 		return mActive;
 	}
 
+	public void processTestButtonPressed() {
+		warning("refactor this test code; have proper support for options");
+		synchronized (this) {
+			mButtonPressCount++;
+			if (mDelegate != null)
+				mDelegate.optionsChanged();
+		}
+	}
+
+	public int getTestButtonPressCount() {
+		synchronized (this) {
+			return mButtonPressCount;
+		}
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 
@@ -398,4 +421,5 @@ public class AlgorithmStepper {
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
 	private String mNextPlotKey;
+	private int mButtonPressCount;
 }

@@ -4,12 +4,17 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.ViewGroup;
+import android.view.Window;
+import static com.js.basic.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		doNothing();
 		mAlgorithmStepper = AlgorithmStepper.sharedInstance();
+		hideTitle();
+
 		super.onCreate(savedInstanceState);
 		mAlgorithmStepper.restoreInstanceState(savedInstanceState);
 	}
@@ -26,14 +31,22 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		super.onDestroy();
 	}
 
+	/**
+	 * Hide the title bar, to conserve screen real estate
+	 */
+	private void hideTitle() {
+		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
+	}
+
 	public void setAlgorithmDelegate(AlgorithmStepper.Delegate delegate) {
 		mAlgorithmStepper.setDelegate(delegate);
 	}
 
 	protected ViewGroup buildContentView() {
-		ViewGroup layout = super.buildContentView();
-		layout.addView(mAlgorithmStepper.controllerView(this));
-		return layout;
+		ViewGroup mainView = super.buildContentView();
+		mainView.addView(mAlgorithmStepper.controllerView(this));
+		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
+		return mOptions.getView();
 	}
 
 	protected final GLSurfaceView buildOpenGLView() {

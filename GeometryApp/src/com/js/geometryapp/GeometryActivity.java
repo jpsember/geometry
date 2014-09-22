@@ -74,12 +74,13 @@ public class GeometryActivity extends MyActivity {
 	}
 
 	protected ViewGroup buildContentView() {
-		LinearLayout layout = new LinearLayout(this);
-		layout.setOrientation(LinearLayout.VERTICAL);
-
-		mGLView = buildOpenGLView();
-		layout.addView(mGLView, layoutParams(false, true));
-		return layout;
+		LinearLayout mainView = new LinearLayout(this);
+		{
+			mainView.setOrientation(LinearLayout.VERTICAL);
+			mGLView = buildOpenGLView();
+			mainView.addView(mGLView, layoutParams(false, true));
+		}
+		return mainView;
 	}
 
 	public static LinearLayout.LayoutParams layoutParams(boolean horizontal,

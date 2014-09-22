@@ -28,5 +28,13 @@ public class SampleActivity extends GeometryStepperActivity {
 		return new SampleRenderer(this, mAlgorithm);
 	}
 
+	@Override
+	protected void prepareOptions() {
+		warning("is it necessary to have activity call the algorithm to do this?");
+		unimp("have options view persist its values to the bundle automatically");
+
+		mAlgorithm.prepareOptions();
+	}
+
 	private Algorithm mAlgorithm;
 }

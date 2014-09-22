@@ -6,8 +6,10 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
+import android.widget.Spinner;
 
 import com.js.android.MyActivity;
 import static com.js.basic.Tools.*;
@@ -32,7 +34,15 @@ public class AlgorithmOptions {
 		v.buildSlidingPane(context);
 		v.buildOptionsView();
 		v.addChildViews(mainView);
+		sAlgorithmOptions = v;
 		return v;
+	}
+
+	/**
+	 * Get the singleton instance of the options object
+	 */
+	public static AlgorithmOptions sharedInstance() {
+		return sAlgorithmOptions;
 	}
 
 	/**
@@ -110,27 +120,26 @@ public class AlgorithmOptions {
 	private void buildOptionsView() {
 		LinearLayout options = new LinearLayout(getContext());
 		options.setOrientation(LinearLayout.VERTICAL);
-
-		{
-			View.OnClickListener listener = new View.OnClickListener() {
-				public void onClick(View v) {
-					AlgorithmStepper.sharedInstance()
-							.processTestButtonPressed();
-				}
-			};
-
-			// Add some buttons
-			String labels[] = { "Alpha", "Bravo", "Charlie" };
-			for (int i = 0; i < labels.length; i++) {
-				Button b = new Button(getContext());
-				b.setText(labels[i]);
-				b.setOnClickListener(listener);
-				options.addView(b);
-			}
-		}
 		mOptionsView = options;
 	}
 
+	public Spinner addDropdown(String[] labels,
+			AdapterView.OnItemSelectedListener listener) {
+		Spinner spinner = new Spinner(getContext());
+
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
+				android.R.layout.simple_spinner_item, labels);
+
+		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spinner.setAdapter(adapter);
+		mOptionsView.addView(spinner);
+		if (listener != null)
+			spinner.setOnItemSelectedListener(listener);
+		return spinner;
+	}
+
+	private static AlgorithmOptions sAlgorithmOptions;
+
 	private SlidingPaneLayout mSlidingPane;
-	private View mOptionsView;
+	private ViewGroup mOptionsView;
 }

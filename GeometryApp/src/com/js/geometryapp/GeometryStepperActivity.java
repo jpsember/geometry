@@ -46,7 +46,15 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		ViewGroup mainView = super.buildContentView();
 		mainView.addView(mAlgorithmStepper.controllerView(this));
 		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
+		prepareOptions();
 		return mOptions.getView();
+	}
+
+	/**
+	 * Override this method to populate the options view with algorithm-specific
+	 * controls
+	 */
+	protected void prepareOptions() {
 	}
 
 	protected final GLSurfaceView buildOpenGLView() {

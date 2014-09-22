@@ -26,7 +26,7 @@ public class SampleRenderer extends AlgorithmRenderer {
 	private static final boolean ADD_TEST_POLYGON = true;
 	private static final boolean ADD_TEST_POINTS = false;
 
-	public SampleRenderer(Context context, SampleAlgorithm algorithm) {
+	public SampleRenderer(Context context, Algorithm algorithm) {
 		super(context);
 		mStepper = AlgorithmStepper.sharedInstance();
 		mAlgorithm = algorithm;
@@ -132,6 +132,6 @@ public class SampleRenderer extends AlgorithmRenderer {
 	private Polygon mNonConvexPolygon;
 	private PolygonMesh mConvexPolygonMesh;
 	private PolygonMesh mNonConvexPolygonMesh;
-	private SampleAlgorithm mAlgorithm;
+	private Algorithm mAlgorithm;
 	private AlgorithmStepper mStepper;
 }

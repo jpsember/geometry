@@ -9,7 +9,7 @@ import com.js.geometry.PolygonTriangulator;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 
-public class SampleAlgorithm implements AlgorithmStepper.Delegate {
+public class Algorithm implements AlgorithmStepper.Delegate {
 
 	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
 		mView = view;

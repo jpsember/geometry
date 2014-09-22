@@ -9,12 +9,12 @@ import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.OurGLSurfaceView;
 
-public class SampleAlgorithmActivity extends GeometryStepperActivity {
+public class SampleActivity extends GeometryStepperActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		doNothing();
-		mAlgorithm = new SampleAlgorithm();
+		mAlgorithm = new Algorithm();
 		super.onCreate(savedInstanceState);
 
 		OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
@@ -28,5 +28,5 @@ public class SampleAlgorithmActivity extends GeometryStepperActivity {
 		return new SampleRenderer(this, mAlgorithm);
 	}
 
-	private SampleAlgorithm mAlgorithm;
+	private Algorithm mAlgorithm;
 }

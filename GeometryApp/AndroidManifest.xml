@@ -4,9 +4,7 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk
-        android:minSdkVersion="14"
-        android:targetSdkVersion="20" />
+    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="20"/>
 
     <!--  This seems to be required for the unit tests; otherwise getExternalFilesDir returns null -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -14,37 +12,29 @@
     <!-- for an online icon generator, see http://romannurik.github.io/AndroidAssetStudio/icons-launcher.html -->
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
 
-        <activity android:name="com.js.samplealgorithm.SampleAlgorithmActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-<!--
-        <activity android:name="com.js.geometryapp.GeometryActivity" >
+        <activity
+            android:name="com.js.samplealgorithm.SampleActivity"
+            android:label="Algorithm"
+            android:taskAffinity="Algorithm"
+            android:icon="@drawable/ic_algorithm" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-       <activity android:name="com.js.geometryapp.GeometryStepperActivity" >
+        <activity
+            android:name="com.js.animationapp.SampleActivity"
+            android:label="Animation"
+            android:taskAffinity="Animation"
+            android:icon="@drawable/ic_animation" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
--->
-
     </application>
 
-</manifest><!--
-If proguard is used, we need to follow the directions in
-
-http://developer.android.com/google/play-services/setup.html
-
-  "Create a Proguard Exception"
--->
+</manifest>

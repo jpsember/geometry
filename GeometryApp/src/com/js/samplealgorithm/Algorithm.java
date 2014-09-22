@@ -12,7 +12,7 @@ import static com.js.basic.Tools.*;
 
 public class Algorithm implements AlgorithmStepper.Delegate {
 
-	public SampleAlgorithm() {
+	public Algorithm() {
 		doNothing();
 		mStepper = AlgorithmStepper.sharedInstance();
 	}

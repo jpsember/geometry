@@ -17,7 +17,6 @@
         <activity
             android:name="com.js.samplealgorithm.SampleActivity"
             android:label="Algorithm"
-            android:taskAffinity="Algorithm"
             android:icon="@drawable/ic_algorithm" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,13 +27,13 @@
         <activity
             android:name="com.js.animationapp.SampleActivity"
             android:label="Animation"
-            android:taskAffinity="Animation"
             android:icon="@drawable/ic_animation" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

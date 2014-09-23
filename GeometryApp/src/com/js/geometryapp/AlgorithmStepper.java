@@ -46,9 +46,15 @@ public class AlgorithmStepper {
 		// Run algorithm to completion to determine the number of steps
 		mTotalStepsKnown = false;
 		performAlgorithm();
+		setTotalStepsKnown();
+		updateStepperView(true);
+	}
+
+	private void setTotalStepsKnown() {
 		mTotalStepsKnown = true;
 		mTotalSteps = mCurrentStep;
-		updateStepperView(true);
+		// Clamp previous target step into new range
+		mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
 	}
 
 	/**
@@ -319,15 +325,10 @@ public class AlgorithmStepper {
 
 	public void requestUpdate(boolean recalculateTotalSteps) {
 		if (recalculateTotalSteps) {
-			int previousTargetStep = mTargetStep;
 			// Run algorithm to completion to determine the number of steps
 			mTotalStepsKnown = false;
 			performAlgorithm();
-			mTotalStepsKnown = true;
-			mTotalSteps = mCurrentStep;
-
-			// Clamp previous target step into new range
-			mTargetStep = MyMath.clamp(previousTargetStep, 0, mTotalSteps - 1);
+			setTotalStepsKnown();
 
 			// Propagate these values to the stepper control panel (without
 			// causing a recursive update)

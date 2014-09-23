@@ -340,7 +340,7 @@ public class AlgorithmStepper {
 			mTotalSteps = mCurrentStep;
 
 			// Clamp previous target step into new range
-			mTargetStep = MyMath.clamp(previousTargetStep, 0, mTotalSteps);
+			mTargetStep = MyMath.clamp(previousTargetStep, 0, mTotalSteps - 1);
 
 			// Propagate these values to the stepper control panel (without
 			// causing a recursive update)

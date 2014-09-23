@@ -74,11 +74,7 @@ public class GeometryContext {
 	public void resetWithSeed(int seed) {
 		mSeed = seed;
 		resetRandom(mSeed);
-		allocateVertexAndEdgeBuffers();
-	}
-
-	private void allocateVertexAndEdgeBuffers() {
-		mVertexBuffer = new ArrayList();
+		clearMesh();
 	}
 
 	public void resetRandom(int seed) {
@@ -254,26 +250,20 @@ public class GeometryContext {
 		}
 	}
 
-	public Edge addEdge(Edge edge, Vertex v0, Vertex v1) {
-		return addEdge(edge, v0, v1, false);
+	public Edge addEdge(Vertex v0, Vertex v1) {
+		return addEdge(v0, v1, false);
 	}
 
-	public Edge addEdge(Edge edge, Vertex v0, Vertex v1, boolean ifNoEdgeExists) {
+	public Edge addEdge(Vertex v0, Vertex v1, boolean ifNoEdgeExists) {
 		if (ifNoEdgeExists) {
 			Edge existing = edgeExistsBetween(v0, v1);
 			if (existing != null)
 				return existing;
 		}
-		if (edge == null) {
-			edge = new Edge();
-			Edge dual = new Edge();
-			edge.setDual(dual);
-			dual.setDual(edge);
-		} else {
-			ASSERT(edge.deleted() && edge.dual().deleted(),
-					"attempt to recycle edge pair that hasn't been deleted");
-		}
-		Edge dual = edge.dual();
+		Edge edge = new Edge();
+		Edge dual = new Edge();
+		edge.setDual(dual);
+		dual.setDual(edge);
 
 		Point delta = new Point(v1.point().x - v0.point().x, v1.point().y
 				- v0.point().y);
@@ -281,11 +271,9 @@ public class GeometryContext {
 
 		edge.setAngle(angle);
 		edge.setDestVertex(v1);
-		edge.clearFlags();
 
 		dual.setAngle(normalizePseudoAngle(angle + PSEUDO_ANGLE_RANGE_12));
 		dual.setDestVertex(v0);
-		dual.clearFlags();
 
 		addEdgeToVertex(edge, v0);
 		addEdgeToVertex(dual, v1);
@@ -516,5 +504,5 @@ public class GeometryContext {
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;
-	private ArrayList<Vertex> mVertexBuffer;
+	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
 }

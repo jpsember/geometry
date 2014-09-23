@@ -3,7 +3,6 @@ package com.js.geometry;
 import static com.js.basic.Tools.*;
 
 public final class Vertex {
-	public static final int FLAG_INVISIBLE = 1 << 28;
 	public static final int FLAG_AT_INFINITY = 1 << 29;
 	public static final int FLAG_VISITED = 1 << 30;
 	public static final int FLAG_DELETED = 1 << 31;

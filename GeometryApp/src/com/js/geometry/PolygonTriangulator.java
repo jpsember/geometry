@@ -462,7 +462,7 @@ public class PolygonTriangulator {
 	private Edge addEdge(Vertex v1, Vertex v2) {
 		if (update())
 			show("Adding mesh edge" + plotEdge(v1, v2));
-		return mContext.addEdge(null, v1, v2);
+		return mContext.addEdge(v1, v2);
 	}
 
 	/**

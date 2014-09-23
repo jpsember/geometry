@@ -261,7 +261,7 @@ public class Polygon {
 		Vertex prevVertex = context.vertex(baseVertex + numVertices() - 1);
 		for (int i = 0; i < numVertices(); i++) {
 			Vertex currentVertex = context.vertex(baseVertex + i);
-			Edge edge = context.addEdge(null, prevVertex, currentVertex);
+			Edge edge = context.addEdge(prevVertex, currentVertex);
 			edge.addFlags(Edge.FLAG_POLYGON | edgeFlags);
 			edge.dual().addFlags(edgeFlags);
 

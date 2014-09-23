@@ -4,6 +4,13 @@ import static com.js.basic.Tools.*;
 
 public final class Edge {
 
+	public static final int FLAG_VISITED = 1 << 31;
+
+	/**
+	 * The dual to a polygon edge won't have this flag set
+	 */
+	public static final int FLAG_POLYGON = 1 << 30;
+
 	@Override
 	public String toString() {
 		if (mDual == null)
@@ -56,17 +63,6 @@ public final class Edge {
 			mFlags |= FLAG_VISITED;
 		else
 			mFlags &= ~FLAG_VISITED;
-	}
-
-	public boolean deleted() {
-		return hasFlags(FLAG_DELETED);
-	}
-
-	public void setDeleted(boolean d) {
-		if (d)
-			mFlags |= FLAG_DELETED;
-		else
-			mFlags &= ~FLAG_DELETED;
 	}
 
 	public void clearFlags(int f) {
@@ -124,16 +120,6 @@ public final class Edge {
 	public void addFlags(int f) {
 		mFlags |= f;
 	}
-
-	public static final int FLAG_INVISIBLE = 1 << 28;
-
-	/**
-	 * The dual to a polygon edge won't have this flag set
-	 */
-	public static final int FLAG_POLYGON = 1 << 29;
-	public static final int FLAG_VISITED = 1 << 30;
-	public static final int FLAG_DELETED = 1 << 31;
-
 	private Vertex mDestVertex;
 	private Edge mDual;
 	private Edge mNextEdge;

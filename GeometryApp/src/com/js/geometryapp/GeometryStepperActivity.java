@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import com.js.android.AppPreferences;
+import com.js.json.JSONTools;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -22,16 +23,15 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		super.onCreate(savedInstanceState);
 
 		// Now that views have been built, restore option values
-		mAlgorithmStepper.restoreState();
 		prepareOptionsAux();
 	}
 
 	@Override
 	protected void onPause() {
-		mAlgorithmStepper.saveState();
-
 		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
 		if (options != null && options.isPrepared()) {
+			// Persist target step to widgets
+			options.setValue("targetstep", mAlgorithmStepper.targetStep());
 			AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
 					options.saveValues());
 		}
@@ -67,8 +67,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	private void prepareOptionsAux() {
 		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
 		// Add a hidden widget to persist the target step
-		// mOptions.addWidgets(JSONTools
-		// .swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
+		mOptions.addWidgets(JSONTools
+				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
 
 		prepareOptions();
 		String mSavedWidgetValues = AppPreferences.getString(
@@ -76,6 +76,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		if (mSavedWidgetValues != null)
 			mOptions.restoreValues(mSavedWidgetValues);
 		mOptions.setPrepared(true);
+
+		mAlgorithmStepper.setTargetStep(mOptions.getIntValue("targetstep"));
 	}
 
 	/**

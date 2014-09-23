@@ -82,6 +82,10 @@ public abstract class AbstractWidget {
 		return Integer.parseInt(getValue());
 	}
 
+	public boolean getBooleanValue() {
+		return Boolean.parseBoolean(getValue());
+	}
+
 	protected Context context() {
 		return mPrimaryView.getContext();
 	}

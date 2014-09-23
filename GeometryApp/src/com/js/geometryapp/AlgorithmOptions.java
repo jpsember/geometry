@@ -225,6 +225,17 @@ public class AlgorithmOptions {
 		return getWidget(widgetId).getIntValue();
 	}
 
+	public void setValue(String widgetId, int intValue) {
+		setValue(widgetId, Integer.valueOf(intValue), true);
+	}
+
+	/**
+	 * Get value of widget as a boolean
+	 */
+	public boolean getBooleanValue(String widgetId) {
+		return getWidget(widgetId).getBooleanValue();
+	}
+
 	/**
 	 * Write value to widget
 	 */

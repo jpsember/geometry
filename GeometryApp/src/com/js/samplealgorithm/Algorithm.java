@@ -13,6 +13,7 @@ import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
+
 import static com.js.basic.Tools.*;
 
 public class Algorithm implements AlgorithmStepper.Delegate {

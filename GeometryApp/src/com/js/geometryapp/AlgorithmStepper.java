@@ -10,7 +10,6 @@ import java.util.Map;
 import android.content.Context;
 import android.view.View;
 
-import com.js.android.AppPreferences;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -25,8 +24,6 @@ public class AlgorithmStepper {
 		public void displayResults();
 	}
 
-	private static final String PERSIST_KEY_TARGET_STEP = "alg_step";
-
 	/**
 	 * Get the singleton instance of the stepper
 	 */
@@ -35,15 +32,6 @@ public class AlgorithmStepper {
 			sStepper = new AlgorithmStepper();
 		}
 		return sStepper;
-	}
-
-	public void restoreState() {
-		mTargetStep = AppPreferences.getInt(PERSIST_KEY_TARGET_STEP, 0);
-	}
-
-	public void saveState() {
-		// TODO: have hidden widget for holding this value?
-		AppPreferences.putInt(PERSIST_KEY_TARGET_STEP, mTargetStep);
 	}
 
 	/**

@@ -11,12 +11,21 @@
     "label":"Sample CheckBoxWidget #1",
     "value":true,
   },
-   {
+  {
     "id": "cb2",
     "type": "checkbox",
     "label":"Sample CheckBoxWidget #2",
   },
+  {
+    "id": "cbh",
+    "type": "checkbox",
+    "label":"Hidden CheckBoxWidget",
+    "value":true,
+    "hidden":true,
+  },
+  
   {"id":"slider1","type":"slider","max": 1000 },
-  {"id":"slider2","type":"slider","min": -50 },
+  {"id":"slider2","type":"slider","min": -50,"hidden":true },
+  {"id":"slider3","type":"slider","min":5,"max":17 },
   
 ]

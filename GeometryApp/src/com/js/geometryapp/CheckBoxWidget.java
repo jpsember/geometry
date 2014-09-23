@@ -30,24 +30,27 @@ public class CheckBoxWidget extends AbstractWidget {
 	public CheckBoxWidget(Context context, Map attributes) {
 		super(context, attributes);
 
-		mCheckBox = new CheckBox(context);
-		mCheckBox.setChecked(boolAttr("value", false));
+		if (!isHidden()) {
+			mCheckBox = new CheckBox(context);
+			mCheckBox.setChecked(boolAttr("value", false));
 
-		getView().addView(mCheckBox);
+			getView().addView(mCheckBox);
 
-		// We generate our own label, since we want it wider and on the right,
-		// unlike the usual widget labels
-		TextView label;
-		{
-			label = new TextView(context());
-			label.setText(getLabel(false));
-			label.setPadding(MyActivity.inchesToPixels(.08f), 0, 0, 0);
-			LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			labelParams.gravity = Gravity.BOTTOM;
-			label.setLayoutParams(labelParams);
+			// We generate our own label, since we want it wider and on the
+			// right,
+			// unlike the usual widget labels
+			TextView label;
+			{
+				label = new TextView(context());
+				label.setText(getLabel(false));
+				label.setPadding(MyActivity.inchesToPixels(.08f), 0, 0, 0);
+				LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
+						LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+				labelParams.gravity = Gravity.BOTTOM;
+				label.setLayoutParams(labelParams);
+			}
+			getView().addView(label);
 		}
-		getView().addView(label);
 	}
 
 	/**
@@ -58,8 +61,9 @@ public class CheckBoxWidget extends AbstractWidget {
 	 * @param internalValue
 	 */
 	public void updateUserValue(String internalValue) {
-		boolean checked = internalValue.equals("true");
-		mCheckBox.setChecked(checked);
+		mChecked = internalValue.equals("true");
+		if (mCheckBox != null)
+			mCheckBox.setChecked(mChecked);
 	}
 
 	public void setValue(boolean value) {
@@ -70,8 +74,14 @@ public class CheckBoxWidget extends AbstractWidget {
 	 * Get displayed value, and transform to 'internal' representation.
 	 */
 	public String parseUserValue() {
-		return mCheckBox.isChecked() ? "true" : "false";
+		if (mCheckBox != null) {
+			mChecked = mCheckBox.isChecked();
+		}
+		return Boolean.toString(mChecked);
 	}
 
+	// value of checkbox, which will be read from CheckBox only if not hidden
+	private boolean mChecked;
+	// null if widget is hidden
 	private CheckBox mCheckBox;
 }

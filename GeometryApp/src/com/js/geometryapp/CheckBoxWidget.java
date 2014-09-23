@@ -31,6 +31,7 @@ public class CheckBoxWidget extends AbstractWidget {
 		super(context, attributes);
 
 		mCheckBox = new CheckBox(context);
+		mCheckBox.setChecked(boolAttr("value", false));
 
 		getView().addView(mCheckBox);
 

@@ -1,0 +1,19 @@
+[
+  {
+    "id": "polygon",
+    "type": "combobox",
+    "label": "Polygon:",
+    "options": ["Dragon #6","Concave Blob","Dragon #0","Quadratic function","Large rectangle","Dragon #8"],
+  },
+  {
+    "id": "cb1",
+    "type": "checkbox",
+    "label":"Sample CheckBoxWidget #1",
+    "value":true,
+  },
+   {
+    "id": "cb2",
+    "type": "checkbox",
+    "label":"Sample CheckBoxWidget #2",
+  },
+]

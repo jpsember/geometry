@@ -1,11 +1,14 @@
 package com.js.samplealgorithm;
 
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 
+import com.js.android.Tools;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
+import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
@@ -22,10 +25,9 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 			Polygon.TESTPOLY_LARGE_RECTANGLE,//
 			Polygon.TESTPOLY_DRAGON_X + 8,//
 	};
-	private static String testPolyNames[] = { "Dragon #6", "Concave Blob",
-			"Dragon #0", "Quadratic function", "Large rectangle", "Dragon #8", };
 
-	public Algorithm() {
+	public Algorithm(Context context) {
+		mAppContext = context;
 		doNothing();
 	}
 
@@ -56,30 +58,12 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
-
-		sOptions.addCheckBox("Sample check box #1");
-		sOptions.addCheckBox(
-				"Sample check box #2 with a really really long name", true);
-		sOptions.addComboBox("Polygon", testPolyNames);
-		/*
-		 * options.addDropdown(testPolyNames, new OnItemSelectedListener() {
-		 * 
-		 * @Override public void onItemSelected(AdapterView<?> parent, View
-		 * view, int position, long id) {
-		 * 
-		 * mDesiredPolygonName = testPolys[position];
-		 * unimp("we may need synchronization here (or actually elsewhere)");
-		 * mPolygon = null; unimp(
-		 * "trigger rerun of algorithm somehow, also redetermination of # steps"
-		 * ); }
-		 * 
-		 * @Override public void onNothingSelected(AdapterView<?> parent) { }
-		 * });
-		 */
+		sOptions.addWidgets(Tools.readTextFileResource(mAppContext,
+				R.raw.algorithm_options));
 	}
 
 	private void prepareInput() {
-		int polygonName = testPolys[sOptions.getIntValue("Polygon")];
+		int polygonName = testPolys[sOptions.getIntValue("polygon")];
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
@@ -88,6 +72,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	private static AlgorithmOptions sOptions;
 
+	private Context mAppContext;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private int mAnimFrame;

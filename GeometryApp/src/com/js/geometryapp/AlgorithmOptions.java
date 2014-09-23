@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import com.js.android.MyActivity;
+import com.js.json.JSONParser;
 
 import static com.js.basic.Tools.*;
 
@@ -136,6 +137,13 @@ public class AlgorithmOptions {
 	}
 
 	/**
+	 * Add widgets defined by a JSON script
+	 */
+	public void addWidgets(String jsonString) {
+		parseWidgets(new JSONParser(jsonString));
+	}
+
+	/**
 	 * Add a checkbox widget
 	 */
 	public CheckBoxWidget addCheckBox(String id) {
@@ -153,6 +161,9 @@ public class AlgorithmOptions {
 		return w;
 	}
 
+	/**
+	 * Add a combobox widget
+	 */
 	public ComboBoxWidget addComboBox(String id, String[] options) {
 		Map<String, Object> attributes = buildAttributes(id);
 		ArrayList<String> s = new ArrayList();
@@ -164,7 +175,7 @@ public class AlgorithmOptions {
 		return w;
 	}
 
-	public void addWidget(AbstractWidget w) {
+	private void addWidget(AbstractWidget w) {
 		// Add it to the map
 		AbstractWidget previousMapping = mWidgetsMap.put(w.getId(), w);
 		if (previousMapping != null)
@@ -186,43 +197,18 @@ public class AlgorithmOptions {
 		mWidgetFactoryMap.put(factory.getName(), factory);
 	}
 
-	// public static Form parse(Context context, String jsonString,
-	// Set<FormWidget.Factory> widgetTypes) {
-	// return parse(context, new JSONParser(jsonString), widgetTypes);
-	// }
-
-	// public static Form parse(Context context, JSONParser json,
-	// Set<FormWidget.Factory> widgetTypes) {
-	// Form f = new Form(context);
-	// if (widgetTypes != null)
-	// for (FormWidget.Factory factory : widgetTypes) {
-	// f.registerWidget(factory);
-	// }
-	// f.parse(json);
-	// return f;
-	// }
-
-	// private void parse(JSONParser json) {
-	// json.enterList();
-	// while (json.hasNext()) {
-	// Map attributes = (Map) json.next();
-	// FormWidget item = FormWidget.build(this, attributes);
-	// String id = item.getId();
-	// if (!id.isEmpty()) {
-	// Object prev = itemsMap.put(item.getId(), item);
-	// if (prev != null)
-	// throw new IllegalArgumentException("form field id "
-	// + item.getId() + " already exists");
-	// }
-	// fieldsList.add(item);
-	// }
-	// json.exit();
-	// }
-
-	// @Override
-	// public void encode(JSONEncoder encoder) {
-	// throw new UnsupportedOperationException();
-	// }
+	private void parseWidgets(JSONParser json) {
+		json.enterList();
+		while (json.hasNext()) {
+			Map attributes = (Map) json.next();
+			AbstractWidget item = build(attributes);
+			String id = item.getId();
+			if (!id.isEmpty()) {
+				addWidget(item);
+			}
+		}
+		json.exit();
+	}
 
 	/**
 	 * Get value of widget (as a string)

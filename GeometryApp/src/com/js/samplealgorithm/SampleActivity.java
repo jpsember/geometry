@@ -14,7 +14,7 @@ public class SampleActivity extends GeometryStepperActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		doNothing();
-		mAlgorithm = new Algorithm();
+		mAlgorithm = new Algorithm(this);
 		super.onCreate(savedInstanceState);
 
 		OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();

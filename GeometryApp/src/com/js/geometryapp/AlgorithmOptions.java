@@ -11,6 +11,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.js.android.MyActivity;
@@ -110,7 +111,20 @@ public class AlgorithmOptions {
 
 		lp = new SlidingPaneLayout.LayoutParams((int) optionsWidth,
 				LayoutParams.MATCH_PARENT);
-		mSlidingPane.addView(mOptionsView, lp);
+
+		// Add some padding around the actual options
+		ViewGroup optionsContainer = mOptionsView;
+		{
+			FrameLayout frame = new FrameLayout(getContext());
+			if (AbstractWidget.SET_DEBUG_COLORS) {
+				frame.setBackgroundColor(OurGLTools.debugColor());
+			}
+			int padding = MyActivity.inchesToPixels(.05f);
+			frame.setPadding(padding, padding, padding, padding);
+			frame.addView(mOptionsView);
+			optionsContainer = frame;
+		}
+		mSlidingPane.addView(optionsContainer, lp);
 
 		if (!bothFit)
 			hide();

@@ -20,6 +20,10 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
+	private static final float WIDGET_PADDING_HORZ = .05f;
+	private static final float WIDGET_PADDING_VERT = .02f;
+	static final boolean SET_DEBUG_COLORS = false;
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(nameOf(this));
@@ -64,9 +68,14 @@ public abstract class AbstractWidget {
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);
 		widgetContainer.setLayoutParams(params);
-		int hPadding = MyActivity.inchesToPixels(.12f);
-		int vPadding = MyActivity.inchesToPixels(.05f);
+		int hPadding = MyActivity.inchesToPixels(WIDGET_PADDING_HORZ);
+		int vPadding = MyActivity.inchesToPixels(WIDGET_PADDING_VERT);
 		widgetContainer.setPadding(hPadding, vPadding, hPadding, vPadding);
+
+		if (SET_DEBUG_COLORS) {
+			warning("setting debug background colors");
+			widgetContainer.setBackgroundColor(OurGLTools.debugColor());
+		}
 
 		this.mPrimaryView = widgetContainer;
 	}

@@ -119,6 +119,10 @@ public abstract class AbstractWidget {
 		}
 		mWidgetValue = newUserValue;
 
+		if (!AlgorithmOptions.sharedInstance().isPrepared()) {
+			notifyListeners = false;
+		}
+
 		if (notifyListeners) {
 			for (Listener listener : mListeners) {
 				listener.valueChanged(this);

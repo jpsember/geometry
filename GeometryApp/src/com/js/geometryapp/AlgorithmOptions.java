@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import com.js.android.MyActivity;
+import com.js.json.JSONEncoder;
 import com.js.json.JSONParser;
 
 import static com.js.basic.Tools.*;
@@ -46,7 +47,6 @@ public class AlgorithmOptions {
 	 * Get the singleton instance of the options object
 	 */
 	public static AlgorithmOptions sharedInstance() {
-		ASSERT(sAlgorithmOptions != null);
 		return sAlgorithmOptions;
 	}
 
@@ -259,8 +259,44 @@ public class AlgorithmOptions {
 		return widget;
 	}
 
+	void setPrepared(boolean f) {
+		mPrepared = f;
+	}
+
+	boolean isPrepared() {
+		return mPrepared;
+	}
+
+	/**
+	 * Compile widget values to JSON string
+	 */
+	String saveValues() {
+		Map<String, String> values = new HashMap();
+		for (AbstractWidget w : mWidgetsList) {
+			values.put(w.getId(), w.getValue());
+		}
+		return JSONEncoder.toJSON(values);
+	}
+
+	/**
+	 * Restore widget values from JSON string
+	 */
+	void restoreValues(String jsonString) {
+		JSONParser parser = new JSONParser(jsonString);
+		Map<String, String> values = (Map) parser.next();
+		for (String key : values.keySet()) {
+			String value = values.get(key);
+			AbstractWidget w = mWidgetsMap.get(key);
+			if (w == null)
+				continue;
+			// TODO: catch exceptions that may get thrown here
+			w.setValue(value);
+		}
+	}
+
 	private static AlgorithmOptions sAlgorithmOptions;
 
+	private boolean mPrepared;
 	private SlidingPaneLayout mSlidingPane;
 	private ViewGroup mOptionsView;
 	private Context sContext;

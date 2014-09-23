@@ -1,5 +1,7 @@
 package com.js.geometryapp;
 
+import com.js.android.AppPreferences;
+
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -9,6 +11,8 @@ import static com.js.basic.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
+	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		doNothing();
@@ -16,13 +20,22 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		hideTitle();
 
 		super.onCreate(savedInstanceState);
-		mAlgorithmStepper.restoreInstanceState(savedInstanceState);
+
+		// Now that views have been built, restore option values
+		mAlgorithmStepper.restoreState();
+		prepareOptionsAux();
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		mAlgorithmStepper.saveInstanceState(outState);
-		super.onSaveInstanceState(outState);
+	protected void onPause() {
+		mAlgorithmStepper.saveState();
+
+		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
+		if (options != null && options.isPrepared()) {
+			AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
+					options.saveValues());
+		}
+		super.onPause();
 	}
 
 	@Override
@@ -45,9 +58,20 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	protected ViewGroup buildContentView() {
 		ViewGroup mainView = super.buildContentView();
 		mainView.addView(mAlgorithmStepper.controllerView(this));
+
 		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
-		prepareOptions();
+
 		return mOptions.getView();
+	}
+
+	private void prepareOptionsAux() {
+		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
+		prepareOptions();
+		String mSavedWidgetValues = AppPreferences.getString(
+				PERSIST_KEY_WIDGET_VALUES, null);
+		if (mSavedWidgetValues != null)
+			mOptions.restoreValues(mSavedWidgetValues);
+		mOptions.setPrepared(true);
 	}
 
 	/**

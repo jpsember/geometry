@@ -67,6 +67,14 @@ public class AppPreferences {
 		preferences.edit().putString(key, value).commit();
 	}
 
+	public static void putInt(String key, int value) {
+		preferences.edit().putInt(key, value).commit();
+	}
+
+	public static int getInt(String key, int defaultValue) {
+		return preferences.getInt(key, defaultValue);
+	}
+
 	/**
 	 * Read boolean from app preferences
 	 * 

@@ -26,6 +26,16 @@ public class JSONEncoder {
 		return encoder.toString();
 	}
 
+	/**
+	 * Utility method that constructs an encoder, uses it to encode a Map, and
+	 * returns the resulting JSON string
+	 */
+	public static String toJSON(Map map) {
+		JSONEncoder encoder = new JSONEncoder();
+		encoder.encode(map);
+		return encoder.toString();
+	}
+
 	public String toString() {
 		return sb.toString();
 	}
@@ -42,7 +52,7 @@ public class JSONEncoder {
 		if (value == null)
 			encodeNull();
 		else if (value instanceof IJSONEncoder)
-			encode((IJSONEncoder)value);
+			encode((IJSONEncoder) value);
 		else if (value instanceof Number)
 			encode(((Number) value).doubleValue());
 		else if (value instanceof Boolean)
@@ -210,10 +220,10 @@ public class JSONEncoder {
 	public void encodePair(String key, Object value) {
 		if (collectionType != COLLECTION_MAP)
 			throw new IllegalStateException();
-	encode(key);
+		encode(key);
 		encode(value);
 	}
-	
+
 	public void clear() {
 		sb.setLength(0);
 	}

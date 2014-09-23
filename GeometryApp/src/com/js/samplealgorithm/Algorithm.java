@@ -17,7 +17,7 @@ import static com.js.basic.Tools.*;
 
 public class Algorithm implements AlgorithmStepper.Delegate {
 
-	private static int testPolys[] = { //
+	private static int testPolygonNames[] = { //
 	//
 			Polygon.TESTPOLY_DRAGON_X + 6,//
 			Polygon.TESTPOLY_CONCAVE_BLOB,//
@@ -49,12 +49,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	@Override
 	public void displayResults() {
-		mAnimFrame++;
 		mView.requestRender();
-	}
-
-	public int getFrameNumber() {
-		return mAnimFrame;
 	}
 
 	public void prepareOptions() {
@@ -71,7 +66,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private void prepareInput() {
-		int polygonName = testPolys[sOptions.getIntValue("polygon")];
+		int polygonName = testPolygonNames[sOptions.getIntValue("polygon")];
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
@@ -83,7 +78,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	private Context mAppContext;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
-	private int mAnimFrame;
 	private GLSurfaceView mView;
 	private AlgorithmRenderer mRenderer;
 }

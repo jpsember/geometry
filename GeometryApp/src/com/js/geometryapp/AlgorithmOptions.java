@@ -242,27 +242,6 @@ public class AlgorithmOptions {
 		return field;
 	}
 
-	// /**
-	// * Notify listeners that form values have changed
-	// */
-	// public void valuesChanged() {
-	// for (Listener listener : mListeners) {
-	// listener.valuesChanged(this);
-	// }
-	// }
-	//
-	// public static interface Listener {
-	// void valuesChanged(Form form);
-	// }
-	//
-	// public void addListener(Listener listener) {
-	// mListeners.add(listener);
-	// }
-	//
-	// public void removeListener(Listener listener) {
-	// mListeners.remove(listener);
-	// }
-
 	/**
 	 * Construct a widget from a set of attributes, by using an appropriate
 	 * factory constructor
@@ -288,5 +267,4 @@ public class AlgorithmOptions {
 	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
 	private List<AbstractWidget> mWidgetsList = new ArrayList();
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
-	// private Set<Listener> mListeners = new HashSet();
 }

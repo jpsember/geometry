@@ -9,6 +9,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometry.R;
+import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
@@ -60,6 +61,13 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		sOptions = AlgorithmOptions.sharedInstance();
 		sOptions.addWidgets(Tools.readTextFileResource(mAppContext,
 				R.raw.algorithm_options));
+		sOptions.getWidget("polygon").addListener(
+				new AbstractWidget.Listener() {
+					@Override
+					public void valueChanged(AbstractWidget widget) {
+						AlgorithmStepper.sharedInstance().requestUpdate(true);
+					}
+				});
 	}
 
 	private void prepareInput() {

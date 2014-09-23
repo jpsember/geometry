@@ -1,6 +1,8 @@
 package com.js.geometryapp;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.js.android.MyActivity;
 
@@ -13,10 +15,17 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
+import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(nameOf(this));
+		sb.append(" value:" + mWidgetValue);
+		return sb.toString();
+	}
 
 	protected String getId() {
 		return strAttr("id", "");
@@ -104,12 +113,17 @@ public abstract class AbstractWidget {
 		updateUserValue(internalValue);
 		String newUserValue = parseUserValue();
 		if (notifyListeners) {
-			if (!newUserValue.equals(mWidgetValue)) {
-				unimp("notify listeners of new value");
-				// form.valuesChanged();
+			if (newUserValue.equals(mWidgetValue)) {
+				notifyListeners = false;
 			}
 		}
 		mWidgetValue = newUserValue;
+
+		if (notifyListeners) {
+			for (Listener listener : mListeners) {
+				listener.valueChanged(this);
+			}
+		}
 	}
 
 	/**
@@ -198,6 +212,18 @@ public abstract class AbstractWidget {
 		AbstractWidget constructInstance(Context context, Map attributes);
 	}
 
+	public static interface Listener {
+		public void valueChanged(AbstractWidget widget);
+	}
+
+	public void addListener(Listener listener) {
+		mListeners.add(listener);
+	}
+
+	public void removeListener(Listener listener) {
+		mListeners.remove(listener);
+	}
+
 	// View representing this widget. It probably contains subviews that include
 	// one or more Android gadgets (e.g. CheckBox, TextView)
 	private ViewGroup mPrimaryView;
@@ -208,4 +234,6 @@ public abstract class AbstractWidget {
 	// This is the value this widget represents, if any. It is an 'internal'
 	// string representation of the value
 	private String mWidgetValue;
+
+	private Set<Listener> mListeners = new HashSet();
 }

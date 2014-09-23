@@ -61,7 +61,7 @@ public class AlgorithmStepper {
 		performAlgorithm();
 		mTotalStepsKnown = true;
 		mTotalSteps = mCurrentStep;
-		updateStepperView();
+		updateStepperView(true);
 	}
 
 	/**
@@ -295,7 +295,7 @@ public class AlgorithmStepper {
 
 	protected void setStepperView(AlgorithmStepperView view) {
 		mStepperView = view;
-		updateStepperView();
+		updateStepperView(true);
 	}
 
 	private AlgorithmStepper() {
@@ -310,7 +310,7 @@ public class AlgorithmStepper {
 	/**
 	 * Propagate values from this (the controller) to the controller's view.
 	 */
-	private void updateStepperView() {
+	private void updateStepperView(boolean requestUpdateIfChanged) {
 		if (mStepperView != null) {
 			if (mTotalStepsKnown) {
 				// While changing the total steps, the controller view may try
@@ -319,11 +319,36 @@ public class AlgorithmStepper {
 				mStepperView.setTotalSteps(mTotalSteps);
 				mIgnoreStepperView = false;
 				mStepperView.setTargetStep(mTargetStep);
-				if (mTargetStep != mCurrentStep) {
-					performAlgorithm();
-					mDelegate.displayResults();
+				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
+					requestUpdate();
 				}
 			}
+		}
+	}
+
+	public void requestUpdate() {
+		requestUpdate(false);
+	}
+
+	public void requestUpdate(boolean recalculateTotalSteps) {
+		if (recalculateTotalSteps) {
+			int previousTargetStep = mTargetStep;
+			// Run algorithm to completion to determine the number of steps
+			mTotalStepsKnown = false;
+			performAlgorithm();
+			mTotalStepsKnown = true;
+			mTotalSteps = mCurrentStep;
+
+			// Clamp previous target step into new range
+			mTargetStep = MyMath.clamp(previousTargetStep, 0, mTotalSteps);
+
+			// Propagate these values to the stepper control panel (without
+			// causing a recursive update)
+			updateStepperView(false);
+		}
+		synchronized (this) {
+			performAlgorithm();
+			mDelegate.displayResults();
 		}
 	}
 
@@ -332,7 +357,7 @@ public class AlgorithmStepper {
 			return;
 		}
 		mTargetStep = MyMath.clamp(step, 0, mTotalSteps - 1);
-		updateStepperView();
+		updateStepperView(true);
 	}
 
 	protected void adjustTargetStep(int delta) {

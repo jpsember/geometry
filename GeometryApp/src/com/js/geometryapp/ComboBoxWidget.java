@@ -6,7 +6,10 @@ import java.util.Map;
 import com.js.geometry.MyMath;
 
 import android.content.Context;
+import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -41,6 +44,18 @@ public class ComboBoxWidget extends AbstractWidget {
 				android.R.layout.simple_spinner_item, mOptions);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		mSpinner.setAdapter(adapter);
+		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> parent, View view,
+					int position, long id) {
+				setValue(Integer.toString(position));
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> parent) {
+			}
+		});
 
 		getView().addView(buildLabelView(true));
 

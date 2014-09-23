@@ -16,4 +16,7 @@
     "type": "checkbox",
     "label":"Sample CheckBoxWidget #2",
   },
+  {"id":"slider1","type":"slider","max": 1000 },
+  {"id":"slider2","type":"slider","min": -50 },
+  
 ]

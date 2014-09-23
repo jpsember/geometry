@@ -66,6 +66,10 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	private void prepareOptionsAux() {
 		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
+		// Add a hidden widget to persist the target step
+		// mOptions.addWidgets(JSONTools
+		// .swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
+
 		prepareOptions();
 		String mSavedWidgetValues = AppPreferences.getString(
 				PERSIST_KEY_WIDGET_VALUES, null);

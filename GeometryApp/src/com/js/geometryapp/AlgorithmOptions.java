@@ -191,7 +191,8 @@ public class AlgorithmOptions {
 	}
 
 	private static AbstractWidget.Factory[] basicWidgets = {
-			CheckBoxWidget.FACTORY, ComboBoxWidget.FACTORY };
+			CheckBoxWidget.FACTORY, ComboBoxWidget.FACTORY,
+			SliderWidget.FACTORY };
 
 	public void registerWidget(AbstractWidget.Factory factory) {
 		mWidgetFactoryMap.put(factory.getName(), factory);

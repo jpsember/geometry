@@ -228,6 +228,10 @@ public abstract class AbstractWidget {
 		mListeners.remove(listener);
 	}
 
+	boolean isHidden() {
+		return boolAttr("hidden", false);
+	}
+
 	// View representing this widget. It probably contains subviews that include
 	// one or more Android gadgets (e.g. CheckBox, TextView)
 	private ViewGroup mPrimaryView;

@@ -1,17 +1,20 @@
 package com.js.geometryapp;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.content.Context;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 
 import com.js.android.MyActivity;
+
 import static com.js.basic.Tools.*;
 
 /**
@@ -30,7 +33,7 @@ public class AlgorithmOptions {
 	 *            becomes the new content view
 	 */
 	public static AlgorithmOptions construct(Context context, View mainView) {
-		AlgorithmOptions v = new AlgorithmOptions();
+		AlgorithmOptions v = new AlgorithmOptions(context);
 		v.buildSlidingPane(context);
 		v.buildOptionsView();
 		v.addChildViews(mainView);
@@ -42,6 +45,7 @@ public class AlgorithmOptions {
 	 * Get the singleton instance of the options object
 	 */
 	public static AlgorithmOptions sharedInstance() {
+		ASSERT(sAlgorithmOptions != null);
 		return sAlgorithmOptions;
 	}
 
@@ -55,7 +59,10 @@ public class AlgorithmOptions {
 	/**
 	 * Private constructor
 	 */
-	private AlgorithmOptions() {
+	private AlgorithmOptions(Context context) {
+		sContext = context;
+		for (int i = 0; i < basicWidgets.length; i++)
+			registerWidget(basicWidgets[i]);
 	}
 
 	private void buildSlidingPane(Context context) {
@@ -102,7 +109,6 @@ public class AlgorithmOptions {
 
 		lp = new SlidingPaneLayout.LayoutParams((int) optionsWidth,
 				LayoutParams.MATCH_PARENT);
-		ASSERT(lp.weight == 0);
 		mSlidingPane.addView(mOptionsView, lp);
 
 		if (!bothFit)
@@ -123,23 +129,178 @@ public class AlgorithmOptions {
 		mOptionsView = options;
 	}
 
-	public Spinner addDropdown(String[] labels,
-			AdapterView.OnItemSelectedListener listener) {
-		Spinner spinner = new Spinner(getContext());
+	private static Map<String, Object> buildAttributes(String identifier) {
+		Map<String, Object> attributes = new HashMap();
+		attributes.put("id", identifier);
+		return attributes;
+	}
 
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-				android.R.layout.simple_spinner_item, labels);
+	/**
+	 * Add a checkbox widget
+	 */
+	public CheckBoxWidget addCheckBox(String id) {
+		return addCheckBox(id, false);
+	}
 
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		spinner.setAdapter(adapter);
-		mOptionsView.addView(spinner);
-		if (listener != null)
-			spinner.setOnItemSelectedListener(listener);
-		return spinner;
+	/**
+	 * Add a checkbox widget
+	 */
+	public CheckBoxWidget addCheckBox(String id, boolean selected) {
+		Map<String, Object> attributes = buildAttributes(id);
+		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
+		addWidget(w);
+		w.setValue(selected);
+		return w;
+	}
+
+	public ComboBoxWidget addComboBox(String id, String[] options) {
+		Map<String, Object> attributes = buildAttributes(id);
+		ArrayList<String> s = new ArrayList();
+		for (int i = 0; i < options.length; i++)
+			s.add(options[i]);
+		attributes.put(ComboBoxWidget.ATTR_OPTIONS, s);
+		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
+		addWidget(w);
+		return w;
+	}
+
+	public void addWidget(AbstractWidget w) {
+		// Add it to the map
+		AbstractWidget previousMapping = mWidgetsMap.put(w.getId(), w);
+		if (previousMapping != null)
+			die("widget id " + w.getId() + " already exists");
+
+		// Add it to the sequence as well
+		mWidgetsList.add(w);
+
+		// Add it to the options view
+		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		mOptionsView.addView(w.getView(), p);
+	}
+
+	private static AbstractWidget.Factory[] basicWidgets = {
+			CheckBoxWidget.FACTORY, ComboBoxWidget.FACTORY };
+
+	public void registerWidget(AbstractWidget.Factory factory) {
+		mWidgetFactoryMap.put(factory.getName(), factory);
+	}
+
+	// public static Form parse(Context context, String jsonString,
+	// Set<FormWidget.Factory> widgetTypes) {
+	// return parse(context, new JSONParser(jsonString), widgetTypes);
+	// }
+
+	// public static Form parse(Context context, JSONParser json,
+	// Set<FormWidget.Factory> widgetTypes) {
+	// Form f = new Form(context);
+	// if (widgetTypes != null)
+	// for (FormWidget.Factory factory : widgetTypes) {
+	// f.registerWidget(factory);
+	// }
+	// f.parse(json);
+	// return f;
+	// }
+
+	// private void parse(JSONParser json) {
+	// json.enterList();
+	// while (json.hasNext()) {
+	// Map attributes = (Map) json.next();
+	// FormWidget item = FormWidget.build(this, attributes);
+	// String id = item.getId();
+	// if (!id.isEmpty()) {
+	// Object prev = itemsMap.put(item.getId(), item);
+	// if (prev != null)
+	// throw new IllegalArgumentException("form field id "
+	// + item.getId() + " already exists");
+	// }
+	// fieldsList.add(item);
+	// }
+	// json.exit();
+	// }
+
+	// @Override
+	// public void encode(JSONEncoder encoder) {
+	// throw new UnsupportedOperationException();
+	// }
+
+	/**
+	 * Get value of widget (as a string)
+	 */
+	public String getValue(String widgetId) {
+		return getWidget(widgetId).getValue();
+	}
+
+	/**
+	 * Get value of widget as an integer
+	 */
+	public int getIntValue(String widgetId) {
+		return getWidget(widgetId).getIntValue();
+	}
+
+	/**
+	 * Write value to widget
+	 */
+	public void setValue(String fieldName, Object value, boolean notifyListeners) {
+		getWidget(fieldName).setValue(value.toString(), notifyListeners);
+	}
+
+	/**
+	 * Find widget by name
+	 */
+	public AbstractWidget getWidget(String widgetName) {
+		AbstractWidget field = mWidgetsMap.get(widgetName);
+		if (field == null)
+			throw new IllegalArgumentException("no widget found with name "
+					+ widgetName);
+		return field;
+	}
+
+	// /**
+	// * Notify listeners that form values have changed
+	// */
+	// public void valuesChanged() {
+	// for (Listener listener : mListeners) {
+	// listener.valuesChanged(this);
+	// }
+	// }
+	//
+	// public static interface Listener {
+	// void valuesChanged(Form form);
+	// }
+	//
+	// public void addListener(Listener listener) {
+	// mListeners.add(listener);
+	// }
+	//
+	// public void removeListener(Listener listener) {
+	// mListeners.remove(listener);
+	// }
+
+	/**
+	 * Construct a widget from a set of attributes, by using an appropriate
+	 * factory constructor
+	 */
+	AbstractWidget build(Map attributes) {
+		AbstractWidget widget;
+		String type = (String) attributes.get("type");
+		if (type == null)
+			throw new IllegalArgumentException("no type found");
+		AbstractWidget.Factory factory = mWidgetFactoryMap.get(type);
+		if (factory == null)
+			throw new IllegalArgumentException(
+					"no factory found for widget type " + type);
+		widget = factory.constructInstance(sContext, attributes);
+		return widget;
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private SlidingPaneLayout mSlidingPane;
 	private ViewGroup mOptionsView;
+	private Context sContext;
+	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
+	private List<AbstractWidget> mWidgetsList = new ArrayList();
+	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
+	// private Set<Listener> mListeners = new HashSet();
 }

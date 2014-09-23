@@ -1,9 +1,6 @@
 package com.js.samplealgorithm;
 
 import android.opengl.GLSurfaceView;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
@@ -30,7 +27,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	public Algorithm() {
 		doNothing();
-		mDesiredPolygonName = testPolys[0];
 	}
 
 	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
@@ -40,7 +36,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	@Override
 	public void runAlgorithm() {
-		prepareInput(mDesiredPolygonName);
+		prepareInput();
 
 		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
 				mPolygon);
@@ -59,39 +55,41 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	}
 
 	public void prepareOptions() {
-		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
-		ASSERT(options != null);
+		sOptions = AlgorithmOptions.sharedInstance();
 
-		options.addDropdown(testPolyNames, new OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view,
-					int position, long id) {
-
-				mDesiredPolygonName = testPolys[position];
-				unimp("we may need synchronization here (or actually elsewhere)");
-				mPolygon = null;
-				unimp("trigger rerun of algorithm somehow, also redetermination of # steps");
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-			}
-		});
+		sOptions.addCheckBox("Sample check box #1");
+		sOptions.addCheckBox(
+				"Sample check box #2 with a really really long name", true);
+		sOptions.addComboBox("Polygon", testPolyNames);
+		/*
+		 * options.addDropdown(testPolyNames, new OnItemSelectedListener() {
+		 * 
+		 * @Override public void onItemSelected(AdapterView<?> parent, View
+		 * view, int position, long id) {
+		 * 
+		 * mDesiredPolygonName = testPolys[position];
+		 * unimp("we may need synchronization here (or actually elsewhere)");
+		 * mPolygon = null; unimp(
+		 * "trigger rerun of algorithm somehow, also redetermination of # steps"
+		 * ); }
+		 * 
+		 * @Override public void onNothingSelected(AdapterView<?> parent) { }
+		 * });
+		 */
 	}
 
-	private void prepareInput(int polygonName) {
-		if (mPolygon != null)
-			return;
-
+	private void prepareInput() {
+		int polygonName = testPolys[sOptions.getIntValue("Polygon")];
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
 		mPolygon.transformToFitRect(mRenderer.algorithmRect(), false);
 	}
 
+	private static AlgorithmOptions sOptions;
+
 	private GeometryContext mContext;
 	private Polygon mPolygon;
-	private int mDesiredPolygonName;
 	private int mAnimFrame;
 	private GLSurfaceView mView;
 	private AlgorithmRenderer mRenderer;

@@ -180,6 +180,10 @@ public abstract class MyActivity extends Activity {
 		return sDensity;
 	}
 
+	public static int inchesToPixels(float inches) {
+		return (int) (inches * sDisplayMetrics.xdpi);
+	}
+
 	private void addResourceMappings() {
 		addResource("photo", android.R.drawable.ic_menu_gallery);
 		addResource("camera", android.R.drawable.ic_menu_camera);

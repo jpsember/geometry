@@ -44,10 +44,8 @@ public class GeometryContext {
 			if (edge == null)
 				continue;
 			while (true) {
-				Edge dual = edge.dual();
-				if (!omitDuals || dual.angle() < edge.angle()) {
+				if (!omitDuals || edge.angle() >= 0)
 					edges.add(edge);
-				}
 				edge = edge.nextEdge();
 				if (edge == vertex.edges())
 					break;

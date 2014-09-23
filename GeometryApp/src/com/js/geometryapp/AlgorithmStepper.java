@@ -96,6 +96,9 @@ public class AlgorithmStepper {
 				clearDisplayList();
 				return true;
 			}
+			if (mTargetStep < mCurrentStep)
+				die("target " + mTargetStep + " but current " + mCurrentStep);
+
 			mCurrentStep++;
 		}
 		return false;
@@ -141,6 +144,10 @@ public class AlgorithmStepper {
 	 *         side effect of constructing show(...) message arguments
 	 */
 	public String plotElement(AlgorithmDisplayElement element) {
+		// Do nothing if we're running just to calculate the total steps
+		if (!mTotalStepsKnown)
+			return "";
+
 		// If there's an active background plot key, store as background element
 		// instead of adding to this frame
 		if (mNextPlotKey != null) {
@@ -187,6 +194,10 @@ public class AlgorithmStepper {
 	 *            key to identify this background element from others
 	 */
 	public void plotToBackground(String key) {
+		// Do nothing if we're running just to calculate the total steps
+		if (!mTotalStepsKnown)
+			return;
+
 		mNextPlotKey = key;
 	}
 

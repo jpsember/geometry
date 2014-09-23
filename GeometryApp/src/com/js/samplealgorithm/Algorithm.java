@@ -29,6 +29,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	};
 
 	public Algorithm(Context context) {
+		sStepper = AlgorithmStepper.sharedInstance();
 		mAppContext = context;
 		doNothing();
 	}
@@ -61,7 +62,8 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 				new AbstractWidget.Listener() {
 					@Override
 					public void valueChanged(AbstractWidget widget) {
-						AlgorithmStepper.sharedInstance().requestUpdate(true);
+						sOptions.hide();
+						sStepper.requestUpdate(true);
 					}
 				});
 	}
@@ -75,6 +77,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private static AlgorithmOptions sOptions;
+	private static AlgorithmStepper sStepper;
 
 	private Context mAppContext;
 	private GeometryContext mContext;

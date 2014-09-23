@@ -113,7 +113,15 @@ public class AlgorithmOptions {
 		mSlidingPane.addView(mOptionsView, lp);
 
 		if (!bothFit)
-			mSlidingPane.openPane();
+			hide();
+	}
+
+	/**
+	 * Hide the options pane to reveal the main view (has no effect if both are
+	 * always visible)
+	 */
+	public void hide() {
+		mSlidingPane.openPane();
 	}
 
 	private Context getContext() {

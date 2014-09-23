@@ -476,19 +476,21 @@ public class PolygonTriangulator {
 				return;
 			setColorState(COLOR_DARKGREEN);
 			setLineWidthState(1);
-			renderLine(0, mSweepLinePosition,
-					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH, mSweepLinePosition);
+			float horizExtent = AlgorithmRenderer.ALGORITHM_SPACE_WIDTH * .25f;
+			renderLine(-horizExtent, mSweepLinePosition,
+					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH + horizExtent,
+					mSweepLinePosition);
 			setColorState(COLOR_DARKGREEN);
 			setLineWidthState(2);
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
-				float EXTENT = 22 * AlgorithmRenderer
+				float vertExtent = 22 * AlgorithmRenderer
 						.algorithmToDensityPixels();
-				Point p1 = e.positionOnSweepLine(mSweepLinePosition - EXTENT
-						* .8f, mContext, true);
-				Point p2 = e.positionOnSweepLine(mSweepLinePosition + EXTENT
-						* 1.2f, mContext, true);
+				Point p1 = e.positionOnSweepLine(mSweepLinePosition
+						- vertExtent * .8f, mContext, true);
+				Point p2 = e.positionOnSweepLine(mSweepLinePosition
+						+ vertExtent * 1.2f, mContext, true);
 				renderRay(p1, p2);
 
 				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,

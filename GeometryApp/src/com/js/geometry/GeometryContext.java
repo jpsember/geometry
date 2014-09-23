@@ -20,8 +20,40 @@ public class GeometryContext {
 		return mVertexBuffer;
 	}
 
-	public ArrayList<Edge> edgeBuffer() {
-		return mEdgeBuffer;
+	/**
+	 * Construct a list of all the edges
+	 * 
+	 * @return array of edges
+	 */
+	public ArrayList<Edge> constructListOfEdges() {
+		return constructListOfEdges(false);
+	}
+
+	/**
+	 * Construct a list of all the edges
+	 * 
+	 * @param omitDuals
+	 *            if true, exactly one of an edge or its dual will appear in the
+	 *            array
+	 * @return array of edges
+	 */
+	public ArrayList<Edge> constructListOfEdges(boolean omitDuals) {
+		ArrayList<Edge> edges = new ArrayList();
+		for (Vertex vertex : mVertexBuffer) {
+			Edge edge = vertex.edges();
+			if (edge == null)
+				continue;
+			while (true) {
+				Edge dual = edge.dual();
+				if (!omitDuals || dual.angle() < edge.angle()) {
+					edges.add(edge);
+				}
+				edge = edge.nextEdge();
+				if (edge == vertex.edges())
+					break;
+			}
+		}
+		return edges;
 	}
 
 	public int seed() {
@@ -49,7 +81,6 @@ public class GeometryContext {
 
 	private void allocateVertexAndEdgeBuffers() {
 		mVertexBuffer = new ArrayList();
-		mEdgeBuffer = new ArrayList();
 	}
 
 	public void resetRandom(int seed) {
@@ -209,7 +240,6 @@ public class GeometryContext {
 
 	public void clearMesh() {
 		mVertexBuffer.clear();
-		mEdgeBuffer.clear();
 	}
 
 	public void clearMeshFlags(int vertexFlags, int edgeFlags) {
@@ -219,8 +249,9 @@ public class GeometryContext {
 			}
 		}
 		if (edgeFlags != 0) {
-			for (Edge edge : mEdgeBuffer) {
+			for (Edge edge : constructListOfEdges(true)) {
 				edge.clearFlags(edgeFlags);
+				edge.dual().clearFlags(edgeFlags);
 			}
 		}
 	}
@@ -240,8 +271,6 @@ public class GeometryContext {
 			Edge dual = new Edge();
 			edge.setDual(dual);
 			dual.setDual(edge);
-			mEdgeBuffer.add(edge);
-			mEdgeBuffer.add(dual);
 		} else {
 			ASSERT(edge.deleted() && edge.dual().deleted(),
 					"attempt to recycle edge pair that hasn't been deleted");
@@ -490,5 +519,4 @@ public class GeometryContext {
 	private int mSeed;
 	private float mPerturbAmount;
 	private ArrayList<Vertex> mVertexBuffer;
-	private ArrayList<Edge> mEdgeBuffer;
 }

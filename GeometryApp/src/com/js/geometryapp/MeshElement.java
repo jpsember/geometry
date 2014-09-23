@@ -13,10 +13,7 @@ public class MeshElement extends AlgorithmDisplayElement {
 	public void render() {
 		setColorState(color());
 		setLineWidthState(lineWidth());
-		for (Edge e : mContext.edgeBuffer()) {
-			Edge dual = e.dual();
-			if (e.angle() < dual.angle())
-				continue;
+		for (Edge e : mContext.constructListOfEdges(true)) {
 			renderLine(e.sourceVertex().point(), e.destVertex().point());
 		}
 	}

@@ -150,7 +150,7 @@ public class PolygonMesh {
 
 		if (DUMP_STRIP)
 			prr("Strip: ");
-		for (Edge edge : mContext.edgeBuffer()) {
+		for (Edge edge : mContext.constructListOfEdges()) {
 			if (edge.visited())
 				continue;
 			if (!markedAsInteriorEdge(edge))
@@ -317,7 +317,7 @@ public class PolygonMesh {
 
 		mContext.clearMeshFlags(0, Edge.FLAG_VISITED | EDGE_FLAG_INTERIOR);
 
-		for (Edge edge : mContext.edgeBuffer()) {
+		for (Edge edge : mContext.constructListOfEdges()) {
 			if (markedAsInteriorEdge(edge))
 				continue;
 

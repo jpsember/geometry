@@ -328,6 +328,23 @@ public class AlgorithmOptions {
 		}
 	}
 
+	/**
+	 * Determine if tracing for a particular task is enabled
+	 * 
+	 * @param taskName
+	 *            name of task
+	 * @return true unless checkbox widget with id = taskname exists and is
+	 *         false
+	 */
+	boolean taskTraceActive(String taskName) {
+		AbstractWidget widget = mWidgetsMap.get(taskName);
+		if (widget != null) {
+			if (widget.getBooleanValue() == false)
+				return false;
+		}
+		return true;
+	}
+
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private boolean mPrepared;
@@ -337,4 +354,5 @@ public class AlgorithmOptions {
 	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
 	private List<AbstractWidget> mWidgetsList = new ArrayList();
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
+
 }

@@ -79,12 +79,27 @@ public class AlgorithmStepper {
 		return mStepperView.view();
 	}
 
+	public boolean update() {
+		return update(null);
+	}
+
 	/**
 	 * Determine if we should stop and display this frame of the current
 	 * algorithm; should be followed by a call to update() if this returns true
+	 * 
+	 * @param taskName
+	 *            if not null, returns false if corresponding task flag is not
+	 *            set in AlgorithmOptions
 	 */
-	public boolean update() {
+	public boolean update(String taskName) {
 		if (isActive()) {
+
+			if (taskName != null) {
+				if (!AlgorithmOptions.sharedInstance()
+						.taskTraceActive(taskName))
+					return false;
+			}
+
 			if (!mTotalStepsKnown) {
 				// We need to see what the message is, to determine if it's a
 				// milestone. We won't throw an exception to end the algorithm

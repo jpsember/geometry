@@ -5,4 +5,10 @@
     "label": "Polygon:",
     "options": ["Dragon #6","Concave Blob","Dragon #0","Quadratic function","Large rectangle","Dragon #8"],
   },
+  
+  {
+  	"id": "triangulate_monotone_face",
+  	"type" : "checkbox",
+  	"value": true,
+  },
  ]

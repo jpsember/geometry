@@ -6,14 +6,11 @@ import com.js.android.MyActivity;
 
 import android.content.Context;
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemSelectedListener;
 import static com.js.basic.Tools.*;
 
 public class CheckBoxWidget extends AbstractWidget {

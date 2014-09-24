@@ -282,29 +282,28 @@ public class AlgorithmStepper {
 		}
 	}
 
-	/**
-	 * Synchronized in case renderer is running in different thread
-	 */
-	private synchronized void performAlgorithm() {
-		try {
-			setActive(true);
+	private void performAlgorithm() {
+		synchronized (AlgorithmStepper.getLock()) {
+			try {
+				setActive(true);
 
-			mCurrentStep = 0;
-			mNextPlotKey = null;
-			mBackgroundElements.clear();
+				mCurrentStep = 0;
+				mNextPlotKey = null;
+				mBackgroundElements.clear();
 
-			if (!mTotalStepsKnown) {
-				mMilestones.clear();
-				addMilestone(mCurrentStep);
+				if (!mTotalStepsKnown) {
+					mMilestones.clear();
+					addMilestone(mCurrentStep);
+				}
+
+				mDelegate.runAlgorithm();
+				if (!mTotalStepsKnown) {
+					addMilestone(mCurrentStep);
+				}
+			} catch (DesiredStepReachedException e) {
+			} finally {
+				setActive(false);
 			}
-
-			mDelegate.runAlgorithm();
-			if (!mTotalStepsKnown) {
-				addMilestone(mCurrentStep);
-			}
-		} catch (DesiredStepReachedException e) {
-		} finally {
-			setActive(false);
 		}
 	}
 
@@ -356,7 +355,7 @@ public class AlgorithmStepper {
 			// causing a recursive update)
 			updateStepperView(false);
 		}
-		synchronized (this) {
+		synchronized (AlgorithmStepper.getLock()) {
 			performAlgorithm();
 			mDelegate.displayResults();
 		}
@@ -419,8 +418,19 @@ public class AlgorithmStepper {
 		return mActive;
 	}
 
+	/**
+	 * Get the singleton object that serves as the synchronization lock to avoid
+	 * race conditions between the UI and OpenGL threads
+	 * 
+	 * @return
+	 */
+	static Object getLock() {
+		return sSynchronizationLock;
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
+	private static Object sSynchronizationLock = new Object();
 
 	private ArrayList<AlgorithmDisplayElement> mDisplayElements = new ArrayList();
 	private Map<String, AlgorithmDisplayElement> mBackgroundElements = new HashMap();

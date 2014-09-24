@@ -137,8 +137,10 @@ public abstract class AbstractWidget {
 		}
 
 		if (notifyListeners) {
-			for (Listener listener : mListeners) {
-				listener.valueChanged(this);
+			synchronized (AlgorithmStepper.getLock()) {
+				for (Listener listener : mListeners) {
+					listener.valueChanged(this);
+				}
 			}
 		}
 	}

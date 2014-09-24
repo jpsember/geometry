@@ -1,0 +1,131 @@
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    DOE    EAT    COB 
+ DOE  --> FAY    EAT    BOW 
+ FAY  --> EAT    DOE 
+ EAT  --> COB    BOW    DOE    FAY    GAB 
+ GAB  --> COB    EAT 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: EAT --> FAY
+
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    DOE    EAT    COB 
+ DOE  --> FAY    EAT    BOW 
+ FAY  --> DOE 
+ EAT  --> COB    BOW    DOE    GAB 
+ GAB  --> COB    EAT 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: DOE --> BOW
+
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    EAT    COB 
+ DOE  --> FAY    EAT 
+ FAY  --> DOE 
+ EAT  --> COB    BOW    DOE    GAB 
+ GAB  --> COB    EAT 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: EAT --> BOW
+
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    COB 
+ DOE  --> FAY    EAT 
+ FAY  --> DOE 
+ EAT  --> COB    DOE    GAB 
+ GAB  --> COB    EAT 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: DOE --> FAY
+
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> COB    DOE    GAB 
+ GAB  --> COB    EAT 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: EAT --> GAB
+
+GeometryContext:
+ ASK  --> BOW    COB 
+ BOW  --> ASK    COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> COB    DOE 
+ GAB  --> COB 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: ASK --> BOW
+
+GeometryContext:
+ ASK  --> COB 
+ BOW  --> COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> COB    DOE 
+ GAB  --> COB 
+ COB  --> ASK    BOW    EAT    GAB 
+
+Deleting: COB --> EAT
+
+GeometryContext:
+ ASK  --> COB 
+ BOW  --> COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> DOE 
+ GAB  --> COB 
+ COB  --> ASK    BOW    GAB 
+
+Deleting: COB --> GAB
+
+GeometryContext:
+ ASK  --> COB 
+ BOW  --> COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> DOE 
+ GAB 
+ COB  --> ASK    BOW 
+
+Deleting: ASK --> COB
+
+GeometryContext:
+ ASK 
+ BOW  --> COB 
+ DOE  --> EAT 
+ FAY 
+ EAT  --> DOE 
+ GAB 
+ COB  --> BOW 
+
+Deleting: EAT --> DOE
+
+GeometryContext:
+ ASK 
+ BOW  --> COB 
+ DOE 
+ FAY 
+ EAT 
+ GAB 
+ COB  --> BOW 
+
+Deleting: BOW --> COB
+
+after deleting all edges:
+GeometryContext:
+ ASK 
+ BOW 
+ DOE 
+ FAY 
+ EAT 
+ GAB 
+ COB 
+

@@ -93,6 +93,7 @@ public class AlgorithmStepper {
 				return true;
 			} else if (mCurrentStep == mTargetStep) {
 				clearDisplayList();
+				AlgorithmDisplayElement.resetRenderStateVars();
 				return true;
 			}
 			if (mTargetStep < mCurrentStep)
@@ -196,7 +197,7 @@ public class AlgorithmStepper {
 		// Do nothing if we're running just to calculate the total steps
 		if (!mTotalStepsKnown)
 			return;
-
+		AlgorithmDisplayElement.resetRenderStateVars();
 		mNextPlotKey = key;
 	}
 

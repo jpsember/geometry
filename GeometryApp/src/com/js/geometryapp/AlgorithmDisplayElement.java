@@ -121,8 +121,7 @@ public abstract class AlgorithmDisplayElement {
 		buildArrowheads(renderer);
 		buildPoints(renderer);
 		sFont = new Font((int) (18 * MyActivity.density()));
-		sLineWidth = 1.0f;
-		sColor = Color.WHITE;
+		resetRenderStateVars();
 	}
 
 	protected static void renderFrameTitle(String sFrameTitle) {
@@ -184,6 +183,14 @@ public abstract class AlgorithmDisplayElement {
 
 	static PolygonProgram polygonProgram() {
 		return sPolygonProgram;
+	}
+
+	/**
+	 * Reset the global render attributes to their default values
+	 */
+	static void resetRenderStateVars() {
+		sLineWidth = 1.0f;
+		sColor = Color.BLUE;
 	}
 
 	private int mColor;

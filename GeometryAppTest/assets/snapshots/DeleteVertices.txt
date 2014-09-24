@@ -1,0 +1,59 @@
+GeometryContext:
+ HOG  --> IVY    JOB 
+ IVY  --> HOG    KOI    LIL    JOB 
+ KOI  --> MAC    LIL    IVY 
+ MAC  --> LIL    KOI 
+ LIL  --> JOB    IVY    KOI    MAC    NAG 
+ NAG  --> JOB    LIL 
+ JOB  --> HOG    IVY    LIL    NAG 
+
+Deleting: MAC
+
+GeometryContext:
+ HOG  --> IVY    JOB 
+ IVY  --> HOG    KOI    LIL    JOB 
+ KOI  --> LIL    IVY 
+ JOB  --> HOG    IVY    LIL    NAG 
+ LIL  --> JOB    IVY    KOI    NAG 
+ NAG  --> JOB    LIL 
+
+Deleting: IVY
+
+GeometryContext:
+ HOG  --> JOB 
+ NAG  --> JOB    LIL 
+ KOI  --> LIL 
+ JOB  --> HOG    LIL    NAG 
+ LIL  --> JOB    KOI    NAG 
+
+Deleting: HOG
+
+GeometryContext:
+ LIL  --> JOB    KOI    NAG 
+ NAG  --> JOB    LIL 
+ KOI  --> LIL 
+ JOB  --> LIL    NAG 
+
+Deleting: NAG
+
+GeometryContext:
+ LIL  --> JOB    KOI 
+ JOB  --> LIL 
+ KOI  --> LIL 
+
+Deleting: KOI
+
+GeometryContext:
+ LIL  --> JOB 
+ JOB  --> LIL 
+
+Deleting: JOB
+
+GeometryContext:
+ LIL 
+
+Deleting: LIL
+
+after deleting all vertices:
+GeometryContext:
+

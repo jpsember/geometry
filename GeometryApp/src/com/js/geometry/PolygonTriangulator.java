@@ -54,8 +54,8 @@ public class PolygonTriangulator {
 		return mStepper.update();
 	}
 
-	private boolean update(String taskName) {
-		return mStepper.update(taskName);
+	private boolean update(String detailName) {
+		return mStepper.update(detailName);
 	}
 
 	private void show(Object message) {
@@ -387,12 +387,12 @@ public class PolygonTriangulator {
 	// http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 	//
 	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
-		final String taskName = "triangulate_monotone_face";
+		final String detailName = "Triangulate monotone face";
 		if (update())
-			show("*Triangulating monotone face"
+			show("*" + detailName
 					+ plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
-			if (update(taskName))
+			if (update(detailName))
 				show("Edge already visited");
 			return;
 		}
@@ -409,7 +409,7 @@ public class PolygonTriangulator {
 
 			mMonotoneQueue.push(v);
 			Vertex v2 = mVertexList.get(vIndex++);
-			if (update(taskName))
+			if (update(detailName))
 				show("Queuing vertex" + plot(v2));
 			mMonotoneQueue.push(v2);
 		}
@@ -429,13 +429,13 @@ public class PolygonTriangulator {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					// Skip the first queued vertex
 					Vertex v1 = mMonotoneQueue.pop();
-					if (update(taskName))
+					if (update(detailName))
 						show("Skipping first queued vertex" + plot(v1));
 					Vertex v2 = mMonotoneQueue.peek();
 					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
-				if (update(taskName))
+				if (update(detailName))
 					show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
@@ -446,7 +446,7 @@ public class PolygonTriangulator {
 					float distance = mContext.pointUnitLineSignedDistance(
 							vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
-					if (update(taskName))
+					if (update(detailName))
 						show("Test for convex angle" + plot(v1) + plot(v2));
 
 					if (!isConvex)
@@ -455,7 +455,7 @@ public class PolygonTriangulator {
 					edgesRemaining--;
 					mMonotoneQueue.pop(false);
 				}
-				if (update(taskName))
+				if (update(detailName))
 					show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 			}

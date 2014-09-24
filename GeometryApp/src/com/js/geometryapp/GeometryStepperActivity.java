@@ -71,6 +71,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
 
 		prepareOptions();
+		mOptions.registerAlgorithmDetailListeners();
+
 		String mSavedWidgetValues = AppPreferences.getString(
 				PERSIST_KEY_WIDGET_VALUES, null);
 		if (mSavedWidgetValues != null)

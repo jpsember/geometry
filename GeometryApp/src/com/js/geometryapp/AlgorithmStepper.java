@@ -87,16 +87,16 @@ public class AlgorithmStepper {
 	 * Determine if we should stop and display this frame of the current
 	 * algorithm; should be followed by a call to update() if this returns true
 	 * 
-	 * @param taskName
-	 *            if not null, returns false if corresponding task flag is not
-	 *            set in AlgorithmOptions
+	 * @param detailName
+	 *            if not null, returns false if options checkbox with this
+	 *            detail name is false
 	 */
-	public boolean update(String taskName) {
+	public boolean update(String detailName) {
 		if (isActive()) {
 
-			if (taskName != null) {
-				if (!AlgorithmOptions.sharedInstance()
-						.taskTraceActive(taskName))
+			if (detailName != null) {
+				if (!AlgorithmOptions.sharedInstance().detailTraceActive(
+						detailName))
 					return false;
 			}
 

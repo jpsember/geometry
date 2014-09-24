@@ -329,20 +329,36 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Determine if tracing for a particular task is enabled
+	 * Determine if tracing for a particular detail is enabled
 	 * 
-	 * @param taskName
-	 *            name of task
-	 * @return true unless checkbox widget with id = taskname exists and is
-	 *         false
+	 * @param detailName
+	 *            name of detail
+	 * @return value of checkbox with id = detailName
 	 */
-	boolean taskTraceActive(String taskName) {
-		AbstractWidget widget = mWidgetsMap.get(taskName);
-		if (widget != null) {
-			if (widget.getBooleanValue() == false)
-				return false;
+	boolean detailTraceActive(String detailName) {
+		AbstractWidget widget = mWidgetsMap.get(detailName);
+		if (widget == null) {
+			warning("no detail widget found: " + detailName);
+			return true;
 		}
-		return true;
+		return widget.getBooleanValue();
+	}
+
+	/**
+	 * Add listeners for algorithm detail checkboxes that cause an update with
+	 * recalculation of the total steps
+	 */
+	void registerAlgorithmDetailListeners() {
+		AbstractWidget.Listener listener = new AbstractWidget.Listener() {
+			@Override
+			public void valueChanged(AbstractWidget widget) {
+				AlgorithmStepper.sharedInstance().requestUpdate(true);
+			}
+		};
+		for (AbstractWidget w : mWidgetsList) {
+			if (w.boolAttr("detail", false))
+				w.addListener(listener);
+		}
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;

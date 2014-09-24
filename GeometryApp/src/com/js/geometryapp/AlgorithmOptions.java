@@ -27,6 +27,103 @@ import static com.js.basic.Tools.*;
 public class AlgorithmOptions {
 
 	/**
+	 * Get the singleton instance of the options object
+	 */
+	public static AlgorithmOptions sharedInstance() {
+		return sAlgorithmOptions;
+	}
+
+	/**
+	 * Hide the options pane to reveal the main view (has no effect if both are
+	 * always visible)
+	 */
+	public void hide() {
+		mSlidingPane.openPane();
+	}
+
+	/**
+	 * Add widgets defined by a JSON script
+	 */
+	public void addWidgets(String jsonString) {
+		parseWidgets(new JSONParser(jsonString));
+	}
+
+	/**
+	 * Add a checkbox widget
+	 */
+	public CheckBoxWidget addCheckBox(String id) {
+		return addCheckBox(id, false);
+	}
+
+	/**
+	 * Add a checkbox widget
+	 */
+	public CheckBoxWidget addCheckBox(String id, boolean selected) {
+		Map<String, Object> attributes = buildAttributes(id);
+		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
+		addWidget(w);
+		w.setValue(selected);
+		return w;
+	}
+
+	/**
+	 * Add a combobox widget
+	 */
+	public ComboBoxWidget addComboBox(String id, String[] options) {
+		Map<String, Object> attributes = buildAttributes(id);
+		ArrayList<String> s = new ArrayList();
+		for (int i = 0; i < options.length; i++)
+			s.add(options[i]);
+		attributes.put(ComboBoxWidget.ATTR_OPTIONS, s);
+		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
+		addWidget(w);
+		return w;
+	}
+
+	/**
+	 * Get value of widget (as a string)
+	 */
+	public String getValue(String widgetId) {
+		return getWidget(widgetId).getValue();
+	}
+
+	/**
+	 * Get value of widget as an integer
+	 */
+	public int getIntValue(String widgetId) {
+		return getWidget(widgetId).getIntValue();
+	}
+
+	public void setValue(String widgetId, int intValue) {
+		setValue(widgetId, Integer.valueOf(intValue), true);
+	}
+
+	/**
+	 * Get value of widget as a boolean
+	 */
+	public boolean getBooleanValue(String widgetId) {
+		return getWidget(widgetId).getBooleanValue();
+	}
+
+	/**
+	 * Write value to widget
+	 */
+	public void setValue(String fieldName, Object value, boolean notifyListeners) {
+		getWidget(fieldName).setValue(value.toString(), notifyListeners);
+	}
+
+	/**
+	 * Find widget by name
+	 */
+	public <T extends AbstractWidget> T getWidget(String widgetName) {
+		T field = (T) mWidgetsMap.get(widgetName);
+		if (field == null)
+			throw new IllegalArgumentException("no widget found with name "
+					+ widgetName);
+		return field;
+	}
+
+	/**
 	 * Construct an options object
 	 * 
 	 * @param context
@@ -35,7 +132,7 @@ public class AlgorithmOptions {
 	 *            actually be placed within the options SlidingPaneLayout, which
 	 *            becomes the new content view
 	 */
-	public static AlgorithmOptions construct(Context context, View mainView) {
+	static AlgorithmOptions construct(Context context, View mainView) {
 		AlgorithmOptions v = new AlgorithmOptions(context);
 		v.buildSlidingPane(context);
 		v.buildOptionsView();
@@ -45,16 +142,9 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Get the singleton instance of the options object
-	 */
-	public static AlgorithmOptions sharedInstance() {
-		return sAlgorithmOptions;
-	}
-
-	/**
 	 * Get the view that contains both the main view and the options
 	 */
-	public ViewGroup getView() {
+	ViewGroup getView() {
 		return mSlidingPane;
 	}
 
@@ -63,8 +153,10 @@ public class AlgorithmOptions {
 	 */
 	private AlgorithmOptions(Context context) {
 		sContext = context;
-		for (int i = 0; i < basicWidgets.length; i++)
-			registerWidget(basicWidgets[i]);
+		for (int i = 0; i < basicWidgets.length; i++) {
+			AbstractWidget.Factory factory = basicWidgets[i];
+			mWidgetFactoryMap.put(factory.getName(), factory);
+		}
 	}
 
 	private void buildSlidingPane(Context context) {
@@ -130,14 +222,6 @@ public class AlgorithmOptions {
 			hide();
 	}
 
-	/**
-	 * Hide the options pane to reveal the main view (has no effect if both are
-	 * always visible)
-	 */
-	public void hide() {
-		mSlidingPane.openPane();
-	}
-
 	private Context getContext() {
 		return mSlidingPane.getContext();
 	}
@@ -156,45 +240,6 @@ public class AlgorithmOptions {
 		Map<String, Object> attributes = new HashMap();
 		attributes.put("id", identifier);
 		return attributes;
-	}
-
-	/**
-	 * Add widgets defined by a JSON script
-	 */
-	public void addWidgets(String jsonString) {
-		parseWidgets(new JSONParser(jsonString));
-	}
-
-	/**
-	 * Add a checkbox widget
-	 */
-	public CheckBoxWidget addCheckBox(String id) {
-		return addCheckBox(id, false);
-	}
-
-	/**
-	 * Add a checkbox widget
-	 */
-	public CheckBoxWidget addCheckBox(String id, boolean selected) {
-		Map<String, Object> attributes = buildAttributes(id);
-		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
-		addWidget(w);
-		w.setValue(selected);
-		return w;
-	}
-
-	/**
-	 * Add a combobox widget
-	 */
-	public ComboBoxWidget addComboBox(String id, String[] options) {
-		Map<String, Object> attributes = buildAttributes(id);
-		ArrayList<String> s = new ArrayList();
-		for (int i = 0; i < options.length; i++)
-			s.add(options[i]);
-		attributes.put(ComboBoxWidget.ATTR_OPTIONS, s);
-		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
-		addWidget(w);
-		return w;
 	}
 
 	private void addWidget(AbstractWidget w) {
@@ -216,10 +261,6 @@ public class AlgorithmOptions {
 			CheckBoxWidget.FACTORY, ComboBoxWidget.FACTORY,
 			SliderWidget.FACTORY };
 
-	public void registerWidget(AbstractWidget.Factory factory) {
-		mWidgetFactoryMap.put(factory.getName(), factory);
-	}
-
 	private void parseWidgets(JSONParser json) {
 		json.enterList();
 		while (json.hasNext()) {
@@ -231,49 +272,6 @@ public class AlgorithmOptions {
 			}
 		}
 		json.exit();
-	}
-
-	/**
-	 * Get value of widget (as a string)
-	 */
-	public String getValue(String widgetId) {
-		return getWidget(widgetId).getValue();
-	}
-
-	/**
-	 * Get value of widget as an integer
-	 */
-	public int getIntValue(String widgetId) {
-		return getWidget(widgetId).getIntValue();
-	}
-
-	public void setValue(String widgetId, int intValue) {
-		setValue(widgetId, Integer.valueOf(intValue), true);
-	}
-
-	/**
-	 * Get value of widget as a boolean
-	 */
-	public boolean getBooleanValue(String widgetId) {
-		return getWidget(widgetId).getBooleanValue();
-	}
-
-	/**
-	 * Write value to widget
-	 */
-	public void setValue(String fieldName, Object value, boolean notifyListeners) {
-		getWidget(fieldName).setValue(value.toString(), notifyListeners);
-	}
-
-	/**
-	 * Find widget by name
-	 */
-	public AbstractWidget getWidget(String widgetName) {
-		AbstractWidget field = mWidgetsMap.get(widgetName);
-		if (field == null)
-			throw new IllegalArgumentException("no widget found with name "
-					+ widgetName);
-		return field;
 	}
 
 	/**

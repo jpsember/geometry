@@ -41,51 +41,25 @@ public class AlgorithmStepper {
 		resetStep();
 	}
 
-	public void resetStep() {
-		// Run algorithm to completion to determine the number of steps
-		mTotalStepsKnown = false;
-		performAlgorithm();
-		setTotalStepsKnown();
-		updateStepperView(true);
-	}
-
-	private void setTotalStepsKnown() {
-		mTotalStepsKnown = true;
-		mTotalSteps = mCurrentStep;
-		// Clamp previous target step into new range
-		mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
+	/**
+	 * Determine if algorithm stepper is active (i.e. hooked up to a control
+	 * panel and controlling the progress of the calling algorithm)
+	 */
+	public boolean isActive() {
+		return mActive;
 	}
 
 	/**
-	 * Print a warning if no delegate has been defined
+	 * Determine if we should stop and display this frame of the current
+	 * algorithm; should be followed by a call to show() if this returns true
 	 */
-	protected void verifyDelegateDefined() {
-		if (mDelegate == null) {
-			warning("no algorithm delegate defined");
-		}
-	}
-
-	/**
-	 * Get the stepper controller view, constructing it if necessary
-	 * 
-	 * @param context
-	 *            context to use, in case construction necessary
-	 * @return view
-	 */
-	public View controllerView(Context context) {
-		if (mStepperView == null) {
-			mStepperView = new AlgorithmStepperView(context, this);
-		}
-		return mStepperView.view();
-	}
-
 	public boolean update() {
 		return update(null);
 	}
 
 	/**
 	 * Determine if we should stop and display this frame of the current
-	 * algorithm; should be followed by a call to update() if this returns true
+	 * algorithm; should be followed by a call to show() if this returns true
 	 * 
 	 * @param detailName
 	 *            if not null, returns false if options checkbox with this
@@ -143,15 +117,6 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Dispose of the controller's view; should be called when activity's
-	 * onDestroy() is called
-	 */
-	public void destroy() {
-		mTotalStepsKnown = false;
-		mStepperView = null;
-	}
-
-	/**
 	 * Add an element to be displayed with this algorithm frame
 	 * 
 	 * @param element
@@ -175,34 +140,6 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Render algorithm frame, by plotting (and disposing of) any added
-	 * elements, as well as the frame's title
-	 */
-	public void render() {
-		renderBackgroundElements();
-		for (AlgorithmDisplayElement element : mDisplayElements) {
-			element.render();
-		}
-		mDisplayElements.clear();
-		if (mFrameTitle != null) {
-			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
-			mFrameTitle = null;
-		}
-	}
-
-	/**
-	 * Render persistent (background) elements, in order of sorted keys
-	 */
-	private void renderBackgroundElements() {
-		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
-		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
-		for (String key : keys) {
-			AlgorithmDisplayElement element = mBackgroundElements.get(key);
-			element.render();
-		}
-	}
-
-	/**
 	 * Add the next plotted element to the background
 	 * 
 	 * @param key
@@ -214,14 +151,6 @@ public class AlgorithmStepper {
 			return;
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mNextPlotKey = key;
-	}
-
-	/**
-	 * Cancel the flag that causes the next element to be plotted to the
-	 * background
-	 */
-	public void clearPlotToBackground() {
-		mNextPlotKey = null;
 	}
 
 	/**
@@ -272,11 +201,94 @@ public class AlgorithmStepper {
 		return "";
 	}
 
+	private void resetStep() {
+		// Run algorithm to completion to determine the number of steps
+		mTotalStepsKnown = false;
+		performAlgorithm();
+		setTotalStepsKnown();
+		updateStepperView(true);
+	}
+
+	private void setTotalStepsKnown() {
+		mTotalStepsKnown = true;
+		mTotalSteps = mCurrentStep;
+		// Clamp previous target step into new range
+		mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
+	}
+
+	/**
+	 * Print a warning if no delegate has been defined
+	 */
+	void verifyDelegateDefined() {
+		if (mDelegate == null) {
+			warning("no algorithm delegate defined");
+		}
+	}
+
+	/**
+	 * Get the stepper controller view, constructing it if necessary
+	 * 
+	 * @param context
+	 *            context to use, in case construction necessary
+	 * @return view
+	 */
+	View controllerView(Context context) {
+		if (mStepperView == null) {
+			mStepperView = new AlgorithmStepperView(context, this);
+		}
+		return mStepperView.view();
+	}
+
+	/**
+	 * Dispose of the controller's view; should be called when activity's
+	 * onDestroy() is called
+	 */
+	void destroy() {
+		mTotalStepsKnown = false;
+		mStepperView = null;
+	}
+
+	/**
+	 * Render algorithm frame, by plotting (and disposing of) any added
+	 * elements, as well as the frame's title
+	 */
+	void render() {
+		renderBackgroundElements();
+		for (AlgorithmDisplayElement element : mDisplayElements) {
+			element.render();
+		}
+		mDisplayElements.clear();
+		if (mFrameTitle != null) {
+			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
+			mFrameTitle = null;
+		}
+	}
+
+	/**
+	 * Render persistent (background) elements, in order of sorted keys
+	 */
+	private void renderBackgroundElements() {
+		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
+		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
+		for (String key : keys) {
+			AlgorithmDisplayElement element = mBackgroundElements.get(key);
+			element.render();
+		}
+	}
+
+	/**
+	 * Cancel the flag that causes the next element to be plotted to the
+	 * background
+	 */
+	void clearPlotToBackground() {
+		mNextPlotKey = null;
+	}
+
 	/**
 	 * An exception of this type is thrown by the algorithm stepper when the
 	 * target step is reached
 	 */
-	protected static class DesiredStepReachedException extends RuntimeException {
+	static class DesiredStepReachedException extends RuntimeException {
 		public DesiredStepReachedException(String message) {
 			super(message);
 		}
@@ -307,7 +319,7 @@ public class AlgorithmStepper {
 		}
 	}
 
-	protected void setStepperView(AlgorithmStepperView view) {
+	void setStepperView(AlgorithmStepperView view) {
 		mStepperView = view;
 		updateStepperView(true);
 	}
@@ -361,7 +373,7 @@ public class AlgorithmStepper {
 		}
 	}
 
-	protected void setTargetStep(int step) {
+	void setTargetStep(int step) {
 		if (mIgnoreStepperView) {
 			return;
 		}
@@ -369,12 +381,12 @@ public class AlgorithmStepper {
 		updateStepperView(true);
 	}
 
-	protected void adjustTargetStep(int delta) {
+	void adjustTargetStep(int delta) {
 		int seekStep = mTargetStep + delta;
 		setTargetStep(seekStep);
 	}
 
-	protected void adjustDisplayedMilestone(int delta) {
+	void adjustDisplayedMilestone(int delta) {
 		int prev = -1, next = -1;
 		for (int i = 0; i < mMilestones.size(); i++) {
 			int k = mMilestones.get(i);
@@ -398,11 +410,11 @@ public class AlgorithmStepper {
 			mMilestones.add(n);
 	}
 
-	protected int targetStep() {
+	int targetStep() {
 		return mTargetStep;
 	}
 
-	protected int totalSteps() {
+	int totalSteps() {
 		return mTotalSteps;
 	}
 
@@ -412,10 +424,6 @@ public class AlgorithmStepper {
 
 	private void setActive(boolean active) {
 		mActive = active;
-	}
-
-	public boolean isActive() {
-		return mActive;
 	}
 
 	/**

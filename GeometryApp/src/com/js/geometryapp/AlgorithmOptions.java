@@ -80,12 +80,8 @@ public class AlgorithmOptions {
 	/**
 	 * Add a combobox widget
 	 */
-	public ComboBoxWidget addComboBox(String id, String[] options) {
+	public ComboBoxWidget addComboBox(String id) {
 		Map<String, Object> attributes = buildAttributes(id);
-		ArrayList<String> s = new ArrayList();
-		for (int i = 0; i < options.length; i++)
-			s.add(options[i]);
-		attributes.put(ComboBoxWidget.ATTR_OPTIONS, s);
 		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
 		addWidget(w);
 		return w;

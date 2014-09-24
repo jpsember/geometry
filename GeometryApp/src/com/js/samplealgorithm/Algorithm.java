@@ -3,35 +3,21 @@ package com.js.samplealgorithm;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 
-import com.js.android.Tools;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
-import com.js.geometry.R;
 import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometryapp.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
 
 public class Algorithm implements AlgorithmStepper.Delegate {
 
-	private static int testPolygonNames[] = { //
-	//
-			Polygon.TESTPOLY_DRAGON_X + 6,//
-			Polygon.TESTPOLY_CONCAVE_BLOB,//
-			Polygon.TESTPOLY_DRAGON_X, //
-			Polygon.TESTPOLY_Y_EQUALS_X_SQUARED,//
-			Polygon.TESTPOLY_LARGE_RECTANGLE,//
-			Polygon.TESTPOLY_DRAGON_X + 8,//
-	};
-	private static String testPolygonLabels[] = { "Dragon #6", "Concave Blob",
-			"Dragon #0", "Quadratic function", "Large rectangle", "Dragon #8" };
-
 	public Algorithm(Context context) {
-		mAppContext = context;
 		doNothing();
 	}
 
@@ -58,21 +44,25 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		if (true) { // Programmatic construction
-			sOptions.addComboBox("polygon", testPolygonLabels)
-					.setLabel("Polygon:")
-					.addListener(AbstractWidget.LISTENER_HIDE_AND_UPDATE);
-			sOptions.addDetailBox("Triangulate monotone face");
-		} else { // Construction via script
-			sOptions.addWidgets(Tools.readTextFileResource(mAppContext,
-					R.raw.algorithm_options));
-			sOptions.getWidget("polygon").addListener(
-					AbstractWidget.LISTENER_HIDE_AND_UPDATE);
-		}
+		ComboBoxWidget w = sOptions.addComboBox("polygon");
+		w.setLabel("Polygon:");
+		w.addListener(AbstractWidget.LISTENER_HIDE_AND_UPDATE);
+
+		w.addItem("Dragon #6", Polygon.TESTPOLY_DRAGON_X + 6);
+		w.addItem("Concave Blob", Polygon.TESTPOLY_CONCAVE_BLOB);
+		w.addItem("Dragon #0", Polygon.TESTPOLY_DRAGON_X);
+		w.addItem("Quadratic function", Polygon.TESTPOLY_Y_EQUALS_X_SQUARED);
+		w.addItem("Large rectangle", Polygon.TESTPOLY_LARGE_RECTANGLE);
+		w.addItem("Dragon #8", Polygon.TESTPOLY_DRAGON_X + 8);
+		w.prepare();
+
+		sOptions.addDetailBox("Triangulate monotone face");
 	}
 
 	private void prepareInput() {
-		int polygonName = testPolygonNames[sOptions.getIntValue("polygon")];
+		ComboBoxWidget w = sOptions.getWidget("polygon");
+		int polygonName = (Integer) w.getSelectedValue();
+
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
@@ -81,7 +71,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	private static AlgorithmOptions sOptions;
 
-	private Context mAppContext;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private GLSurfaceView mView;

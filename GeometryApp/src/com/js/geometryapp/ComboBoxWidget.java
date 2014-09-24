@@ -1,6 +1,8 @@
 package com.js.geometryapp;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.js.geometry.MyMath;
@@ -32,20 +34,58 @@ public class ComboBoxWidget extends AbstractWidget {
 
 	static final String ATTR_OPTIONS = "options";
 
+	private void prepareOptions(Map options) {
+		mMap = options;
+		for (Object key : options.keySet()) {
+			mKeys.add(key);
+		}
+	}
+
 	public ComboBoxWidget(Context context, Map attributes) {
 		super(context, attributes);
 
 		mSpinner = new Spinner(context);
 
-		mOptions = (ArrayList<String>) attributes.get(ATTR_OPTIONS);
-		if (mOptions == null || mOptions.size() == 0)
-			die("no options defined for combobox " + getId());
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-				android.R.layout.simple_spinner_item, mOptions);
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		mSpinner.setAdapter(adapter);
-		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
+		Object options = attributes.get(ATTR_OPTIONS);
+		if (options instanceof Map) {
+			prepareOptions((Map) options);
+		} else if (options instanceof List) {
+			mKeys.addAll((List) options);
+		}
 
+		getView().addView(buildLabelView(true));
+
+		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+		getView().addView(mSpinner, p);
+	}
+
+	public ComboBoxWidget addItem(Object item) {
+		if (mMap != null)
+			die("must supply key/value pair");
+		mKeys.add(item);
+		return this;
+	}
+
+	public ComboBoxWidget addItem(Object key, Object value) {
+		if (mMap == null) {
+			if (mKeys.size() != 0)
+				die("only keys are supported");
+			mMap = new HashMap();
+		}
+		mKeys.add(key);
+		mMap.put(key, value);
+		return this;
+	}
+
+	public ComboBoxWidget prepare() {
+		if (prepared())
+			die("already prepared");
+		mAdapter = new ArrayAdapter<String>(mSpinner.getContext(),
+				android.R.layout.simple_spinner_item, mKeys);
+		mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		mSpinner.setAdapter(mAdapter);
+		mSpinner.setOnItemSelectedListener(new OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view,
 					int position, long id) {
@@ -56,21 +96,9 @@ public class ComboBoxWidget extends AbstractWidget {
 			public void onNothingSelected(AdapterView<?> parent) {
 			}
 		});
-
-		getView().addView(buildLabelView(true));
-
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		getView().addView(mSpinner, p);
+		return this;
 	}
 
-	/**
-	 * Set displayed value; subclasses should perform whatever translation /
-	 * parsing is appropriate to convert the internal value to something
-	 * displayed in the widget.
-	 * 
-	 * @param internalValue
-	 */
 	public void updateUserValue(String internalValue) {
 		int index = 0;
 		try {
@@ -78,22 +106,44 @@ public class ComboBoxWidget extends AbstractWidget {
 		} catch (NumberFormatException e) {
 			warning("caught " + e);
 		}
-		index = MyMath.clamp(index, 0, mOptions.size() - 1);
+		index = MyMath.clamp(index, 0, mKeys.size() - 1);
 		mSpinner.setSelection(index, false);
 	}
 
-	public void setValue(boolean value) {
-		setValue(Boolean.toString(value));
-	}
-
-	/**
-	 * Get displayed value, and transform to 'internal' representation.
-	 */
 	public String parseUserValue() {
 		return Integer.toString(mSpinner.getSelectedItemPosition());
 	}
 
+	/**
+	 * Get the label corresponding to the current item
+	 */
+	public Object getSelectedKey() {
+		if (!prepared())
+			die("not prepared: " + getId());
+		int index = getIntValue();
+		if (index < 0 || index >= mKeys.size()) {
+			warning("index " + index + " out of range of keys: " + d(mKeys));
+			index = 0;
+		}
+		return mKeys.get(index);
+	}
+
+	/**
+	 * Get the value corresponding to the current item
+	 */
+	public Object getSelectedValue() {
+		if (mMap == null)
+			die("values are not key/value pairs " + getId());
+		return mMap.get(getSelectedKey());
+	}
+
+	private boolean prepared() {
+		return mAdapter != null;
+	}
+
+	private ArrayAdapter<String> mAdapter;
 	private Spinner mSpinner;
-	private ArrayList<String> mOptions;
+	private Map mMap;
+	private ArrayList mKeys = new ArrayList();
 
 }

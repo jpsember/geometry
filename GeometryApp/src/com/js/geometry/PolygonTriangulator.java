@@ -134,7 +134,7 @@ public class PolygonTriangulator {
 		Collections.sort(array, new Comparator<Vertex>() {
 			@Override
 			public int compare(Vertex va, Vertex vb) {
-				float diff = va.point().y - vb.point().y;
+				float diff = va.y - vb.y;
 				mContext.testForZero(diff);
 				return (int) Math.signum(diff);
 			}
@@ -167,13 +167,12 @@ public class PolygonTriangulator {
 	}
 
 	private int vertexType(Vertex v, Edge incoming, Edge outgoing) {
-		Point ipt = incoming.dual().destVertex().point();
-		Point opt = outgoing.destVertex().point();
-		Point vpt = v.point();
+		Point ipt = incoming.dual().destVertex();
+		Point opt = outgoing.destVertex();
 
 		int type;
-		if (opt.y > vpt.y) {
-			if (ipt.y > vpt.y) {
+		if (opt.y > v.y) {
+			if (ipt.y > v.y) {
 				if (mContext.pseudoAngleIsConvex(outgoing.angle(), incoming
 						.dual().angle())) {
 					type = VTYPE_START;
@@ -184,7 +183,7 @@ public class PolygonTriangulator {
 				type = VTYPE_REGULAR_UP;
 			}
 		} else {
-			if (ipt.y < vpt.y) {
+			if (ipt.y < v.y) {
 				if (mContext.pseudoAngleIsConvex(outgoing.angle(), incoming
 						.dual().angle())) {
 					type = VTYPE_END;
@@ -255,7 +254,7 @@ public class PolygonTriangulator {
 		if (update())
 			show("Process vertex event" + plot(vertex));
 
-		moveSweepLineTo(vertex.point().y);
+		moveSweepLineTo(vertex.y);
 		Edge edges[] = new Edge[2];
 		polygonEdgesThroughVertex(vertex, edges);
 		Edge incoming = edges[0];
@@ -333,7 +332,7 @@ public class PolygonTriangulator {
 		Edge eLeft = eRight.prevEdge();
 
 		startVertex.clearFlags(VERTEXFLAG_LEFTSIDE);
-		if (eLeft.destVertex().point().y > eRight.destVertex().point().y) {
+		if (eLeft.destVertex().y > eRight.destVertex().y) {
 			startVertex.addFlags(VERTEXFLAG_LEFTSIDE);
 		}
 		mVertexList.add(startVertex);
@@ -341,7 +340,7 @@ public class PolygonTriangulator {
 		while (true) {
 			Vertex nextLeft = eLeft.destVertex();
 			Vertex nextRight = eRight.destVertex();
-			if (nextLeft.point().y > nextRight.point().y) {
+			if (nextLeft.y > nextRight.y) {
 				nextLeft.addFlags(VERTEXFLAG_LEFTSIDE);
 				mVertexList.add(nextLeft);
 				eLeft = eLeft.dual().prevEdge();
@@ -365,8 +364,7 @@ public class PolygonTriangulator {
 			Polygon facePolygon = new Polygon();
 			Queue<Point> points = new Queue();
 			for (Vertex vertex : mVertexList) {
-				points.push(vertex.point(),
-						!vertex.hasFlags(VERTEXFLAG_LEFTSIDE));
+				points.push(vertex, !vertex.hasFlags(VERTEXFLAG_LEFTSIDE));
 			}
 			while (!points.isEmpty())
 				facePolygon.add(points.pop());
@@ -441,7 +439,7 @@ public class PolygonTriangulator {
 					Vertex v1 = mMonotoneQueue.peek(false, 0);
 					Vertex v2 = mMonotoneQueue.peek(false, 1);
 					float distance = mContext.pointUnitLineSignedDistance(
-							vertex.point(), v1.point(), v2.point());
+							vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (update())
 						show("Test for convex angle" + plot(v1) + plot(v2));
@@ -516,13 +514,9 @@ public class PolygonTriangulator {
 		return mStepper.plotLine(p1, p2);
 	}
 
-	private String plotEdge(Vertex v1, Vertex v2) {
-		return plotEdge(v1.point(), v2.point());
-	}
-
-	private String plot(Vertex v) {
+	private String plot(Point v) {
 		mStepper.setColor(Color.RED);
-		return mStepper.plot(v.point());
+		return mStepper.plot(v);
 	}
 
 	private AlgorithmStepper mStepper;

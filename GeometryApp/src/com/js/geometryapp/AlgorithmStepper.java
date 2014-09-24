@@ -14,7 +14,6 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
-import com.js.geometry.Vertex;
 
 public class AlgorithmStepper {
 
@@ -229,10 +228,6 @@ public class AlgorithmStepper {
 
 	public String plot(Point point) {
 		return plot(point, 1);
-	}
-
-	public String plot(Vertex vertex) {
-		return plot(vertex.point());
 	}
 
 	public String plot(Point point, float radius) {

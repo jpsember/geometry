@@ -14,7 +14,7 @@ public class MeshElement extends AlgorithmDisplayElement {
 		setColorState(color());
 		setLineWidthState(lineWidth());
 		for (Edge e : mContext.constructListOfEdges(true)) {
-			renderLine(e.sourceVertex().point(), e.destVertex().point());
+			renderLine(e.sourceVertex(), e.destVertex());
 		}
 	}
 

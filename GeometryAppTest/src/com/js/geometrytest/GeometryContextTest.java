@@ -6,7 +6,11 @@ import com.js.geometry.Edge;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
+import com.js.geometry.Vertex;
+import com.js.testUtils.IOSnapshot;
 import com.js.testUtils.MyTestCase;
+import com.js.testUtils.MyTestUtils;
+import static com.js.basic.Tools.*;
 
 public class GeometryContextTest extends MyTestCase {
 
@@ -27,9 +31,12 @@ public class GeometryContextTest extends MyTestCase {
 	}
 
 	private Polygon polygon() {
+		return polygon(Polygon.TESTPOLY_DRAGON_X + 5);
+	}
+
+	private Polygon polygon(int defaultName) {
 		if (mPolygon == null) {
-			mPolygon = Polygon.testPolygon(new GeometryContext(1),
-					Polygon.TESTPOLY_DRAGON_X + 5);
+			mPolygon = Polygon.testPolygon(new GeometryContext(1), defaultName);
 		}
 		return mPolygon;
 	}
@@ -84,6 +91,52 @@ public class GeometryContextTest extends MyTestCase {
 		square();
 		embedPolygon();
 		verifySquareEdgesFound(false);
+	}
+
+	private String dump(Edge edge) {
+		return dump(edge.sourceVertex()) + " --> " + dump(edge.destVertex());
+	}
+
+	private String dump(Vertex v) {
+		return nameOf(v, false);
+	}
+
+	public void testDeleteEdges() {
+		IOSnapshot.open();
+		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
+		triangulatePolygon();
+		ArrayList<Edge> edges = context().constructListOfEdges(true);
+		MyTestUtils.permute(random(), edges);
+		for (Edge edge : edges) {
+			pr(context().dumpMesh(false, true));
+			if (random().nextBoolean())
+				edge = edge.dual();
+			pr("Deleting: " + dump(edge));
+			context().deleteEdge(edge);
+			pr("");
+		}
+		pr("after deleting all edges:");
+		pr(context().dumpMesh(false, true));
+		IOSnapshot.close();
+	}
+
+	public void testDeleteVertices() {
+		IOSnapshot.open();
+		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
+		triangulatePolygon();
+		int nVertices = mContext.vertexBuffer().size();
+		while (nVertices != 0) {
+			Vertex v = mContext.vertex(random().nextInt(nVertices));
+			nVertices--;
+
+			pr(context().dumpMesh(false, true));
+			pr("Deleting: " + dump(v));
+			mContext.deleteVertex(v);
+			pr("");
+		}
+		pr("after deleting all vertices:");
+		pr(context().dumpMesh(false, true));
+		IOSnapshot.close();
 	}
 
 }

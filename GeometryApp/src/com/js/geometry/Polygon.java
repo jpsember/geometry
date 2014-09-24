@@ -254,10 +254,6 @@ public class Polygon {
 
 	public int embed(GeometryContext context, int vertexFlags, int edgeFlags) {
 		int baseVertex = embedVertices(context, vertexFlags);
-		//
-		// - (int)embedWithVertexFlags:(NSUInteger)f1 edgeFlags:(NSUInteger)f2
-		// context:(JSGeometryContext *)context {
-		// int baseVertex = [self embedVerticesWithFlags:f1 context:context];
 		Vertex prevVertex = context.vertex(baseVertex + numVertices() - 1);
 		for (int i = 0; i < numVertices(); i++) {
 			Vertex currentVertex = context.vertex(baseVertex + i);
@@ -276,7 +272,7 @@ public class Polygon {
 
 		for (int i = 0; i < numVertices(); i++) {
 			Point pt = vertex(i);
-			Vertex v = context.addVertex(null, pt);
+			Vertex v = context.addVertex(pt);
 			v.addFlags(vertexFlags);
 		}
 		return embeddedVertexIndex;

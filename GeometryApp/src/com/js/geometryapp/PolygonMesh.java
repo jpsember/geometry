@@ -203,8 +203,8 @@ public class PolygonMesh {
 
 		{
 			Point firstPoint, secondPoint;
-			firstPoint = baseEdge.sourceVertex().point();
-			secondPoint = baseEdge.destVertex().point();
+			firstPoint = baseEdge.sourceVertex();
+			secondPoint = baseEdge.destVertex();
 
 			// If we're continuing a previous strip, add degenerate
 			// triangles to bridge the gap
@@ -251,7 +251,7 @@ public class PolygonMesh {
 				ccwBaseEdge = nextBaseEdge.dual();
 				baseEdge = nextBaseEdge;
 			}
-			Point point = baseEdge.destVertex().point();
+			Point point = baseEdge.destVertex();
 			if (CONTRACT_STRIP_VERTICES) {
 				Point p1 = peekLastPoint(2);
 				Point p2 = peekLastPoint(1);

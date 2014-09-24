@@ -40,8 +40,8 @@ public class SweepEdge {
 			GeometryContext context, boolean clampWithinRange) {
 		Edge edge = mPolygonEdge;
 
-		Point v1 = edge.sourceVertex().point();
-		Point v2 = edge.destVertex().point();
+		Point v1 = edge.sourceVertex();
+		Point v2 = edge.destVertex();
 
 		if (clampWithinRange) {
 			float y0 = Math.min(v1.y, v2.y);

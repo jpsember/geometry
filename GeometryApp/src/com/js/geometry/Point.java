@@ -3,14 +3,14 @@ package com.js.geometry;
 import static com.js.basic.Tools.*;
 import android.graphics.Matrix;
 
-public final class Point {
+public class Point {
 
 	public static final Point ZERO = new Point();
 	
 	public Point() {
 	}
 
-	public void apply(Matrix m) {
+	public final void apply(Matrix m) {
 		float[] f = new float[9];
 		m.getValues(f);
 		x = f[0] * x + f[1] * y + f[2];
@@ -26,24 +26,24 @@ public final class Point {
 		this(point.x, point.y);
 	}
 
-	public float x() {
+	public final float x() {
 		return x;
 	}
 
-	public float y() {
+	public final float y() {
 		return y;
 	}
 
-	public void setTo(float x, float y) {
+	public final void setTo(float x, float y) {
 		this.x = x;
 		this.y = y;
 	}
 
-	public float magnitude() {
+	public final float magnitude() {
 		return MyMath.magnitudeOfRay(x, y);
 	}
 
-	public float pseudoAngle() {
+	public final float pseudoAngle() {
 		return MyMath.pseudoAngle(x, y);
 	}
 

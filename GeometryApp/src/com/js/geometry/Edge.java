@@ -21,9 +21,9 @@ public final class Edge {
 		Vertex sourceVert = mDual.mDestVertex;
 		Vertex destVert = this.mDestVertex;
 		sb.append("e ");
-		sb.append(sourceVert.point().dumpUnlabelled());
+		sb.append(sourceVert.dumpUnlabelled());
 		sb.append(" ");
-		sb.append(destVert.point().dumpUnlabelled());
+		sb.append(destVert.dumpUnlabelled());
 		sb.append(" ");
 		sb.append(nameOf(sourceVert, false));
 		sb.append(" --> ");
@@ -89,15 +89,15 @@ public final class Edge {
 		return hasFlags(FLAG_POLYGON);
 	}
 
-	public void setAngle(float angle) {
+	void setAngle(float angle) {
 		mPseudoAngle = angle;
 	}
 
-	public void setNextEdge(Edge edge) {
+	void setNextEdge(Edge edge) {
 		mNextEdge = edge;
 	}
 
-	public void setPrevEdge(Edge edge) {
+	void setPrevEdge(Edge edge) {
 		mPrevEdge = edge;
 	}
 
@@ -109,11 +109,11 @@ public final class Edge {
 		mFlags = 0;
 	}
 
-	public void setDestVertex(Vertex v) {
+	void setDestVertex(Vertex v) {
 		mDestVertex = v;
 	}
 
-	public void setDual(Edge d) {
+	void setDual(Edge d) {
 		mDual = d;
 	}
 

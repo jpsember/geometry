@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 import static com.js.basic.Tools.*;
 
-public class GeometryContext {
+public final class GeometryContext {
 
 	public static final float PSEUDO_ANGLE_RANGE = 8;
 	public static final float PSEUDO_ANGLE_RANGE_12 = (PSEUDO_ANGLE_RANGE * .5f);
@@ -265,8 +265,7 @@ public class GeometryContext {
 		edge.setDual(dual);
 		dual.setDual(edge);
 
-		Point delta = new Point(v1.point().x - v0.point().x, v1.point().y
-				- v0.point().y);
+		Point delta = new Point(v1.x - v0.x, v1.y - v0.y);
 		float angle = pseudoPolarAngle(delta);
 
 		edge.setAngle(angle);
@@ -349,23 +348,50 @@ public class GeometryContext {
 	public Vertex addVertex(Point location) {
 		testForOverflow(location.x);
 		testForOverflow(location.y);
-		Vertex v = new Vertex(location);
+		Vertex v = new Vertex(mVertexBuffer.size(), location);
 		mVertexBuffer.add(v);
 		return v;
 	}
 
-	public Vertex addVertex(Vertex vertex, Point location) {
-		if (vertex == null) {
-			vertex = addVertex(location);
-		} else {
-			ASSERT(vertex.deleted());
-			vertex.clearFlags();
-			vertex.setLocation(location);
+	/**
+	 * Delete a vertex. Deletes all edges incident with vertex as well. The
+	 * order of the vertices within the vertex buffer may change as a result
+	 */
+	public void deleteVertex(Vertex vertex) {
+
+		// Remove all edges incident with the vertex
+		Edge edge = vertex.edges();
+		if (edge != null) {
+			while (true) {
+				Edge nextEdge = edge.nextEdge();
+				deleteEdge(edge);
+				if (nextEdge == edge)
+					break;
+				edge = nextEdge;
+			}
 		}
-		return vertex;
+
+		// If this is not the last vertex in the buffer, replace it with the
+		// last (this is why the order is not maintained)
+		int lastIndex = mVertexBuffer.size() - 1;
+		Vertex lastVertex = mVertexBuffer.get(lastIndex);
+		if (lastVertex != vertex) {
+			int vertexIndex = vertex.index();
+			mVertexBuffer.set(vertexIndex, lastVertex);
+			lastVertex.setIndex(vertexIndex);
+		}
+		mVertexBuffer.remove(lastIndex);
 	}
 
-	public void addEdgeToVertex(Edge edge, Vertex vertex) {
+	public void deleteEdge(Edge edge) {
+		Vertex sourceVertex = edge.sourceVertex();
+		Vertex destVertex = edge.destVertex();
+
+		sourceVertex.removeEdge(edge);
+		destVertex.removeEdge(edge.dual());
+	}
+
+	private void addEdgeToVertex(Edge edge, Vertex vertex) {
 		if (vertex.edges() == null) {
 			vertex.setEdges(edge);
 			edge.setNextEdge(edge);
@@ -423,12 +449,15 @@ public class GeometryContext {
 		}
 	}
 
-	private float mParameter;
-
-	public float getParameter() {
-		return mParameter;
-	}
-
+	/**
+	 * Calculate point of intersection of line segment with horizontal line
+	 * 
+	 * @param pt1
+	 * @param pt2
+	 * @param yLine
+	 * @return point of intersection, or null; if found, parameter of
+	 *         intersection available via getIntersectionParameter()
+	 */
 	public Point segHorzLineIntersection(Point pt1, Point pt2, float yLine) {
 		Point ipt = null;
 
@@ -444,6 +473,13 @@ public class GeometryContext {
 			ipt = new Point(pt1.x + (pt2.x - pt1.x) * t, pt1.y + denom * t);
 		}
 		return ipt;
+	}
+
+	/**
+	 * Get parameter of last intersection calculated (segHorzLineIntersection)
+	 */
+	public float getIntersectionParameter() {
+		return mParameter;
 	}
 
 	private void insertEdgeAfter(Edge newEdge, Edge previousEdge) {
@@ -466,23 +502,22 @@ public class GeometryContext {
 	}
 
 	public String dumpMesh(boolean withVertexLocations, boolean withVertexNames) {
-		StringBuilder sb = new StringBuilder("GeometryContext vertices:\n");
+		StringBuilder sb = new StringBuilder("GeometryContext:\n");
 		for (Vertex v : mVertexBuffer) {
 			sb.append(" ");
-			Point source = v.point();
 			if (withVertexNames) {
-				sb.append(nameOf(source, false));
+				sb.append(nameOf(v, false));
 				sb.append(' ');
 			}
 			if (withVertexLocations) {
-				sb.append(source.toStringAsInts());
+				sb.append(v.toStringAsInts());
 			}
 
 			Edge e = v.edges();
 			if (e != null) {
-				sb.append(" -->");
+				sb.append(" --> ");
 				while (true) {
-					Point dest = e.destVertex().point();
+					Point dest = e.destVertex();
 					if (withVertexNames) {
 						sb.append(nameOf(dest, false));
 						sb.append(' ');
@@ -504,5 +539,6 @@ public class GeometryContext {
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;
+	private float mParameter;
 	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
 }

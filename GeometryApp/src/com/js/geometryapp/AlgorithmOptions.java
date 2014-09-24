@@ -49,6 +49,16 @@ public class AlgorithmOptions {
 	}
 
 	/**
+	 * Add a slider widget
+	 */
+	public SliderWidget addSlider(String id, int min, int max) {
+		Map<String, Object> attributes = buildAttributes(id);
+		SliderWidget w = new SliderWidget(sContext, attributes);
+		addWidget(w);
+		return w;
+	}
+
+	/**
 	 * Add a checkbox widget
 	 */
 	public CheckBoxWidget addCheckBox(String id) {

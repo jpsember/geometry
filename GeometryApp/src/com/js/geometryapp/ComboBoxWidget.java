@@ -95,4 +95,5 @@ public class ComboBoxWidget extends AbstractWidget {
 
 	private Spinner mSpinner;
 	private ArrayList<String> mOptions;
+
 }

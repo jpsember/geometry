@@ -74,8 +74,9 @@ public class CheckBoxWidget extends AbstractWidget {
 			mCheckBox.setChecked(mChecked);
 	}
 
-	public void setValue(boolean value) {
+	public CheckBoxWidget setValue(boolean value) {
 		setValue(Boolean.toString(value));
+		return this;
 	}
 
 	/**

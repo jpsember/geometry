@@ -52,18 +52,19 @@ public class AlgorithmOptions {
 	 * Add a checkbox widget
 	 */
 	public CheckBoxWidget addCheckBox(String id) {
-		return addCheckBox(id, false);
-	}
-
-	/**
-	 * Add a checkbox widget
-	 */
-	public CheckBoxWidget addCheckBox(String id, boolean selected) {
 		Map<String, Object> attributes = buildAttributes(id);
 		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
 		addWidget(w);
-		w.setValue(selected);
 		return w;
+	}
+
+	/**
+	 * Add an algorithm detail checkbox, which can be referenced in update()
+	 * commands to control whether or not certain algorithm details should be
+	 * stepped through
+	 */
+	public CheckBoxWidget addDetailBox(String id) {
+		return (CheckBoxWidget) addCheckBox(id).setAttribute("detail", true);
 	}
 
 	/**

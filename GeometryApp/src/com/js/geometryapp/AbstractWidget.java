@@ -20,6 +20,28 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
+	/**
+	 * Widget listener that updates the algorithm view
+	 */
+	public static final Listener LISTENER_UPDATE = new Listener() {
+		@Override
+		public void valueChanged(AbstractWidget widget) {
+			AlgorithmOptions.sharedInstance().hide();
+			AlgorithmStepper.sharedInstance().requestUpdate(true);
+		}
+	};
+
+	/**
+	 * Widget listener that hides the options and updates the algorithm view
+	 */
+	public static final Listener LISTENER_HIDE_AND_UPDATE = new Listener() {
+		@Override
+		public void valueChanged(AbstractWidget widget) {
+			AlgorithmOptions.sharedInstance().hide();
+			AlgorithmStepper.sharedInstance().requestUpdate(true);
+		}
+	};
+
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
 	static final boolean SET_DEBUG_COLORS = false;
@@ -171,6 +193,11 @@ public abstract class AbstractWidget {
 		return labelValue;
 	}
 
+	public AbstractWidget setAttribute(String name, Object value) {
+		mAttributes.put(name, value);
+		return this;
+	}
+
 	/**
 	 * Construct a label for this widget
 	 */
@@ -235,16 +262,27 @@ public abstract class AbstractWidget {
 		public void valueChanged(AbstractWidget widget);
 	}
 
-	public void addListener(Listener listener) {
+	public AbstractWidget addListener(Listener listener) {
 		mListeners.add(listener);
+		return this;
 	}
 
-	public void removeListener(Listener listener) {
+	public AbstractWidget removeListener(Listener listener) {
 		mListeners.remove(listener);
+		return this;
+	}
+
+	public AbstractWidget setLabel(String label) {
+		mAttributes.put("label", label);
+		return this;
 	}
 
 	boolean isHidden() {
 		return boolAttr("hidden", false);
+	}
+
+	Map attributes() {
+		return mAttributes;
 	}
 
 	// View representing this widget. It probably contains subviews that include

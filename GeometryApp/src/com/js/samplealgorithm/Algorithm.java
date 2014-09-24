@@ -27,9 +27,10 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 			Polygon.TESTPOLY_LARGE_RECTANGLE,//
 			Polygon.TESTPOLY_DRAGON_X + 8,//
 	};
+	private static String testPolygonLabels[] = { "Dragon #6", "Concave Blob",
+			"Dragon #0", "Quadratic function", "Large rectangle", "Dragon #8" };
 
 	public Algorithm(Context context) {
-		sStepper = AlgorithmStepper.sharedInstance();
 		mAppContext = context;
 		doNothing();
 	}
@@ -56,16 +57,18 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
-		sOptions.addWidgets(Tools.readTextFileResource(mAppContext,
-				R.raw.algorithm_options));
-		sOptions.getWidget("polygon").addListener(
-				new AbstractWidget.Listener() {
-					@Override
-					public void valueChanged(AbstractWidget widget) {
-						sOptions.hide();
-						sStepper.requestUpdate(true);
-					}
-				});
+
+		if (true) { // Programmatic construction
+			sOptions.addComboBox("polygon", testPolygonLabels)
+					.setLabel("Polygon:")
+					.addListener(AbstractWidget.LISTENER_HIDE_AND_UPDATE);
+			sOptions.addDetailBox("Triangulate monotone face");
+		} else { // Construction via script
+			sOptions.addWidgets(Tools.readTextFileResource(mAppContext,
+					R.raw.algorithm_options));
+			sOptions.getWidget("polygon").addListener(
+					AbstractWidget.LISTENER_HIDE_AND_UPDATE);
+		}
 	}
 
 	private void prepareInput() {
@@ -77,7 +80,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private static AlgorithmOptions sOptions;
-	private static AlgorithmStepper sStepper;
 
 	private Context mAppContext;
 	private GeometryContext mContext;

@@ -10,7 +10,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import static com.js.basic.Tools.*;
 
-public abstract class GeometryStepperActivity extends GeometryActivity {
+public class GeometryStepperActivity extends GeometryActivity {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
@@ -95,7 +95,12 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		return v;
 	}
 
-	protected abstract AlgorithmRenderer buildRenderer(Context context);
+	/**
+	 * Subclass can override this method to build their own renderer
+	 */
+	protected AlgorithmRenderer buildRenderer(Context context) {
+		return new AlgorithmRenderer(context);
+	}
 
 	private AlgorithmStepper mAlgorithmStepper;
 }

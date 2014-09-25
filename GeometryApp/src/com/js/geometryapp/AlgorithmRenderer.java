@@ -13,7 +13,7 @@ import com.js.geometry.Rect;
 import android.content.Context;
 import android.graphics.Matrix;
 
-public abstract class AlgorithmRenderer extends OurGLRenderer {
+public class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final int ALGORITHM_SPACE_WIDTH = 1000;
 	public static final int ALGORITHM_SPACE_HEIGHT = 1200;
@@ -73,14 +73,16 @@ public abstract class AlgorithmRenderer extends OurGLRenderer {
 	}
 
 	/**
-	 * Subclass must implement this method to initialize render resources
+	 * Subclass can implement this method to initialize render resources
 	 */
-	public abstract void onSurfaceChanged();
+	public void onSurfaceChanged() {
+	}
 
 	/**
-	 * Subclass must implement this method to perform rendering
+	 * Subclass can implement this method to perform rendering
 	 */
-	public abstract void onDrawFrame();
+	public void onDrawFrame() {
+	}
 
 	@Override
 	protected void constructTransforms() {

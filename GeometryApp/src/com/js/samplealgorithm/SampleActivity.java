@@ -1,8 +1,5 @@
 package com.js.samplealgorithm;
 
-import static com.js.basic.Tools.*;
-
-import android.content.Context;
 import android.os.Bundle;
 
 import com.js.geometryapp.AlgorithmRenderer;
@@ -13,7 +10,6 @@ public class SampleActivity extends GeometryStepperActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		doNothing();
 		mAlgorithm = new Algorithm(this);
 		super.onCreate(savedInstanceState);
 
@@ -21,11 +17,6 @@ public class SampleActivity extends GeometryStepperActivity {
 		mAlgorithm.setView(view, (AlgorithmRenderer) view.renderer());
 
 		setAlgorithmDelegate(mAlgorithm);
-	}
-
-	@Override
-	protected AlgorithmRenderer buildRenderer(Context context) {
-		return new SampleRenderer(this, mAlgorithm);
 	}
 
 	@Override

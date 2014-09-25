@@ -1,8 +1,5 @@
 package com.js.geometryapp;
 
-import com.js.android.AppPreferences;
-import com.js.json.JSONTools;
-
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -12,8 +9,6 @@ import static com.js.basic.Tools.*;
 
 public class GeometryStepperActivity extends GeometryActivity {
 
-	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		doNothing();
@@ -21,19 +16,13 @@ public class GeometryStepperActivity extends GeometryActivity {
 		hideTitle();
 
 		super.onCreate(savedInstanceState);
-
-		// Now that views have been built, restore option values
-		prepareOptionsAux();
 	}
 
 	@Override
 	protected void onPause() {
 		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
 		if (options != null && options.isPrepared()) {
-			// Persist target step to widgets
-			options.setValue("targetstep", mAlgorithmStepper.targetStep());
-			AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
-					options.saveValues());
+			options.persistStepperState();
 		}
 		super.onPause();
 	}
@@ -62,31 +51,6 @@ public class GeometryStepperActivity extends GeometryActivity {
 		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
 
 		return mOptions.getView();
-	}
-
-	private void prepareOptionsAux() {
-		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
-		// Add a hidden widget to persist the target step
-		mOptions.addWidgets(JSONTools
-				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
-
-		prepareOptions();
-		mOptions.registerAlgorithmDetailListeners();
-
-		String mSavedWidgetValues = AppPreferences.getString(
-				PERSIST_KEY_WIDGET_VALUES, null);
-		if (mSavedWidgetValues != null)
-			mOptions.restoreValues(mSavedWidgetValues);
-		mOptions.setPrepared(true);
-
-		mAlgorithmStepper.setTargetStep(mOptions.getIntValue("targetstep"));
-	}
-
-	/**
-	 * Override this method to populate the options view with algorithm-specific
-	 * controls
-	 */
-	protected void prepareOptions() {
 	}
 
 	protected final GLSurfaceView buildOpenGLView() {

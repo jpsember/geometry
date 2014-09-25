@@ -26,7 +26,6 @@ public abstract class AbstractWidget {
 	public static final Listener LISTENER_UPDATE = new Listener() {
 		@Override
 		public void valueChanged(AbstractWidget widget) {
-			AlgorithmOptions.sharedInstance().hide();
 			AlgorithmStepper.sharedInstance().requestUpdate(true);
 		}
 	};

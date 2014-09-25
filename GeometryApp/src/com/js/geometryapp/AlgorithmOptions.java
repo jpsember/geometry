@@ -14,6 +14,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
 import com.js.json.JSONEncoder;
 import com.js.json.JSONParser;
@@ -25,6 +26,8 @@ import static com.js.basic.Tools.*;
  * to preserve screen real estate on small devices
  */
 public class AlgorithmOptions {
+
+	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
 	/**
 	 * Get the singleton instance of the options object
@@ -53,6 +56,8 @@ public class AlgorithmOptions {
 	 */
 	public SliderWidget addSlider(String id, int min, int max) {
 		Map<String, Object> attributes = buildAttributes(id);
+		attributes.put("min", min);
+		attributes.put("max", max);
 		SliderWidget w = new SliderWidget(sContext, attributes);
 		addWidget(w);
 		return w;
@@ -285,7 +290,7 @@ public class AlgorithmOptions {
 	 * Construct a widget from a set of attributes, by using an appropriate
 	 * factory constructor
 	 */
-	AbstractWidget build(Map attributes) {
+	private AbstractWidget build(Map attributes) {
 		AbstractWidget widget;
 		String type = (String) attributes.get("type");
 		if (type == null)
@@ -298,10 +303,6 @@ public class AlgorithmOptions {
 		return widget;
 	}
 
-	void setPrepared(boolean f) {
-		mPrepared = f;
-	}
-
 	boolean isPrepared() {
 		return mPrepared;
 	}
@@ -309,28 +310,12 @@ public class AlgorithmOptions {
 	/**
 	 * Compile widget values to JSON string
 	 */
-	String saveValues() {
+	private String saveValues() {
 		Map<String, String> values = new HashMap();
 		for (AbstractWidget w : mWidgetsList) {
 			values.put(w.getId(), w.getValue());
 		}
 		return JSONEncoder.toJSON(values);
-	}
-
-	/**
-	 * Restore widget values from JSON string
-	 */
-	void restoreValues(String jsonString) {
-		JSONParser parser = new JSONParser(jsonString);
-		Map<String, String> values = (Map) parser.next();
-		for (String key : values.keySet()) {
-			String value = values.get(key);
-			AbstractWidget w = mWidgetsMap.get(key);
-			if (w == null)
-				continue;
-			// TODO: catch exceptions that may get thrown here
-			w.setValue(value);
-		}
 	}
 
 	/**
@@ -364,6 +349,29 @@ public class AlgorithmOptions {
 			if (w.boolAttr("detail", false))
 				w.addListener(listener);
 		}
+	}
+
+	void restoreStepperState() {
+		String widgetValueScript = AppPreferences.getString(
+				PERSIST_KEY_WIDGET_VALUES, null);
+		if (widgetValueScript != null) {
+			JSONParser parser = new JSONParser(widgetValueScript);
+			Map<String, String> values = (Map) parser.next();
+			for (String key : values.keySet()) {
+				String value = values.get(key);
+				AbstractWidget w = mWidgetsMap.get(key);
+				if (w == null)
+					continue;
+				// TODO: catch exceptions that may get thrown here
+				w.setValue(value);
+			}
+		}
+		mPrepared = true;
+	}
+
+	void persistStepperState() {
+		setValue("targetstep", AlgorithmStepper.sharedInstance().targetStep());
+		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES, saveValues());
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;

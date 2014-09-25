@@ -89,6 +89,13 @@ public final class Edge {
 		return hasFlags(FLAG_POLYGON);
 	}
 
+	/**
+	 * Find the next edge in the CCW face this edge bounds
+	 */
+	public Edge nextFaceEdge() {
+		return dual().prevEdge();
+	}
+
 	void setAngle(float angle) {
 		mPseudoAngle = angle;
 	}
@@ -120,6 +127,7 @@ public final class Edge {
 	public void addFlags(int f) {
 		mFlags |= f;
 	}
+
 	private Vertex mDestVertex;
 	private Edge mDual;
 	private Edge mNextEdge;

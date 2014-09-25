@@ -10,19 +10,24 @@ public class SampleActivity extends GeometryStepperActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		mAlgorithm = new Algorithm(this);
-		super.onCreate(savedInstanceState);
 
-		OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
-		mAlgorithm.setView(view, (AlgorithmRenderer) view.renderer());
+		if (true) {
+			TriangulateStarAlgorithm algorithm = new TriangulateStarAlgorithm(
+					this);
+			super.onCreate(savedInstanceState);
 
-		setAlgorithmDelegate(mAlgorithm);
+			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
+			algorithm.setView(view, (AlgorithmRenderer) view.renderer());
+
+			setAlgorithmDelegate(algorithm);
+		} else {
+			Algorithm algorithm = new Algorithm(this);
+			super.onCreate(savedInstanceState);
+
+			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
+			algorithm.setView(view, (AlgorithmRenderer) view.renderer());
+
+			setAlgorithmDelegate(algorithm);
+		}
 	}
-
-	@Override
-	protected void prepareOptions() {
-		mAlgorithm.prepareOptions();
-	}
-
-	private Algorithm mAlgorithm;
 }

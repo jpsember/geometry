@@ -41,6 +41,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		mView.requestRender();
 	}
 
+	@Override
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 

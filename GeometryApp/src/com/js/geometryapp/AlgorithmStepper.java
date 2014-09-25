@@ -14,10 +14,13 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
 
 	public static interface Delegate {
+		public void prepareOptions();
+
 		public void runAlgorithm();
 
 		public void displayResults();
@@ -38,6 +41,9 @@ public class AlgorithmStepper {
 	 */
 	public void setDelegate(Delegate delegate) {
 		mDelegate = delegate;
+		// Now that views have been built, restore option values
+		prepareOptionsAux();
+
 		resetStep();
 	}
 
@@ -418,12 +424,32 @@ public class AlgorithmStepper {
 		return mTotalSteps;
 	}
 
+	void prepareOptions() {
+		if (mDelegate == null)
+			die("attempt to prepare options before delegate defined");
+		mDelegate.prepareOptions();
+	}
+
 	private void clearDisplayList() {
 		mDisplayElements.clear();
 	}
 
 	private void setActive(boolean active) {
 		mActive = active;
+	}
+
+	private void prepareOptionsAux() {
+		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
+		// Add a hidden widget to persist the target step
+		mOptions.addWidgets(JSONTools
+				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
+
+		prepareOptions();
+
+		mOptions.registerAlgorithmDetailListeners();
+		mOptions.restoreStepperState();
+
+		setTargetStep(mOptions.getIntValue("targetstep"));
 	}
 
 	/**

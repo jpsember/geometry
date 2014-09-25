@@ -132,6 +132,10 @@ public abstract class AbstractWidget {
 		setValue(internalValue, true);
 	}
 
+	public final void setIntValue(int internalValue) {
+		setValue(Integer.toString(internalValue));
+	}
+
 	/**
 	 * Same as {@link #setValue(String)}, but with option to notify listeners
 	 * 

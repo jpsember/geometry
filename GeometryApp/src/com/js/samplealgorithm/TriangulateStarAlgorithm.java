@@ -8,13 +8,14 @@ import android.opengl.GLSurfaceView;
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
-import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometryapp.FloatArray;
+
 import static com.js.geometry.MyMath.*;
 
 import static com.js.basic.Tools.*;
@@ -58,80 +59,88 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("numpoints", 3, 100).addListener(
-				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addSlider("seed", 0, 300).addListener(
+				AbstractWidget.LISTENER_UPDATE);
+		sOptions.addSlider("numpoints", 3, 250).addListener(
 				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addCheckBox("experiment").addListener(
 				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addCheckBox("inset").addListener(
+		sOptions.addSlider("spikes", 2, 50).addListener(
 				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addSlider("spikes", 2, 8).addListener(
-				AbstractWidget.LISTENER_UPDATE);
+		sOptions.addSlider("girth", 3, 80)
+				.addListener(AbstractWidget.LISTENER_UPDATE).setIntValue(50);
 	}
 
-	private void buildExperimentalPolygon(Polygon p, int nPoints) {
+	private Polygon buildStarPolygonFromRadii(FloatArray radii, int startIndex) {
 		Rect r = mStepper.algorithmRect();
-		nPoints = Math.max(4, nPoints);
+		float radius = r.minDim() * .5f;
+		Polygon p = new Polygon();
 
-		// Calculate circle that's some distance along +x axis
-		float radiusFar = r.minDim() * 2.3f;
-		float radiusNear = r.minDim() * .5f;
-
-		int nSpikes = sOptions.getIntValue("spikes");
-
-		for (int pass = 0; pass < nSpikes; pass++) {
-			float spikeAngle = (pass * 2 * PI) / nSpikes;
-
-			Point bevelOrigin = pointOnCircle(mKernelPoint, spikeAngle,
-					radiusFar);
-
-			Point edgeLoc = pointOnCircle(mKernelPoint, spikeAngle + PI * .05f,
-					radiusNear);
-			float angleRange = 2 * normalizeAngle(spikeAngle
-					- polarAngleOfSegment(edgeLoc, bevelOrigin));
-			float bevelRadius = distanceBetween(bevelOrigin, edgeLoc);
-
-			int spikePoints = Math.max(2, nPoints / nSpikes);
-			Point pt = null;
-			for (int i = 0; i <= spikePoints; i++) {
-				float angle2 = ((i / (float) spikePoints) * 2 - 1) * angleRange;
-				pt = MyMath.pointOnCircle(bevelOrigin,
-						spikeAngle - angle2 + PI, bevelRadius);
-				p.add(pt);
-			}
-			if (sOptions.getBooleanValue("inset")) {
-				float angle = polarAngleOfSegment(mKernelPoint, pt);
-				float radius = distanceBetween(mKernelPoint, pt);
-				Point p2 = pointOnCircle(mKernelPoint, angle + PI * .02f,
-						radius * .3f);
-				p.add(p2);
-			}
-		}
-	}
-
-	private void buildRandomPolygon(Polygon p, int nPoints) {
-		Rect r = mStepper.algorithmRect();
+		int nPoints = radii.size();
 		for (int i = 0; i < nPoints; i++) {
-			float angle = i * (360.0f / nPoints) * MyMath.M_DEG;
+			float rayLength = radius * radii.get((i + startIndex) % nPoints);
+			float angle = (2 * PI * i) / nPoints;
+			Point q = pointOnCircle(mKernelPoint, angle, rayLength);
+			p.add(q);
+		}
+		return p;
+	}
+
+	private Polygon buildExperimentalPolygon(int nPoints) {
+		int nSpikes = sOptions.getIntValue("spikes");
+		float girth = sOptions.getIntValue("girth") * (.5f / 100);
+
+		float spikeWidthRatio = .5f;
+		nPoints = Math.max(4, nPoints);
+		int pointsPerSpike = (int) ((nPoints * spikeWidthRatio) / nSpikes);
+
+		// Build a radial map of a spike
+		FloatArray a = new FloatArray();
+
+		int arcPoints = Math.max(pointsPerSpike - 2, 2);
+		for (int j = 0; j < arcPoints; j++) {
+			float x = (j / (float) (arcPoints - 1));
+			float x0 = 2 * (.5f - x);
+			float y = (float) Math.sqrt(1 - x0 * x0);
+			float height = 1 - .5f * (y * (1 - 2 * girth));
+			a.add(height);
+		}
+		// Add base segments
+		for (int i = 0; i < Math.max(2,
+				(int) (pointsPerSpike / spikeWidthRatio)); i++)
+			a.add(girth);
+
+		// Duplicate this sequence once per spike
+		{
+			FloatArray b = new FloatArray();
+			for (int i = 0; i < nSpikes; i++)
+				b.add(a.array(), 0, a.size());
+			a = b;
+		}
+
+		return buildStarPolygonFromRadii(a, arcPoints / 2);
+	}
+
+	private Polygon buildRandomPolygon(int nPoints) {
+		FloatArray radii = new FloatArray();
+		for (int i = 0; i < nPoints; i++) {
 			float t = mRandom.nextFloat();
 			t = 1 - t * t;
-			float radius = (t * .8f + .2f) * r.minDim() * .5f;
-			Point pt = MyMath.pointOnCircle(mKernelPoint, angle, radius);
-			p.add(pt);
+			float radius = (t * .8f + .2f);
+			radii.add(radius);
 		}
+		return buildStarPolygonFromRadii(radii, 0);
 	}
 
 	private int buildStarshapedPolygon() {
 		int nPoints = sOptions.getIntValue("numpoints");
-		ASSERT(nPoints >= 3);
 		mKernelPoint = mStepper.algorithmRect().midPoint();
-		Polygon p = new Polygon();
+		Polygon p;
 
 		if (sOptions.getBooleanValue("experiment")) {
-			buildExperimentalPolygon(p, nPoints);
+			p = buildExperimentalPolygon(nPoints);
 		} else {
-			buildRandomPolygon(p, nPoints);
+			p = buildRandomPolygon(nPoints);
 		}
 		int baseVertex = p.embed(mContext);
 		return baseVertex;

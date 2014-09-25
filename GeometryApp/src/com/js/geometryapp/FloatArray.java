@@ -24,6 +24,10 @@ public class FloatArray {
 		add(point.y);
 	}
 
+	/**
+	 * Get array containing this FloatArray's values. Note: the array returned
+	 * may contain more elements than are in the FloatArray
+	 */
 	public float[] array() {
 		return mArray;
 	}
@@ -49,6 +53,17 @@ public class FloatArray {
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
 		mBuffer.put(mArray, 0, mSize);
 		return mBuffer;
+	}
+
+	public void add(float[] array, int offset, int count) {
+		for (int j = 0; j < count; j++)
+			add(array[offset + j]);
+	}
+
+	public float get(int index) {
+		if (index >= mSize)
+			throw new ArrayIndexOutOfBoundsException();
+		return mArray[index];
 	}
 
 	private int mSize;

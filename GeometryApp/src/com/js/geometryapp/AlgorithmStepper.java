@@ -8,12 +8,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.util.DisplayMetrics;
 import android.view.View;
 
+import com.js.android.MyActivity;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.Rect;
 import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
@@ -205,6 +208,22 @@ public class AlgorithmStepper {
 	public String setLineWidth(float lineWidth) {
 		AlgorithmDisplayElement.setLineWidthState(lineWidth);
 		return "";
+	}
+
+	public Rect algorithmRect() {
+		if (mAlgorithmRect == null) {
+			DisplayMetrics m = MyActivity.displayMetrics();
+			if (m.widthPixels > m.heightPixels) {
+				setAlgorithmRect(new Rect(0, 0, 1200, 1000));
+			} else {
+				setAlgorithmRect(new Rect(0, 0, 1000, 1200));
+			}
+		}
+		return mAlgorithmRect;
+	}
+
+	public void setAlgorithmRect(Rect r) {
+		mAlgorithmRect = r;
 	}
 
 	private void resetStep() {
@@ -480,4 +499,5 @@ public class AlgorithmStepper {
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
 	private String mNextPlotKey;
+	private Rect mAlgorithmRect;
 }

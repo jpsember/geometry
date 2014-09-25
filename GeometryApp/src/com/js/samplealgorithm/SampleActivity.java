@@ -22,12 +22,12 @@ public class SampleActivity extends GeometryStepperActivity {
 		}
 
 		if (appNum) {
+			super.onCreate(savedInstanceState);
 			TriangulateStarAlgorithm algorithm = new TriangulateStarAlgorithm(
 					this);
-			super.onCreate(savedInstanceState);
 
 			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
-			algorithm.setView(view, (AlgorithmRenderer) view.renderer());
+			algorithm.setView(view);
 
 			setAlgorithmDelegate(algorithm);
 		} else {

@@ -15,20 +15,11 @@ import android.graphics.Matrix;
 
 public class AlgorithmRenderer extends OurGLRenderer {
 
-	public static final int ALGORITHM_SPACE_WIDTH = 1000;
-	public static final int ALGORITHM_SPACE_HEIGHT = 1200;
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_NDC = "algorithm->ndc";
 
 	public AlgorithmRenderer(Context context) {
 		super(context);
-		mAlgorithmRect = new Rect(0, 0, ALGORITHM_SPACE_WIDTH,
-				ALGORITHM_SPACE_HEIGHT);
-
 		doNothing();
-	}
-
-	public Rect algorithmRect() {
-		return mAlgorithmRect;
 	}
 
 	/**
@@ -99,7 +90,8 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		paddedDeviceRect.height -= paddingInset * 2 + titleInset;
 
 		Matrix mAlgorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
-				algorithmRect(), paddedDeviceRect);
+				AlgorithmStepper.sharedInstance().algorithmRect(),
+				paddedDeviceRect);
 		float[] v = new float[9];
 		mAlgorithmToDeviceTransform.getValues(v);
 		sAlgorithmToDensityPixels = (1.0f / v[0]) * MyActivity.density();
@@ -121,5 +113,4 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 	private static float sAlgorithmToDensityPixels;
 
-	private Rect mAlgorithmRect;
 }

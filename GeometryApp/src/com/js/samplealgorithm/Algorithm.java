@@ -23,7 +23,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
 		mView = view;
-		mRenderer = renderer;
 	}
 
 	@Override
@@ -67,7 +66,8 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		mContext = GeometryContext.contextWithRandomSeed(1965);
 		mPolygon = Polygon.testPolygon(mContext, polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
-		mPolygon.transformToFitRect(mRenderer.algorithmRect(), false);
+		mPolygon.transformToFitRect(AlgorithmStepper.sharedInstance()
+				.algorithmRect(), false);
 	}
 
 	private static AlgorithmOptions sOptions;
@@ -75,5 +75,4 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private GLSurfaceView mView;
-	private AlgorithmRenderer mRenderer;
 }

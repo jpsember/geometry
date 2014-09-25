@@ -14,7 +14,6 @@ import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import static com.js.geometry.MyMath.*;
 
@@ -27,9 +26,8 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 		mStepper = AlgorithmStepper.sharedInstance();
 	}
 
-	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
+	public void setView(GLSurfaceView view) {
 		mView = view;
-		mRenderer = renderer;
 	}
 
 	@Override
@@ -73,12 +71,12 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private void buildExperimentalPolygon(Polygon p, int nPoints) {
-		Rect r = mRenderer.algorithmRect();
+		Rect r = mStepper.algorithmRect();
 		nPoints = Math.max(4, nPoints);
 
 		// Calculate circle that's some distance along +x axis
-		float radiusFar = r.width * 2.3f;
-		float radiusNear = r.width * .5f;
+		float radiusFar = r.minDim() * 2.3f;
+		float radiusNear = r.minDim() * .5f;
 
 		int nSpikes = sOptions.getIntValue("spikes");
 
@@ -113,12 +111,12 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private void buildRandomPolygon(Polygon p, int nPoints) {
-		Rect r = mRenderer.algorithmRect();
+		Rect r = mStepper.algorithmRect();
 		for (int i = 0; i < nPoints; i++) {
 			float angle = i * (360.0f / nPoints) * MyMath.M_DEG;
 			float t = mRandom.nextFloat();
 			t = 1 - t * t;
-			float radius = (t * .8f + .2f) * r.width * .5f;
+			float radius = (t * .8f + .2f) * r.minDim() * .5f;
 			Point pt = MyMath.pointOnCircle(mKernelPoint, angle, radius);
 			p.add(pt);
 		}
@@ -127,7 +125,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	private int buildStarshapedPolygon() {
 		int nPoints = sOptions.getIntValue("numpoints");
 		ASSERT(nPoints >= 3);
-		mKernelPoint = mRenderer.algorithmRect().midPoint();
+		mKernelPoint = mStepper.algorithmRect().midPoint();
 		Polygon p = new Polygon();
 
 		if (sOptions.getBooleanValue("experiment")) {
@@ -146,6 +144,5 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	private GeometryContext mContext;
 	private Random mRandom;
 	private GLSurfaceView mView;
-	private AlgorithmRenderer mRenderer;
 
 }

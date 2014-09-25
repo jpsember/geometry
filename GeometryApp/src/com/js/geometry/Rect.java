@@ -12,6 +12,14 @@ public class Rect {
 		return (y + height * .5f);
 	}
 
+	public float maxDim() {
+		return Math.max(width, height);
+	}
+
+	public float minDim() {
+		return Math.min(width, height);
+	}
+
 	public boolean equals(Rect r) {
 		return r != null && r.x == x && r.y == y && r.width == width
 				&& r.height == height;

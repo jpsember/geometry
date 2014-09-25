@@ -389,8 +389,7 @@ public class PolygonTriangulator {
 	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
 		final String detailName = "Triangulate monotone face";
 		if (update())
-			show("*" + detailName
-					+ plot(edgePointingToHighestVertex));
+			show("*" + detailName + plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
 			if (update(detailName))
 				show("Edge already visited");
@@ -479,9 +478,9 @@ public class PolygonTriangulator {
 				return;
 			setColorState(COLOR_DARKGREEN);
 			setLineWidthState(1);
-			float horizExtent = AlgorithmRenderer.ALGORITHM_SPACE_WIDTH * .25f;
-			renderLine(-horizExtent, mSweepLinePosition,
-					AlgorithmRenderer.ALGORITHM_SPACE_WIDTH + horizExtent,
+			Rect r = mStepper.algorithmRect();
+			float horizExtent = r.width * .25f;
+			renderLine(-horizExtent, mSweepLinePosition, r.width + horizExtent,
 					mSweepLinePosition);
 			setColorState(COLOR_DARKGREEN);
 			setLineWidthState(2);

@@ -352,6 +352,13 @@ public final class Tools {
 		return sb.toString();
 	}
 
+	public static String dumpAngle(float radians) {
+		double scaled = radians / (2 * Math.PI);
+		scaled -= Math.floor(scaled);
+		String str = f((int) (scaled * 360), 3);
+		return "D:" + str.substring(1);
+	}
+
 	public static String d(int[] f) {
 		StringBuilder sb = new StringBuilder("[");
 		for (int i = 0; i < f.length; i++) {

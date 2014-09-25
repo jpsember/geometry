@@ -259,4 +259,10 @@ public final class MyMath {
 		work.postConcat(tTranslate2);
 		return work;
 	}
+
+	public static float sideOfLine(Point ln0, Point ln1, Point pt) {
+		float area = (ln1.x - ln0.x) * (pt.y - ln0.y) - (pt.x - ln0.x)
+				* (ln1.y - ln0.y);
+		return area;
+	}
 }

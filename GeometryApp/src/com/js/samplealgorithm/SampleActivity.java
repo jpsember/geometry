@@ -2,6 +2,7 @@ package com.js.samplealgorithm;
 
 import android.os.Bundle;
 
+import com.js.android.AppPreferences;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.OurGLSurfaceView;
@@ -11,7 +12,16 @@ public class SampleActivity extends GeometryStepperActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
-		if (true) {
+		boolean appNum = true;
+
+		if (false) {
+			AppPreferences.prepare(this);
+			int option = AppPreferences.getInt("z", 0);
+			AppPreferences.putInt("z", option + 1);
+			appNum = (option % 10 < 5);
+		}
+
+		if (appNum) {
 			TriangulateStarAlgorithm algorithm = new TriangulateStarAlgorithm(
 					this);
 			super.onCreate(savedInstanceState);

@@ -298,7 +298,7 @@ public class Delaunay {
 	}
 
 	private String plot(Point p1, Point p2) {
-		mStepper.setLineWidth(5);
+		mStepper.setLineWidth(2);
 		mStepper.setColor(Color.RED);
 		return mStepper.plotRay(p1, p2);
 	}

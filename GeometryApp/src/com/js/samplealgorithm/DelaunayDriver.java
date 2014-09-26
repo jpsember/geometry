@@ -93,8 +93,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addSlider("numpoints", 1, 250).addListener(
 				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS);
-		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE);
+		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS).setValue(true);
+		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE).setValue(true);
 	}
 
 	private static AlgorithmOptions sOptions;

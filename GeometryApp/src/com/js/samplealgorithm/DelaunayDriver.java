@@ -43,7 +43,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	@Override
 	public void runAlgorithm() {
 
-		Rect r = new Rect(150, 150, 700, 700);
+		Rect pointBounds = new Rect(50, 50, 900, 900);
+
 		try {
 			mContext = GeometryContext.contextWithRandomSeed(sOptions
 					.getIntValue("seed"));
@@ -55,15 +56,18 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				mStepper.plot(mContext);
 			}
 
-			mDelaunay = new Delaunay(mContext);
+			Rect delaunayBounds = new Rect(pointBounds);
+			delaunayBounds.inset(-10, -10);
+			mDelaunay = new Delaunay(mContext, delaunayBounds);
 			if (update())
 				show("*Initial triangulation");
 
 			int numPoints = sOptions.getIntValue("numpoints");
 
 			for (int i = 0; i < numPoints; i++) {
-				Point pt = new Point(r.x + mRandom.nextFloat() * r.width, r.y
-						+ mRandom.nextFloat() * r.height);
+				Point pt = new Point(pointBounds.x + mRandom.nextFloat()
+						* pointBounds.width, pointBounds.y
+						+ mRandom.nextFloat() * pointBounds.height);
 
 				mDelaunay.add(pt);
 			}

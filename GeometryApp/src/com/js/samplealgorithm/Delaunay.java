@@ -10,6 +10,7 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Rect;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
@@ -28,9 +29,10 @@ public class Delaunay {
 	private static final String BGND_ELEMENT_BEARING_LINE = "10";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
-	public Delaunay(GeometryContext context) {
+	public Delaunay(GeometryContext context, Rect boundingRect) {
+		doNothing();
 		mStepper = AlgorithmStepper.sharedInstance();
-		constructMesh(context);
+		constructMesh(context, boundingRect);
 	}
 
 	public void add(Point point) {
@@ -140,8 +142,6 @@ public class Delaunay {
 			if (update())
 				show("recursive swap test" + plot(wbEdge));
 			swapTest(wbEdge, p);
-			// TODO: is it possible that an edge that gets deleted is already in
-			// the recursive call stack?
 		}
 	}
 
@@ -251,26 +251,20 @@ public class Delaunay {
 		return sideOfLine(p1, p2, query) > 0;
 	}
 
-	private void constructMesh(GeometryContext c) {
+	private void constructMesh(GeometryContext c, Rect boundingRect) {
 
-		float h1 = HORIZON;
-		float h2 = HORIZON * 1.001f;
-		float h1n = -h1;
-		float h2n = -h2;
+		if (boundingRect == null)
+			boundingRect = new Rect(-HORIZON, -HORIZON, HORIZON * 2,
+					HORIZON * 2);
 
-		if (true) {
-			warning("using smaller rect");
-			h1 = 1000;
-			h2 = 1001;
-			h1n = 10;
-			h2n = 9;
-		}
-
-		Vertex v0 = c.addVertex(new Point(h1n, h1n));
-		Vertex v1 = c.addVertex(new Point(h1, h1n));
-		Vertex v2 = c.addVertex(new Point(h1, h1));
-		// Perturb v3 point so starting triangulation isn't degenerate
-		Vertex v3 = c.addVertex(new Point(h2n, h2));
+		Vertex v0 = c.addVertex(boundingRect.bottomLeft());
+		Vertex v1 = c.addVertex(boundingRect.bottomRight());
+		Vertex v2 = c.addVertex(boundingRect.topRight());
+		Point p3 = boundingRect.topLeft();
+		// Perturb one point so the four points aren't collinear
+		p3.x -= 1e-3f;
+		p3.y += 1e-3f;
+		Vertex v3 = c.addVertex(p3);
 
 		c.addEdge(v0, v1);
 		c.addEdge(v1, v2);

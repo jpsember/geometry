@@ -536,6 +536,47 @@ public final class GeometryContext {
 		return sb.toString();
 	}
 
+	public Point segSegIntersection(Point s1, Point s2, Point t1, Point t2) {
+		Point ipt = null;
+		do {
+			// First see if segment's bounding boxes intersect; if not, no
+			// potentially troubling
+			// calculations need be performed
+			{
+				Rect sBounds = Rect.rectContainingPoints(s1, s2);
+				Rect tBounds = Rect.rectContainingPoints(t1, t2);
+				// Add a bit of overlap to one rect to ensure a clear separation
+				float eps = 1e-8f;
+				sBounds.inset(-eps, -eps);
+				if (!sBounds.intersects(tBounds))
+					break;
+			}
+
+			float ty = (t2.y - t1.y);
+			float sx = (s2.x - s1.x);
+			float tx = (t2.x - t1.x);
+			float sy = (s2.y - s1.y);
+
+			float denom = ty * sx - tx * sy;
+
+			testForZero(denom);
+
+			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
+			float numer2 = sx * (s1.y - t1.y) - sy * (s1.x - t1.x);
+
+			float ua = numer1 / denom;
+			if (ua < 0 || ua > 1)
+				break;
+			float ub = numer2 / denom;
+			if (ub < 0 || ub > 1)
+				break;
+
+			mParameter = ua;
+			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
+		} while (false);
+		return ipt;
+	}
+
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;

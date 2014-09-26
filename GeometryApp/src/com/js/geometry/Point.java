@@ -47,6 +47,11 @@ public class Point {
 		return MyMath.pseudoAngle(x, y);
 	}
 
+	public final void add(Point point) {
+		x += point.x;
+		y += point.y;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();

@@ -238,6 +238,10 @@ public class Rect {
 		return new Rect(m1.x, m1.y, m2.x - m1.x, m2.y - m1.y);
 	}
 
+	public boolean intersects(Rect t) {
+		return (x < t.endX() && endX() > t.x && y < t.endY() && endY() > t.y);
+	}
+
 	public float x, y, width, height;
 
 }

@@ -49,4 +49,27 @@ public class MyMathTest extends MyTestCase {
 		IOSnapshot.close();
 	}
 
+	public void testRectIntersectRect() {
+		Rect r[] = { new Rect(0, 0, 100, 200),//
+				new Rect(50, 50, 10, 10),//
+				new Rect(100, 20, 300, 50),//
+				new Rect(-20, -20, 5, 5),//
+				new Rect(20, 300, 50, 50),//
+		};
+
+		Object s[] = { 0, 1, true,//
+				0, 2, false,//
+				0, 3, false,//
+				0, 4, false,//
+		};
+		for (int i = 0; i < s.length; i += 3) {
+			int i1 = ((Integer) s[i]);
+			int i2 = ((Integer) s[i + 1]);
+			boolean f = (Boolean) s[i + 2];
+			assertEquals(f, r[i1].intersects(r[i2]));
+			assertEquals(f, r[i2].intersects(r[i1]));
+			assertEquals(true, r[i2].intersects(r[i2]));
+		}
+	}
+
 }

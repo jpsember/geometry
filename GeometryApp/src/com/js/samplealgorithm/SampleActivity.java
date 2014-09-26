@@ -12,16 +12,24 @@ public class SampleActivity extends GeometryStepperActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
-		boolean appNum = true;
+		int appNum = 0;
 
 		if (false) {
 			AppPreferences.prepare(this);
 			int option = AppPreferences.getInt("z", 0);
 			AppPreferences.putInt("z", option + 1);
-			appNum = (option % 10 < 5);
+			appNum = (option / 3) % 3;
 		}
 
-		if (appNum) {
+		if (appNum == 0) {
+			super.onCreate(savedInstanceState);
+			DelaunayDriver algorithm = new DelaunayDriver(this);
+
+			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
+			algorithm.setView(view);
+
+			setAlgorithmDelegate(algorithm);
+		} else if (appNum == 1) {
 			super.onCreate(savedInstanceState);
 			TriangulateStarAlgorithm algorithm = new TriangulateStarAlgorithm(
 					this);

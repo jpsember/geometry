@@ -29,6 +29,10 @@ public class Delaunay {
 	private static final String BGND_ELEMENT_BEARING_LINE = "10";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
+	private static final int EDGEFLAG_HOLEBOUNDARY = (1 << 0);
+
+	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "15";
+
 	/**
 	 * Constructor
 	 * 
@@ -78,7 +82,72 @@ public class Delaunay {
 	 *            vertex previously returned by add()
 	 */
 	public void remove(Vertex vertex) {
-		throw new UnsupportedOperationException();
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+			plot(vertex);
+		}
+
+		if (update())
+			show("*Remove vertex " + vertex);
+
+		// Find arbitrary edge leaving vertex, and use it to find an arbitrary
+		// edge bounding the polygonal hole that will result from deleting this
+		// vertex
+		Edge edge = vertex.edges();
+		Edge holeEdge = edge.nextFaceEdge();
+		if (update())
+			show("Edge of resulting hole" + plot(holeEdge));
+
+		mContext.deleteVertex(vertex);
+
+		markHoleBoundary(holeEdge);
+
+		triangulateHole(vertex);
+
+		if (mStepper.isActive()) {
+			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_BOUNDARY);
+			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
+		}
+	}
+
+	/**
+	 * Gather edges of hole into array, and flag them as such
+	 * 
+	 * @param holeEdge
+	 *            arbitrary edge on hole boundary
+	 */
+	private void markHoleBoundary(Edge holeEdge) {
+		mHoleEdges.clear();
+		Edge edge = holeEdge;
+		while (true) {
+			edge.addFlags(EDGEFLAG_HOLEBOUNDARY);
+			mHoleEdges.add(edge);
+			edge = edge.nextFaceEdge();
+			if (edge == holeEdge)
+				break;
+		}
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+			mStepper.plotElement(new AlgorithmDisplayElement() {
+				@Override
+				public void render() {
+					mStepper.setLineWidth(1);
+					mStepper.setColor(COLOR_DARKGREEN);
+					for (Edge edge : mHoleEdges) {
+						mStepper.plotLine(edge.sourceVertex(),
+								edge.destVertex());
+					}
+				}
+			});
+		}
+	}
+
+	private void triangulateHole(Point kernelPoint) {
+		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
+				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
+		triangulator.run();
+		// TODO: walk hole boundary to determine edges added by previous step,
+		// and do the swap test on them to make the hole Delaunay
 	}
 
 	private Vertex insertPointIntoTriangle(Point point, Edge abEdge) {
@@ -390,4 +459,5 @@ public class Delaunay {
 	private GeometryContext mContext;
 	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;
+	private ArrayList<Edge> mHoleEdges = new ArrayList();
 }

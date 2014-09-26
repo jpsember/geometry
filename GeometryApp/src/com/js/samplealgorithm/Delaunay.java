@@ -108,6 +108,8 @@ public class Delaunay {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_BOUNDARY);
 			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
+
+		removeHoleBoundary();
 	}
 
 	/**
@@ -117,7 +119,9 @@ public class Delaunay {
 	 *            arbitrary edge on hole boundary
 	 */
 	private void markHoleBoundary(Edge holeEdge) {
-		mHoleEdges.clear();
+		// Throw out any previous hole, in case there was some sort of error
+		// previously
+		removeHoleBoundary();
 		Edge edge = holeEdge;
 		while (true) {
 			edge.addFlags(EDGEFLAG_HOLEBOUNDARY);
@@ -148,6 +152,17 @@ public class Delaunay {
 		triangulator.run();
 		// TODO: walk hole boundary to determine edges added by previous step,
 		// and do the swap test on them to make the hole Delaunay
+	}
+
+	/**
+	 * Clear the 'hole' flags from the hole boundary edges, and throw away the
+	 * edges
+	 */
+	private void removeHoleBoundary() {
+		for (Edge e : mHoleEdges) {
+			e.clearFlags(EDGEFLAG_HOLEBOUNDARY);
+		}
+		mHoleEdges.clear();
 	}
 
 	private Vertex insertPointIntoTriangle(Point point, Edge abEdge) {

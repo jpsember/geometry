@@ -108,7 +108,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("seed", 0, 300).addListener(
+		sOptions.addSlider("seed", 1, 300).addListener(
 				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addSlider("numpoints", 1, 250).addListener(
 				AbstractWidget.LISTENER_UPDATE);

@@ -24,14 +24,14 @@ public class Delaunay {
 	public static final String DETAIL_FIND_TRIANGLE = "Find Triangle";
 
 	private static final float HORIZON = 1e7f;
-	private static final String BGND_ELEMENT_QUERY_POINT = "20";
-	private static final String BGND_ELEMENT_SEARCH_HISTORY = "12";
-	private static final String BGND_ELEMENT_BEARING_LINE = "10";
+	// Add prefix to distinguish this algorithm's elements from others
+	private static final String BGND_ELEMENT_QUERY_POINT = "d20";
+	private static final String BGND_ELEMENT_SEARCH_HISTORY = "d12";
+	private static final String BGND_ELEMENT_BEARING_LINE = "d10";
+	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "d15";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	private static final int EDGEFLAG_HOLEBOUNDARY = (1 << 0);
-
-	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "15";
 
 	/**
 	 * Constructor
@@ -62,7 +62,7 @@ public class Delaunay {
 		}
 
 		if (update())
-			show("*Add point " + point);
+			show("*Add point");
 
 		Edge edge = findTriangleContainingPoint(point);
 
@@ -88,7 +88,7 @@ public class Delaunay {
 		}
 
 		if (update())
-			show("*Remove vertex " + vertex);
+			show("*Remove vertex");
 
 		// Find arbitrary edge leaving vertex, and use it to find an arbitrary
 		// edge bounding the polygonal hole that will result from deleting this
@@ -146,12 +146,72 @@ public class Delaunay {
 		}
 	}
 
+	private void findNewHoleEdges() {
+		if (update())
+			show("Find edges filling hole");
+
+		mNewHoleEdges.clear();
+		int expectedHoleEdges = mHoleEdges.size() - 3;
+		if (expectedHoleEdges == 0)
+			return;
+
+		for (Edge holeEdge : mHoleEdges) {
+			if (update())
+				show("Hole boundary edge" + plot(holeEdge));
+			Edge edge = holeEdge;
+			while (true) {
+				edge = edge.nextEdge();
+				if (edge.hasFlags(EDGEFLAG_HOLEBOUNDARY)
+						|| edge.dual().hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
+					if (update())
+						show("Hole boundary" + plot(edge));
+					break;
+				}
+				// Avoid adding both primal and dual
+				if (edge.angle() >= 0) {
+					if (update())
+						show("Hole edge" + plot(edge));
+					mNewHoleEdges.add(edge);
+					if (mNewHoleEdges.size() == expectedHoleEdges)
+						return;
+				} else {
+					if (update())
+						show("Will add dual" + plot(edge));
+				}
+			}
+		}
+	}
+
 	private void triangulateHole(Point kernelPoint) {
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
 				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
 		triangulator.run();
-		// TODO: walk hole boundary to determine edges added by previous step,
-		// and do the swap test on them to make the hole Delaunay
+
+		findNewHoleEdges();
+
+		for (Edge abEdge : mNewHoleEdges) {
+			if (update())
+				show("Process next hole edge" + plot(abEdge));
+			if (abEdge.deleted()) {
+				if (update())
+					show("Deleted, skipping");
+				continue;
+			}
+
+			// Determine the parameters for the two calls to swapTest(), one for
+			// each side of the edge. The call may end up deleting some edges,
+			// so figure this out before making these calls
+			Edge baEdge = abEdge.dual();
+
+			Edge bcEdge = abEdge.nextFaceEdge();
+			Vertex c = bcEdge.destVertex();
+
+			Edge adEdge = baEdge.nextFaceEdge();
+			Vertex d = adEdge.destVertex();
+
+			swapTest(abEdge, c);
+			swapTest(baEdge, d);
+		}
 	}
 
 	/**
@@ -178,7 +238,7 @@ public class Delaunay {
 		Edge bd = mContext.addEdge(vb, v);
 		Edge cd = mContext.addEdge(vc, v);
 		if (update())
-			show("*Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
+			show("Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
 
 		mActiveDetailName = DETAIL_SWAPS;
 		swapTest(abEdge, v);
@@ -192,34 +252,55 @@ public class Delaunay {
 		return v;
 	}
 
+	/**
+	 * Given edge ab and a vertex p, determines if a face baw to the right of ab
+	 * exists, and if so, whether its third vertex w intersects the circumcircle
+	 * of abp. If so, flips ab with wp, and recursively tests aw and wb against
+	 * vertex p.
+	 * 
+	 * @param abEdge
+	 * @param p
+	 */
 	private void swapTest(Edge abEdge, Vertex p) {
+
+		// If this edge has been deleted, do nothing
+		if (abEdge.deleted()) {
+			if (update())
+				show("SwapTest, edge has been deleted"
+						+ plot(abEdge.sourceVertex(), abEdge.destVertex()));
+			return;
+		}
+		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
+			if (update())
+				show("SwapTest, hole boundary" + plot(abEdge));
+			return;
+		}
+
 		Edge baEdge = abEdge.dual();
 		Edge awEdge = baEdge.nextFaceEdge();
-		Vertex farVertex = awEdge.destVertex();
+		Vertex w = awEdge.destVertex();
 		if (update())
-			show("SwapTest" + plot(abEdge) + plot(p) + plot(farVertex));
-		if (!pointLeftOfEdge(farVertex, baEdge)) {
+			show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
+		if (!pointLeftOfEdge(w, baEdge)) {
 			if (update())
-				show("boundary edge detected" + plot(baEdge) + plot(farVertex));
+				show("boundary edge detected" + plot(baEdge) + plot(w));
 			return;
 		}
 
 		Point a = abEdge.sourceVertex();
-		Point b = farVertex;
-		Point c = abEdge.destVertex();
-		Point d = p;
+		Point b = abEdge.destVertex();
 
 		double determinant;
 		{
 
-			double c11 = a.x - d.x;
-			double c12 = a.y - d.y;
+			double c11 = a.x - p.x;
+			double c12 = a.y - p.y;
 			double c13 = c11 * c11 + c12 * c12;
-			double c21 = b.x - d.x;
-			double c22 = b.y - d.y;
+			double c21 = w.x - p.x;
+			double c22 = w.y - p.y;
 			double c23 = c21 * c21 + c22 * c22;
-			double c31 = c.x - d.x;
-			double c32 = c.y - d.y;
+			double c31 = b.x - p.x;
+			double c32 = b.y - p.y;
 			double c33 = c31 * c31 + c32 * c32;
 
 			determinant = c11 * (c22 * c33 - c32 * c23) - c12
@@ -227,28 +308,28 @@ public class Delaunay {
 
 			// Choose an epsilon value that is related to the bounding box of
 			// the points
-			float sx = Math.abs(a.x - b.x);
-			float sx2 = Math.abs(a.x - c.x);
+			float sx = Math.abs(a.x - w.x);
+			float sx2 = Math.abs(a.x - b.x);
+			if (sx2 > sx)
+				sx = sx2;
+			sx2 = Math.abs(a.y - w.y);
 			if (sx2 > sx)
 				sx = sx2;
 			sx2 = Math.abs(a.y - b.y);
 			if (sx2 > sx)
 				sx = sx2;
-			sx2 = Math.abs(a.y - c.y);
-			if (sx2 > sx)
-				sx = sx2;
 
 			float epsilon = (sx * sx) * 1e-3f;
 			if (update())
-				show("determinant " + determinant);
+				show("Sign of determinant: " + Math.signum(determinant));
 			mContext.testForZero((float) determinant, epsilon);
 		}
 		if (determinant > 0) {
 			if (update())
-				show("*flipping edge" + plot(abEdge) + plot(p, farVertex));
+				show("*flipping edge" + plot(abEdge) + plot(p, w));
 
 			mContext.deleteEdge(abEdge);
-			Edge pw = mContext.addEdge(p, farVertex);
+			Edge pw = mContext.addEdge(p, w);
 			Edge wbEdge = pw.nextFaceEdge();
 			if (update())
 				show("recursive swap test" + plot(awEdge));
@@ -278,7 +359,7 @@ public class Delaunay {
 		}
 
 		if (update())
-			show("*Finding triangle containing point");
+			show("Finding triangle containing point");
 
 		Edge aEdge = findInitialSearchEdgeForPoint(queryPoint);
 		Edge bEdge = null;
@@ -347,7 +428,7 @@ public class Delaunay {
 			}
 		}
 		if (update())
-			show("*Found triangle containing query point"
+			show("*Triangle containing query point"
 					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
 							cEdge.sourceVertex()));
 		mActiveDetailName = null;
@@ -475,4 +556,5 @@ public class Delaunay {
 	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
+	private ArrayList<Edge> mNewHoleEdges = new ArrayList();
 }

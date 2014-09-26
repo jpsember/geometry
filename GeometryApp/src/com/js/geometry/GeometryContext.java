@@ -389,6 +389,9 @@ public final class GeometryContext {
 
 		sourceVertex.removeEdge(edge);
 		destVertex.removeEdge(edge.dual());
+
+		edge.addFlags(Edge.FLAG_DELETED);
+		edge.dual().addFlags(Edge.FLAG_DELETED);
 	}
 
 	private void addEdgeToVertex(Edge edge, Vertex vertex) {

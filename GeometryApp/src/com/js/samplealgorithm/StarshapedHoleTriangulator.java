@@ -63,9 +63,9 @@ public class StarshapedHoleTriangulator {
 		return mStepper.plot(v);
 	}
 
-	private static final String BGND_ELEMENT_HOLE_POLYGON = "10";
-	private static final String BGND_ELEMENT_MESH = "00";
-	private static final String BGND_ELEMENT_KERNEL = "05";
+	private static final String BGND_ELEMENT_HOLE_POLYGON = "s10";
+	private static final String BGND_ELEMENT_MESH = "s00";
+	private static final String BGND_ELEMENT_KERNEL = "s05";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
@@ -138,12 +138,15 @@ public class StarshapedHoleTriangulator {
 			mHoleSize -= 1;
 			stepsWithoutProgress = 0;
 		}
-		if (mStepper.isActive())
-			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
 
 		if (update())
 			show("*Hole now three edges, done");
 
+		if (mStepper.isActive()) {
+			mStepper.removeBackgroundElement(BGND_ELEMENT_KERNEL);
+			mStepper.removeBackgroundElement(BGND_ELEMENT_MESH);
+			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
+		}
 	}
 
 	/**

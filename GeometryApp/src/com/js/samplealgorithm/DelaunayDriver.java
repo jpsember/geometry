@@ -1,5 +1,6 @@
 package com.js.samplealgorithm;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import android.content.Context;
@@ -63,21 +64,39 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				show("*Initial triangulation");
 
 			int numPoints = sOptions.getIntValue("numpoints");
+			mVertices = new ArrayList();
 
 			for (int i = 0; i < numPoints; i++) {
 				Point pt = new Point(pointBounds.x + mRandom.nextFloat()
 						* pointBounds.width, pointBounds.y
 						+ mRandom.nextFloat() * pointBounds.height);
 
-				mDelaunay.add(pt);
+				mVertices.add(mDelaunay.add(pt));
+
+				// Once in a while, remove a series of points
+				if (mRandom.nextInt(3) == 0) {
+					int rem = Math.min(mVertices.size(), mRandom.nextInt(5));
+					while (rem-- > 0) {
+						removeArbitraryVertex();
+					}
+				}
 			}
+
+			while (!mVertices.isEmpty())
+				removeArbitraryVertex();
+
 			if (update())
-				show("*Inserted " + numPoints + " points");
+				show("*Done");
 
 		} catch (GeometryException e) {
 			pr("\n\ncaught exception:\n" + e);
 			mStepper.show("caught exception: " + e);
 		}
+	}
+
+	private void removeArbitraryVertex() {
+		Vertex v = mVertices.remove(mRandom.nextInt(mVertices.size()));
+		mDelaunay.remove(v);
 	}
 
 	@Override
@@ -104,4 +123,5 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	private Delaunay mDelaunay;
 	private Random mRandom;
 	private GLSurfaceView mView;
+	private ArrayList<Vertex> mVertices;
 }

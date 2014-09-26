@@ -71,6 +71,16 @@ public class Delaunay {
 		return newVertex;
 	}
 
+	/**
+	 * Remove a vertex
+	 * 
+	 * @param vertex
+	 *            vertex previously returned by add()
+	 */
+	public void remove(Vertex vertex) {
+		throw new UnsupportedOperationException();
+	}
+
 	private Vertex insertPointIntoTriangle(Point point, Edge abEdge) {
 		Vertex v = mContext.addVertex(point);
 		Vertex va = abEdge.sourceVertex();

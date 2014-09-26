@@ -146,50 +146,13 @@ public class Delaunay {
 		}
 	}
 
-	private void findNewHoleEdges() {
-		if (update())
-			show("Find edges filling hole");
-
-		mNewHoleEdges.clear();
-		int expectedHoleEdges = mHoleEdges.size() - 3;
-		if (expectedHoleEdges == 0)
-			return;
-
-		for (Edge holeEdge : mHoleEdges) {
-			if (update())
-				show("Hole boundary edge" + plot(holeEdge));
-			Edge edge = holeEdge;
-			while (true) {
-				edge = edge.nextEdge();
-				if (edge.hasFlags(EDGEFLAG_HOLEBOUNDARY)
-						|| edge.dual().hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
-					if (update())
-						show("Hole boundary" + plot(edge));
-					break;
-				}
-				// Avoid adding both primal and dual
-				if (edge.angle() >= 0) {
-					if (update())
-						show("Hole edge" + plot(edge));
-					mNewHoleEdges.add(edge);
-					if (mNewHoleEdges.size() == expectedHoleEdges)
-						return;
-				} else {
-					if (update())
-						show("Will add dual" + plot(edge));
-				}
-			}
-		}
-	}
 
 	private void triangulateHole(Point kernelPoint) {
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
 				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
 		triangulator.run();
 
-		findNewHoleEdges();
-
-		for (Edge abEdge : mNewHoleEdges) {
+		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (update())
 				show("Process next hole edge" + plot(abEdge));
 			if (abEdge.deleted()) {
@@ -556,5 +519,4 @@ public class Delaunay {
 	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
-	private ArrayList<Edge> mNewHoleEdges = new ArrayList();
 }

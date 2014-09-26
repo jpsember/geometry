@@ -1,5 +1,7 @@
 package com.js.samplealgorithm;
 
+import java.util.ArrayList;
+
 import android.graphics.Color;
 
 import com.js.geometry.Edge;
@@ -100,6 +102,8 @@ public class StarshapedHoleTriangulator {
 		if (update())
 			show("*Initial hole; size " + mHoleSize);
 
+		mNewEdges = new ArrayList();
+
 		int stepsWithoutProgress = 0;
 		while (mHoleSize > 3) {
 			stepsWithoutProgress++;
@@ -133,6 +137,8 @@ public class StarshapedHoleTriangulator {
 			}
 
 			mStartEdge = mContext.addEdge(v0, v2);
+			mNewEdges.add(mStartEdge);
+
 			if (update())
 				show("Adding edge" + plot(mStartEdge));
 			mHoleSize -= 1;
@@ -147,6 +153,13 @@ public class StarshapedHoleTriangulator {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_MESH);
 			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
 		}
+	}
+
+	/**
+	 * Get the list of edges added by the algorithm
+	 */
+	public ArrayList<Edge> getNewEdges() {
+		return mNewEdges;
 	}
 
 	/**
@@ -175,4 +188,5 @@ public class StarshapedHoleTriangulator {
 	private Point mKernelPoint;
 	private Edge mStartEdge;
 	private int mHoleSize;
+	private ArrayList<Edge> mNewEdges;
 }

@@ -29,13 +29,29 @@ public class Delaunay {
 	private static final String BGND_ELEMENT_BEARING_LINE = "10";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
+	/**
+	 * Constructor
+	 * 
+	 * @param context
+	 *            context to use; its mesh will be cleared
+	 * @param boundingRect
+	 *            bounding rect, or null to use (large) default
+	 */
 	public Delaunay(GeometryContext context, Rect boundingRect) {
 		doNothing();
 		mStepper = AlgorithmStepper.sharedInstance();
 		constructMesh(context, boundingRect);
 	}
 
-	public void add(Point point) {
+	/**
+	 * Add a site, triangulating as required. Adds a new vertex to the mesh
+	 * 
+	 * @param point
+	 *            location of site
+	 * 
+	 * @return the new Vertex
+	 */
+	public Vertex add(Point point) {
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
 			plot(point);
@@ -46,14 +62,16 @@ public class Delaunay {
 
 		Edge edge = findTriangleContainingPoint(point);
 
-		insertPointIntoTriangle(point, edge);
+		Vertex newVertex = insertPointIntoTriangle(point, edge);
 
 		if (mStepper.isActive()) {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
+
+		return newVertex;
 	}
 
-	private void insertPointIntoTriangle(Point point, Edge abEdge) {
+	private Vertex insertPointIntoTriangle(Point point, Edge abEdge) {
 		Vertex v = mContext.addVertex(point);
 		Vertex va = abEdge.sourceVertex();
 		Vertex vb = abEdge.destVertex();
@@ -76,6 +94,8 @@ public class Delaunay {
 
 		if (update())
 			show("done insertion");
+
+		return v;
 	}
 
 	private void swapTest(Edge abEdge, Vertex p) {
@@ -252,6 +272,7 @@ public class Delaunay {
 	}
 
 	private void constructMesh(GeometryContext c, Rect boundingRect) {
+		c.clearMesh();
 
 		if (boundingRect == null)
 			boundingRect = new Rect(-HORIZON, -HORIZON, HORIZON * 2,

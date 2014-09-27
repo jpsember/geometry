@@ -97,7 +97,7 @@ public class AlgorithmStepper {
 	 * Determine if we should stop and display this frame of the current
 	 * algorithm; should be followed by a call to show() if this returns true
 	 */
-	public boolean update() {
+	public boolean step() {
 		boolean output;
 		do {
 			if (isActive()) {
@@ -133,7 +133,7 @@ public class AlgorithmStepper {
 
 	/**
 	 * Generate an algorithm step. For efficiency, should only be called if
-	 * update() returns true
+	 * step() returned true
 	 * 
 	 * @param message
 	 *            message to display, which may cause other elements to be
@@ -423,8 +423,8 @@ public class AlgorithmStepper {
 					// sequence for which stepping is disabled
 					while (!mActiveStack.isEmpty())
 						popActive();
-					update();
-					// Show message describing exception even if update()
+					step();
+					// Show message describing exception even if step()
 					// returned false for some reason
 					pr(t + "\n" + stackTrace(t));
 					show("*Caught: " + t);
@@ -565,7 +565,7 @@ public class AlgorithmStepper {
 	private int mTargetStep;
 	private int mCurrentStep;
 	private int mTotalSteps;
-	// If false, all calls to update() return false
+	// If false, all calls to step() return false
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private boolean mTotalStepsKnown;

@@ -23,19 +23,11 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 	public DelaunayDriver(Context context) {
 		doNothing();
-		mStepper = AlgorithmStepper.sharedInstance();
+		s = AlgorithmStepper.sharedInstance();
 	}
 
 	public void setView(GLSurfaceView view) {
 		mView = view;
-	}
-
-	private boolean update() {
-		return mStepper.update();
-	}
-
-	private void show(Object message) {
-		mStepper.show(message);
 	}
 
 	@Override
@@ -49,18 +41,18 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		boolean empty = sOptions.getBooleanValue("Empty");
 
 		mRandom = mContext.random();
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_MESH);
-			mStepper.setLineWidth(1);
-			mStepper.setColor(COLOR_LIGHTBLUE);
-			mStepper.plot(mContext);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.setLineWidth(1);
+			s.setColor(COLOR_LIGHTBLUE);
+			s.plot(mContext);
 		}
 
 		Rect delaunayBounds = new Rect(pointBounds);
 		delaunayBounds.inset(-10, -10);
 		mDelaunay = new Delaunay(mContext, delaunayBounds);
-		if (update())
-			show("*Initial triangulation");
+		if (s.step())
+			s.show("*Initial triangulation");
 
 		int numPoints = sOptions.getIntValue("numpoints");
 		mVertices = new ArrayList();
@@ -102,26 +94,26 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				removeArbitraryVertex();
 		}
 
-		if (update())
-			show("*Done");
+		if (s.step())
+			s.show("*Done");
 
 		if (sOptions.getBooleanValue("Voronoi cells")) {
-			if (update())
-				show("Voronoi cells" + mStepper.plotElement(mVoronoiElement));
+			if (s.step())
+				s.show("Voronoi cells" + s.plotElement(mVoronoiElement));
 		}
 	}
 
 	private AlgorithmDisplayElement mVoronoiElement = new AlgorithmDisplayElement() {
 		@Override
 		public void render() {
-			mStepper.setLineWidth(2);
-			mStepper.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
+			s.setLineWidth(2);
+			s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 
 			for (int i = 0; i < mDelaunay.nSites(); i++) {
 				Vertex v = mDelaunay.site(i);
-				mStepper.plot(v);
+				s.plot(v);
 				Polygon p = mDelaunay.constructVoronoiPolygon(i);
-				mStepper.plot(p, false);
+				s.plot(p, false);
 			}
 		}
 	};
@@ -156,7 +148,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	}
 
 	private static AlgorithmOptions sOptions;
-	private static AlgorithmStepper mStepper;
+	private static AlgorithmStepper s;
 
 	private GeometryContext mContext;
 	private Delaunay mDelaunay;

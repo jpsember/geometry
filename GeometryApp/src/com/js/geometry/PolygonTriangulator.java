@@ -30,7 +30,7 @@ public class PolygonTriangulator {
 	}
 
 	private PolygonTriangulator(GeometryContext context, Polygon polygon) {
-		mStepper = AlgorithmStepper.sharedInstance();
+		s = AlgorithmStepper.sharedInstance();
 		mContext = context;
 		mPolygon = polygon;
 		ASSERT(polygon.isCCW(context));
@@ -52,14 +52,6 @@ public class PolygonTriangulator {
 	private static final int VTYPE_SPLIT = 4;
 	private static final int VTYPE_MERGE = 5;
 
-	private boolean update() {
-		return mStepper.update();
-	}
-
-	private void show(Object message) {
-		mStepper.show(message);
-	}
-
 	private static final String BGND_ELEMENT_POLYGON_FILLED = "10";
 	private static final String BGND_ELEMENT_POLYGON_OUTLINE = "11";
 	private static final String BGND_ELEMENT_MONOTONE_FACE = "15";
@@ -70,24 +62,24 @@ public class PolygonTriangulator {
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	public void triangulate() {
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_POLYGON_FILLED);
-			mStepper.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
-			mStepper.plot(mPolygon, true);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_POLYGON_FILLED);
+			s.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
+			s.plot(mPolygon, true);
 
-			mStepper.plotToBackground(BGND_ELEMENT_POLYGON_OUTLINE);
-			mStepper.setLineWidth(1);
-			mStepper.setColor(Color.BLUE);
-			mStepper.plot(mPolygon);
+			s.plotToBackground(BGND_ELEMENT_POLYGON_OUTLINE);
+			s.setLineWidth(1);
+			s.setColor(Color.BLUE);
+			s.plot(mPolygon);
 
-			mStepper.plotToBackground(BGND_ELEMENT_MESH);
-			mStepper.setLineWidth(1);
-			mStepper.setColor(COLOR_LIGHTBLUE);
-			mStepper.plot(mContext);
+			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.setLineWidth(1);
+			s.setColor(COLOR_LIGHTBLUE);
+			s.plot(mContext);
 		}
 
-		if (update())
-			show("*Triangulating polygon");
+		if (s.step())
+			s.show("*Triangulating polygon");
 
 		mPolygonMeshBase = mPolygon.embed(mContext);
 		createEventList();
@@ -97,12 +89,12 @@ public class PolygonTriangulator {
 			processVertexEvent(v);
 		}
 
-		if (mStepper.isActive()) {
-			mStepper.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
+		if (s.isActive()) {
+			s.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
 		}
 
-		if (update())
-			show("*Done triangulating polygon");
+		if (s.step())
+			s.show("*Done triangulating polygon");
 
 	}
 
@@ -119,23 +111,23 @@ public class PolygonTriangulator {
 		});
 		mSweepLineVisible = false;
 
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
-			mStepper.plotElement(new AlgorithmDisplayElement() {
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
+			s.plotElement(new AlgorithmDisplayElement() {
 
 				@Override
 				public void render() {
 					if (!mSweepLineVisible)
 						return;
-					mStepper.setColor(COLOR_DARKGREEN);
-					mStepper.setLineWidth(1);
-					Rect r = mStepper.algorithmRect();
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(1);
+					Rect r = s.algorithmRect();
 					float horizExtent = r.width * .25f;
-					mStepper.plotLine(new Point(-horizExtent,
+					s.plotLine(new Point(-horizExtent,
 							mSweepLinePosition), new Point(r.width
 							+ horizExtent, mSweepLinePosition));
-					mStepper.setColor(COLOR_DARKGREEN);
-					mStepper.setLineWidth(2);
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(2);
 					for (SweepEdge e : mSweepStatus) {
 
 						// Extrapolate a little above and below the sweep line
@@ -145,11 +137,11 @@ public class PolygonTriangulator {
 								- vertExtent * .8f, mContext, true);
 						Point p2 = e.positionOnSweepLine(mSweepLinePosition
 								+ vertExtent * 1.2f, mContext, true);
-						mStepper.plotRay(p1, p2);
+						s.plotRay(p1, p2);
 
 						Point pt = e.positionOnSweepLine(mSweepLinePosition,
 								mContext, false);
-						mStepper.plot(pt);
+						s.plot(pt);
 					}
 				}
 			});
@@ -233,11 +225,11 @@ public class PolygonTriangulator {
 	/**
 	 * Replace helper, and possibly add edge if old helper was a MERGE
 	 */
-	private Edge replaceHelperForEdge(SweepEdge s, Vertex newHelper) {
-		Vertex prevHelper = s.helper();
-		if (update())
-			show("Replace edge helper" + plot(prevHelper) + plot(newHelper)
-					+ plot(s));
+	private Edge replaceHelperForEdge(SweepEdge sweepEdge, Vertex newHelper) {
+		Vertex prevHelper = sweepEdge.helper();
+		if (s.step())
+			s.show("Replace edge helper" + plot(prevHelper) + plot(newHelper)
+					+ plot(sweepEdge));
 
 		Edge newEdge = null;
 		if ((prevHelper.flags() & VERTEXFLAG_MERGE) != 0) {
@@ -258,7 +250,7 @@ public class PolygonTriangulator {
 				triangulateMonotoneFace(newEdge.dual());
 			}
 		}
-		s.setHelper(newHelper);
+		sweepEdge.setHelper(newHelper);
 		return newEdge;
 	}
 
@@ -284,8 +276,8 @@ public class PolygonTriangulator {
 	}
 
 	private void processVertexEvent(Vertex vertex) {
-		if (update())
-			show("Process vertex event" + plot(vertex));
+		if (s.step())
+			s.show("Process vertex event" + plot(vertex));
 
 		moveSweepLineTo(vertex.y);
 		Edge edges[] = new Edge[2];
@@ -341,8 +333,8 @@ public class PolygonTriangulator {
 		if (delEdge != null) {
 			SweepEdge se = findExistingEdge(delEdge);
 			replaceHelperForEdge(se, vertex);
-			if (update())
-				show("Removing status edge" + plot(se));
+			if (s.step())
+				s.show("Removing status edge" + plot(se));
 			boolean existed = mSweepStatus.remove(se);
 			if (mContext.checkError(!existed)) {
 				GeometryException.raise("could not find item in sweep status");
@@ -351,8 +343,8 @@ public class PolygonTriangulator {
 
 		if (newEdge != null) {
 			SweepEdge se = SweepEdge.edge(newEdge, vertex);
-			if (update())
-				show("Adding status edge" + plot(se));
+			if (s.step())
+				s.show("Adding status edge" + plot(se));
 			mSweepStatus.add(se);
 		}
 	}
@@ -390,8 +382,8 @@ public class PolygonTriangulator {
 
 	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
 		// have stepper display the face while triangulating it
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_MONOTONE_FACE);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_MONOTONE_FACE);
 			// Construct CCW-ordered polygon from monotone face's vertices
 			buildVertexList(edgePointingToHighestVertex);
 			Polygon facePolygon = new Polygon();
@@ -401,29 +393,29 @@ public class PolygonTriangulator {
 			}
 			while (!points.isEmpty())
 				facePolygon.add(points.pop());
-			mStepper.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
-			mStepper.plot(facePolygon, true);
+			s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
+			s.plot(facePolygon, true);
 		}
 
 		// call an auxilliary function to do the actual triangulation
-		mStepper.pushActive(DETAIL_TRIANGULATE_MONOTONE_FACE);
+		s.pushActive(DETAIL_TRIANGULATE_MONOTONE_FACE);
 		triangulateMonotoneFaceAux(edgePointingToHighestVertex);
-		mStepper.popActive();
+		s.popActive();
 
-		if (mStepper.isActive())
-			mStepper.removeBackgroundElement(BGND_ELEMENT_MONOTONE_FACE);
+		if (s.isActive())
+			s.removeBackgroundElement(BGND_ELEMENT_MONOTONE_FACE);
 	}
 
 	// See:
 	// http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 	//
 	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
-		if (update())
-			show("*Triangulate monotone face"
+		if (s.step())
+			s.show("*Triangulate monotone face"
 					+ plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
-			if (update())
-				show("Edge already visited");
+			if (s.step())
+				s.show("Edge already visited");
 			return;
 		}
 		edgePointingToHighestVertex.setVisited(true);
@@ -439,8 +431,8 @@ public class PolygonTriangulator {
 
 			mMonotoneQueue.push(v);
 			Vertex v2 = mVertexList.get(vIndex++);
-			if (update())
-				show("Queuing vertex" + plot(v2));
+			if (s.step())
+				s.show("Queuing vertex" + plot(v2));
 			mMonotoneQueue.push(v2);
 		}
 
@@ -459,14 +451,14 @@ public class PolygonTriangulator {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					// Skip the first queued vertex
 					Vertex v1 = mMonotoneQueue.pop();
-					if (update())
-						show("Skipping first queued vertex" + plot(v1));
+					if (s.step())
+						s.show("Skipping first queued vertex" + plot(v1));
 					Vertex v2 = mMonotoneQueue.peek();
 					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
-				if (update())
-					show("Queuing vertex" + plot(vertex));
+				if (s.step())
+					s.show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
 			} else {
@@ -476,8 +468,8 @@ public class PolygonTriangulator {
 					float distance = mContext.pointUnitLineSignedDistance(
 							vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
-					if (update())
-						show("Test for convex angle" + plot(v1) + plot(v2));
+					if (s.step())
+						s.show("Test for convex angle" + plot(v1) + plot(v2));
 
 					if (!isConvex)
 						break;
@@ -485,16 +477,16 @@ public class PolygonTriangulator {
 					edgesRemaining--;
 					mMonotoneQueue.pop(false);
 				}
-				if (update())
-					show("Queuing vertex" + plot(vertex));
+				if (s.step())
+					s.show("Queuing vertex" + plot(vertex));
 				mMonotoneQueue.push(vertex);
 			}
 		}
 	}
 
 	private Edge addEdge(Vertex v1, Vertex v2) {
-		if (update())
-			show("Adding mesh edge" + plotEdge(v1, v2));
+		if (s.step())
+			s.show("Adding mesh edge" + plotEdge(v1, v2));
 		return mContext.addEdge(v1, v2);
 	}
 
@@ -509,17 +501,17 @@ public class PolygonTriangulator {
 	}
 
 	private String plotEdge(Point p1, Point p2) {
-		mStepper.setLineWidth(2);
-		mStepper.setColor(Color.RED);
-		return mStepper.plotLine(p1, p2);
+		s.setLineWidth(2);
+		s.setColor(Color.RED);
+		return s.plotLine(p1, p2);
 	}
 
 	private String plot(Point v) {
-		mStepper.setColor(Color.RED);
-		return mStepper.plot(v);
+		s.setColor(Color.RED);
+		return s.plot(v);
 	}
 
-	private AlgorithmStepper mStepper;
+	private static AlgorithmStepper s;
 	private GeometryContext mContext;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;

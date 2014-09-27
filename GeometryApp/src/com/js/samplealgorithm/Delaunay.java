@@ -46,7 +46,7 @@ public class Delaunay {
 	 */
 	public Delaunay(GeometryContext context, Rect boundingRect) {
 		doNothing();
-		mStepper = AlgorithmStepper.sharedInstance();
+		s = AlgorithmStepper.sharedInstance();
 		constructMesh(context, boundingRect);
 	}
 
@@ -59,20 +59,20 @@ public class Delaunay {
 	 * @return the new Vertex
 	 */
 	public Vertex add(Point point) {
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_QUERY_POINT);
 			plot(point);
 		}
 
-		if (update())
-			show("*Add point");
+		if (s.step())
+			s.show("*Add point");
 
 		Edge edge = findTriangleContainingPoint(point);
 
 		Vertex newVertex = insertPointIntoTriangle(point, edge);
 
-		if (mStepper.isActive()) {
-			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
+		if (s.isActive()) {
+			s.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
 
 		if (false) { // For testing issue #52
@@ -91,21 +91,21 @@ public class Delaunay {
 	 *            vertex previously returned by add()
 	 */
 	public void remove(Vertex vertex) {
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_QUERY_POINT);
 			plot(vertex);
 		}
 
-		if (update())
-			show("*Remove vertex");
+		if (s.step())
+			s.show("*Remove vertex");
 
 		// Find arbitrary edge leaving vertex, and use it to find an arbitrary
 		// edge bounding the polygonal hole that will result from deleting this
 		// vertex
 		Edge edge = vertex.edges();
 		Edge holeEdge = edge.nextFaceEdge();
-		if (update())
-			show("Edge of resulting hole" + plot(holeEdge));
+		if (s.step())
+			s.show("Edge of resulting hole" + plot(holeEdge));
 
 		mContext.deleteVertex(vertex);
 
@@ -113,9 +113,9 @@ public class Delaunay {
 
 		triangulateHole(vertex);
 
-		if (mStepper.isActive()) {
-			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_BOUNDARY);
-			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
+		if (s.isActive()) {
+			s.removeBackgroundElement(BGND_ELEMENT_HOLE_BOUNDARY);
+			s.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
 
 		removeHoleBoundary();
@@ -204,15 +204,15 @@ public class Delaunay {
 			if (edge == holeEdge)
 				break;
 		}
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_HOLE_BOUNDARY);
-			mStepper.plotElement(new AlgorithmDisplayElement() {
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_HOLE_BOUNDARY);
+			s.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
-					mStepper.setLineWidth(1);
-					mStepper.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(1);
+					s.setColor(COLOR_DARKGREEN);
 					for (Edge edge : mHoleEdges) {
-						mStepper.plotLine(edge.sourceVertex(),
+						s.plotLine(edge.sourceVertex(),
 								edge.destVertex());
 					}
 				}
@@ -221,20 +221,20 @@ public class Delaunay {
 	}
 
 	private void triangulateHole(Point kernelPoint) {
-		if (update())
-			show("Triangulating hole");
+		if (s.step())
+			s.show("Triangulating hole");
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
 				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
-		mStepper.pushActive(false);
+		s.pushActive(false);
 		triangulator.run();
-		mStepper.popActive();
+		s.popActive();
 
 		for (Edge abEdge : triangulator.getNewEdges()) {
-			if (update())
-				show("Process next hole edge" + plot(abEdge));
+			if (s.step())
+				s.show("Process next hole edge" + plot(abEdge));
 			if (abEdge.deleted()) {
-				if (update())
-					show("Deleted, skipping");
+				if (s.step())
+					s.show("Deleted, skipping");
 				continue;
 			}
 
@@ -276,21 +276,21 @@ public class Delaunay {
 		Edge ad = mContext.addEdge(va, v);
 		Edge bd = mContext.addEdge(vb, v);
 		Edge cd = mContext.addEdge(vc, v);
-		if (update())
-			show("Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
+		if (s.step())
+			s.show("Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
 
 		// Note (see issue #53): the sequence of edges examined in each of the
 		// three swapTest calls are disjoint, so no special bookkeeping is
 		// required.
 
-		mStepper.pushActive(DETAIL_SWAPS);
+		s.pushActive(DETAIL_SWAPS);
 		swapTest(abEdge, v);
 		swapTest(bcEdge, v);
 		swapTest(caEdge, v);
-		mStepper.popActive();
+		s.popActive();
 
-		if (update())
-			show("done insertion");
+		if (s.step())
+			s.show("done insertion");
 
 		return v;
 	}
@@ -308,25 +308,25 @@ public class Delaunay {
 
 		// If this edge has been deleted, do nothing
 		if (abEdge.deleted()) {
-			if (update())
-				show("SwapTest, edge has been deleted"
+			if (s.step())
+				s.show("SwapTest, edge has been deleted"
 						+ plot(abEdge.sourceVertex(), abEdge.destVertex()));
 			return;
 		}
 		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
-			if (update())
-				show("SwapTest, hole boundary" + plot(abEdge));
+			if (s.step())
+				s.show("SwapTest, hole boundary" + plot(abEdge));
 			return;
 		}
 
 		Edge baEdge = abEdge.dual();
 		Edge awEdge = baEdge.nextFaceEdge();
 		Vertex w = awEdge.destVertex();
-		if (update())
-			show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
+		if (s.step())
+			s.show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
 		if (!pointLeftOfEdge(w, baEdge)) {
-			if (update())
-				show("boundary edge detected" + plot(baEdge) + plot(w));
+			if (s.step())
+				s.show("boundary edge detected" + plot(baEdge) + plot(w));
 			return;
 		}
 
@@ -334,20 +334,20 @@ public class Delaunay {
 		Point b = abEdge.destVertex();
 
 		double determinant = doInCircleTest(a, b, w, p);
-		if (update())
-			show("Sign of determinant: " + Math.signum(determinant));
+		if (s.step())
+			s.show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
-			if (update())
-				show("*flipping edge" + plot(abEdge) + plot(p, w));
+			if (s.step())
+				s.show("*flipping edge" + plot(abEdge) + plot(p, w));
 
 			mContext.deleteEdge(abEdge);
 			Edge pw = mContext.addEdge(p, w);
 			Edge wbEdge = pw.nextFaceEdge();
-			if (update())
-				show("recursive swap test" + plot(awEdge));
+			if (s.step())
+				s.show("recursive swap test" + plot(awEdge));
 			swapTest(awEdge, p);
-			if (update())
-				show("recursive swap test" + plot(wbEdge));
+			if (s.step())
+				s.show("recursive swap test" + plot(wbEdge));
 			swapTest(wbEdge, p);
 		}
 	}
@@ -409,7 +409,7 @@ public class Delaunay {
 	}
 
 	private Edge findInitialSearchEdgeForPoint(Point point) {
-		mStepper.pushActive(DETAIL_FIND_TRIANGLE);
+		s.pushActive(DETAIL_FIND_TRIANGLE);
 
 		chooseSampleVertices();
 		Vertex closestSample = findClosestSampleVertex(point);
@@ -419,19 +419,19 @@ public class Delaunay {
 		if (MyMath.sideOfLine(edge.sourceVertex(), edge.destVertex(), point) < 0)
 			edge = edge.dual();
 		Edge initialEdge = edge;
-		if (update())
-			show("Closest sample and initial edge" + plot(initialEdge)
+		if (s.step())
+			s.show("Closest sample and initial edge" + plot(initialEdge)
 					+ plot(closestSample)
-					+ mStepper.plotElement(new AlgorithmDisplayElement() {
+					+ s.plotElement(new AlgorithmDisplayElement() {
 						@Override
 						public void render() {
-							mStepper.setColor(COLOR_DARKGREEN);
+							s.setColor(COLOR_DARKGREEN);
 							for (Vertex v : mSamples) {
-								mStepper.plot(v);
+								s.plot(v);
 							}
 						}
 					}));
-		mStepper.popActive();
+		s.popActive();
 		return initialEdge;
 	}
 
@@ -440,24 +440,24 @@ public class Delaunay {
 	}
 
 	private Edge findTriangleContainingPoint(Point queryPoint) {
-		mStepper.pushActive(DETAIL_FIND_TRIANGLE);
+		s.pushActive(DETAIL_FIND_TRIANGLE);
 
-		if (mStepper.isActive()) {
+		if (s.isActive()) {
 			mSearchHistory = new ArrayList();
-			mStepper.plotToBackground(BGND_ELEMENT_SEARCH_HISTORY);
-			mStepper.plotElement(new AlgorithmDisplayElement() {
+			s.plotToBackground(BGND_ELEMENT_SEARCH_HISTORY);
+			s.plotElement(new AlgorithmDisplayElement() {
 
 				@Override
 				public void render() {
 					if (mSearchHistory == null)
 						return;
-					mStepper.setColor(COLOR_DARKGREEN);
-					mStepper.setLineWidth(2);
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(2);
 					Edge prevEdge = null;
 					Point prevCentroid = null;
 					for (Edge edge : mSearchHistory) {
-						mStepper.setLineWidth(1);
-						mStepper.setColor(COLOR_DARKGREEN);
+						s.setLineWidth(1);
+						s.setColor(COLOR_DARKGREEN);
 						Point p1 = edge.sourceVertex();
 						Point p2 = edge.destVertex();
 						Point centroid = faceCentroid(edge);
@@ -467,29 +467,29 @@ public class Delaunay {
 							// draw straight line
 							if (mContext.segSegIntersection(prevCentroid, centroid, p1,
 									p2) != null) {
-								mStepper.plotLine(prevCentroid, centroid);
+								s.plotLine(prevCentroid, centroid);
 							} else {
 								Point midPoint = MyMath.interpolateBetween(p1, p2, .5f);
-								mStepper.plotLine(midPoint, centroid);
-								mStepper.plotLine(prevCentroid, midPoint);
+								s.plotLine(midPoint, centroid);
+								s.plotLine(prevCentroid, midPoint);
 							}
 						}
-						mStepper.plot(centroid, 1.5f);
+						s.plot(centroid, 1.5f);
 						prevEdge = edge;
 						prevCentroid = centroid;
 					}
 				}});
 		}
 
-		if (update())
-			show("Finding triangle containing point");
+		if (s.step())
+			s.show("Finding triangle containing point");
 
 		Edge aEdge = findInitialSearchEdgeForPoint(queryPoint);
 		Edge bEdge = null;
 		Edge cEdge = null;
 
-		if (update())
-			show("Initial edge" + plot(aEdge));
+		if (s.step())
+			s.show("Initial edge" + plot(aEdge));
 
 		if (!pointLeftOfEdge(queryPoint, aEdge)) {
 			GeometryException.raise("query point " + queryPoint
@@ -500,21 +500,21 @@ public class Delaunay {
 		// point; we'll try to follow this line
 		Point bearingStartPoint = MyMath.interpolateBetween(
 				aEdge.sourceVertex(), aEdge.destVertex(), .5f);
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_BEARING_LINE);
-			mStepper.setLineWidth(2);
-			mStepper.setColor(Color.LTGRAY);
-			mStepper.plotRay(bearingStartPoint, queryPoint);
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_BEARING_LINE);
+			s.setLineWidth(2);
+			s.setColor(Color.LTGRAY);
+			s.plotRay(bearingStartPoint, queryPoint);
 		}
-		if (update())
-			show("Bearing line");
+		if (s.step())
+			s.show("Bearing line");
 
 		int maxIterations = mContext.vertexBuffer().size();
 		while (true) {
 			if (maxIterations-- == 0)
 				GeometryException.raise("too many iterations");
 
-			if (mStepper.isActive()) {
+			if (s.isActive()) {
 				mSearchHistory.add(aEdge);
 			}
 
@@ -523,8 +523,8 @@ public class Delaunay {
 			if (oppositeVertex(bEdge) != aEdge.sourceVertex())
 				GeometryException.raise("search edge not adjacent to triangle "
 						+ aEdge);
-			if (update())
-				show("Current search triangle" + plot(aEdge)
+			if (s.step())
+				s.show("Current search triangle" + plot(aEdge)
 						+ plot(oppositeVertex(aEdge)));
 
 			boolean bLeftFlag = pointLeftOfEdge(queryPoint, bEdge);
@@ -539,10 +539,6 @@ public class Delaunay {
 				aEdge = bEdge.dual();
 			} else {
 				Vertex farPoint = bEdge.destVertex();
-				if (false && update())
-					show("Testing side of bearing line"
-							+ plot(bearingStartPoint, queryPoint)
-							+ plot(farPoint));
 				if (MyMath.sideOfLine(bearingStartPoint, queryPoint, farPoint) > 0) {
 					aEdge = bEdge.dual();
 				} else {
@@ -550,15 +546,15 @@ public class Delaunay {
 				}
 			}
 		}
-		if (update())
-			show("*Triangle containing query point"
+		if (s.step())
+			s.show("*Triangle containing query point"
 					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
 							cEdge.sourceVertex()));
-		if (mStepper.isActive()) {
-			mStepper.removeBackgroundElement(BGND_ELEMENT_SEARCH_HISTORY);
-			mStepper.removeBackgroundElement(BGND_ELEMENT_BEARING_LINE);
+		if (s.isActive()) {
+			s.removeBackgroundElement(BGND_ELEMENT_SEARCH_HISTORY);
+			s.removeBackgroundElement(BGND_ELEMENT_BEARING_LINE);
 		}
-		mStepper.popActive();
+		s.popActive();
 
 		return aEdge;
 	}
@@ -567,8 +563,8 @@ public class Delaunay {
 		int populationSize = mContext.vertexBuffer().size();
 		// Calculate log_2 (population)
 		int optimalSize = (int) (Math.log(populationSize) / .693f);
-		if (update())
-			show("Population:" + populationSize + " Optimal:" + optimalSize);
+		if (s.step())
+			s.show("Population:" + populationSize + " Optimal:" + optimalSize);
 		return optimalSize;
 	}
 
@@ -605,20 +601,10 @@ public class Delaunay {
 
 	// Convenience methods for using stepper
 
-	private boolean update() {
-		return mStepper.update();
-	}
-
-	private void show(Object message) {
-		mStepper.show(message);
-	}
-
 	private String plot(Point a, Point b, Point c) {
-		mStepper.setLineWidth(2);
-		mStepper.setColor(Color.RED);
-		return mStepper.plotLine(a, b) + mStepper.plotLine(b, c)
-				+ mStepper.plotLine(c, a);
-
+		s.setLineWidth(2);
+		s.setColor(Color.RED);
+		return s.plotLine(a, b) + s.plotLine(b, c) + s.plotLine(c, a);
 	}
 
 	private String plot(Edge edge) {
@@ -626,14 +612,14 @@ public class Delaunay {
 	}
 
 	private String plot(Point p1, Point p2) {
-		mStepper.setLineWidth(2);
-		mStepper.setColor(Color.RED);
-		return mStepper.plotRay(p1, p2);
+		s.setLineWidth(2);
+		s.setColor(Color.RED);
+		return s.plotRay(p1, p2);
 	}
 
 	private String plot(Point v) {
-		mStepper.setColor(Color.RED);
-		return mStepper.plot(v);
+		s.setColor(Color.RED);
+		return s.plot(v);
 	}
 
 	private Point faceCentroid(Edge faceEdge) {
@@ -644,8 +630,9 @@ public class Delaunay {
 		return p;
 	}
 
+	private static AlgorithmStepper s;
+
 	private GeometryContext mContext;
-	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
 	private ArrayList<Vertex> mSamples = new ArrayList();

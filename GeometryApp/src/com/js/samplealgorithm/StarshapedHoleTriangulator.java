@@ -34,7 +34,7 @@ public class StarshapedHoleTriangulator {
 
 	private StarshapedHoleTriangulator(GeometryContext mesh, Point kernelPoint,
 			Edge edgeOnHole) {
-		mStepper = AlgorithmStepper.sharedInstance();
+		s = AlgorithmStepper.sharedInstance();
 		mContext = mesh;
 		mKernelPoint = kernelPoint;
 		mStartEdge = edgeOnHole;
@@ -42,27 +42,19 @@ public class StarshapedHoleTriangulator {
 
 	// Convenience methods for using stepper
 
-	private boolean update() {
-		return mStepper.update();
-	}
-
-	private void show(Object message) {
-		mStepper.show(message);
-	}
-
 	private String plot(Edge edge) {
 		return plotEdge(edge.sourceVertex(), edge.destVertex());
 	}
 
 	private String plotEdge(Point p1, Point p2) {
-		mStepper.setLineWidth(5);
-		mStepper.setColor(Color.RED);
-		return mStepper.plotLine(p1, p2);
+		s.setLineWidth(5);
+		s.setColor(Color.RED);
+		return s.plotLine(p1, p2);
 	}
 
 	private String plot(Point v) {
-		mStepper.setColor(Color.RED);
-		return mStepper.plot(v);
+		s.setColor(Color.RED);
+		return s.plot(v);
 	}
 
 	private static final String BGND_ELEMENT_HOLE_POLYGON = "s10";
@@ -85,18 +77,18 @@ public class StarshapedHoleTriangulator {
 	}
 
 	public void run() {
-		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_HOLE_POLYGON);
-			mStepper.plotElement(new AlgorithmDisplayElement() {
+		if (s.isActive()) {
+			s.plotToBackground(BGND_ELEMENT_HOLE_POLYGON);
+			s.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
 					if (mStartEdge == null)
 						return;
-					mStepper.setColor(COLOR_DARKGREEN);
-					mStepper.setLineWidth(1);
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(1);
 					Edge edge = mStartEdge;
 					while (true) {
-						mStepper.plotLine(edge.sourceVertex(),
+						s.plotLine(edge.sourceVertex(),
 								edge.destVertex());
 						edge = edge.nextFaceEdge();
 						if (edge == mStartEdge)
@@ -105,18 +97,18 @@ public class StarshapedHoleTriangulator {
 				}
 			});
 
-			mStepper.plotToBackground(BGND_ELEMENT_MESH);
-			mStepper.setLineWidth(1);
-			mStepper.setColor(COLOR_LIGHTBLUE);
-			mStepper.plot(mContext);
+			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.setLineWidth(1);
+			s.setColor(COLOR_LIGHTBLUE);
+			s.plot(mContext);
 
-			mStepper.plotToBackground(BGND_ELEMENT_KERNEL);
-			mStepper.setColor(COLOR_DARKGREEN);
-			mStepper.plot(mKernelPoint);
+			s.plotToBackground(BGND_ELEMENT_KERNEL);
+			s.setColor(COLOR_DARKGREEN);
+			s.plot(mKernelPoint);
 		}
 		calcHoleSize();
-		if (update())
-			show("*Initial hole; size " + mHoleSize);
+		if (s.step())
+			s.show("*Initial hole; size " + mHoleSize);
 
 		mNewEdges = new ArrayList();
 
@@ -124,8 +116,8 @@ public class StarshapedHoleTriangulator {
 		while (mHoleSize > 3) {
 			stepsWithoutProgress++;
 			if (stepsWithoutProgress > mHoleSize) {
-				if (update())
-					show("*No progress made");
+				if (s.step())
+					s.show("*No progress made");
 				break;
 			}
 
@@ -134,20 +126,21 @@ public class StarshapedHoleTriangulator {
 			Vertex v1 = mStartEdge.destVertex();
 			Vertex v2 = nextEdge.destVertex();
 
-			if (update())
-				show("Current edge" + plot(mStartEdge));
+			if (s.step())
+				s.show("Current edge" + plot(mStartEdge));
 
 			if (MyMath.sideOfLine(v0, v1, v2) < 0) {
-				if (update())
-					show("Vertex is reflex" + plot(mStartEdge) + plot(nextEdge)
+				if (s.step())
+					s.show("Vertex is reflex" + plot(mStartEdge)
+							+ plot(nextEdge)
 							+ plot(v1));
 				mStartEdge = nextEdge;
 				continue;
 			}
 
 			if (MyMath.sideOfLine(v0, v2, mKernelPoint) < 0) {
-				if (update())
-					show("Kernel to right of candidate" + plotEdge(v0, v2));
+				if (s.step())
+					s.show("Kernel to right of candidate" + plotEdge(v0, v2));
 				mStartEdge = nextEdge;
 				continue;
 			}
@@ -155,19 +148,19 @@ public class StarshapedHoleTriangulator {
 			mStartEdge = mContext.addEdge(v0, v2);
 			mNewEdges.add(mStartEdge);
 
-			if (update())
-				show("Adding edge" + plot(mStartEdge));
+			if (s.step())
+				s.show("Adding edge" + plot(mStartEdge));
 			mHoleSize -= 1;
 			stepsWithoutProgress = 0;
 		}
 
-		if (update())
-			show("*Hole now three edges, done");
+		if (s.step())
+			s.show("*Hole now three edges, done");
 
-		if (mStepper.isActive()) {
-			mStepper.removeBackgroundElement(BGND_ELEMENT_KERNEL);
-			mStepper.removeBackgroundElement(BGND_ELEMENT_MESH);
-			mStepper.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
+		if (s.isActive()) {
+			s.removeBackgroundElement(BGND_ELEMENT_KERNEL);
+			s.removeBackgroundElement(BGND_ELEMENT_MESH);
+			s.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
 		}
 	}
 
@@ -178,7 +171,8 @@ public class StarshapedHoleTriangulator {
 		return mNewEdges;
 	}
 
-	private AlgorithmStepper mStepper;
+	private static AlgorithmStepper s;
+
 	private GeometryContext mContext;
 	private Point mKernelPoint;
 	private Edge mStartEdge;

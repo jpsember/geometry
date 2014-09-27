@@ -39,6 +39,10 @@ public class Point {
 		this.y = y;
 	}
 
+	public final void setTo(final Point source) {
+		setTo(source.x, source.y);
+	}
+
 	public final float magnitude() {
 		return MyMath.magnitudeOfRay(x, y);
 	}

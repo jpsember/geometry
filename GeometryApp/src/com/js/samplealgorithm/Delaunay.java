@@ -10,6 +10,7 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.AlgorithmDisplayElement;
@@ -119,6 +120,71 @@ public class Delaunay {
 		deleteVertexFromSamples(vertex);
 	}
 
+	public int nSites() {
+		return mContext.vertexBuffer().size() - INITIAL_MESH_VERTICES;
+	}
+
+	public Vertex site(int index) {
+		if (index < 0)
+			throw new IllegalArgumentException();
+		int i = index + INITIAL_MESH_VERTICES;
+		return mContext.vertex(i);
+	}
+
+	/**
+	 * Construct the Voronoi polygon for one of the sites
+	 */
+	public Polygon constructVoronoiPolygon(int siteIndex) {
+		Polygon p = new Polygon();
+		Vertex site = site(siteIndex);
+		Edge startEdge = site.edges();
+
+		Point prevSeg1 = new Point();
+		Point prevSeg2 = new Point();
+
+		// Calculate last bisector
+		{
+			Edge lastEdge = startEdge.prevEdge();
+			calculateBisector(site, lastEdge.destVertex(), prevSeg1, prevSeg2);
+		}
+		Point currSeg1 = new Point();
+		Point currSeg2 = new Point();
+
+		Edge edge = startEdge;
+		while (true) {
+			calculateBisector(site, edge.destVertex(), currSeg1, currSeg2);
+			Point polyVertex = mContext.lineLineIntersection(prevSeg1,
+					prevSeg2, currSeg1, currSeg2);
+			p.add(polyVertex);
+
+			edge = edge.nextEdge();
+			if (edge == startEdge)
+				break;
+
+			prevSeg1.setTo(currSeg1);
+			prevSeg2.setTo(currSeg2);
+		}
+		return p;
+	}
+
+	/**
+	 * Calculate the bisector between two Voronoi sites
+	 * 
+	 * @param aSite
+	 *            first site
+	 * @param bSite
+	 *            second site
+	 * @param pt1
+	 *            where to store one point on bisector
+	 * @param pt2
+	 *            where to store second point on bisector
+	 */
+	private void calculateBisector(Point aSite, Point bSite, Point pt1,
+			Point pt2) {
+		pt1.setTo((aSite.x + bSite.x) / 2, (aSite.y + bSite.y) / 2);
+		pt2.setTo(pt1.x - (bSite.y - aSite.y), pt1.y + (bSite.x - aSite.x));
+	}
+
 	/**
 	 * Gather edges of hole into array, and flag them as such
 	 * 
@@ -142,8 +208,10 @@ public class Delaunay {
 			mStepper.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
+					// TODO: is this a case of issue #56?
 					mStepper.setLineWidth(1);
 					mStepper.setColor(COLOR_DARKGREEN);
+
 					for (Edge edge : mHoleEdges) {
 						mStepper.plotLine(edge.sourceVertex(),
 								edge.destVertex());

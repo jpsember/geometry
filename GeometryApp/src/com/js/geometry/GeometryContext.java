@@ -580,6 +580,26 @@ public final class GeometryContext {
 		return ipt;
 	}
 
+	public Point lineLineIntersection(Point s1, Point s2, Point t1, Point t2) {
+		Point ipt = null;
+		do {
+			float ty = (t2.y - t1.y);
+			float sx = (s2.x - s1.x);
+			float tx = (t2.x - t1.x);
+			float sy = (s2.y - s1.y);
+
+			float denom = ty * sx - tx * sy;
+
+			testForZero(denom);
+
+			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
+			float ua = numer1 / denom;
+			mParameter = ua;
+			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
+		} while (false);
+		return ipt;
+	}
+
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;

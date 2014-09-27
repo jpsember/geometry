@@ -9,6 +9,7 @@ import android.opengl.GLSurfaceView;
 
 import com.js.geometry.*;
 import com.js.geometryapp.AbstractWidget;
+import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 
@@ -21,8 +22,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	private static final String BGND_ELEMENT_MESH = "00";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
-	// private
-	static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	public DelaunayDriver(Context context) {
 		doNothing();
@@ -95,11 +94,35 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 			if (update())
 				show("*Done");
 
+			if (sOptions.getBooleanValue("Voronoi cells")) {
+				if (update())
+					show("Voronoi cells"
+							+ mStepper.plotElement(mVoronoiElement));
+			}
+
 		} catch (GeometryException e) {
 			pr("\n\ncaught exception:\n" + e);
 			mStepper.show("caught exception: " + e);
 		}
 	}
+
+	private AlgorithmDisplayElement mVoronoiElement = new AlgorithmDisplayElement() {
+		@Override
+		public void render() {
+			setLineWidthState(2);
+			setColorState(Color.argb(0x80, 0x20, 0x80, 0x20));
+
+			for (int i = 0; i < mDelaunay.nSites(); i++) {
+				Vertex v = mDelaunay.site(i);
+				renderPoint(v);
+				Polygon p = mDelaunay.constructVoronoiPolygon(i);
+				for (int j = 0; j < p.numVertices(); j++)
+					extendPolyline(p.vertex(j));
+				closePolyline();
+				renderPolyline();
+			}
+		}
+	};
 
 	private void removeArbitraryVertex() {
 		Vertex v = mVertices.remove(mRandom.nextInt(mVertices.size()));
@@ -120,6 +143,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		sOptions.addSlider("numpoints", 1, 250).addListener(
 				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addCheckBox("Deletions").setValue(true);
+		sOptions.addCheckBox("Voronoi cells");
 
 		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS).setValue(true);
 		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE).setValue(true);

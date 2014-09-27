@@ -8,12 +8,11 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 
-import static com.js.basic.Tools.*;
-
 public abstract class AlgorithmDisplayElement {
 
 	public AlgorithmDisplayElement() {
-		doNothing();
+		if (AlgorithmStepper.UPDATE_EXPERIMENT)
+			sElementsConstructed++;
 		mLineWidth = sLineWidth;
 		mColor = sColor;
 	}
@@ -27,6 +26,12 @@ public abstract class AlgorithmDisplayElement {
 	}
 
 	public abstract void render();
+
+	static int getElementCount() {
+		int r = sElementsConstructed;
+		sElementsConstructed = 0;
+		return r;
+	}
 
 	static void startPolyline(Point point) {
 		sPolyline = new Polyline();
@@ -205,4 +210,5 @@ public abstract class AlgorithmDisplayElement {
 	private static float sLineWidth;
 	private static int sColor;
 	private static boolean sRendering;
+	private static int sElementsConstructed;
 }

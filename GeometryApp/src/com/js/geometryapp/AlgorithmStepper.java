@@ -22,6 +22,10 @@ import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
 
+	// Simulate what performance will be if we replace update()+show() with just
+	// show()
+	static final boolean UPDATE_EXPERIMENT = false;
+
 	public static interface Delegate {
 		public void prepareOptions();
 
@@ -35,6 +39,8 @@ public class AlgorithmStepper {
 	 */
 	public static AlgorithmStepper sharedInstance() {
 		if (sStepper == null) {
+			if (UPDATE_EXPERIMENT)
+				warning("UPDATE_EXPERIMENT is true");
 			sStepper = new AlgorithmStepper();
 		}
 		return sStepper;
@@ -92,27 +98,38 @@ public class AlgorithmStepper {
 	 * algorithm; should be followed by a call to show() if this returns true
 	 */
 	public boolean update() {
-		if (isActive()) {
-			if (!mTotalStepsKnown) {
-				// We need to see what the message is, to determine if it's a
-				// milestone. We won't throw an exception to end the algorithm
-				// in this case.
-				mCurrentStep++;
-				return true;
-			} else if (mCurrentStep == mTargetStep) {
-				// TODO: this should be done elsewhere, e.g., at start of
-				// algorithm?
-				clearDisplayList();
-				AlgorithmDisplayElement.resetRenderStateVars();
-				return true;
-			}
-			if (mTargetStep < mCurrentStep)
-				die("target " + mTargetStep + " but current " + mCurrentStep);
+		boolean output;
+		do {
+			if (isActive()) {
+				if (!mTotalStepsKnown) {
+					// We need to see what the message is, to determine if it's
+					// a
+					// milestone. We won't throw an exception to end the
+					// algorithm
+					// in this case.
+					mCurrentStep++;
+					output = true;
+					break;
+				} else if (mCurrentStep == mTargetStep) {
+					output = true;
+					break;
+				}
+				if (mTargetStep < mCurrentStep)
+					die("target " + mTargetStep + " but current "
+							+ mCurrentStep);
 
-			mCurrentStep++;
+				mCurrentStep++;
+			}
+			output = false;
+		} while (false);
+		if (UPDATE_EXPERIMENT) {
+			mActualUpdateValue = output;
+			return true;
 		}
-		return false;
+		return output;
 	}
+
+	private boolean mActualUpdateValue;
 
 	/**
 	 * Generate an algorithm step. For efficiency, should only be called if
@@ -123,6 +140,12 @@ public class AlgorithmStepper {
 	 *            displayed via side effects (not yet implemented)
 	 */
 	public void show(Object message) {
+		if (UPDATE_EXPERIMENT) {
+			if (!mActualUpdateValue) {
+				clearRenderElements();
+				return;
+			}
+		}
 		String messageString = message.toString();
 		String displayedMessageString = trimMilestonePrefix(messageString);
 		if (!mTotalStepsKnown) {
@@ -330,11 +353,18 @@ public class AlgorithmStepper {
 		for (AlgorithmDisplayElement element : mDisplayElements) {
 			element.render();
 		}
-		mDisplayElements.clear();
 		if (mFrameTitle != null) {
 			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
-			mFrameTitle = null;
 		}
+		clearRenderElements();
+		if (UPDATE_EXPERIMENT)
+			pr("elements constructed: "
+					+ AlgorithmDisplayElement.getElementCount());
+	}
+
+	private void clearRenderElements() {
+		mDisplayElements.clear();
+		mFrameTitle = null;
 	}
 
 	/**
@@ -375,6 +405,8 @@ public class AlgorithmStepper {
 				mCurrentStep = 0;
 				mNextPlotKey = null;
 				mBackgroundElements.clear();
+				mDisplayElements.clear();
+				AlgorithmDisplayElement.resetRenderStateVars();
 
 				if (!mTotalStepsKnown) {
 					mMilestones.clear();
@@ -490,10 +522,6 @@ public class AlgorithmStepper {
 		if (mDelegate == null)
 			die("attempt to prepare options before delegate defined");
 		mDelegate.prepareOptions();
-	}
-
-	private void clearDisplayList() {
-		mDisplayElements.clear();
 	}
 
 	private void initializeActiveState(boolean active) {

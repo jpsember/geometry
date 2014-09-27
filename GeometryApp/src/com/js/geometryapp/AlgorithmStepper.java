@@ -92,28 +92,7 @@ public class AlgorithmStepper {
 	 * algorithm; should be followed by a call to show() if this returns true
 	 */
 	public boolean update() {
-		return update(null);
-	}
-
-	/**
-	 * Determine if we should stop and display this frame of the current
-	 * algorithm; should be followed by a call to show() if this returns true
-	 * 
-	 * @param detailName
-	 *            if not null, returns false if options checkbox with this
-	 *            detail name is false
-	 * @deprecated
-	 * 
-	 */
-	public boolean update(String detailName) {
 		if (isActive()) {
-
-			if (detailName != null) {
-				if (!AlgorithmOptions.sharedInstance().detailTraceActive(
-						detailName))
-					return false;
-			}
-
 			if (!mTotalStepsKnown) {
 				// We need to see what the message is, to determine if it's a
 				// milestone. We won't throw an exception to end the algorithm

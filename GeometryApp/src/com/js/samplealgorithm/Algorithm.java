@@ -7,7 +7,6 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
-import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
@@ -46,7 +45,6 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 		ComboBoxWidget w = sOptions.addComboBox("polygon");
 		w.setLabel("Polygon:");
-		w.addListener(AbstractWidget.LISTENER_HIDE_AND_UPDATE);
 
 		w.addItem("Dragon #6", Polygon.TESTPOLY_DRAGON_X + 6);
 		w.addItem("Concave Blob", Polygon.TESTPOLY_CONCAVE_BLOB);

@@ -20,27 +20,6 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
-	/**
-	 * Widget listener that updates the algorithm view
-	 */
-	public static final Listener LISTENER_UPDATE = new Listener() {
-		@Override
-		public void valueChanged(AbstractWidget widget) {
-			AlgorithmStepper.sharedInstance().requestUpdate(true);
-		}
-	};
-
-	/**
-	 * Widget listener that hides the options and updates the algorithm view
-	 */
-	public static final Listener LISTENER_HIDE_AND_UPDATE = new Listener() {
-		@Override
-		public void valueChanged(AbstractWidget widget) {
-			AlgorithmOptions.sharedInstance().hide();
-			AlgorithmStepper.sharedInstance().requestUpdate(true);
-		}
-	};
-
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
 	static final boolean SET_DEBUG_COLORS = false;
@@ -166,6 +145,9 @@ public abstract class AbstractWidget {
 				for (Listener listener : mListeners) {
 					listener.valueChanged(this);
 				}
+				// Every event that changes a widget value triggers a refresh
+				// with recalculation of the number of steps
+				AlgorithmStepper.sharedInstance().requestUpdate(true);
 			}
 		}
 	}

@@ -11,7 +11,6 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.FloatArray;
@@ -59,16 +58,11 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("seed", 0, 300).addListener(
-				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addSlider("numpoints", 3, 250).addListener(
-				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addCheckBox("experiment").addListener(
-				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addSlider("spikes", 2, 50).addListener(
-				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addSlider("girth", 3, 80)
-				.addListener(AbstractWidget.LISTENER_UPDATE).setIntValue(50);
+		sOptions.addSlider("seed", 0, 300);
+		sOptions.addSlider("numpoints", 3, 250);
+		sOptions.addCheckBox("experiment");
+		sOptions.addSlider("spikes", 2, 50);
+		sOptions.addSlider("girth", 3, 80).setIntValue(50);
 	}
 
 	private Polygon buildStarPolygonFromRadii(FloatArray radii, int startIndex) {

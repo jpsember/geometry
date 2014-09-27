@@ -8,12 +8,9 @@ import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 
 import com.js.geometry.*;
-import com.js.geometryapp.AbstractWidget;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
-
-//import static com.js.geometry.MyMath.*;
 
 import static com.js.basic.Tools.*;
 
@@ -138,10 +135,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("seed", 1, 300).addListener(
-				AbstractWidget.LISTENER_UPDATE);
-		sOptions.addSlider("numpoints", 1, 250).addListener(
-				AbstractWidget.LISTENER_UPDATE);
+		sOptions.addSlider("seed", 1, 300);
+		sOptions.addSlider("numpoints", 1, 250);
 		sOptions.addCheckBox("Deletions").setValue(true);
 		sOptions.addCheckBox("Voronoi cells");
 

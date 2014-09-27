@@ -180,11 +180,11 @@ public class AlgorithmStepper {
 				break;
 
 			// If there's an active background layer, add it to that instead
-			if (mActiveLayer != null) {
-				mActiveLayer.add(element);
-			} else {
-				mDisplayElements.add(element);
-			}
+			Layer targetLayer = mActiveBackgroundLayer;
+			if (targetLayer == null)
+				targetLayer = mForegroundLayer;
+			targetLayer.add(element);
+
 		} while (false);
 		return "";
 	}
@@ -203,11 +203,11 @@ public class AlgorithmStepper {
 		// Do nothing if we're running just to calculate the total steps
 		if (!mTotalStepsKnown)
 			return;
-		if (mActiveLayer != null)
+		if (mActiveBackgroundLayer != null)
 			throw new IllegalStateException("layer already open");
 		AlgorithmDisplayElement.resetRenderStateVars();
-		mActiveLayer = new ArrayList();
-		mBackgroundElements.put(key, mActiveLayer);
+		mActiveBackgroundLayer = new Layer(key);
+		mBackgroundLayers.put(key, mActiveBackgroundLayer);
 	}
 
 	/**
@@ -218,7 +218,7 @@ public class AlgorithmStepper {
 		if (!mTotalStepsKnown)
 			return;
 		AlgorithmDisplayElement.resetRenderStateVars();
-		mActiveLayer = null;
+		mActiveBackgroundLayer = null;
 	}
 
 	/**
@@ -227,7 +227,7 @@ public class AlgorithmStepper {
 	 * @param key
 	 */
 	public void removeLayer(String key) {
-		mBackgroundElements.remove(key);
+		mBackgroundLayers.remove(key);
 	}
 
 	public String plotRay(Point p1, Point p2) {
@@ -366,9 +366,7 @@ public class AlgorithmStepper {
 	 */
 	void render() {
 		renderBackgroundElements();
-		for (AlgorithmDisplayElement element : mDisplayElements) {
-			element.render();
-		}
+		mForegroundLayer.render();
 		if (mFrameTitle != null) {
 			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
 		}
@@ -379,7 +377,7 @@ public class AlgorithmStepper {
 	}
 
 	private void clearRenderElements() {
-		mDisplayElements.clear();
+		mForegroundLayer.clear();
 		mFrameTitle = null;
 	}
 
@@ -387,13 +385,11 @@ public class AlgorithmStepper {
 	 * Render persistent (background) elements, in order of sorted keys
 	 */
 	private void renderBackgroundElements() {
-		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
+		ArrayList<String> keys = new ArrayList(mBackgroundLayers.keySet());
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
-			ArrayList<AlgorithmDisplayElement> elements = mBackgroundElements
-					.get(key);
-			for (AlgorithmDisplayElement element : elements)
-				element.render();
+			Layer layer = mBackgroundLayers.get(key);
+			layer.render();
 		}
 	}
 
@@ -413,9 +409,9 @@ public class AlgorithmStepper {
 				initializeActiveState(true);
 
 				mCurrentStep = 0;
-				mActiveLayer = null;
-				mBackgroundElements.clear();
-				mDisplayElements.clear();
+				mActiveBackgroundLayer = null;
+				mBackgroundLayers.clear();
+				mForegroundLayer.clear();
 				AlgorithmDisplayElement.resetRenderStateVars();
 
 				if (!mTotalStepsKnown) {
@@ -557,12 +553,36 @@ public class AlgorithmStepper {
 		return sSynchronizationLock;
 	}
 
+	private static class Layer {
+		public Layer(String name) {
+		}
+
+		public void clear() {
+			mElements.clear();
+		}
+
+		public ArrayList<AlgorithmDisplayElement> elements() {
+			return mElements;
+		}
+
+		public void add(AlgorithmDisplayElement element) {
+			mElements.add(element);
+		}
+
+		public void render() {
+			for (AlgorithmDisplayElement element : elements())
+				element.render();
+		}
+
+		private ArrayList<AlgorithmDisplayElement> mElements = new ArrayList();
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 	private static Object sSynchronizationLock = new Object();
 
-	private ArrayList<AlgorithmDisplayElement> mDisplayElements = new ArrayList();
-	private Map<String, ArrayList<AlgorithmDisplayElement>> mBackgroundElements = new HashMap();
+	private Layer mForegroundLayer = new Layer("_");
+	private Map<String, Layer> mBackgroundLayers = new HashMap();
 	private String mFrameTitle;
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();
@@ -575,6 +595,6 @@ public class AlgorithmStepper {
 	private boolean mTotalStepsKnown;
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
-	private ArrayList<AlgorithmDisplayElement> mActiveLayer;
+	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
 }

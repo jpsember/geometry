@@ -445,7 +445,40 @@ public class Delaunay {
 		if (mStepper.isActive()) {
 			mSearchHistory = new ArrayList();
 			mStepper.plotToBackground(BGND_ELEMENT_SEARCH_HISTORY);
-			mStepper.plotElement(new AlgDisplaySearchHistory());
+			mStepper.plotElement(new AlgorithmDisplayElement() {
+
+				@Override
+				public void render() {
+					if (mSearchHistory == null)
+						return;
+					mStepper.setColor(COLOR_DARKGREEN);
+					mStepper.setLineWidth(2);
+					Edge prevEdge = null;
+					Point prevCentroid = null;
+					for (Edge edge : mSearchHistory) {
+						mStepper.setLineWidth(1);
+						mStepper.setColor(COLOR_DARKGREEN);
+						Point p1 = edge.sourceVertex();
+						Point p2 = edge.destVertex();
+						Point centroid = faceCentroid(edge);
+
+						if (prevEdge != null) {
+							// If segment connecting centroids intersects edge, just
+							// draw straight line
+							if (mContext.segSegIntersection(prevCentroid, centroid, p1,
+									p2) != null) {
+								mStepper.plotLine(prevCentroid, centroid);
+							} else {
+								Point midPoint = MyMath.interpolateBetween(p1, p2, .5f);
+								mStepper.plotLine(midPoint, centroid);
+								mStepper.plotLine(prevCentroid, midPoint);
+							}
+						}
+						mStepper.plot(centroid, 1.5f);
+						prevEdge = edge;
+						prevCentroid = centroid;
+					}
+				}});
 		}
 
 		if (update())
@@ -609,45 +642,6 @@ public class Delaunay {
 		p.add(oppositeVertex(faceEdge));
 		p.setTo(p.x / 3, p.y / 3);
 		return p;
-	}
-
-	/**
-	 * Custom display element for triangle search history
-	 */
-	private class AlgDisplaySearchHistory extends AlgorithmDisplayElement {
-
-		@Override
-		public void render() {
-			if (mSearchHistory == null)
-				return;
-			mStepper.setColor(COLOR_DARKGREEN);
-			mStepper.setLineWidth(2);
-			Edge prevEdge = null;
-			Point prevCentroid = null;
-			for (Edge edge : mSearchHistory) {
-				mStepper.setLineWidth(1);
-				mStepper.setColor(COLOR_DARKGREEN);
-				Point p1 = edge.sourceVertex();
-				Point p2 = edge.destVertex();
-				Point centroid = faceCentroid(edge);
-
-				if (prevEdge != null) {
-					// If segment connecting centroids intersects edge, just
-					// draw straight line
-					if (mContext.segSegIntersection(prevCentroid, centroid, p1,
-							p2) != null) {
-						mStepper.plotLine(prevCentroid, centroid);
-					} else {
-						Point midPoint = MyMath.interpolateBetween(p1, p2, .5f);
-						mStepper.plotLine(midPoint, centroid);
-						mStepper.plotLine(prevCentroid, midPoint);
-					}
-				}
-				mStepper.plot(centroid, 1.5f);
-				prevEdge = edge;
-				prevCentroid = centroid;
-			}
-		}
 	}
 
 	private GeometryContext mContext;

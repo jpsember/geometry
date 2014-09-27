@@ -87,7 +87,23 @@ public class StarshapedHoleTriangulator {
 	public void run() {
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_HOLE_POLYGON);
-			mStepper.plotElement(new AlgDisplayHoleBoundary());
+			mStepper.plotElement(new AlgorithmDisplayElement() {
+				@Override
+				public void render() {
+					if (mStartEdge == null)
+						return;
+					mStepper.setColor(COLOR_DARKGREEN);
+					mStepper.setLineWidth(1);
+					Edge edge = mStartEdge;
+					while (true) {
+						mStepper.plotLine(edge.sourceVertex(),
+								edge.destVertex());
+						edge = edge.nextFaceEdge();
+						if (edge == mStartEdge)
+							break;
+					}
+				}
+			});
 
 			mStepper.plotToBackground(BGND_ELEMENT_MESH);
 			mStepper.setLineWidth(1);
@@ -160,27 +176,6 @@ public class StarshapedHoleTriangulator {
 	 */
 	public ArrayList<Edge> getNewEdges() {
 		return mNewEdges;
-	}
-
-	/**
-	 * Custom display element for sweep status
-	 */
-	private class AlgDisplayHoleBoundary extends AlgorithmDisplayElement {
-
-		@Override
-		public void render() {
-			if (mStartEdge == null)
-				return;
-			mStepper.setColor(COLOR_DARKGREEN);
-			mStepper.setLineWidth(1);
-			Edge edge = mStartEdge;
-			while (true) {
-				mStepper.plotLine(edge.sourceVertex(), edge.destVertex());
-				edge = edge.nextFaceEdge();
-				if (edge == mStartEdge)
-					break;
-			}
-		}
 	}
 
 	private AlgorithmStepper mStepper;

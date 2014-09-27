@@ -121,7 +121,38 @@ public class PolygonTriangulator {
 
 		if (mStepper.isActive()) {
 			mStepper.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
-			mStepper.plotElement(new AlgDisplaySweepStatus());
+			mStepper.plotElement(new AlgorithmDisplayElement() {
+
+				@Override
+				public void render() {
+					if (!mSweepLineVisible)
+						return;
+					mStepper.setColor(COLOR_DARKGREEN);
+					mStepper.setLineWidth(1);
+					Rect r = mStepper.algorithmRect();
+					float horizExtent = r.width * .25f;
+					mStepper.plotLine(new Point(-horizExtent,
+							mSweepLinePosition), new Point(r.width
+							+ horizExtent, mSweepLinePosition));
+					mStepper.setColor(COLOR_DARKGREEN);
+					mStepper.setLineWidth(2);
+					for (SweepEdge e : mSweepStatus) {
+
+						// Extrapolate a little above and below the sweep line
+						float vertExtent = 22 * AlgorithmRenderer
+								.algorithmToDensityPixels();
+						Point p1 = e.positionOnSweepLine(mSweepLinePosition
+								- vertExtent * .8f, mContext, true);
+						Point p2 = e.positionOnSweepLine(mSweepLinePosition
+								+ vertExtent * 1.2f, mContext, true);
+						mStepper.plotRay(p1, p2);
+
+						Point pt = e.positionOnSweepLine(mSweepLinePosition,
+								mContext, false);
+						mStepper.plot(pt);
+					}
+				}
+			});
 		}
 	}
 
@@ -465,41 +496,6 @@ public class PolygonTriangulator {
 		if (update())
 			show("Adding mesh edge" + plotEdge(v1, v2));
 		return mContext.addEdge(v1, v2);
-	}
-
-	/**
-	 * Custom display element for sweep status
-	 */
-	private class AlgDisplaySweepStatus extends AlgorithmDisplayElement {
-
-		@Override
-		public void render() {
-			if (!mSweepLineVisible)
-				return;
-			mStepper.setColor(COLOR_DARKGREEN);
-			mStepper.setLineWidth(1);
-			Rect r = mStepper.algorithmRect();
-			float horizExtent = r.width * .25f;
-			mStepper.plotLine(new Point(-horizExtent, mSweepLinePosition),
-					new Point(r.width + horizExtent, mSweepLinePosition));
-			mStepper.setColor(COLOR_DARKGREEN);
-			mStepper.setLineWidth(2);
-			for (SweepEdge e : mSweepStatus) {
-
-				// Extrapolate a little above and below the sweep line
-				float vertExtent = 22 * AlgorithmRenderer
-						.algorithmToDensityPixels();
-				Point p1 = e.positionOnSweepLine(mSweepLinePosition
-						- vertExtent * .8f, mContext, true);
-				Point p2 = e.positionOnSweepLine(mSweepLinePosition
-						+ vertExtent * 1.2f, mContext, true);
-				mStepper.plotRay(p1, p2);
-
-				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,
-						false);
-				mStepper.plot(pt);
-			}
-		}
 	}
 
 	// Convenience methods for displaying algorithm objects

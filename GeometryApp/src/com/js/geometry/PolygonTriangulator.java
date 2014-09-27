@@ -54,6 +54,7 @@ public class PolygonTriangulator {
 		return mStepper.update();
 	}
 
+	@Deprecated
 	private boolean update(String detailName) {
 		return mStepper.update(detailName);
 	}

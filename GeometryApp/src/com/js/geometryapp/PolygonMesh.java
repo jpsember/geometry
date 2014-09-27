@@ -299,7 +299,7 @@ public class PolygonMesh {
 	}
 
 	private Edge popInteriorEdge() {
-		return mInteriorEdgeStack.remove(mInteriorEdgeStack.size() - 1);
+		return pop(mInteriorEdgeStack);
 	}
 
 	/**

@@ -199,7 +199,7 @@ public class Delaunay {
 				break;
 		}
 		if (mStepper.isActive()) {
-			mStepper.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+			mStepper.plotToBackground(BGND_ELEMENT_HOLE_BOUNDARY);
 			mStepper.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
@@ -215,9 +215,13 @@ public class Delaunay {
 	}
 
 	private void triangulateHole(Point kernelPoint) {
+		if (update())
+			show("Triangulating hole");
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
 				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
+		mStepper.pushActive(false);
 		triangulator.run();
+		mStepper.popActive();
 
 		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (update())
@@ -273,11 +277,11 @@ public class Delaunay {
 		// three swapTest calls are disjoint, so no special bookkeeping is
 		// required.
 
-		mActiveDetailName = DETAIL_SWAPS;
+		mStepper.pushActive(DETAIL_SWAPS);
 		swapTest(abEdge, v);
 		swapTest(bcEdge, v);
 		swapTest(caEdge, v);
-		mActiveDetailName = null;
+		mStepper.popActive();
 
 		if (update())
 			show("done insertion");
@@ -399,7 +403,7 @@ public class Delaunay {
 	}
 
 	private Edge findInitialSearchEdgeForPoint(Point point) {
-		mActiveDetailName = DETAIL_FIND_TRIANGLE;
+		mStepper.pushActive(DETAIL_FIND_TRIANGLE);
 
 		chooseSampleVertices();
 		Vertex closestSample = findClosestSampleVertex(point);
@@ -421,7 +425,7 @@ public class Delaunay {
 							}
 						}
 					}));
-		mActiveDetailName = null;
+		mStepper.popActive();
 		return initialEdge;
 	}
 
@@ -430,7 +434,7 @@ public class Delaunay {
 	}
 
 	private Edge findTriangleContainingPoint(Point queryPoint) {
-		mActiveDetailName = DETAIL_FIND_TRIANGLE;
+		mStepper.pushActive(DETAIL_FIND_TRIANGLE);
 
 		if (mStepper.isActive()) {
 			mSearchHistory = new ArrayList();
@@ -511,11 +515,11 @@ public class Delaunay {
 			show("*Triangle containing query point"
 					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
 							cEdge.sourceVertex()));
-		mActiveDetailName = null;
 		if (mStepper.isActive()) {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_SEARCH_HISTORY);
 			mStepper.removeBackgroundElement(BGND_ELEMENT_BEARING_LINE);
 		}
+		mStepper.popActive();
 
 		return aEdge;
 	}
@@ -563,7 +567,7 @@ public class Delaunay {
 	// Convenience methods for using stepper
 
 	private boolean update() {
-		return mStepper.update(mActiveDetailName);
+		return mStepper.update();
 	}
 
 	private void show(Object message) {
@@ -640,7 +644,6 @@ public class Delaunay {
 		}
 	}
 
-	private String mActiveDetailName;
 	private GeometryContext mContext;
 	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;

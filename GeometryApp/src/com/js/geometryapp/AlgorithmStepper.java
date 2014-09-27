@@ -60,6 +60,34 @@ public class AlgorithmStepper {
 	}
 
 	/**
+	 * Save current stepper active state on a stack, and push a new value (which
+	 * is AND'd with previous state)
+	 */
+	public void pushActive(boolean active) {
+		mActiveStack.add(mActive);
+		mActive &= active;
+	}
+
+	public void popActive() {
+		if (mActiveStack.isEmpty())
+			throw new IllegalStateException("active stack is empty");
+		mActive = pop(mActiveStack);
+	}
+
+	/**
+	 * Push active state to value of checkbox widget
+	 * 
+	 * @param widgetId
+	 *            id of checkbox widget to read
+	 */
+	public void pushActive(String widgetId) {
+		boolean value = mActive;
+		if (value)
+			value = AlgorithmOptions.sharedInstance().getBooleanValue(widgetId);
+		pushActive(value);
+	}
+
+	/**
 	 * Determine if we should stop and display this frame of the current
 	 * algorithm; should be followed by a call to show() if this returns true
 	 */
@@ -74,6 +102,8 @@ public class AlgorithmStepper {
 	 * @param detailName
 	 *            if not null, returns false if options checkbox with this
 	 *            detail name is false
+	 * @deprecated
+	 * 
 	 */
 	public boolean update(String detailName) {
 		if (isActive()) {
@@ -338,7 +368,7 @@ public class AlgorithmStepper {
 	private void performAlgorithm() {
 		synchronized (AlgorithmStepper.getLock()) {
 			try {
-				setActive(true);
+				initializeActiveState(true);
 
 				mCurrentStep = 0;
 				mNextPlotKey = null;
@@ -355,7 +385,7 @@ public class AlgorithmStepper {
 				}
 			} catch (DesiredStepReachedException e) {
 			} finally {
-				setActive(false);
+				initializeActiveState(false);
 			}
 		}
 	}
@@ -469,8 +499,9 @@ public class AlgorithmStepper {
 		mDisplayElements.clear();
 	}
 
-	private void setActive(boolean active) {
+	private void initializeActiveState(boolean active) {
 		mActive = active;
+		mActiveStack.clear();
 	}
 
 	private void prepareOptionsAux() {
@@ -511,6 +542,7 @@ public class AlgorithmStepper {
 	private int mTotalSteps;
 	// If false, all calls to update() return false
 	private boolean mActive;
+	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private boolean mTotalStepsKnown;
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;

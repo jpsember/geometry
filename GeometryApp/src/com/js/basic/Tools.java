@@ -1123,13 +1123,27 @@ public final class Tools {
 
 	/**
 	 * Remove the last item from a list and return it
+	 */
+	public static <T> T pop(List<T> list) {
+		return list.remove(list.size() - 1);
+	}
+
+	/**
+	 * Remove an item from a list, and fill gap with last element
 	 * 
 	 * @param list
-	 * @return
+	 * @param index
+	 *            index of item to remove
+	 * @return the removed item
 	 */
-	public static Object pop(List list) {
-		Object obj = list.remove(list.size() - 1);
-		return obj;
+	public static <T> T removeAndFill(List<T> list, int index) {
+		int size = list.size();
+		T element = list.get(index);
+		int lastIndex = size - 1;
+		if (index != lastIndex)
+			list.set(index, list.get(lastIndex));
+		list.remove(lastIndex);
+		return element;
 	}
 
 	private static boolean testingKnown;

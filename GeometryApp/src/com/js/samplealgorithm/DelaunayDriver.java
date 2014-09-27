@@ -135,7 +135,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	};
 
 	private void removeArbitraryVertex() {
-		Vertex v = mVertices.remove(mRandom.nextInt(mVertices.size()));
+		Vertex v = removeAndFill(mVertices, mRandom.nextInt(mVertices.size()));
 		mDelaunay.remove(v);
 	}
 

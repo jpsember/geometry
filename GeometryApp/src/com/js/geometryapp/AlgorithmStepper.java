@@ -317,10 +317,19 @@ public class AlgorithmStepper {
 	}
 
 	private void setTotalStepsKnown() {
+		int previousTotalSteps = mTotalSteps;
+		int previousTargetStep = mTargetStep;
+
 		mTotalStepsKnown = true;
 		mTotalSteps = mCurrentStep;
+
 		// Clamp previous target step into new range
 		mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
+
+		// If previous target step was at maximum, make new one at new max as
+		// well
+		if (previousTargetStep >= previousTotalSteps - 1)
+			mTargetStep = mTotalSteps - 1;
 	}
 
 	/**

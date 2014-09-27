@@ -43,7 +43,7 @@ public class AlgorithmStepper {
 	/**
 	 * Set the delegate, which actually performs the algorithm, and displays it
 	 */
-	public void setDelegate(Delegate delegate) {
+	void setDelegate(Delegate delegate) {
 		mDelegate = delegate;
 		// Now that views have been built, restore option values
 		prepareOptionsAux();
@@ -237,6 +237,27 @@ public class AlgorithmStepper {
 		return "";
 	}
 
+	public void requestUpdate() {
+		requestUpdate(false);
+	}
+
+	public void requestUpdate(boolean recalculateTotalSteps) {
+		if (recalculateTotalSteps) {
+			// Run algorithm to completion to determine the number of steps
+			mTotalStepsKnown = false;
+			performAlgorithm();
+			setTotalStepsKnown();
+
+			// Propagate these values to the stepper control panel (without
+			// causing a recursive update)
+			updateStepperView(false);
+		}
+		synchronized (AlgorithmStepper.getLock()) {
+			performAlgorithm();
+			mDelegate.displayResults();
+		}
+	}
+
 	public Rect algorithmRect() {
 		if (mAlgorithmRect == null) {
 			DisplayMetrics m = MyActivity.displayMetrics();
@@ -417,27 +438,6 @@ public class AlgorithmStepper {
 					requestUpdate();
 				}
 			}
-		}
-	}
-
-	public void requestUpdate() {
-		requestUpdate(false);
-	}
-
-	public void requestUpdate(boolean recalculateTotalSteps) {
-		if (recalculateTotalSteps) {
-			// Run algorithm to completion to determine the number of steps
-			mTotalStepsKnown = false;
-			performAlgorithm();
-			setTotalStepsKnown();
-
-			// Propagate these values to the stepper control panel (without
-			// causing a recursive update)
-			updateStepperView(false);
-		}
-		synchronized (AlgorithmStepper.getLock()) {
-			performAlgorithm();
-			mDelegate.displayResults();
 		}
 	}
 

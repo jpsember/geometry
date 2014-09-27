@@ -238,14 +238,13 @@ public class Delaunay {
 			// each side of the edge. The call may end up deleting some edges,
 			// so figure this out before making these calls
 			Edge baEdge = abEdge.dual();
-
 			Edge bcEdge = abEdge.nextFaceEdge();
-			Vertex c = bcEdge.destVertex();
-
 			Edge adEdge = baEdge.nextFaceEdge();
-			Vertex d = adEdge.destVertex();
 
+			Vertex c = bcEdge.destVertex();
 			swapTest(abEdge, c);
+
+			Vertex d = adEdge.destVertex();
 			swapTest(baEdge, d);
 		}
 	}
@@ -275,6 +274,10 @@ public class Delaunay {
 		Edge cd = mContext.addEdge(vc, v);
 		if (update())
 			show("Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
+
+		// Note (see issue #53): the sequence of edges examined in each of the
+		// three swapTest calls are disjoint, so no special bookkeeping is
+		// required.
 
 		mActiveDetailName = DETAIL_SWAPS;
 		swapTest(abEdge, v);
@@ -326,40 +329,9 @@ public class Delaunay {
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
 
-		double determinant;
-		{
-
-			double c11 = a.x - p.x;
-			double c12 = a.y - p.y;
-			double c13 = c11 * c11 + c12 * c12;
-			double c21 = w.x - p.x;
-			double c22 = w.y - p.y;
-			double c23 = c21 * c21 + c22 * c22;
-			double c31 = b.x - p.x;
-			double c32 = b.y - p.y;
-			double c33 = c31 * c31 + c32 * c32;
-
-			determinant = c11 * (c22 * c33 - c32 * c23) - c12
-					* (c21 * c33 - c31 * c23) + c13 * (c21 * c32 - c31 * c22);
-
-			// Choose an epsilon value that is related to the bounding box of
-			// the points
-			float sx = Math.abs(a.x - w.x);
-			float sx2 = Math.abs(a.x - b.x);
-			if (sx2 > sx)
-				sx = sx2;
-			sx2 = Math.abs(a.y - w.y);
-			if (sx2 > sx)
-				sx = sx2;
-			sx2 = Math.abs(a.y - b.y);
-			if (sx2 > sx)
-				sx = sx2;
-
-			float epsilon = (sx * sx) * 1e-3f;
-			if (update())
-				show("Sign of determinant: " + Math.signum(determinant));
-			mContext.testForZero((float) determinant, epsilon);
-		}
+		double determinant = doInCircleTest(a, b, w, p);
+		if (update())
+			show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
 			if (update())
 				show("*flipping edge" + plot(abEdge) + plot(p, w));
@@ -374,6 +346,38 @@ public class Delaunay {
 				show("recursive swap test" + plot(wbEdge));
 			swapTest(wbEdge, p);
 		}
+	}
+
+	private double doInCircleTest(Point a, Point b, Point w, Point p) {
+		double c11 = a.x - p.x;
+		double c12 = a.y - p.y;
+		double c13 = c11 * c11 + c12 * c12;
+		double c21 = w.x - p.x;
+		double c22 = w.y - p.y;
+		double c23 = c21 * c21 + c22 * c22;
+		double c31 = b.x - p.x;
+		double c32 = b.y - p.y;
+		double c33 = c31 * c31 + c32 * c32;
+
+		double determinant = c11 * (c22 * c33 - c32 * c23) - c12
+				* (c21 * c33 - c31 * c23) + c13 * (c21 * c32 - c31 * c22);
+
+		// Choose an epsilon value that is related to the bounding box of
+		// the points
+		float sx = Math.abs(a.x - w.x);
+		float sx2 = Math.abs(a.x - b.x);
+		if (sx2 > sx)
+			sx = sx2;
+		sx2 = Math.abs(a.y - w.y);
+		if (sx2 > sx)
+			sx = sx2;
+		sx2 = Math.abs(a.y - b.y);
+		if (sx2 > sx)
+			sx = sx2;
+
+		float epsilon = (sx * sx) * 1e-3f;
+		mContext.testForZero((float) determinant, epsilon);
+		return determinant;
 	}
 
 	private Edge findInitialSearchEdgeForPoint(Point point) {

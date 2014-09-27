@@ -11,6 +11,7 @@ import com.js.geometry.*;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometryapp.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
 
@@ -46,6 +47,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 			mContext = GeometryContext.contextWithRandomSeed(sOptions
 					.getIntValue("seed"));
 			boolean withDeletions = sOptions.getBooleanValue("Deletions");
+			boolean empty = sOptions.getBooleanValue("Empty");
 
 			mRandom = mContext.random();
 			if (mStepper.isActive()) {
@@ -64,10 +66,24 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 			int numPoints = sOptions.getIntValue("numpoints");
 			mVertices = new ArrayList();
 
+			ComboBoxWidget w = sOptions.getWidget("Pattern");
+			String pattern = (String) w.getSelectedKey();
+
 			for (int i = 0; i < numPoints; i++) {
-				Point pt = new Point(pointBounds.x + mRandom.nextFloat()
-						* pointBounds.width, pointBounds.y
-						+ mRandom.nextFloat() * pointBounds.height);
+				Point pt;
+				if (pattern.equals("Circle")) {
+					Point center = pointBounds.midPoint();
+					if (i == numPoints - 1)
+						pt = center;
+					else
+						pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
+								/ numPoints, .49f * pointBounds.minDim());
+					mContext.perturb(pt);
+				} else {
+					pt = new Point(pointBounds.x + mRandom.nextFloat()
+							* pointBounds.width, pointBounds.y
+							+ mRandom.nextFloat() * pointBounds.height);
+				}
 
 				mVertices.add(mDelaunay.add(pt));
 
@@ -83,7 +99,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				}
 			}
 
-			if (withDeletions) {
+			if (withDeletions && empty) {
 				while (!mVertices.isEmpty())
 					removeArbitraryVertex();
 			}
@@ -138,7 +154,12 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		sOptions.addSlider("seed", 1, 300);
 		sOptions.addSlider("numpoints", 1, 250);
 		sOptions.addCheckBox("Deletions").setValue(true);
+		sOptions.addCheckBox("Empty").setValue(true);
 		sOptions.addCheckBox("Voronoi cells");
+		ComboBoxWidget w = sOptions.addComboBox("Pattern");
+		w.addItem("Random");
+		w.addItem("Circle");
+		w.prepare();
 
 		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS).setValue(true);
 		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE).setValue(true);

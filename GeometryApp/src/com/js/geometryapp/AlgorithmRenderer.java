@@ -55,11 +55,13 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	@Override
 	public final void onDrawFrame(GL10 gl) {
 		synchronized (AlgorithmStepper.getLock()) {
+			AlgorithmDisplayElement.setRendering(true);
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 			AlgorithmStepper.sharedInstance().render();
 			// Call user method, now that synchronized
 			onDrawFrame();
+			AlgorithmDisplayElement.setRendering(false);
 		}
 	}
 

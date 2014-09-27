@@ -122,17 +122,14 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	private AlgorithmDisplayElement mVoronoiElement = new AlgorithmDisplayElement() {
 		@Override
 		public void render() {
-			setLineWidthState(2);
-			setColorState(Color.argb(0x80, 0x20, 0x80, 0x20));
+			mStepper.setLineWidth(2);
+			mStepper.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 
 			for (int i = 0; i < mDelaunay.nSites(); i++) {
 				Vertex v = mDelaunay.site(i);
-				renderPoint(v);
+				mStepper.plot(v);
 				Polygon p = mDelaunay.constructVoronoiPolygon(i);
-				for (int j = 0; j < p.numVertices(); j++)
-					extendPolyline(p.vertex(j));
-				closePolyline();
-				renderPolyline();
+				mStepper.plot(p, false);
 			}
 		}
 	};

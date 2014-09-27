@@ -2,7 +2,7 @@ package com.js.geometryapp;
 
 import com.js.geometry.Point;
 
-public class RayElement extends AlgorithmDisplayElement {
+class RayElement extends AlgorithmDisplayElement {
 
 	public RayElement(Point p1, Point p2) {
 		mPoint1 = p1;

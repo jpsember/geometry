@@ -1,6 +1,7 @@
 package com.js.geometry;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringTokenizer;
 
 import com.js.basic.Tools;
@@ -38,6 +39,11 @@ public class Polygon {
 	public Polygon(Polygon polygon) {
 		for (int i = 0; i < polygon.numVertices(); i++)
 			add(polygon.vertex(i));
+	}
+
+	public Polygon(Collection<Point> points) {
+		for (Point point : points)
+			add(point);
 	}
 
 	private static ArrayList<String> extractTokens(String s) {

@@ -3,6 +3,7 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -133,18 +134,25 @@ public class AlgorithmStepper {
 	 *         side effect of constructing show(...) message arguments
 	 */
 	public String plotElement(AlgorithmDisplayElement element) {
-		// Do nothing if we're running just to calculate the total steps
-		if (!mTotalStepsKnown)
-			return "";
+		do {
+			if (AlgorithmDisplayElement.rendering()) {
+				element.render();
+				break;
+			}
 
-		// If there's an active background plot key, store as background element
-		// instead of adding to this frame
-		if (mNextPlotKey != null) {
-			mBackgroundElements.put(mNextPlotKey, element);
-			clearPlotToBackground();
-		} else {
-			mDisplayElements.add(element);
-		}
+			// Do nothing if we're running just to calculate the total steps
+			if (!mTotalStepsKnown)
+				break;
+
+			// If there's an active background plot key, store as background
+			// element instead of adding to this frame
+			if (mNextPlotKey != null) {
+				mBackgroundElements.put(mNextPlotKey, element);
+				clearPlotToBackground();
+			} else {
+				mDisplayElements.add(element);
+			}
+		} while (false);
 		return "";
 	}
 
@@ -193,7 +201,15 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Polygon polygon, boolean filled) {
-		return plotElement(new PolygonElement(polygon, filled));
+		return plotElement(new PolygonElement(polygon,
+				filled ? PolygonElement.Style.FILLED
+						: PolygonElement.Style.BOUNDARY));
+	}
+
+	public String plotPolyline(Collection<Point> endpoints, boolean closed) {
+		return plotElement(new PolygonElement(new Polygon(endpoints),
+				closed ? PolygonElement.Style.BOUNDARY
+						: PolygonElement.Style.POLYLINE));
 	}
 
 	public String plot(GeometryContext meshContext) {

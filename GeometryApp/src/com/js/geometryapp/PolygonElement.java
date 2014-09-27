@@ -4,40 +4,45 @@ import com.js.geometry.GeometryContext;
 import com.js.geometry.Polygon;
 import static com.js.basic.Tools.*;
 
-public class PolygonElement extends AlgorithmDisplayElement {
+class PolygonElement extends AlgorithmDisplayElement {
 
-	public PolygonElement(Polygon polygon, boolean filled) {
+	public static enum Style {
+		FILLED, BOUNDARY, POLYLINE,
+	};
+
+	public PolygonElement(Polygon polygon, Style style) {
 		mPolygon = new Polygon(polygon);
-		mFilled = filled;
+		mStyle = style;
 		doNothing();
 	}
 
 	@Override
 	public void render() {
 
-		if (mFilled) {
+		if (mStyle == Style.FILLED) {
 			int orientation = mPolygon.orientation(new GeometryContext(1));
 			if (orientation != 1) {
 				pr("polygon isn't ccw orientation=" + orientation);
-				mFilled = false;
+				mStyle = Style.BOUNDARY;
 			}
 		}
 
-		if (!mFilled) {
-			setColorState(color());
-			setLineWidthState(lineWidth());
-			for (int i = 0; i < mPolygon.numVertices(); i++)
-				extendPolyline(mPolygon.vertex(i));
-			closePolyline();
-			renderPolyline();
-		} else {
+		if (mStyle == Style.FILLED) {
 			PolygonMesh mesh = PolygonMesh.meshForSimplePolygon(mPolygon);
 			PolygonProgram p = AlgorithmDisplayElement.polygonProgram();
 			p.setColor(color());
 			p.render(mesh);
+		} else {
+			setColorState(color());
+			setLineWidthState(lineWidth());
+			for (int i = 0; i < mPolygon.numVertices(); i++)
+				extendPolyline(mPolygon.vertex(i));
+			if (mStyle == Style.BOUNDARY)
+				closePolyline();
+			renderPolyline();
 		}
 	}
 
 	private Polygon mPolygon;
-	private boolean mFilled;
+	private Style mStyle;
 }

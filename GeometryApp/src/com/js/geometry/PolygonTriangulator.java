@@ -476,14 +476,14 @@ public class PolygonTriangulator {
 		public void render() {
 			if (!mSweepLineVisible)
 				return;
-			setColorState(COLOR_DARKGREEN);
-			setLineWidthState(1);
+			mStepper.setColor(COLOR_DARKGREEN);
+			mStepper.setLineWidth(1);
 			Rect r = mStepper.algorithmRect();
 			float horizExtent = r.width * .25f;
-			renderLine(-horizExtent, mSweepLinePosition, r.width + horizExtent,
-					mSweepLinePosition);
-			setColorState(COLOR_DARKGREEN);
-			setLineWidthState(2);
+			mStepper.plotLine(new Point(-horizExtent, mSweepLinePosition),
+					new Point(r.width + horizExtent, mSweepLinePosition));
+			mStepper.setColor(COLOR_DARKGREEN);
+			mStepper.setLineWidth(2);
 			for (SweepEdge e : mSweepStatus) {
 
 				// Extrapolate a little above and below the sweep line
@@ -493,11 +493,11 @@ public class PolygonTriangulator {
 						- vertExtent * .8f, mContext, true);
 				Point p2 = e.positionOnSweepLine(mSweepLinePosition
 						+ vertExtent * 1.2f, mContext, true);
-				renderRay(p1, p2);
+				mStepper.plotRay(p1, p2);
 
 				Point pt = e.positionOnSweepLine(mSweepLinePosition, mContext,
 						false);
-				renderPoint(pt);
+				mStepper.plot(pt);
 			}
 		}
 	}

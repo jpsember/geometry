@@ -203,10 +203,8 @@ public class Delaunay {
 			mStepper.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
-					// TODO: is this a case of issue #56?
 					mStepper.setLineWidth(1);
 					mStepper.setColor(COLOR_DARKGREEN);
-
 					for (Edge edge : mHoleEdges) {
 						mStepper.plotLine(edge.sourceVertex(),
 								edge.destVertex());
@@ -417,10 +415,9 @@ public class Delaunay {
 					+ mStepper.plotElement(new AlgorithmDisplayElement() {
 						@Override
 						public void render() {
-							// TODO: this is confusing; issue #56
-							setColorState(COLOR_DARKGREEN);
+							mStepper.setColor(COLOR_DARKGREEN);
 							for (Vertex v : mSamples) {
-								renderPoint(v);
+								mStepper.plot(v);
 							}
 						}
 					}));
@@ -613,8 +610,8 @@ public class Delaunay {
 		public void render() {
 			if (mSearchHistory == null)
 				return;
-			setColorState(COLOR_DARKGREEN);
-			setLineWidthState(2);
+			mStepper.setColor(COLOR_DARKGREEN);
+			mStepper.setLineWidth(2);
 			Edge prevEdge = null;
 			Point prevCentroid = null;
 			for (Edge edge : mSearchHistory) {

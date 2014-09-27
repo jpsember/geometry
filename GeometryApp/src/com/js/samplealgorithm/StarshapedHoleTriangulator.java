@@ -171,8 +171,8 @@ public class StarshapedHoleTriangulator {
 		public void render() {
 			if (mStartEdge == null)
 				return;
-			setColorState(COLOR_DARKGREEN);
-			setLineWidthState(1);
+			mStepper.setColor(COLOR_DARKGREEN);
+			mStepper.setLineWidth(1);
 			Edge edge = mStartEdge;
 			while (true) {
 				mStepper.plotLine(edge.sourceVertex(), edge.destVertex());

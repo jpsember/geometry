@@ -49,6 +49,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		try {
 			mContext = GeometryContext.contextWithRandomSeed(sOptions
 					.getIntValue("seed"));
+			boolean withDeletions = sOptions.getBooleanValue("Deletions");
+
 			mRandom = mContext.random();
 			if (mStepper.isActive()) {
 				mStepper.plotToBackground(BGND_ELEMENT_MESH);
@@ -73,17 +75,22 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 				mVertices.add(mDelaunay.add(pt));
 
-				// Once in a while, remove a series of points
-				if (mRandom.nextInt(3) == 0) {
-					int rem = Math.min(mVertices.size(), mRandom.nextInt(5));
-					while (rem-- > 0) {
-						removeArbitraryVertex();
+				if (withDeletions) {
+					// Once in a while, remove a series of points
+					if (mRandom.nextInt(3) == 0) {
+						int rem = Math
+								.min(mVertices.size(), mRandom.nextInt(5));
+						while (rem-- > 0) {
+							removeArbitraryVertex();
+						}
 					}
 				}
 			}
 
-			while (!mVertices.isEmpty())
-				removeArbitraryVertex();
+			if (withDeletions) {
+				while (!mVertices.isEmpty())
+					removeArbitraryVertex();
+			}
 
 			if (update())
 				show("*Done");
@@ -112,8 +119,11 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				AbstractWidget.LISTENER_UPDATE);
 		sOptions.addSlider("numpoints", 1, 250).addListener(
 				AbstractWidget.LISTENER_UPDATE);
+		sOptions.addCheckBox("Deletions").setValue(true);
+
 		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS).setValue(true);
 		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE).setValue(true);
+		sOptions.addDetailBox(Delaunay.DETAIL_SAMPLES).setValue(true);
 	}
 
 	private static AlgorithmOptions sOptions;

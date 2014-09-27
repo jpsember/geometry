@@ -42,10 +42,11 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		mRandom = mContext.random();
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plot(mContext);
+			s.closeLayer();
 		}
 
 		Rect delaunayBounds = new Rect(pointBounds);

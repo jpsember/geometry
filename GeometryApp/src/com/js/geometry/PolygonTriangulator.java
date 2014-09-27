@@ -63,19 +63,22 @@ public class PolygonTriangulator {
 
 	public void triangulate() {
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_POLYGON_FILLED);
+			s.openLayer(BGND_ELEMENT_POLYGON_FILLED);
 			s.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 			s.plot(mPolygon, true);
+			s.closeLayer();
 
-			s.plotToBackground(BGND_ELEMENT_POLYGON_OUTLINE);
+			s.openLayer(BGND_ELEMENT_POLYGON_OUTLINE);
 			s.setLineWidth(1);
 			s.setColor(Color.BLUE);
 			s.plot(mPolygon);
+			s.closeLayer();
 
-			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plot(mContext);
+			s.closeLayer();
 		}
 
 		if (s.bigStep())
@@ -90,7 +93,7 @@ public class PolygonTriangulator {
 		}
 
 		if (s.isActive()) {
-			s.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
+			s.removeLayer(BGND_ELEMENT_SWEEPSTATUS);
 		}
 
 		if (s.bigStep())
@@ -112,39 +115,44 @@ public class PolygonTriangulator {
 		mSweepLineVisible = false;
 
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_SWEEPSTATUS);
-			s.plotElement(new AlgorithmDisplayElement() {
+			s.openLayer(BGND_ELEMENT_SWEEPSTATUS);
+			s.plotElement(
+					new AlgorithmDisplayElement() {
 
-				@Override
-				public void render() {
-					if (!mSweepLineVisible)
-						return;
-					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(1);
-					Rect r = s.algorithmRect();
-					float horizExtent = r.width * .25f;
-					s.plotLine(new Point(-horizExtent,
-							mSweepLinePosition), new Point(r.width
-							+ horizExtent, mSweepLinePosition));
-					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(2);
-					for (SweepEdge e : mSweepStatus) {
+						@Override
+						public void render() {
+							if (!mSweepLineVisible)
+								return;
+							s.setColor(COLOR_DARKGREEN);
+							s.setLineWidth(1);
+							Rect r = s.algorithmRect();
+							float horizExtent = r.width * .25f;
+							s.plotLine(new Point(-horizExtent,
+									mSweepLinePosition), new Point(r.width
+									+ horizExtent, mSweepLinePosition));
+							s.setColor(COLOR_DARKGREEN);
+							s.setLineWidth(2);
+							for (SweepEdge e : mSweepStatus) {
 
-						// Extrapolate a little above and below the sweep line
-						float vertExtent = 22 * AlgorithmRenderer
-								.algorithmToDensityPixels();
-						Point p1 = e.positionOnSweepLine(mSweepLinePosition
-								- vertExtent * .8f, mContext, true);
-						Point p2 = e.positionOnSweepLine(mSweepLinePosition
-								+ vertExtent * 1.2f, mContext, true);
-						s.plotRay(p1, p2);
+								// Extrapolate a little above and below the
+								// sweep line
+								float vertExtent = 22 * AlgorithmRenderer
+										.algorithmToDensityPixels();
+								Point p1 = e.positionOnSweepLine(
+										mSweepLinePosition - vertExtent * .8f,
+										mContext, true);
+								Point p2 = e.positionOnSweepLine(
+										mSweepLinePosition + vertExtent * 1.2f,
+										mContext, true);
+								s.plotRay(p1, p2);
 
-						Point pt = e.positionOnSweepLine(mSweepLinePosition,
-								mContext, false);
-						s.plot(pt);
-					}
-				}
+								Point pt = e.positionOnSweepLine(
+										mSweepLinePosition, mContext, false);
+								s.plot(pt);
+							}
+						}
 			});
+			s.closeLayer();
 		}
 	}
 
@@ -383,7 +391,7 @@ public class PolygonTriangulator {
 	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
 		// have stepper display the face while triangulating it
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_MONOTONE_FACE);
+			s.openLayer(BGND_ELEMENT_MONOTONE_FACE);
 			// Construct CCW-ordered polygon from monotone face's vertices
 			buildVertexList(edgePointingToHighestVertex);
 			Polygon facePolygon = new Polygon();
@@ -395,6 +403,7 @@ public class PolygonTriangulator {
 				facePolygon.add(points.pop());
 			s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
 			s.plot(facePolygon, true);
+			s.closeLayer();
 		}
 
 		// call an auxilliary function to do the actual triangulation
@@ -403,7 +412,7 @@ public class PolygonTriangulator {
 		s.popActive();
 
 		if (s.isActive())
-			s.removeBackgroundElement(BGND_ELEMENT_MONOTONE_FACE);
+			s.removeLayer(BGND_ELEMENT_MONOTONE_FACE);
 	}
 
 	// See:

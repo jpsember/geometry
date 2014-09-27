@@ -60,8 +60,9 @@ public class Delaunay {
 	 */
 	public Vertex add(Point point) {
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+			s.openLayer(BGND_ELEMENT_QUERY_POINT);
 			plot(point);
+			s.closeLayer();
 		}
 
 		if (s.bigStep())
@@ -72,7 +73,7 @@ public class Delaunay {
 		Vertex newVertex = insertPointIntoTriangle(point, edge);
 
 		if (s.isActive()) {
-			s.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
+			s.removeLayer(BGND_ELEMENT_QUERY_POINT);
 		}
 
 		if (false) { // For testing issue #52
@@ -92,8 +93,9 @@ public class Delaunay {
 	 */
 	public void remove(Vertex vertex) {
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_QUERY_POINT);
+			s.openLayer(BGND_ELEMENT_QUERY_POINT);
 			plot(vertex);
+			s.closeLayer();
 		}
 
 		if (s.bigStep())
@@ -114,8 +116,8 @@ public class Delaunay {
 		triangulateHole(vertex);
 
 		if (s.isActive()) {
-			s.removeBackgroundElement(BGND_ELEMENT_HOLE_BOUNDARY);
-			s.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
+			s.removeLayer(BGND_ELEMENT_HOLE_BOUNDARY);
+			s.removeLayer(BGND_ELEMENT_QUERY_POINT);
 		}
 
 		removeHoleBoundary();
@@ -205,18 +207,18 @@ public class Delaunay {
 				break;
 		}
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_HOLE_BOUNDARY);
+			s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY);
 			s.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
 					s.setLineWidth(1);
 					s.setColor(COLOR_DARKGREEN);
 					for (Edge edge : mHoleEdges) {
-						s.plotLine(edge.sourceVertex(),
-								edge.destVertex());
+						s.plotLine(edge.sourceVertex(), edge.destVertex());
 					}
 				}
 			});
+			s.closeLayer();
 		}
 	}
 
@@ -444,7 +446,7 @@ public class Delaunay {
 
 		if (s.isActive()) {
 			mSearchHistory = new ArrayList();
-			s.plotToBackground(BGND_ELEMENT_SEARCH_HISTORY);
+			s.openLayer(BGND_ELEMENT_SEARCH_HISTORY);
 			s.plotElement(new AlgorithmDisplayElement() {
 
 				@Override
@@ -463,13 +465,14 @@ public class Delaunay {
 						Point centroid = faceCentroid(edge);
 
 						if (prevEdge != null) {
-							// If segment connecting centroids intersects edge, just
-							// draw straight line
-							if (mContext.segSegIntersection(prevCentroid, centroid, p1,
-									p2) != null) {
+							// If segment connecting centroids intersects edge,
+							// just draw straight line
+							if (mContext.segSegIntersection(prevCentroid,
+									centroid, p1, p2) != null) {
 								s.plotLine(prevCentroid, centroid);
 							} else {
-								Point midPoint = MyMath.interpolateBetween(p1, p2, .5f);
+								Point midPoint = MyMath.interpolateBetween(p1,
+										p2, .5f);
 								s.plotLine(midPoint, centroid);
 								s.plotLine(prevCentroid, midPoint);
 							}
@@ -478,7 +481,9 @@ public class Delaunay {
 						prevEdge = edge;
 						prevCentroid = centroid;
 					}
-				}});
+				}
+			});
+			s.closeLayer();
 		}
 
 		if (s.step())
@@ -501,10 +506,11 @@ public class Delaunay {
 		Point bearingStartPoint = MyMath.interpolateBetween(
 				aEdge.sourceVertex(), aEdge.destVertex(), .5f);
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_BEARING_LINE);
+			s.openLayer(BGND_ELEMENT_BEARING_LINE);
 			s.setLineWidth(2);
 			s.setColor(Color.LTGRAY);
 			s.plotRay(bearingStartPoint, queryPoint);
+			s.closeLayer();
 		}
 		if (s.step())
 			s.show("Bearing line");
@@ -551,8 +557,8 @@ public class Delaunay {
 					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
 							cEdge.sourceVertex()));
 		if (s.isActive()) {
-			s.removeBackgroundElement(BGND_ELEMENT_SEARCH_HISTORY);
-			s.removeBackgroundElement(BGND_ELEMENT_BEARING_LINE);
+			s.removeLayer(BGND_ELEMENT_SEARCH_HISTORY);
+			s.removeLayer(BGND_ELEMENT_BEARING_LINE);
 		}
 		s.popActive();
 

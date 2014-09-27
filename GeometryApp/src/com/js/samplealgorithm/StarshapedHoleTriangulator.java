@@ -78,7 +78,7 @@ public class StarshapedHoleTriangulator {
 
 	public void run() {
 		if (s.isActive()) {
-			s.plotToBackground(BGND_ELEMENT_HOLE_POLYGON);
+			s.openLayer(BGND_ELEMENT_HOLE_POLYGON);
 			s.plotElement(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
@@ -88,23 +88,25 @@ public class StarshapedHoleTriangulator {
 					s.setLineWidth(1);
 					Edge edge = mStartEdge;
 					while (true) {
-						s.plotLine(edge.sourceVertex(),
-								edge.destVertex());
+						s.plotLine(edge.sourceVertex(), edge.destVertex());
 						edge = edge.nextFaceEdge();
 						if (edge == mStartEdge)
 							break;
 					}
 				}
 			});
+			s.closeLayer();
 
-			s.plotToBackground(BGND_ELEMENT_MESH);
+			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plot(mContext);
+			s.closeLayer();
 
-			s.plotToBackground(BGND_ELEMENT_KERNEL);
+			s.openLayer(BGND_ELEMENT_KERNEL);
 			s.setColor(COLOR_DARKGREEN);
 			s.plot(mKernelPoint);
+			s.closeLayer();
 		}
 		calcHoleSize();
 		if (s.bigStep())
@@ -132,8 +134,7 @@ public class StarshapedHoleTriangulator {
 			if (MyMath.sideOfLine(v0, v1, v2) < 0) {
 				if (s.step())
 					s.show("Vertex is reflex" + plot(mStartEdge)
-							+ plot(nextEdge)
-							+ plot(v1));
+							+ plot(nextEdge) + plot(v1));
 				mStartEdge = nextEdge;
 				continue;
 			}
@@ -158,9 +159,9 @@ public class StarshapedHoleTriangulator {
 			s.show("Hole now three edges, done");
 
 		if (s.isActive()) {
-			s.removeBackgroundElement(BGND_ELEMENT_KERNEL);
-			s.removeBackgroundElement(BGND_ELEMENT_MESH);
-			s.removeBackgroundElement(BGND_ELEMENT_HOLE_POLYGON);
+			s.removeLayer(BGND_ELEMENT_KERNEL);
+			s.removeLayer(BGND_ELEMENT_MESH);
+			s.removeLayer(BGND_ELEMENT_HOLE_POLYGON);
 		}
 	}
 

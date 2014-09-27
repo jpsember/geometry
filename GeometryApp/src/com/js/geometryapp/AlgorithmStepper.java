@@ -179,11 +179,9 @@ public class AlgorithmStepper {
 			if (!mTotalStepsKnown)
 				break;
 
-			// If there's an active background plot key, store as background
-			// element instead of adding to this frame
-			if (mNextPlotKey != null) {
-				mBackgroundElements.put(mNextPlotKey, element);
-				clearPlotToBackground();
+			// If there's an active background layer, add it to that instead
+			if (mActiveLayer != null) {
+				mActiveLayer.add(element);
 			} else {
 				mDisplayElements.add(element);
 			}
@@ -192,26 +190,43 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Add the next plotted element to the background
+	 * Open a background layer. Subsequent plot() commands will be redirected to
+	 * this layer. Must be balanced by a call to closeLayer(). Layers are
+	 * plotted in alphabetical order, so the last layer plotted is topmost in
+	 * the view. Once defined, layers will appear in every rendered frame, in
+	 * addition to step-specific elements
 	 * 
 	 * @param key
-	 *            key to identify this background element from others
+	 *            uniquely distinguishes this layer from others
 	 */
-	public void plotToBackground(String key) {
+	public void openLayer(String key) {
+		// Do nothing if we're running just to calculate the total steps
+		if (!mTotalStepsKnown)
+			return;
+		if (mActiveLayer != null)
+			throw new IllegalStateException("layer already open");
+		AlgorithmDisplayElement.resetRenderStateVars();
+		mActiveLayer = new ArrayList();
+		mBackgroundElements.put(key, mActiveLayer);
+	}
+
+	/**
+	 * Close layer previously opened via openLayer()
+	 */
+	public void closeLayer() {
 		// Do nothing if we're running just to calculate the total steps
 		if (!mTotalStepsKnown)
 			return;
 		AlgorithmDisplayElement.resetRenderStateVars();
-		mNextPlotKey = key;
+		mActiveLayer = null;
 	}
 
 	/**
-	 * Remove a background element
+	 * Remove a layer, so it will no longer be plotted
 	 * 
 	 * @param key
-	 *            element key
 	 */
-	public void removeBackgroundElement(String key) {
+	public void removeLayer(String key) {
 		mBackgroundElements.remove(key);
 	}
 
@@ -375,17 +390,11 @@ public class AlgorithmStepper {
 		ArrayList<String> keys = new ArrayList(mBackgroundElements.keySet());
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
-			AlgorithmDisplayElement element = mBackgroundElements.get(key);
-			element.render();
+			ArrayList<AlgorithmDisplayElement> elements = mBackgroundElements
+					.get(key);
+			for (AlgorithmDisplayElement element : elements)
+				element.render();
 		}
-	}
-
-	/**
-	 * Cancel the flag that causes the next element to be plotted to the
-	 * background
-	 */
-	void clearPlotToBackground() {
-		mNextPlotKey = null;
 	}
 
 	/**
@@ -404,7 +413,7 @@ public class AlgorithmStepper {
 				initializeActiveState(true);
 
 				mCurrentStep = 0;
-				mNextPlotKey = null;
+				mActiveLayer = null;
 				mBackgroundElements.clear();
 				mDisplayElements.clear();
 				AlgorithmDisplayElement.resetRenderStateVars();
@@ -553,7 +562,7 @@ public class AlgorithmStepper {
 	private static Object sSynchronizationLock = new Object();
 
 	private ArrayList<AlgorithmDisplayElement> mDisplayElements = new ArrayList();
-	private Map<String, AlgorithmDisplayElement> mBackgroundElements = new HashMap();
+	private Map<String, ArrayList<AlgorithmDisplayElement>> mBackgroundElements = new HashMap();
 	private String mFrameTitle;
 	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();
@@ -566,6 +575,6 @@ public class AlgorithmStepper {
 	private boolean mTotalStepsKnown;
 	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
-	private String mNextPlotKey;
+	private ArrayList<AlgorithmDisplayElement> mActiveLayer;
 	private Rect mAlgorithmRect;
 }

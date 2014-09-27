@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import android.graphics.Color;
 
-import com.js.android.MyActivity;
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryContext;
 import com.js.geometry.GeometryException;
@@ -698,8 +697,8 @@ public class Delaunay {
 						mStepper.plotLine(midPoint, centroid);
 						mStepper.plotLine(prevCentroid, midPoint);
 					}
-					mStepper.plot(centroid, MyActivity.inchesToPixels(.01f));
 				}
+				mStepper.plot(centroid, 1.5f);
 				prevEdge = edge;
 				prevCentroid = centroid;
 			}

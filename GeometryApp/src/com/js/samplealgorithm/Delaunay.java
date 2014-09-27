@@ -64,8 +64,8 @@ public class Delaunay {
 			plot(point);
 		}
 
-		if (s.step())
-			s.show("*Add point");
+		if (s.bigStep())
+			s.show("Add point");
 
 		Edge edge = findTriangleContainingPoint(point);
 
@@ -96,8 +96,8 @@ public class Delaunay {
 			plot(vertex);
 		}
 
-		if (s.step())
-			s.show("*Remove vertex");
+		if (s.bigStep())
+			s.show("Remove vertex");
 
 		// Find arbitrary edge leaving vertex, and use it to find an arbitrary
 		// edge bounding the polygonal hole that will result from deleting this
@@ -326,7 +326,7 @@ public class Delaunay {
 			s.show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
 		if (!pointLeftOfEdge(w, baEdge)) {
 			if (s.step())
-				s.show("boundary edge detected" + plot(baEdge) + plot(w));
+				s.show("Boundary edge detected" + plot(baEdge) + plot(w));
 			return;
 		}
 
@@ -338,16 +338,16 @@ public class Delaunay {
 			s.show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
 			if (s.step())
-				s.show("*flipping edge" + plot(abEdge) + plot(p, w));
+				s.show("Flipping edge" + plot(abEdge) + plot(p, w));
 
 			mContext.deleteEdge(abEdge);
 			Edge pw = mContext.addEdge(p, w);
 			Edge wbEdge = pw.nextFaceEdge();
 			if (s.step())
-				s.show("recursive swap test" + plot(awEdge));
+				s.show("Recursive swap test" + plot(awEdge));
 			swapTest(awEdge, p);
 			if (s.step())
-				s.show("recursive swap test" + plot(wbEdge));
+				s.show("Recursive swap test" + plot(wbEdge));
 			swapTest(wbEdge, p);
 		}
 	}
@@ -546,8 +546,8 @@ public class Delaunay {
 				}
 			}
 		}
-		if (s.step())
-			s.show("*Triangle containing query point"
+		if (s.bigStep())
+			s.show("Triangle containing query point"
 					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
 							cEdge.sourceVertex()));
 		if (s.isActive()) {

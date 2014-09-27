@@ -51,8 +51,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		Rect delaunayBounds = new Rect(pointBounds);
 		delaunayBounds.inset(-10, -10);
 		mDelaunay = new Delaunay(mContext, delaunayBounds);
-		if (s.step())
-			s.show("*Initial triangulation");
+		if (s.bigStep())
+			s.show("Initial triangulation");
 
 		int numPoints = sOptions.getIntValue("numpoints");
 		mVertices = new ArrayList();
@@ -94,8 +94,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				removeArbitraryVertex();
 		}
 
-		if (s.step())
-			s.show("*Done");
+		if (s.bigStep())
+			s.show("Done");
 
 		if (sOptions.getBooleanValue("Voronoi cells")) {
 			if (s.step())

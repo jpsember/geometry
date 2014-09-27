@@ -78,8 +78,8 @@ public class PolygonTriangulator {
 			s.plot(mContext);
 		}
 
-		if (s.step())
-			s.show("*Triangulating polygon");
+		if (s.bigStep())
+			s.show("Triangulating polygon");
 
 		mPolygonMeshBase = mPolygon.embed(mContext);
 		createEventList();
@@ -93,8 +93,8 @@ public class PolygonTriangulator {
 			s.removeBackgroundElement(BGND_ELEMENT_SWEEPSTATUS);
 		}
 
-		if (s.step())
-			s.show("*Done triangulating polygon");
+		if (s.bigStep())
+			s.show("Done triangulating polygon");
 
 	}
 
@@ -410,8 +410,8 @@ public class PolygonTriangulator {
 	// http://www.personal.kent.edu/~rmuhamma/Compgeometry/MyCG/PolyPart/polyPartition.htm
 	//
 	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
-		if (s.step())
-			s.show("*Triangulate monotone face"
+		if (s.bigStep())
+			s.show("Triangulate monotone face"
 					+ plot(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
 			if (s.step())

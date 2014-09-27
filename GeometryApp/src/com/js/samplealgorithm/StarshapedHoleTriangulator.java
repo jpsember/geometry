@@ -107,8 +107,8 @@ public class StarshapedHoleTriangulator {
 			s.plot(mKernelPoint);
 		}
 		calcHoleSize();
-		if (s.step())
-			s.show("*Initial hole; size " + mHoleSize);
+		if (s.bigStep())
+			s.show("Initial hole");
 
 		mNewEdges = new ArrayList();
 
@@ -116,8 +116,8 @@ public class StarshapedHoleTriangulator {
 		while (mHoleSize > 3) {
 			stepsWithoutProgress++;
 			if (stepsWithoutProgress > mHoleSize) {
-				if (s.step())
-					s.show("*No progress made");
+				if (s.bigStep())
+					s.show("No progress made");
 				break;
 			}
 
@@ -154,8 +154,8 @@ public class StarshapedHoleTriangulator {
 			stepsWithoutProgress = 0;
 		}
 
-		if (s.step())
-			s.show("*Hole now three edges, done");
+		if (s.bigStep())
+			s.show("Hole now three edges, done");
 
 		if (s.isActive()) {
 			s.removeBackgroundElement(BGND_ELEMENT_KERNEL);

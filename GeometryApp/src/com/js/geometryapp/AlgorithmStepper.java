@@ -98,35 +98,42 @@ public class AlgorithmStepper {
 	 * algorithm; should be followed by a call to show() if this returns true
 	 */
 	public boolean step() {
-		boolean output;
+		return stepAux(false);
+	}
+
+	private boolean stepAux(boolean milestone) {
+		boolean output = false;
 		do {
 			if (isActive()) {
 				if (!mTotalStepsKnown) {
-					// We need to see what the message is, to determine if it's
-					// a
-					// milestone. We won't throw an exception to end the
-					// algorithm
-					// in this case.
+					if (milestone)
+						addMilestone(mCurrentStep);
 					mCurrentStep++;
-					output = true;
-					break;
-				} else if (mCurrentStep == mTargetStep) {
-					output = true;
-					break;
+				} else {
+					if (mCurrentStep == mTargetStep) {
+						output = true;
+						break;
+					}
+					if (mTargetStep < mCurrentStep)
+						die("target " + mTargetStep + " but current "
+								+ mCurrentStep);
+					mCurrentStep++;
 				}
-				if (mTargetStep < mCurrentStep)
-					die("target " + mTargetStep + " but current "
-							+ mCurrentStep);
-
-				mCurrentStep++;
 			}
-			output = false;
 		} while (false);
+
 		if (UPDATE_EXPERIMENT) {
 			mActualUpdateValue = output;
 			return true;
 		}
 		return output;
+	}
+
+	/**
+	 * Perform step(), but with a step that is a milestone
+	 */
+	public boolean bigStep() {
+		return stepAux(true);
 	}
 
 	private boolean mActualUpdateValue;
@@ -137,7 +144,7 @@ public class AlgorithmStepper {
 	 * 
 	 * @param message
 	 *            message to display, which may cause other elements to be
-	 *            displayed via side effects (not yet implemented)
+	 *            displayed via side effects
 	 */
 	public void show(Object message) {
 		if (UPDATE_EXPERIMENT) {
@@ -146,17 +153,11 @@ public class AlgorithmStepper {
 				return;
 			}
 		}
-		String messageString = message.toString();
-		String displayedMessageString = trimMilestonePrefix(messageString);
-		if (!mTotalStepsKnown) {
-			// We're only examining the message to see if it's a milestone
-			if (displayedMessageString != messageString) {
-				addMilestone(mCurrentStep - 1);
-			}
-		} else {
-			mFrameTitle = displayedMessageString;
+		if (mTotalStepsKnown) {
+			String messageString = message.toString();
+			mFrameTitle = messageString;
 			throw new DesiredStepReachedException("reached desired step; "
-					+ displayedMessageString);
+					+ messageString);
 		}
 	}
 
@@ -423,11 +424,11 @@ public class AlgorithmStepper {
 					// sequence for which stepping is disabled
 					while (!mActiveStack.isEmpty())
 						popActive();
-					step();
-					// Show message describing exception even if step()
+					bigStep();
+					// Show message describing exception even if bigStep()
 					// returned false for some reason
 					pr(t + "\n" + stackTrace(t));
-					show("*Caught: " + t);
+					show("Caught: " + t);
 				}
 
 				if (!mTotalStepsKnown) {
@@ -446,12 +447,6 @@ public class AlgorithmStepper {
 	}
 
 	private AlgorithmStepper() {
-	}
-
-	private String trimMilestonePrefix(String message) {
-		if (!message.startsWith("*"))
-			return message;
-		return message.substring(1);
 	}
 
 	/**

@@ -60,7 +60,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 
 		sOptions.addSlider("seed", 0, 300);
 		sOptions.addSlider("numpoints", 3, 250);
-		sOptions.addCheckBox("experiment");
+		sOptions.addCheckBox("experiment", false);
 		sOptions.addSlider("spikes", 2, 50);
 		sOptions.addSlider("girth", 3, 80).setIntValue(50);
 	}

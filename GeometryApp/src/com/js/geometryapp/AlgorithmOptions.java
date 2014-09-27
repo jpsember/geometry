@@ -66,20 +66,12 @@ public class AlgorithmOptions {
 	/**
 	 * Add a checkbox widget
 	 */
-	public CheckBoxWidget addCheckBox(String id) {
+	public CheckBoxWidget addCheckBox(String id, boolean initialValue) {
 		Map<String, Object> attributes = buildAttributes(id);
 		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
 		addWidget(w);
+		w.setValue(initialValue);
 		return w;
-	}
-
-	/**
-	 * Add an algorithm detail checkbox, which can be referenced in update()
-	 * commands to control whether or not certain algorithm details should be
-	 * stepped through
-	 */
-	public CheckBoxWidget addDetailBox(String id) {
-		return (CheckBoxWidget) addCheckBox(id).setAttribute("detail", true);
 	}
 
 	/**
@@ -332,23 +324,6 @@ public class AlgorithmOptions {
 			return true;
 		}
 		return widget.getBooleanValue();
-	}
-
-	/**
-	 * Add listeners for algorithm detail checkboxes that cause an update with
-	 * recalculation of the total steps
-	 */
-	void registerAlgorithmDetailListeners() {
-		AbstractWidget.Listener listener = new AbstractWidget.Listener() {
-			@Override
-			public void valueChanged(AbstractWidget widget) {
-				AlgorithmStepper.sharedInstance().requestUpdate(true);
-			}
-		};
-		for (AbstractWidget w : mWidgetsList) {
-			if (w.boolAttr("detail", false))
-				w.addListener(listener);
-		}
 	}
 
 	void restoreStepperState() {

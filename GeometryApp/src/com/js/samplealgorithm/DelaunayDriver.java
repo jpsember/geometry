@@ -135,17 +135,17 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		sOptions.addSlider("seed", 1, 300);
 		sOptions.addSlider("numpoints", 1, 250);
-		sOptions.addCheckBox("Deletions").setValue(true);
-		sOptions.addCheckBox("Empty").setValue(true);
-		sOptions.addCheckBox("Voronoi cells");
+		sOptions.addCheckBox("Deletions", true);
+		sOptions.addCheckBox("Empty", true);
+		sOptions.addCheckBox("Voronoi cells", false);
 		ComboBoxWidget w = sOptions.addComboBox("Pattern");
 		w.addItem("Random");
 		w.addItem("Circle");
 		w.prepare();
 
-		sOptions.addDetailBox(Delaunay.DETAIL_SWAPS).setValue(true);
-		sOptions.addDetailBox(Delaunay.DETAIL_FIND_TRIANGLE).setValue(true);
-		sOptions.addDetailBox(Delaunay.DETAIL_SAMPLES).setValue(true);
+		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS, true);
+		sOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, true);
+		sOptions.addCheckBox(Delaunay.DETAIL_SAMPLES, true);
 	}
 
 	private static AlgorithmOptions sOptions;

@@ -277,20 +277,15 @@ public class AlgorithmStepper {
 	}
 
 	public void requestUpdate() {
-		requestUpdate(false);
-	}
+		// Run algorithm to completion to determine the number of steps
+		mTotalStepsKnown = false;
+		performAlgorithm();
+		setTotalStepsKnown();
 
-	public void requestUpdate(boolean recalculateTotalSteps) {
-		if (recalculateTotalSteps) {
-			// Run algorithm to completion to determine the number of steps
-			mTotalStepsKnown = false;
-			performAlgorithm();
-			setTotalStepsKnown();
+		// Propagate these values to the stepper control panel (without
+		// causing a recursive update)
+		updateStepperView(false);
 
-			// Propagate these values to the stepper control panel (without
-			// causing a recursive update)
-			updateStepperView(false);
-		}
 		synchronized (AlgorithmStepper.getLock()) {
 			performAlgorithm();
 			mDelegate.displayResults();
@@ -537,7 +532,6 @@ public class AlgorithmStepper {
 
 		prepareOptions();
 
-		mOptions.registerAlgorithmDetailListeners();
 		mOptions.restoreStepperState();
 
 		setTargetStep(mOptions.getIntValue("targetstep"));

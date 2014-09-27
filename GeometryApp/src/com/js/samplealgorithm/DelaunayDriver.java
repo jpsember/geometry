@@ -43,79 +43,71 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 
-		try {
-			mContext = GeometryContext.contextWithRandomSeed(sOptions
-					.getIntValue("seed"));
-			boolean withDeletions = sOptions.getBooleanValue("Deletions");
-			boolean empty = sOptions.getBooleanValue("Empty");
+		mContext = GeometryContext.contextWithRandomSeed(sOptions
+				.getIntValue("seed"));
+		boolean withDeletions = sOptions.getBooleanValue("Deletions");
+		boolean empty = sOptions.getBooleanValue("Empty");
 
-			mRandom = mContext.random();
-			if (mStepper.isActive()) {
-				mStepper.plotToBackground(BGND_ELEMENT_MESH);
-				mStepper.setLineWidth(1);
-				mStepper.setColor(COLOR_LIGHTBLUE);
-				mStepper.plot(mContext);
+		mRandom = mContext.random();
+		if (mStepper.isActive()) {
+			mStepper.plotToBackground(BGND_ELEMENT_MESH);
+			mStepper.setLineWidth(1);
+			mStepper.setColor(COLOR_LIGHTBLUE);
+			mStepper.plot(mContext);
+		}
+
+		Rect delaunayBounds = new Rect(pointBounds);
+		delaunayBounds.inset(-10, -10);
+		mDelaunay = new Delaunay(mContext, delaunayBounds);
+		if (update())
+			show("*Initial triangulation");
+
+		int numPoints = sOptions.getIntValue("numpoints");
+		mVertices = new ArrayList();
+
+		ComboBoxWidget w = sOptions.getWidget("Pattern");
+		String pattern = (String) w.getSelectedKey();
+
+		for (int i = 0; i < numPoints; i++) {
+			Point pt;
+			if (pattern.equals("Circle")) {
+				Point center = pointBounds.midPoint();
+				if (i == numPoints - 1)
+					pt = center;
+				else
+					pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
+							/ numPoints, .49f * pointBounds.minDim());
+				mContext.perturb(pt);
+			} else {
+				pt = new Point(pointBounds.x + mRandom.nextFloat()
+						* pointBounds.width, pointBounds.y
+						+ mRandom.nextFloat() * pointBounds.height);
 			}
 
-			Rect delaunayBounds = new Rect(pointBounds);
-			delaunayBounds.inset(-10, -10);
-			mDelaunay = new Delaunay(mContext, delaunayBounds);
-			if (update())
-				show("*Initial triangulation");
+			mVertices.add(mDelaunay.add(pt));
 
-			int numPoints = sOptions.getIntValue("numpoints");
-			mVertices = new ArrayList();
-
-			ComboBoxWidget w = sOptions.getWidget("Pattern");
-			String pattern = (String) w.getSelectedKey();
-
-			for (int i = 0; i < numPoints; i++) {
-				Point pt;
-				if (pattern.equals("Circle")) {
-					Point center = pointBounds.midPoint();
-					if (i == numPoints - 1)
-						pt = center;
-					else
-						pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
-								/ numPoints, .49f * pointBounds.minDim());
-					mContext.perturb(pt);
-				} else {
-					pt = new Point(pointBounds.x + mRandom.nextFloat()
-							* pointBounds.width, pointBounds.y
-							+ mRandom.nextFloat() * pointBounds.height);
-				}
-
-				mVertices.add(mDelaunay.add(pt));
-
-				if (withDeletions) {
-					// Once in a while, remove a series of points
-					if (mRandom.nextInt(3) == 0) {
-						int rem = Math
-								.min(mVertices.size(), mRandom.nextInt(5));
-						while (rem-- > 0) {
-							removeArbitraryVertex();
-						}
+			if (withDeletions) {
+				// Once in a while, remove a series of points
+				if (mRandom.nextInt(3) == 0) {
+					int rem = Math.min(mVertices.size(), mRandom.nextInt(5));
+					while (rem-- > 0) {
+						removeArbitraryVertex();
 					}
 				}
 			}
+		}
 
-			if (withDeletions && empty) {
-				while (!mVertices.isEmpty())
-					removeArbitraryVertex();
-			}
+		if (withDeletions && empty) {
+			while (!mVertices.isEmpty())
+				removeArbitraryVertex();
+		}
 
+		if (update())
+			show("*Done");
+
+		if (sOptions.getBooleanValue("Voronoi cells")) {
 			if (update())
-				show("*Done");
-
-			if (sOptions.getBooleanValue("Voronoi cells")) {
-				if (update())
-					show("Voronoi cells"
-							+ mStepper.plotElement(mVoronoiElement));
-			}
-
-		} catch (GeometryException e) {
-			pr("\n\ncaught exception:\n" + e);
-			mStepper.show("caught exception: " + e);
+				show("Voronoi cells" + mStepper.plotElement(mVoronoiElement));
 		}
 	}
 

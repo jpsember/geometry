@@ -75,6 +75,12 @@ public class Delaunay {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
 
+		if (false) { // For testing issue #52
+			if (mContext.random().nextInt(20) == 17)
+				GeometryException
+						.raise("simulating an exception during stepping");
+		}
+
 		return newVertex;
 	}
 

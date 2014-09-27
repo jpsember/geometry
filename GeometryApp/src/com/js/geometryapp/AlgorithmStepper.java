@@ -100,6 +100,8 @@ public class AlgorithmStepper {
 				mCurrentStep++;
 				return true;
 			} else if (mCurrentStep == mTargetStep) {
+				// TODO: this should be done elsewhere, e.g., at start of
+				// algorithm?
 				clearDisplayList();
 				AlgorithmDisplayElement.resetRenderStateVars();
 				return true;
@@ -358,7 +360,23 @@ public class AlgorithmStepper {
 					addMilestone(mCurrentStep);
 				}
 
-				mDelegate.runAlgorithm();
+				try {
+					mDelegate.runAlgorithm();
+				} catch (DesiredStepReachedException e) {
+					throw e;
+				} catch (Throwable t) {
+					// Pop active stack until it's empty; we want to make sure
+					// this message gets displayed, even if it occurred during a
+					// sequence for which stepping is disabled
+					while (!mActiveStack.isEmpty())
+						popActive();
+					update();
+					// Show message describing exception even if update()
+					// returned false for some reason
+					pr(t + "\n" + stackTrace(t));
+					show("*Caught: " + t);
+				}
+
 				if (!mTotalStepsKnown) {
 					addMilestone(mCurrentStep);
 				}

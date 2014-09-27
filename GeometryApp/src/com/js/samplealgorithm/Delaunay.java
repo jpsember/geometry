@@ -75,8 +75,6 @@ public class Delaunay {
 			mStepper.removeBackgroundElement(BGND_ELEMENT_QUERY_POINT);
 		}
 
-		updateSamplesForNewVertex(newVertex);
-
 		return newVertex;
 	}
 
@@ -115,8 +113,6 @@ public class Delaunay {
 		}
 
 		removeHoleBoundary();
-
-		deleteVertexFromSamples(vertex);
 	}
 
 	public int nSites() {
@@ -380,45 +376,54 @@ public class Delaunay {
 		return determinant;
 	}
 
+	private void chooseSampleVertices() {
+		int nSamples = determineOptimalSampleSize();
+		ArrayList<Vertex> vertices = mContext.vertexBuffer();
+		mSamples.clear();
+		for (int i = 0; i < nSamples; i++) {
+			int k = mContext.random().nextInt(vertices.size());
+			Vertex sample = vertices.get(k);
+			mSamples.add(sample);
+		}
+	}
+
+	private Vertex findClosestSampleVertex(Point point) {
+		Vertex closestSample = null;
+		float closestSquaredDistance = 0;
+		for (Vertex sample : mSamples) {
+			float dist = MyMath.squaredDistanceBetween(point, sample);
+			if (closestSample == null || dist < closestSquaredDistance) {
+				closestSample = sample;
+				closestSquaredDistance = dist;
+			}
+		}
+		return closestSample;
+	}
+
 	private Edge findInitialSearchEdgeForPoint(Point point) {
 		mActiveDetailName = DETAIL_FIND_TRIANGLE;
-		Edge initialEdge;
-		if (mSampleVertices.isEmpty()) {
-			Vertex v = mContext.vertex(0);
-			initialEdge = v.edges();
-			if (update())
-				show("No samples exist, using initial mesh edge");
-		} else {
-			// Find closest sample vertex
-			Vertex closestSample = null;
-			float closestSquaredDistance = 0;
-			for (Vertex sample : mSampleVertices) {
-				float dist = MyMath.squaredDistanceBetween(point, sample);
-				if (closestSample == null || dist < closestSquaredDistance) {
-					closestSample = sample;
-					closestSquaredDistance = dist;
-				}
-			}
-			// Choose arbitrary edge from this vertex
-			Edge edge = closestSample.edges();
-			if (MyMath
-					.sideOfLine(edge.sourceVertex(), edge.destVertex(), point) < 0)
-				edge = edge.dual();
-			initialEdge = edge;
-			if (update())
-				show("Closest sample and initial edge" + plot(initialEdge)
-						+ plot(closestSample)
-						+ mStepper.plotElement(new AlgorithmDisplayElement() {
-							@Override
-							public void render() {
-								// TODO: this is confusing; issue #56
-								setColorState(COLOR_DARKGREEN);
-								for (Vertex v : mSampleVertices) {
-									renderPoint(v);
-								}
+
+		chooseSampleVertices();
+		Vertex closestSample = findClosestSampleVertex(point);
+
+		// Choose arbitrary edge from this vertex
+		Edge edge = closestSample.edges();
+		if (MyMath.sideOfLine(edge.sourceVertex(), edge.destVertex(), point) < 0)
+			edge = edge.dual();
+		Edge initialEdge = edge;
+		if (update())
+			show("Closest sample and initial edge" + plot(initialEdge)
+					+ plot(closestSample)
+					+ mStepper.plotElement(new AlgorithmDisplayElement() {
+						@Override
+						public void render() {
+							// TODO: this is confusing; issue #56
+							setColorState(COLOR_DARKGREEN);
+							for (Vertex v : mSamples) {
+								renderPoint(v);
 							}
-						}));
-		}
+						}
+					}));
 		mActiveDetailName = null;
 		return initialEdge;
 	}
@@ -518,83 +523,12 @@ public class Delaunay {
 		return aEdge;
 	}
 
-	/**
-	 * Possibly add new vertex to sample vertices
-	 */
-	private void updateSamplesForNewVertex(Vertex newVertex) {
-		mActiveDetailName = DETAIL_SAMPLES;
-
-		// Perform reservoir sampling:
-		// http://en.wikipedia.org/wiki/Reservoir_sampling
-
-		int preferredSampleSize = determineOptimalSampleSize();
-		if (mSampleVertices.size() < preferredSampleSize) {
-			if (update())
-				show("*Sample is too small (" + mSampleVertices.size() + " < "
-						+ preferredSampleSize + "), adding" + plot(newVertex));
-			mSampleVertices.add(newVertex);
-		} else {
-			int populationSize = mContext.vertexBuffer().size();
-
-			ASSERT(populationSize > preferredSampleSize);
-			ASSERT(preferredSampleSize == mSampleVertices.size());
-
-			int randomPosition = mContext.random().nextInt(populationSize);
-			if (randomPosition < preferredSampleSize) {
-				if (update())
-					show("*Replacing old sample with new vertex"
-							+ plot(newVertex)
-							+ plot(mSampleVertices.get(randomPosition)));
-				mSampleVertices.set(randomPosition, newVertex);
-			}
-		}
-
-		mActiveDetailName = null;
-	}
-
-	/**
-	 * Determine if vertex is in the sample set, and remove if so
-	 */
-	private void deleteVertexFromSamples(Vertex v) {
-		mActiveDetailName = DETAIL_SAMPLES;
-		int size = mSampleVertices.size();
-		for (int i = 0; i < size; i++) {
-			Vertex s = mSampleVertices.get(i);
-			if (s == v) {
-				if (update())
-					show("*Deleting vertex from samples" + plot(v));
-				// Replace vertex with last, and shrink the array
-				mSampleVertices.set(i, mSampleVertices.get(size - 1));
-				mSampleVertices.remove(size - 1);
-				break;
-			}
-		}
-
-		// Shrink the sample until its size matches our optimal size
-		int preferredSampleSize = determineOptimalSampleSize();
-		while (mSampleVertices.size() > preferredSampleSize) {
-			if (update())
-				show("*Reducing sample size from " + mSampleVertices.size()
-						+ " to desired " + preferredSampleSize);
-			mSampleVertices.remove(mSampleVertices.size() - 1);
-		}
-
-		mActiveDetailName = null;
-	}
-
 	private int determineOptimalSampleSize() {
-		int populationSize = mContext.vertexBuffer().size()
-				- INITIAL_MESH_VERTICES;
-		int optimalSize = 0;
-		if (populationSize > 0) {
-
-			// Calculate log_2 (population)
-
-			optimalSize = (int) (Math.log(Math.max(populationSize, 1)) / .693f);
-			if (update())
-				show("Population:" + populationSize + " Samples:"
-						+ mSampleVertices.size() + " Optimal:" + optimalSize);
-		}
+		int populationSize = mContext.vertexBuffer().size();
+		// Calculate log_2 (population)
+		int optimalSize = (int) (Math.log(populationSize) / .693f);
+		if (update())
+			show("Population:" + populationSize + " Optimal:" + optimalSize);
 		return optimalSize;
 	}
 
@@ -714,5 +648,5 @@ public class Delaunay {
 	private AlgorithmStepper mStepper;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
-	private ArrayList<Vertex> mSampleVertices = new ArrayList();
+	private ArrayList<Vertex> mSamples = new ArrayList();
 }

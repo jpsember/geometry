@@ -209,7 +209,7 @@ public class Delaunay {
 		}
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY);
-			s.plotElement(new AlgorithmDisplayElement() {
+			s.plot(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
 					s.setLineWidth(1);
@@ -276,7 +276,7 @@ public class Delaunay {
 		s.popActive();
 
 		if (s.step())
-			s.show("done insertion");
+			s.show("Done insertion");
 
 		return v;
 	}
@@ -452,7 +452,7 @@ public class Delaunay {
 		if (s.step())
 			s.show("Closest sample and initial edge" + plot(initialEdge)
 					+ plot(closestSample)
-					+ s.plotElement(new AlgorithmDisplayElement() {
+					+ s.plot(new AlgorithmDisplayElement() {
 						@Override
 						public void render() {
 							s.setColor(COLOR_DARKGREEN);
@@ -475,7 +475,7 @@ public class Delaunay {
 		if (s.isActive()) {
 			mSearchHistory = new ArrayList();
 			s.openLayer(BGND_ELEMENT_SEARCH_HISTORY);
-			s.plotElement(new AlgorithmDisplayElement() {
+			s.plot(new AlgorithmDisplayElement() {
 
 				@Override
 				public void render() {

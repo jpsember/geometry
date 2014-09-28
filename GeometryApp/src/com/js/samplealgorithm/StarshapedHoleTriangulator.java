@@ -79,7 +79,7 @@ public class StarshapedHoleTriangulator {
 	public void run() {
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_HOLE_POLYGON);
-			s.plotElement(new AlgorithmDisplayElement() {
+			s.plot(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
 					if (mStartEdge == null)

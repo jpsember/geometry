@@ -36,7 +36,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 
 		mContext = GeometryContext.contextWithRandomSeed(sOptions
-				.getIntValue("seed"));
+				.getIntValue("Seed"));
 		boolean withDeletions = sOptions.getBooleanValue("Deletions");
 		boolean empty = sOptions.getBooleanValue("Empty");
 
@@ -55,7 +55,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		if (s.bigStep())
 			s.show("Initial triangulation");
 
-		int numPoints = sOptions.getIntValue("numpoints");
+		int numPoints = sOptions.getIntValue("Points");
 		mVertices = new ArrayList();
 
 		ComboBoxWidget w = sOptions.getWidget("Pattern");
@@ -100,7 +100,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		if (sOptions.getBooleanValue("Voronoi cells")) {
 			if (s.step())
-				s.show("Voronoi cells" + s.plotElement(mVoronoiElement));
+				s.show("Voronoi cells" + s.plot(mVoronoiElement));
 		}
 	}
 
@@ -133,8 +133,8 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("seed", 1, 300);
-		sOptions.addSlider("numpoints", 1, 250);
+		sOptions.addSlider("Seed", 1, 300);
+		sOptions.addSlider("Points", 1, 250);
 		sOptions.addCheckBox("Deletions", true);
 		sOptions.addCheckBox("Empty", true);
 		sOptions.addCheckBox("Voronoi cells", false);

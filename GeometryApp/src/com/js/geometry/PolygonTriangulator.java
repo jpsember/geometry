@@ -116,7 +116,7 @@ public class PolygonTriangulator {
 
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_SWEEPSTATUS);
-			s.plotElement(
+			s.plot(
 					new AlgorithmDisplayElement() {
 
 						@Override

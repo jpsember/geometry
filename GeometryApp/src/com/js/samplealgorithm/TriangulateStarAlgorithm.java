@@ -34,7 +34,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	public void runAlgorithm() {
 		try {
 			mContext = GeometryContext.contextWithRandomSeed(sOptions
-					.getIntValue("seed"));
+					.getIntValue("Seed"));
 			mRandom = mContext.random();
 
 			int baseVertex = buildStarshapedPolygon();
@@ -58,8 +58,8 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("seed", 0, 300);
-		sOptions.addSlider("numpoints", 3, 250);
+		sOptions.addSlider("Seed", 0, 300);
+		sOptions.addSlider("Points", 3, 250);
 		sOptions.addCheckBox("experiment", false);
 		sOptions.addSlider("spikes", 2, 50);
 		sOptions.addSlider("girth", 3, 80).setIntValue(50);
@@ -127,7 +127,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	}
 
 	private int buildStarshapedPolygon() {
-		int nPoints = sOptions.getIntValue("numpoints");
+		int nPoints = sOptions.getIntValue("Points");
 		mKernelPoint = mStepper.algorithmRect().midPoint();
 		Polygon p;
 

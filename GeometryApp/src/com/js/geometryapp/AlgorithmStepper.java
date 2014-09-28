@@ -150,34 +150,6 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Add an element to be displayed with this algorithm frame
-	 * 
-	 * @param element
-	 * @return an empty string, as a convenience so elements can be added as a
-	 *         side effect of constructing show(...) message arguments
-	 */
-	public String plotElement(AlgorithmDisplayElement element) {
-		do {
-			if (AlgorithmDisplayElement.rendering()) {
-				element.render();
-				break;
-			}
-
-			// Do nothing if we're running just to calculate the total steps
-			if (!mTotalStepsKnown)
-				break;
-
-			// If there's an active background layer, add it to that instead
-			Layer targetLayer = mActiveBackgroundLayer;
-			if (targetLayer == null)
-				targetLayer = mForegroundLayer;
-			targetLayer.add(element);
-
-		} while (false);
-		return "";
-	}
-
-	/**
 	 * Open a background layer. Subsequent plot() commands will be redirected to
 	 * this layer. Must be balanced by a call to closeLayer(). Layers are
 	 * plotted in alphabetical order, so the last layer plotted is topmost in
@@ -218,12 +190,40 @@ public class AlgorithmStepper {
 		mBackgroundLayers.remove(key);
 	}
 
+	/**
+	 * Add an element to be displayed with this algorithm frame
+	 * 
+	 * @param element
+	 * @return an empty string, as a convenience so elements can be added as a
+	 *         side effect of constructing show(...) message arguments
+	 */
+	public String plot(AlgorithmDisplayElement element) {
+		do {
+			if (AlgorithmDisplayElement.rendering()) {
+				element.render();
+				break;
+			}
+
+			// Do nothing if we're running just to calculate the total steps
+			if (!mTotalStepsKnown)
+				break;
+
+			// If there's an active background layer, add it to that instead
+			Layer targetLayer = mActiveBackgroundLayer;
+			if (targetLayer == null)
+				targetLayer = mForegroundLayer;
+			targetLayer.add(element);
+
+		} while (false);
+		return "";
+	}
+
 	public String plotRay(Point p1, Point p2) {
-		return plotElement(new RayElement(p1, p2));
+		return plot(new RayElement(p1, p2));
 	}
 
 	public String plotLine(Point p1, Point p2) {
-		return plotElement(new LineElement(p1, p2));
+		return plot(new LineElement(p1, p2));
 	}
 
 	public String plot(Point point) {
@@ -231,7 +231,7 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Point point, float radius) {
-		return plotElement(new PointElement(point, radius));
+		return plot(new PointElement(point, radius));
 	}
 
 	public String plot(Polygon polygon) {
@@ -239,18 +239,18 @@ public class AlgorithmStepper {
 	}
 
 	public String plot(Polygon polygon, boolean filled) {
-		return plotElement(new PolygonElement(polygon,
+		return plot(new PolygonElement(polygon,
 				filled ? PolygonElement.Style.FILLED
 						: PolygonElement.Style.BOUNDARY));
 	}
 
 	public String plotPolyline(Collection<Point> endpoints) {
-		return plotElement(new PolygonElement(new Polygon(endpoints),
+		return plot(new PolygonElement(new Polygon(endpoints),
 				PolygonElement.Style.POLYLINE));
 	}
 
 	public String plotMesh(GeometryContext meshContext) {
-		return plotElement(new MeshElement(meshContext));
+		return plot(new MeshElement(meshContext));
 	}
 
 	public String setColor(int color) {
@@ -580,7 +580,6 @@ public class AlgorithmStepper {
 	private int mTargetStep;
 	private int mCurrentStep;
 	private int mTotalSteps;
-	// If false, all calls to step() return false
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private boolean mTotalStepsKnown;

@@ -30,9 +30,6 @@ public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
-	// Temporary debugging use
-	public static final boolean DB_PERSIST = false;
-
 	/**
 	 * Get the singleton instance of the options object
 	 */
@@ -332,11 +329,8 @@ public class AlgorithmOptions {
 	}
 
 	void restoreStepperState() {
-		final boolean db = DB_PERSIST;
 		String mCurrentWidgetValuesScript = AppPreferences.getString(
 				PERSIST_KEY_WIDGET_VALUES, null);
-		if (db)
-			pr("\nrestoreStepperState, script " + mCurrentWidgetValuesScript);
 		if (mCurrentWidgetValuesScript != null) {
 			JSONParser parser = new JSONParser(mCurrentWidgetValuesScript);
 			Map<String, String> values = (Map) parser.next();
@@ -349,32 +343,24 @@ public class AlgorithmOptions {
 				w.setValue(value);
 			}
 		}
-		if (db)
-			pr(" done restoring\n");
 		mPrepared = true;
 	}
 
 	private void persistStepperStateAux() {
-		final boolean db = DB_PERSIST;
-		if (db)
-			pr("persist, flush required " + d(mFlushRequired));
 		if (!mFlushRequired)
 			return;
-		// TODO: targetstep should be persisted whenever slider changes, not
-		// just here
+
 		String newWidgetValuesScript = null;
 		synchronized (AlgorithmStepper.getLock()) {
 			newWidgetValuesScript = saveValues();
 		}
-		if (db)
-			pr(" saving widget values\n");
 		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
 				newWidgetValuesScript);
+
 		mFlushRequired = false;
 	}
 
 	void persistStepperState(boolean withDelay) {
-		final boolean db = DB_PERSIST;
 		mFlushRequired = true;
 		if (!withDelay) {
 			persistStepperStateAux();
@@ -401,14 +387,9 @@ public class AlgorithmOptions {
 				if (this != mActiveFlushOperation) {
 					return;
 				}
-				if (db)
-					pr("performing delayed flush for handler " + nameOf(this));
 				persistStepperStateAux();
 			}
 		};
-		if (db)
-			pr(" posting delayed flush, handler "
-					+ nameOf(mActiveFlushOperation));
 		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
 	}
 

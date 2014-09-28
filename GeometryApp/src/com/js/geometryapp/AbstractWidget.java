@@ -114,7 +114,6 @@ public abstract class AbstractWidget {
 	 *            the new internal string representation of the value
 	 */
 	public final void setValue(String internalValue) {
-		final boolean db = AlgorithmOptions.DB_PERSIST;
 		assertUIThread();
 
 		if (internalValue == null)
@@ -133,9 +132,6 @@ public abstract class AbstractWidget {
 		if (!AlgorithmOptions.sharedInstance().isPrepared())
 			return;
 
-		if (db)
-			pr("widget " + getId() + " value " + oldValue + " --> "
-					+ internalValue);
 		synchronized (AlgorithmStepper.getLock()) {
 			for (Listener listener : mListeners) {
 				listener.valueChanged(this);
@@ -145,12 +141,8 @@ public abstract class AbstractWidget {
 			// widget's 'recalc' flag exists and is false
 			boolean recalcFlag = this.boolAttr(ATTR_RECALC_ALGORITHM_STEPS,
 					true);
-			AlgorithmStepper.sharedInstance().refresh(recalcFlag,
-					"new value '" + internalValue + "' for " + getId());
+			AlgorithmStepper.sharedInstance().refresh(recalcFlag);
 		}
-		if (db)
-			pr("  posting persist");
-
 		AlgorithmOptions.sharedInstance().persistStepperState(true);
 	}
 

@@ -271,20 +271,15 @@ public class AlgorithmStepper {
 	 * Recalculates the number of steps in the algorithm, then runs to the
 	 * target step and displays that frame.
 	 */
-	public void refresh(String debugContext) {
-		refresh(true, debugContext);
+	public void refresh() {
+		refresh(true);
 	}
 
 	/**
 	 * Request a refresh of the algorithm display, optionally recalculating
 	 * steps.
 	 */
-	void refresh(boolean recalculateAlgorithmSteps, String debugContext) {
-		final boolean db = AlgorithmOptions.DB_PERSIST;
-		if (db)
-			pr("refresh, recalc " + d(recalculateAlgorithmSteps) + " context "
-					+ debugContext + " stepsKnown=" + mTotalStepsKnown
-					+ " totalSteps=" + mTotalSteps);
+	void refresh(boolean recalculateAlgorithmSteps) {
 		mTotalStepsKnown = false;
 
 		if (recalculateAlgorithmSteps) {
@@ -307,7 +302,7 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private void setTargetStepField(int value, String context) {
+	private void setTargetStepField(int value) {
 		ASSERT(value >= 0);
 		if (mTargetStep == value)
 			return;
@@ -331,7 +326,7 @@ public class AlgorithmStepper {
 		// well
 		if (previousTargetStep >= previousTotalSteps - 1)
 			newTargetStep = mTotalSteps - 1;
-		setTargetStepField(newTargetStep, "setTotalStepsKnown");
+		setTargetStepField(newTargetStep);
 	}
 
 	/**
@@ -476,7 +471,7 @@ public class AlgorithmStepper {
 				mIgnoreStepperView = false;
 				mStepperView.setTargetStep(mTargetStep);
 				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
-					refresh(false, "updateStepperView");
+					refresh(false);
 				}
 			}
 		}
@@ -487,8 +482,7 @@ public class AlgorithmStepper {
 		if (mIgnoreStepperView) {
 			return;
 		}
-		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps - 1),
-				"setTargetStep");
+		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps - 1));
 		updateStepperView(true);
 	}
 

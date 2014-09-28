@@ -2,6 +2,7 @@ package com.js.geometry;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import com.js.basic.Tools;
@@ -226,7 +227,7 @@ public class Polygon {
 		}
 		p.reverse();
 		p.rotateBy(MyMath.M_DEG);
-		p.perturb(context);
+		p.perturb(new Random(1));
 		return p;
 	}
 
@@ -408,9 +409,9 @@ public class Polygon {
 	}
 
 	// These methods mutate the polygon:
-	public void perturb(GeometryContext context) {
+	public void perturb(Random random) {
 		for (Point pt : mVertices) {
-			context.perturb(pt);
+			MyMath.perturb(random, pt);
 		}
 	}
 

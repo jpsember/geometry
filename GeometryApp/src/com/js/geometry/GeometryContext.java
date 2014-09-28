@@ -11,7 +11,6 @@ public final class GeometryContext {
 	public static final float PSEUDO_ANGLE_RANGE_12 = (PSEUDO_ANGLE_RANGE * .5f);
 	public static final float PSEUDO_ANGLE_RANGE_14 = (PSEUDO_ANGLE_RANGE * .25f);
 	public static final float PSEUDO_ANGLE_RANGE_34 = (PSEUDO_ANGLE_RANGE * .75f);
-	public static final float PERTURB_AMOUNT_DEFAULT = .5f;
 
 	public Random random() {
 		return mRandom;
@@ -59,17 +58,12 @@ public final class GeometryContext {
 		return mSeed;
 	}
 
-	public float perturbAmount() {
-		return mPerturbAmount;
-	}
-
 	public static GeometryContext contextWithRandomSeed(int seed) {
 		return new GeometryContext(seed);
 	}
 
 	public GeometryContext(int seed) {
 		resetWithSeed(seed);
-		mPerturbAmount = PERTURB_AMOUNT_DEFAULT;
 	}
 
 	public void resetWithSeed(int seed) {
@@ -83,22 +77,6 @@ public final class GeometryContext {
 			mRandom = new Random();
 		else
 			mRandom = new Random(seed);
-	}
-
-	public float perturb(float val) {
-		float GRID = mPerturbAmount;
-		float NOISE = GRID * .8f;
-
-		float aligned = (float) Math.floor((val / GRID) + .5f);
-		float frac = mRandom.nextFloat() * (2 * NOISE) - NOISE;
-		float ret = (aligned + frac) * GRID;
-
-		return ret;
-	}
-
-	public void perturb(Point pt) {
-		pt.x = perturb(pt.x);
-		pt.y = perturb(pt.y);
 	}
 
 	public void clearMesh() {
@@ -376,6 +354,5 @@ public final class GeometryContext {
 
 	private Random mRandom;
 	private int mSeed;
-	private float mPerturbAmount;
 	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
 }

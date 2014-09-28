@@ -70,7 +70,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				else
 					pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
 							/ (numPoints - 1), .49f * pointBounds.minDim());
-				mContext.perturb(pt);
+				MyMath.perturb(mRandom, pt);
 			} else {
 				pt = new Point(pointBounds.x + mRandom.nextFloat()
 						* pointBounds.width, pointBounds.y

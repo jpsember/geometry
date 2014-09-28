@@ -1,6 +1,9 @@
 package com.js.geometry;
 
 import static com.js.basic.Tools.*;
+
+import java.util.Random;
+
 import android.graphics.Matrix;
 
 public final class MyMath {
@@ -471,6 +474,22 @@ public final class MyMath {
 
 	public static boolean pseudoAngleIsConvex(float startAngle, float endAngle) {
 		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
+	}
+
+	public static float perturb(Random random, float val) {
+		final float GRID = PERTURB_AMOUNT_DEFAULT;
+		final float NOISE = GRID * .8f;
+
+		float aligned = (float) Math.floor((val / GRID) + .5f);
+		float frac = random.nextFloat() * (2 * NOISE) - NOISE;
+		float ret = (aligned + frac) * GRID;
+
+		return ret;
+	}
+
+	public static void perturb(Random random, Point pt) {
+		pt.x = perturb(random, pt.x);
+		pt.y = perturb(random, pt.y);
 	}
 
 }

@@ -14,8 +14,8 @@ import static com.js.basic.Tools.*;
 
 /**
  * Note: this class can be easily adapted to generate triangle strips for
- * arbitrary (planar) meshes within GeometryContexts, so long as certain edges
- * are flagged as polygon edges.
+ * arbitrary (planar) meshes within Meshes, so long as certain edges are flagged
+ * as polygon edges.
  */
 public class PolygonMesh {
 

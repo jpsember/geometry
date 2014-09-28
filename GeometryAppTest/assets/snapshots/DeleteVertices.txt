@@ -1,4 +1,4 @@
-GeometryContext:
+Mesh:
  HOG  --> IVY    JOB 
  IVY  --> HOG    KOI    LIL    JOB 
  KOI  --> MAC    LIL    IVY 
@@ -9,7 +9,7 @@ GeometryContext:
 
 Deleting: MAC
 
-GeometryContext:
+Mesh:
  HOG  --> IVY    JOB 
  IVY  --> HOG    KOI    LIL    JOB 
  KOI  --> LIL    IVY 
@@ -19,7 +19,7 @@ GeometryContext:
 
 Deleting: IVY
 
-GeometryContext:
+Mesh:
  HOG  --> JOB 
  NAG  --> JOB    LIL 
  KOI  --> LIL 
@@ -28,7 +28,7 @@ GeometryContext:
 
 Deleting: HOG
 
-GeometryContext:
+Mesh:
  LIL  --> JOB    KOI    NAG 
  NAG  --> JOB    LIL 
  KOI  --> LIL 
@@ -36,24 +36,24 @@ GeometryContext:
 
 Deleting: NAG
 
-GeometryContext:
+Mesh:
  LIL  --> JOB    KOI 
  JOB  --> LIL 
  KOI  --> LIL 
 
 Deleting: KOI
 
-GeometryContext:
+Mesh:
  LIL  --> JOB 
  JOB  --> LIL 
 
 Deleting: JOB
 
-GeometryContext:
+Mesh:
  LIL 
 
 Deleting: LIL
 
 after deleting all vertices:
-GeometryContext:
+Mesh:
 

@@ -211,7 +211,7 @@ public final class Mesh {
 	}
 
 	public String dump(boolean withVertexLocations, boolean withVertexNames) {
-		StringBuilder sb = new StringBuilder("GeometryContext:\n");
+		StringBuilder sb = new StringBuilder("Mesh:\n");
 		for (Vertex v : mVertexBuffer) {
 			sb.append(" ");
 			if (withVertexNames) {

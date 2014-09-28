@@ -1,4 +1,4 @@
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    DOE    EAT    COB 
  DOE  --> FAY    EAT    BOW 
@@ -9,7 +9,7 @@ GeometryContext:
 
 Deleting: EAT --> FAY
 
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    DOE    EAT    COB 
  DOE  --> FAY    EAT    BOW 
@@ -20,7 +20,7 @@ GeometryContext:
 
 Deleting: DOE --> BOW
 
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    EAT    COB 
  DOE  --> FAY    EAT 
@@ -31,7 +31,7 @@ GeometryContext:
 
 Deleting: EAT --> BOW
 
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    COB 
  DOE  --> FAY    EAT 
@@ -42,7 +42,7 @@ GeometryContext:
 
 Deleting: DOE --> FAY
 
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    COB 
  DOE  --> EAT 
@@ -53,7 +53,7 @@ GeometryContext:
 
 Deleting: EAT --> GAB
 
-GeometryContext:
+Mesh:
  ASK  --> BOW    COB 
  BOW  --> ASK    COB 
  DOE  --> EAT 
@@ -64,7 +64,7 @@ GeometryContext:
 
 Deleting: ASK --> BOW
 
-GeometryContext:
+Mesh:
  ASK  --> COB 
  BOW  --> COB 
  DOE  --> EAT 
@@ -75,7 +75,7 @@ GeometryContext:
 
 Deleting: COB --> EAT
 
-GeometryContext:
+Mesh:
  ASK  --> COB 
  BOW  --> COB 
  DOE  --> EAT 
@@ -86,7 +86,7 @@ GeometryContext:
 
 Deleting: COB --> GAB
 
-GeometryContext:
+Mesh:
  ASK  --> COB 
  BOW  --> COB 
  DOE  --> EAT 
@@ -97,7 +97,7 @@ GeometryContext:
 
 Deleting: ASK --> COB
 
-GeometryContext:
+Mesh:
  ASK 
  BOW  --> COB 
  DOE  --> EAT 
@@ -108,7 +108,7 @@ GeometryContext:
 
 Deleting: EAT --> DOE
 
-GeometryContext:
+Mesh:
  ASK 
  BOW  --> COB 
  DOE 
@@ -120,7 +120,7 @@ GeometryContext:
 Deleting: BOW --> COB
 
 after deleting all edges:
-GeometryContext:
+Mesh:
  ASK 
  BOW 
  DOE 

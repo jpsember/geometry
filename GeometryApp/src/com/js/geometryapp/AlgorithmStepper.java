@@ -21,6 +21,9 @@ import com.js.geometry.Rect;
 
 public class AlgorithmStepper {
 
+	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
+	static final String WIDGET_ID_TARGETSTEP = "_target_";
+
 	public static interface Delegate {
 		public void prepareOptions();
 
@@ -306,15 +309,11 @@ public class AlgorithmStepper {
 
 	private void setTargetStepField(int value, String context) {
 		ASSERT(value >= 0);
-		final boolean db = AlgorithmOptions.DB_PERSIST;
 		if (mTargetStep == value)
 			return;
-		if (db)
-			pr("\nsetTargetStep from " + d(mTargetStep) + " --> " + d(value)
-					+ " context:" + context + "\n");
 		mTargetStep = value;
 		// Update widget that is persisting this value
-		sOptions.setValue("targetstep", mTargetStep);
+		sOptions.setValue(WIDGET_ID_TARGETSTEP, mTargetStep);
 	}
 
 	private void setTotalStepsKnown() {
@@ -323,7 +322,7 @@ public class AlgorithmStepper {
 
 		mTotalStepsKnown = true;
 		mTotalSteps = mCurrentStep;
-		sOptions.setValue("totalsteps", mTotalSteps);
+		sOptions.setValue(WIDGET_ID_TOTALSTEPS, mTotalSteps);
 
 		// Clamp previous target step into new range
 		int newTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
@@ -342,11 +341,6 @@ public class AlgorithmStepper {
 		mDelegate = delegate;
 		// Now that views have been built, restore option values
 		prepareOptionsAux();
-		// Run algorithm to completion to determine the number of steps
-		mTotalStepsKnown = false;
-		performAlgorithm();
-		setTotalStepsKnown();
-		updateStepperView(true);
 	}
 
 	/**
@@ -545,8 +539,8 @@ public class AlgorithmStepper {
 
 		// Add hidden widgets to persist the target step, and the total steps
 		for (int i = 0; i < 2; i++) {
-			SliderWidget w = sOptions.buildSlider(i == 0 ? "targetstep"
-					: "totalsteps", 0, 1000000);
+			SliderWidget w = sOptions.buildSlider(i == 0 ? WIDGET_ID_TARGETSTEP
+					: WIDGET_ID_TOTALSTEPS, 0, 1000000);
 			w.attributes().put("hidden", true);
 			w.attributes().put(AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS,
 					false);
@@ -558,6 +552,21 @@ public class AlgorithmStepper {
 		mDelegate.prepareOptions();
 
 		sOptions.restoreStepperState();
+
+		// Restore algorithm information from saved widget values, if possible
+		mTotalStepsKnown = false;
+		int totalSteps = sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
+		int targetStep = sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
+		if (targetStep < totalSteps) {
+			mTotalStepsKnown = true;
+			mTotalSteps = totalSteps;
+			mTargetStep = targetStep;
+		} else {
+			// Run algorithm to completion to determine the number of steps
+			performAlgorithm();
+			setTotalStepsKnown();
+		}
+		updateStepperView(true);
 	}
 
 	/**

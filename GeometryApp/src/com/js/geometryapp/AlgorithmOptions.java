@@ -31,7 +31,7 @@ public class AlgorithmOptions {
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
 	// Temporary debugging use
-	public static final boolean DB_PERSIST = true;
+	public static final boolean DB_PERSIST = false;
 
 	/**
 	 * Get the singleton instance of the options object
@@ -364,8 +364,6 @@ public class AlgorithmOptions {
 		// just here
 		String newWidgetValuesScript = null;
 		synchronized (AlgorithmStepper.getLock()) {
-			setValue("targetstep", AlgorithmStepper.sharedInstance()
-					.targetStep());
 			newWidgetValuesScript = saveValues();
 		}
 		if (db)

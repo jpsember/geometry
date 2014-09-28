@@ -140,12 +140,9 @@ public abstract class AbstractWidget {
 			for (Listener listener : mListeners) {
 				listener.valueChanged(this);
 			}
-			// Every event that changes a widget value triggers a refresh
-			if (db)
-				pr("  refreshing stepper state");
-
-			// Always recalculate algorithm steps unless this widget's
-			// 'recalc' flag exists and is false
+			// Every event that changes a widget value triggers a refresh.
+			// In addition, always recalculate algorithm steps unless this
+			// widget's 'recalc' flag exists and is false
 			boolean recalcFlag = this.boolAttr(ATTR_RECALC_ALGORITHM_STEPS,
 					true);
 			AlgorithmStepper.sharedInstance().refresh(recalcFlag,

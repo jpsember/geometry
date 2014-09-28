@@ -17,6 +17,7 @@ import android.widget.LinearLayout;
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
 import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.ComboBoxWidget;
 import com.js.geometryapp.widget.SliderWidget;
@@ -83,6 +84,16 @@ public class AlgorithmOptions {
 	public ComboBoxWidget addComboBox(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
+		addWidget(w);
+		return w;
+	}
+
+	/**
+	 * Add a button widget
+	 */
+	public ButtonWidget addButton(String id, Object... attributePairs) {
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
+		ButtonWidget w = new ButtonWidget(sContext, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -307,6 +318,8 @@ public class AlgorithmOptions {
 		Map<String, String> values = new HashMap();
 		for (String widgetId : mWidgetsMap.keySet()) {
 			AbstractWidget w = mWidgetsMap.get(widgetId);
+			if (!w.boolAttr("hasvalue", true))
+				continue;
 			values.put(widgetId, w.getValue());
 		}
 		return JSONEncoder.toJSON(values);

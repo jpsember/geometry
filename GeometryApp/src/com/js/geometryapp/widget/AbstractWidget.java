@@ -264,5 +264,5 @@ public abstract class AbstractWidget {
 	// string representation of the value
 	private String mWidgetValue;
 
-	private Set<Listener> mListeners = new HashSet();
+	protected Set<Listener> mListeners = new HashSet();
 }

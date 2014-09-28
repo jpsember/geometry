@@ -11,6 +11,8 @@ import com.js.geometry.*;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
@@ -144,6 +146,12 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS,"value",true);
 		sOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
+		sOptions.addButton("Sample Button").addListener(new Listener() {
+			@Override
+			public void valueChanged(AbstractWidget widget) {
+				pr("Button pressed.");
+			}
+		});
 	}
 
 	private static AlgorithmOptions sOptions;

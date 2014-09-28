@@ -40,7 +40,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		boolean withDeletions = sOptions.getBooleanValue("Deletions");
 		boolean empty = sOptions.getBooleanValue("Empty");
 
-		mRandom = new Random(1);
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);

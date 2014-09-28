@@ -11,8 +11,6 @@ import com.js.geometry.Polygon;
 public abstract class AlgorithmDisplayElement {
 
 	public AlgorithmDisplayElement() {
-		if (AlgorithmStepper.UPDATE_EXPERIMENT)
-			sElementsConstructed++;
 		mLineWidth = sLineWidth;
 		mColor = sColor;
 	}

@@ -99,6 +99,7 @@ public final class Tools {
 		if (t == null)
 			t = new Throwable();
 		StringBuilder sb = new StringBuilder();
+		// sb.append(" {Thread" + nameOf(Thread.currentThread(), false) + "} ");
 
 		StackTraceElement[] elist = t.getStackTrace();
 

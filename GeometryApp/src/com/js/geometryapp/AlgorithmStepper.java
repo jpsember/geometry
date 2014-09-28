@@ -22,10 +22,6 @@ import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
 
-	// Simulate what performance will be if we replace step()+show() with just
-	// show()
-	static final boolean UPDATE_EXPERIMENT = false;
-
 	public static interface Delegate {
 		public void prepareOptions();
 
@@ -39,8 +35,6 @@ public class AlgorithmStepper {
 	 */
 	public static AlgorithmStepper sharedInstance() {
 		if (sStepper == null) {
-			if (UPDATE_EXPERIMENT)
-				warning("UPDATE_EXPERIMENT is true");
 			sStepper = new AlgorithmStepper();
 		}
 		return sStepper;
@@ -127,10 +121,6 @@ public class AlgorithmStepper {
 			}
 		} while (false);
 
-		if (UPDATE_EXPERIMENT) {
-			mActualUpdateValue = output;
-			return true;
-		}
 		return output;
 	}
 
@@ -141,8 +131,6 @@ public class AlgorithmStepper {
 		return stepAux(true);
 	}
 
-	private boolean mActualUpdateValue;
-
 	/**
 	 * Generate an algorithm step. For efficiency, should only be called if
 	 * step() returned true
@@ -152,18 +140,13 @@ public class AlgorithmStepper {
 	 *            displayed via side effects
 	 */
 	public void show(Object message) {
-		if (UPDATE_EXPERIMENT) {
-			if (!mActualUpdateValue) {
-				clearRenderElements();
-				return;
-			}
-		}
-		if (mTotalStepsKnown) {
-			String messageString = message.toString();
-			mFrameTitle = messageString;
-			throw new DesiredStepReachedException("reached desired step; "
-					+ messageString);
-		}
+		// Every call to show() should be guarded by call to step(), which only
+		// returns true if total steps are known
+		ASSERT(mTotalStepsKnown);
+
+		String messageString = message.toString();
+		mFrameTitle = messageString;
+		throw new DesiredStepReachedException(messageString);
 	}
 
 	/**
@@ -385,15 +368,6 @@ public class AlgorithmStepper {
 		if (mFrameTitle != null) {
 			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
 		}
-		clearRenderElements();
-		if (UPDATE_EXPERIMENT)
-			pr("elements constructed: "
-					+ AlgorithmDisplayElement.getElementCount());
-	}
-
-	private void clearRenderElements() {
-		mForegroundLayer.clear();
-		mFrameTitle = null;
 	}
 
 	/**
@@ -427,6 +401,8 @@ public class AlgorithmStepper {
 				mActiveBackgroundLayer = null;
 				mBackgroundLayers.clear();
 				mForegroundLayer.clear();
+				mFrameTitle = null;
+
 				AlgorithmDisplayElement.resetRenderStateVars();
 
 				if (!mTotalStepsKnown) {
@@ -444,11 +420,12 @@ public class AlgorithmStepper {
 					// sequence for which stepping is disabled
 					while (!mActiveStack.isEmpty())
 						popActive();
-					bigStep();
-					// Show message describing exception even if bigStep()
-					// returned false for some reason
+
 					pr(t + "\n" + stackTrace(t));
-					show("Caught: " + t);
+
+					if (bigStep()) {
+						show("Caught: " + t);
+					}
 				}
 
 				if (!mTotalStepsKnown) {

@@ -7,11 +7,6 @@ import static com.js.geometry.MyMath.*;
 
 public final class GeometryContext {
 
-	public static final float PSEUDO_ANGLE_RANGE = 8;
-	public static final float PSEUDO_ANGLE_RANGE_12 = (PSEUDO_ANGLE_RANGE * .5f);
-	public static final float PSEUDO_ANGLE_RANGE_14 = (PSEUDO_ANGLE_RANGE * .25f);
-	public static final float PSEUDO_ANGLE_RANGE_34 = (PSEUDO_ANGLE_RANGE * .75f);
-
 	public Random random() {
 		return mRandom;
 	}

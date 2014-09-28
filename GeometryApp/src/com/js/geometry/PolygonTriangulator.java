@@ -1,6 +1,7 @@
 package com.js.geometry;
 
 import static com.js.basic.Tools.*;
+import static com.js.geometry.MyMath.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -116,41 +117,38 @@ public class PolygonTriangulator {
 
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_SWEEPSTATUS);
-			s.plot(
-					new AlgorithmDisplayElement() {
+			s.plot(new AlgorithmDisplayElement() {
 
-						@Override
-						public void render() {
-							if (!mSweepLineVisible)
-								return;
-							s.setColor(COLOR_DARKGREEN);
-							s.setLineWidth(1);
-							Rect r = s.algorithmRect();
-							float horizExtent = r.width * .25f;
-							s.plotLine(new Point(-horizExtent,
-									mSweepLinePosition), new Point(r.width
-									+ horizExtent, mSweepLinePosition));
-							s.setColor(COLOR_DARKGREEN);
-							s.setLineWidth(2);
-							for (SweepEdge e : mSweepStatus) {
+				@Override
+				public void render() {
+					if (!mSweepLineVisible)
+						return;
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(1);
+					Rect r = s.algorithmRect();
+					float horizExtent = r.width * .25f;
+					s.plotLine(
+							new Point(-horizExtent, mSweepLinePosition),
+							new Point(r.width + horizExtent, mSweepLinePosition));
+					s.setColor(COLOR_DARKGREEN);
+					s.setLineWidth(2);
+					for (SweepEdge e : mSweepStatus) {
 
-								// Extrapolate a little above and below the
-								// sweep line
-								float vertExtent = 22 * AlgorithmRenderer
-										.algorithmToDensityPixels();
-								Point p1 = e.positionOnSweepLine(
-										mSweepLinePosition - vertExtent * .8f,
-										mContext, true);
-								Point p2 = e.positionOnSweepLine(
-										mSweepLinePosition + vertExtent * 1.2f,
-										mContext, true);
-								s.plotRay(p1, p2);
+						// Extrapolate a little above and below the
+						// sweep line
+						float vertExtent = 22 * AlgorithmRenderer
+								.algorithmToDensityPixels();
+						Point p1 = e.positionOnSweepLine(mSweepLinePosition
+								- vertExtent * .8f, mContext, true);
+						Point p2 = e.positionOnSweepLine(mSweepLinePosition
+								+ vertExtent * 1.2f, mContext, true);
+						s.plotRay(p1, p2);
 
-								Point pt = e.positionOnSweepLine(
-										mSweepLinePosition, mContext, false);
-								s.plot(pt);
-							}
-						}
+						Point pt = e.positionOnSweepLine(mSweepLinePosition,
+								mContext, false);
+						s.plot(pt);
+					}
+				}
 			});
 			s.closeLayer();
 		}
@@ -168,7 +166,7 @@ public class PolygonTriangulator {
 			@Override
 			public int compare(Vertex va, Vertex vb) {
 				float diff = va.y - vb.y;
-				mContext.testForZero(diff);
+				testForZero(diff);
 				return (int) Math.signum(diff);
 			}
 		});
@@ -206,7 +204,7 @@ public class PolygonTriangulator {
 		int type;
 		if (opt.y > v.y) {
 			if (ipt.y > v.y) {
-				if (mContext.pseudoAngleIsConvex(outgoing.angle(), incoming
+				if (pseudoAngleIsConvex(outgoing.angle(), incoming
 						.dual().angle())) {
 					type = VTYPE_START;
 				} else {
@@ -217,7 +215,7 @@ public class PolygonTriangulator {
 			}
 		} else {
 			if (ipt.y < v.y) {
-				if (mContext.pseudoAngleIsConvex(outgoing.angle(), incoming
+				if (pseudoAngleIsConvex(outgoing.angle(), incoming
 						.dual().angle())) {
 					type = VTYPE_END;
 				} else {
@@ -344,7 +342,7 @@ public class PolygonTriangulator {
 			if (s.step())
 				s.show("Removing status edge" + plot(se));
 			boolean existed = mSweepStatus.remove(se);
-			if (mContext.checkError(!existed)) {
+			if (!existed) {
 				GeometryException.raise("could not find item in sweep status");
 			}
 		}
@@ -474,7 +472,7 @@ public class PolygonTriangulator {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					Vertex v1 = mMonotoneQueue.peek(false, 0);
 					Vertex v2 = mMonotoneQueue.peek(false, 1);
-					float distance = mContext.pointUnitLineSignedDistance(
+					float distance = pointUnitLineSignedDistance(
 							vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (s.step())

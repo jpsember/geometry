@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 import com.js.basic.Tools;
 
 import static com.js.basic.Tools.*;
+import static com.js.geometry.MyMath.*;
 
 import android.graphics.Matrix;
 
@@ -354,18 +355,18 @@ public class Polygon {
 	 * 
 	 * @return 1 if CCW, -1 if CW, 0 if unknown (e.g. nonsimple)
 	 */
-	public int orientation(GeometryContext context) {
+	public int orientation() {
 		if (numVertices() < 3)
 			die("too few vertices");
 		float totalSwept = 0;
 		Point v0 = vertexMod(-2);
 		Point v1 = vertexMod(-1);
-		float angle01 = context.pseudoPolarAngleOfSegment(v0, v1);
+		float angle01 = pseudoPolarAngleOfSegment(v0, v1);
 
 		for (int i = 0; i < numVertices(); i++) {
 			Point v2 = vertex(i);
-			float angle12 = context.pseudoPolarAngleOfSegment(v1, v2);
-			float subtendedAngle = context.normalizePseudoAngle(angle12
+			float angle12 = pseudoPolarAngleOfSegment(v1, v2);
+			float subtendedAngle = normalizePseudoAngle(angle12
 					- angle01);
 			totalSwept += subtendedAngle;
 			angle01 = angle12;
@@ -375,8 +376,7 @@ public class Polygon {
 		if (Math.abs(totalSwept - (-MyMath.PSEUDO_ANGLE_RANGE)) < .01f) {
 			return -1;
 		}
-		if (context.checkError(!(Math.abs(totalSwept
-				- MyMath.PSEUDO_ANGLE_RANGE) < .01f))) {
+		if (!(Math.abs(totalSwept - MyMath.PSEUDO_ANGLE_RANGE) < .01f)) {
 			return 0;
 		}
 		return 1;
@@ -384,7 +384,7 @@ public class Polygon {
 
 	// Returns true iff polygon has ccw orientation
 	public boolean isCCW(GeometryContext context) {
-		int orientation = orientation(context);
+		int orientation = orientation();
 		if (orientation == 0)
 			GeometryException.raise("Polygon winding number unknown");
 		return (orientation == 1);

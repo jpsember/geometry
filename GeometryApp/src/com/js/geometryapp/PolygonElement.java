@@ -1,6 +1,5 @@
 package com.js.geometryapp;
 
-import com.js.geometry.GeometryContext;
 import com.js.geometry.Polygon;
 import static com.js.basic.Tools.*;
 
@@ -20,7 +19,7 @@ class PolygonElement extends AlgorithmDisplayElement {
 	public void render() {
 
 		if (mStyle == Style.FILLED) {
-			int orientation = mPolygon.orientation(new GeometryContext(1));
+			int orientation = mPolygon.orientation();
 			if (orientation != 1) {
 				pr("polygon isn't ccw orientation=" + orientation);
 				mStyle = Style.BOUNDARY;

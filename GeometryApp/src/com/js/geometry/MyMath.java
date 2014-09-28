@@ -20,6 +20,40 @@ public final class MyMath {
 	public static final float PSEUDO_ANGLE_RANGE_34 = (PSEUDO_ANGLE_RANGE * .75f);
 	public static final float PERTURB_AMOUNT_DEFAULT = .5f;
 
+	/**
+	 * Test if a value is essentially zero, and raise exception if so
+	 * 
+	 * @param value
+	 */
+	public static void testForZero(float value) {
+		testForZero(value, 1e-8f);
+	}
+
+	/**
+	 * Test if a value is essentially zero, and raise exception if so
+	 * 
+	 * @param value
+	 * @param epsilon
+	 */
+	public static void testForZero(float value, float epsilon) {
+		if (Math.abs(value) <= epsilon) {
+			GeometryException.raise("Value is very near zero: " + value
+					+ " (epsilon " + epsilon + ")");
+		}
+	}
+
+	/**
+	 * Raise exception if value's magnitude exceeds MAXVALUE
+	 * 
+	 * @param value
+	 */
+	public static void testForOverflow(float value) {
+		if (value > MyMath.MAXVALUE || value < -MyMath.MAXVALUE
+				|| Float.isNaN(value)) {
+			GeometryException.raise("Value has overflowed: " + value);
+		}
+	}
+
 	public static int myMod(int value, int divisor) {
 		ASSERT(divisor > 0);
 		int k = value % divisor;
@@ -153,11 +187,6 @@ public final class MyMath {
 		return b;
 	}
 
-	public static float polarAngleOfSegment(Point s1, Point s2) {
-		return (float) Math.atan2(s2.y - s1.y, s2.x - s1.x);
-	}
-
-	// TODO: should these be MyMath functions, and not Point functions?
 	public static Point add(Point a, Point b) {
 		return new Point(a.x + b.x, a.y + b.y);
 	}
@@ -166,15 +195,10 @@ public final class MyMath {
 		return new Point(a.x - b.x, a.y - b.y);
 	}
 
-	//
 	public static Point interpolateBetween(Point s1, Point s2, float parameter) {
 		return new Point(
 				MyMath.interpolateBetweenScalars(s1.x, s2.x, parameter),
 				MyMath.interpolateBetweenScalars(s1.y, s2.y, parameter));
-	}
-
-	public double polarAngle(Point point) {
-		return Math.atan2(point.y, point.x);
 	}
 
 	public static Point pointOnCircle(Point origin, float angle, float radius) {
@@ -193,6 +217,114 @@ public final class MyMath {
 	public static float distanceBetween(Point s1, Point s2) {
 		return (float) Math
 				.sqrt(squaredMagnitudeOfRay(s2.x - s1.x, s2.y - s1.y));
+	}
+
+	public static float pointUnitLineSignedDistance(Point pt, Point s1, Point s2) {
+		// Translate so s1 is at origin
+		float sx = s2.x - s1.x;
+		float sy = s2.y - s1.y;
+		float pt_x = pt.x - s1.x;
+		float pt_y = pt.y - s1.y;
+		return -sy * pt_x + sx * pt_y;
+	}
+
+	/**
+	 * Calculate point of intersection of line segment with horizontal line
+	 * 
+	 * @param pt1
+	 * @param pt2
+	 * @param yLine
+	 * @param parameter
+	 *            if not null, and intersection point found, parameter of
+	 *            intersection returned here
+	 * @return point of intersection, or null
+	 */
+	public static Point segHorzLineIntersection(Point pt1, Point pt2,
+			float yLine, float[] parameter) {
+		Point ipt = null;
+
+		float denom = pt2.y - pt1.y;
+		testForZero(denom);
+
+		float numer = yLine - pt1.y;
+		float t = numer / denom;
+
+		if (!(t < 0 || t > 1)) {
+			if (parameter != null)
+				parameter[0] = t;
+
+			ipt = new Point(pt1.x + (pt2.x - pt1.x) * t, pt1.y + denom * t);
+		}
+		return ipt;
+	}
+
+	public static Point segSegIntersection(Point s1, Point s2, Point t1,
+			Point t2, float[] parameters) {
+		Point ipt = null;
+		do {
+			// First see if segment's bounding boxes intersect; if not, no
+			// potentially troubling
+			// calculations need be performed
+			{
+				Rect sBounds = Rect.rectContainingPoints(s1, s2);
+				Rect tBounds = Rect.rectContainingPoints(t1, t2);
+				// Add a bit of overlap to one rect to ensure a clear separation
+				float eps = 1e-8f;
+				sBounds.inset(-eps, -eps);
+				if (!sBounds.intersects(tBounds))
+					break;
+			}
+
+			float ty = (t2.y - t1.y);
+			float sx = (s2.x - s1.x);
+			float tx = (t2.x - t1.x);
+			float sy = (s2.y - s1.y);
+
+			float denom = ty * sx - tx * sy;
+
+			testForZero(denom);
+
+			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
+			float numer2 = sx * (s1.y - t1.y) - sy * (s1.x - t1.x);
+
+			float ua = numer1 / denom;
+			if (ua < 0 || ua > 1)
+				break;
+			float ub = numer2 / denom;
+			if (ub < 0 || ub > 1)
+				break;
+
+			if (parameters != null) {
+				parameters[0] = ua;
+				parameters[1] = ub;
+			}
+			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
+		} while (false);
+		return ipt;
+	}
+
+	public static Point lineLineIntersection(Point s1, Point s2, Point t1,
+			Point t2, float[] parameter) {
+		Point ipt = null;
+		do {
+			float ty = (t2.y - t1.y);
+			float sx = (s2.x - s1.x);
+			float tx = (t2.x - t1.x);
+			float sy = (s2.y - s1.y);
+
+			float denom = ty * sx - tx * sy;
+
+			testForZero(denom);
+
+			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
+			float ua = numer1 / denom;
+			if (parameter != null) {
+				parameter[0] = ua;
+			}
+
+			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
+		} while (false);
+		return ipt;
 	}
 
 	public static String dumpMatrix(float[] values, int rows, int columns,
@@ -265,4 +397,80 @@ public final class MyMath {
 				* (ln1.y - ln0.y);
 		return area;
 	}
+
+	public static float polarAngleOfSegment(Point s1, Point s2) {
+		return polarAngle(s2.x - s1.x, s2.y - s1.y);
+	}
+
+	public static float polarAngle(Point ray) {
+		return polarAngle(ray.x, ray.y);
+	}
+
+	public static float polarAngle(float x, float y) {
+		float max = Math.max(Math.abs(x), Math.abs(y));
+		if (max <= 1e-8f) {
+			GeometryException.raise("Point is too close to origin: " + x + ","
+					+ y);
+		}
+		return (float) Math.atan2(y, x);
+	}
+
+	public static float pseudoPolarAngle(Point point) {
+		return pseudoPolarAngle(point.x, point.y);
+	}
+
+	public static float pseudoPolarAngle(float x, float y) {
+		// For consistency, always insist that y is nonnegative
+		boolean negateFlag = (y <= 0);
+		if (negateFlag)
+			y = -y;
+
+		float ret;
+		if (y > Math.abs(x)) {
+			float rat = x / y;
+			ret = PSEUDO_ANGLE_RANGE_14 - rat;
+		} else {
+			testForZero(x);
+			float rat = y / x;
+			if (x < 0) {
+				ret = PSEUDO_ANGLE_RANGE_12 + rat;
+			} else {
+				ret = rat;
+			}
+		}
+		if (negateFlag)
+			ret = -ret;
+
+		return ret;
+	}
+
+	public static float pseudoPolarAngleOfSegment(Point s1, Point s2) {
+		return pseudoPolarAngle(s2.x - s1.x, s2.y - s1.y);
+	}
+
+	public static float normalizePseudoAngle(float a) {
+		float b = a;
+		if (b < -PSEUDO_ANGLE_RANGE_12) {
+			b += PSEUDO_ANGLE_RANGE;
+
+			if ((b < -PSEUDO_ANGLE_RANGE_12)) {
+				GeometryException.raise("Cannot normalize " + a);
+			}
+		} else if (b >= PSEUDO_ANGLE_RANGE_12) {
+			b -= PSEUDO_ANGLE_RANGE;
+			if ((b >= PSEUDO_ANGLE_RANGE_12)) {
+				GeometryException.raise("Cannot normalize " + a);
+			}
+		}
+		return b;
+	}
+
+	public static boolean pseudoAngleIsConvex(float angle) {
+		return angle > 0;
+	}
+
+	public static boolean pseudoAngleIsConvex(float startAngle, float endAngle) {
+		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
+	}
+
 }

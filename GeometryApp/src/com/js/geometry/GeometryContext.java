@@ -3,6 +3,7 @@ package com.js.geometry;
 import java.util.ArrayList;
 import java.util.Random;
 import static com.js.basic.Tools.*;
+import static com.js.geometry.MyMath.*;
 
 public final class GeometryContext {
 
@@ -82,138 +83,6 @@ public final class GeometryContext {
 			mRandom = new Random();
 		else
 			mRandom = new Random(seed);
-	}
-
-	public boolean checkError(boolean errorFlag) {
-		return errorFlag;
-	}
-
-	/**
-	 * Test if a value is essentially zero, and raise exception if so
-	 * 
-	 * @param value
-	 */
-	public void testForZero(float value) {
-		testForZero(value, 1e-8f);
-	}
-
-	/**
-	 * Test if a value is essentially zero, and raise exception if so
-	 * 
-	 * @param value
-	 * @param epsilon
-	 */
-	public void testForZero(float value, float epsilon) {
-		if (checkError(Math.abs(value) <= epsilon)) {
-			GeometryException.raise("Value is very near zero: " + value
-					+ " (epsilon " + epsilon + ")");
-		}
-	}
-
-	/**
-	 * Raise exception if reference is null
-	 * 
-	 * @param ptr
-	 */
-	public void testForNil(Object ptr) {
-		if (ptr == null)
-			GeometryException.raise("Object is null");
-	}
-
-	/**
-	 * Raise exception if value's magnitude exceeds MAXVALUE
-	 * 
-	 * @param value
-	 */
-	public void testForOverflow(float value) {
-		if (checkError(value > MyMath.MAXVALUE || value < -MyMath.MAXVALUE
-				|| Float.isNaN(value))) {
-			GeometryException.raise("Value has overflowed: " + value);
-		}
-	}
-
-	public float polarAngleOfSegment(Point s1, Point s2) {
-		return polarAngle(s2.x - s1.x, s2.y - s1.y);
-	}
-
-	public float polarAngle(Point ray) {
-		return polarAngle(ray.x, ray.y);
-	}
-
-	public float polarAngle(float x, float y) {
-		float max = Math.max(Math.abs(x), Math.abs(y));
-		if (checkError(max <= 1e-8f)) {
-			GeometryException.raise("Point is too close to origin: " + x + ","
-					+ y);
-		}
-		return (float) Math.atan2(y, x);
-	}
-
-	public float pseudoPolarAngle(Point point) {
-		return pseudoPolarAngle(point.x, point.y);
-	}
-
-	public float pseudoPolarAngle(float x, float y) {
-		// For consistency, always insist that y is nonnegative
-		boolean negateFlag = (y <= 0);
-		if (negateFlag)
-			y = -y;
-
-		float ret;
-		if (y > Math.abs(x)) {
-			float rat = x / y;
-			ret = PSEUDO_ANGLE_RANGE_14 - rat;
-		} else {
-			testForZero(x);
-			float rat = y / x;
-			if (x < 0) {
-				ret = PSEUDO_ANGLE_RANGE_12 + rat;
-			} else {
-				ret = rat;
-			}
-		}
-		if (negateFlag)
-			ret = -ret;
-
-		return ret;
-	}
-
-	public float pseudoPolarAngleOfSegment(Point s1, Point s2) {
-		return pseudoPolarAngle(s2.x - s1.x, s2.y - s1.y);
-	}
-
-	public float normalizePseudoAngle(float a) {
-		float b = a;
-		if (b < -PSEUDO_ANGLE_RANGE_12) {
-			b += PSEUDO_ANGLE_RANGE;
-
-			if (checkError((b < -PSEUDO_ANGLE_RANGE_12))) {
-				GeometryException.raise("Cannot normalize " + a);
-			}
-		} else if (b >= PSEUDO_ANGLE_RANGE_12) {
-			b -= PSEUDO_ANGLE_RANGE;
-			if (checkError((b >= PSEUDO_ANGLE_RANGE_12))) {
-				GeometryException.raise("Cannot normalize " + a);
-			}
-		}
-		return b;
-	}
-
-	public boolean pseudoAngleIsConvex(float angle) {
-		return angle > 0;
-	}
-
-	public boolean pseudoAngleIsConvex(float startAngle, float endAngle) {
-		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
-	}
-
-	public float pointUnitLineSignedDistance(Point pt, Point s1, Point s2) {
-		// Translate so s1 is at origin
-		float sx = s2.x - s1.x;
-		float sy = s2.y - s1.y;
-		float pt_x = pt.x - s1.x;
-		float pt_y = pt.y - s1.y;
-		return -sy * pt_x + sx * pt_y;
 	}
 
 	public float perturb(float val) {
@@ -313,7 +182,7 @@ public final class GeometryContext {
 				output = edge;
 			}
 		} while (false);
-		if (checkError(output == null)) {
+		if (output == null) {
 			GeometryException
 					.raise("cannot find polygonal edge leaving vertex " + v);
 		}
@@ -334,7 +203,7 @@ public final class GeometryContext {
 				output = edge;
 			}
 		} while (false);
-		if (checkError(output == null)) {
+		if (output == null) {
 			GeometryException
 					.raise("cannot find polygonal edge entering vertex " + v);
 		}
@@ -422,14 +291,13 @@ public final class GeometryContext {
 			// It's a degeneracy if the angle between the new edge and its
 			// neighbors is too close to zero or PI/2 ...
 			Edge degenerateEdge = null;
-			if (checkError(angleDifferenceIsDegenerate(edge.angle()
-					- existingEdge.angle()))) {
+			if (angleDifferenceIsDegenerate(edge.angle() - existingEdge.angle())) {
 				degenerateEdge = existingEdge;
 			}
 			Edge followingEdge = existingEdge.nextEdge();
 			if (followingEdge != existingEdge) {
-				if (checkError(angleDifferenceIsDegenerate(followingEdge
-						.angle() - edge.angle()))) {
+				if (angleDifferenceIsDegenerate(followingEdge.angle()
+						- edge.angle())) {
 					degenerateEdge = followingEdge;
 				}
 			}
@@ -450,39 +318,6 @@ public final class GeometryContext {
 				vertex.setEdges(edge);
 			}
 		}
-	}
-
-	/**
-	 * Calculate point of intersection of line segment with horizontal line
-	 * 
-	 * @param pt1
-	 * @param pt2
-	 * @param yLine
-	 * @return point of intersection, or null; if found, parameter of
-	 *         intersection available via getIntersectionParameter()
-	 */
-	public Point segHorzLineIntersection(Point pt1, Point pt2, float yLine) {
-		Point ipt = null;
-
-		float denom = pt2.y - pt1.y;
-		testForZero(denom);
-
-		float numer = yLine - pt1.y;
-		float t = numer / denom;
-
-		if (!(t < 0 || t > 1)) {
-			mParameter = t;
-
-			ipt = new Point(pt1.x + (pt2.x - pt1.x) * t, pt1.y + denom * t);
-		}
-		return ipt;
-	}
-
-	/**
-	 * Get parameter of last intersection calculated (segHorzLineIntersection)
-	 */
-	public float getIntersectionParameter() {
-		return mParameter;
 	}
 
 	private void insertEdgeAfter(Edge newEdge, Edge previousEdge) {
@@ -539,70 +374,8 @@ public final class GeometryContext {
 		return sb.toString();
 	}
 
-	public Point segSegIntersection(Point s1, Point s2, Point t1, Point t2) {
-		Point ipt = null;
-		do {
-			// First see if segment's bounding boxes intersect; if not, no
-			// potentially troubling
-			// calculations need be performed
-			{
-				Rect sBounds = Rect.rectContainingPoints(s1, s2);
-				Rect tBounds = Rect.rectContainingPoints(t1, t2);
-				// Add a bit of overlap to one rect to ensure a clear separation
-				float eps = 1e-8f;
-				sBounds.inset(-eps, -eps);
-				if (!sBounds.intersects(tBounds))
-					break;
-			}
-
-			float ty = (t2.y - t1.y);
-			float sx = (s2.x - s1.x);
-			float tx = (t2.x - t1.x);
-			float sy = (s2.y - s1.y);
-
-			float denom = ty * sx - tx * sy;
-
-			testForZero(denom);
-
-			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
-			float numer2 = sx * (s1.y - t1.y) - sy * (s1.x - t1.x);
-
-			float ua = numer1 / denom;
-			if (ua < 0 || ua > 1)
-				break;
-			float ub = numer2 / denom;
-			if (ub < 0 || ub > 1)
-				break;
-
-			mParameter = ua;
-			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
-		} while (false);
-		return ipt;
-	}
-
-	public Point lineLineIntersection(Point s1, Point s2, Point t1, Point t2) {
-		Point ipt = null;
-		do {
-			float ty = (t2.y - t1.y);
-			float sx = (s2.x - s1.x);
-			float tx = (t2.x - t1.x);
-			float sy = (s2.y - s1.y);
-
-			float denom = ty * sx - tx * sy;
-
-			testForZero(denom);
-
-			float numer1 = tx * (s1.y - t1.y) - ty * (s1.x - t1.x);
-			float ua = numer1 / denom;
-			mParameter = ua;
-			ipt = new Point(s1.x + ua * sx, s1.y + ua * sy);
-		} while (false);
-		return ipt;
-	}
-
 	private Random mRandom;
 	private int mSeed;
 	private float mPerturbAmount;
-	private float mParameter;
 	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
 }

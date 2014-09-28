@@ -157,8 +157,8 @@ public class Delaunay {
 		Edge edge = startEdge;
 		while (true) {
 			calculateBisector(site, edge.destVertex(), currSeg1, currSeg2);
-			Point polyVertex = mContext.lineLineIntersection(prevSeg1,
-					prevSeg2, currSeg1, currSeg2);
+			Point polyVertex = lineLineIntersection(prevSeg1, prevSeg2,
+					currSeg1, currSeg2, null);
 			p.add(polyVertex);
 
 			edge = edge.nextEdge();
@@ -410,7 +410,7 @@ public class Delaunay {
 			sx = sx2;
 
 		float epsilon = (sx * sx) * 1e-3f;
-		mContext.testForZero((float) determinant, epsilon);
+		testForZero((float) determinant, epsilon);
 		return determinant;
 	}
 
@@ -495,8 +495,8 @@ public class Delaunay {
 						if (prevEdge != null) {
 							// If segment connecting centroids intersects edge,
 							// just draw straight line
-							if (mContext.segSegIntersection(prevCentroid,
-									centroid, p1, p2) != null) {
+							if (segSegIntersection(prevCentroid, centroid, p1,
+									p2, null) != null) {
 								s.plotLine(prevCentroid, centroid);
 							} else {
 								Point midPoint = MyMath.interpolateBetween(p1,

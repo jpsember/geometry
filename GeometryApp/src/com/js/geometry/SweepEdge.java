@@ -49,9 +49,10 @@ public class SweepEdge {
 			sweepLinePosition = MyMath.clamp(sweepLinePosition, y0, y1);
 		}
 
-		Point ipt = context.segHorzLineIntersection(v1, v2, sweepLinePosition);
+		Point ipt = MyMath.segHorzLineIntersection(v1, v2, sweepLinePosition,
+				null);
 
-		if (context.checkError(ipt == null)) {
+		if (ipt == null) {
 			GeometryException.raise("Sweep " + d(sweepLinePosition)
 					+ " doesn't intersect edge " + edge);
 		}

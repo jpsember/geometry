@@ -31,7 +31,7 @@ public class AlgorithmOptions {
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
 	// Temporary debugging use
-	public static final boolean DB_PERSIST = false;
+	public static final boolean DB_PERSIST = true;
 
 	/**
 	 * Get the singleton instance of the options object
@@ -336,7 +336,7 @@ public class AlgorithmOptions {
 		String mCurrentWidgetValuesScript = AppPreferences.getString(
 				PERSIST_KEY_WIDGET_VALUES, null);
 		if (db)
-			pr("restoreStepperState, script " + mCurrentWidgetValuesScript);
+			pr("\nrestoreStepperState, script " + mCurrentWidgetValuesScript);
 		if (mCurrentWidgetValuesScript != null) {
 			JSONParser parser = new JSONParser(mCurrentWidgetValuesScript);
 			Map<String, String> values = (Map) parser.next();
@@ -350,7 +350,7 @@ public class AlgorithmOptions {
 			}
 		}
 		if (db)
-			pr(" done restoring");
+			pr(" done restoring\n");
 		mPrepared = true;
 	}
 

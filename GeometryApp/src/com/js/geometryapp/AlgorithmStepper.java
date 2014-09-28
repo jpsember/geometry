@@ -277,6 +277,11 @@ public class AlgorithmStepper {
 	 * steps.
 	 */
 	void refresh(boolean recalculateAlgorithmSteps, String debugContext) {
+		final boolean db = AlgorithmOptions.DB_PERSIST;
+		if (db)
+			pr("refresh, recalc " + d(recalculateAlgorithmSteps) + " context "
+					+ debugContext + " stepsKnown=" + mTotalStepsKnown
+					+ " totalSteps=" + mTotalSteps);
 		mTotalStepsKnown = false;
 
 		if (recalculateAlgorithmSteps) {
@@ -300,12 +305,13 @@ public class AlgorithmStepper {
 	}
 
 	private void setTargetStepField(int value, String context) {
+		ASSERT(value >= 0);
 		final boolean db = AlgorithmOptions.DB_PERSIST;
 		if (mTargetStep == value)
 			return;
 		if (db)
-			pr("setTargetStep from " + d(mTargetStep) + " --> " + d(value)
-					+ " context:" + context);
+			pr("\nsetTargetStep from " + d(mTargetStep) + " --> " + d(value)
+					+ " context:" + context + "\n");
 		mTargetStep = value;
 		// Update widget that is persisting this value
 		sOptions.setValue("targetstep", mTargetStep);
@@ -317,6 +323,7 @@ public class AlgorithmStepper {
 
 		mTotalStepsKnown = true;
 		mTotalSteps = mCurrentStep;
+		sOptions.setValue("totalsteps", mTotalSteps);
 
 		// Clamp previous target step into new range
 		int newTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
@@ -482,6 +489,7 @@ public class AlgorithmStepper {
 	}
 
 	void setTargetStep(int step) {
+		ASSERT(mTotalSteps > 0);
 		if (mIgnoreStepperView) {
 			return;
 		}
@@ -535,19 +543,21 @@ public class AlgorithmStepper {
 	private void prepareOptionsAux() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		// Add a hidden widget to persist the target step
-		SliderWidget w = sOptions.buildSlider("targetstep", 0, 1000000);
-		w.attributes().put("hidden", true);
-		w.attributes().put(AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
-		sOptions.addWidget(w);
+		// Add hidden widgets to persist the target step, and the total steps
+		for (int i = 0; i < 2; i++) {
+			SliderWidget w = sOptions.buildSlider(i == 0 ? "targetstep"
+					: "totalsteps", 0, 1000000);
+			w.attributes().put("hidden", true);
+			w.attributes().put(AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS,
+					false);
+			sOptions.addWidget(w);
+		}
 
 		if (mDelegate == null)
 			die("attempt to prepare options before delegate defined");
 		mDelegate.prepareOptions();
 
 		sOptions.restoreStepperState();
-
-		setTargetStep(sOptions.getIntValue("targetstep"));
 	}
 
 	/**

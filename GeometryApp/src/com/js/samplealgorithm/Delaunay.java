@@ -121,7 +121,7 @@ public class Delaunay {
 	}
 
 	public int nSites() {
-		return mContext.vertexBuffer().size() - INITIAL_MESH_VERTICES;
+		return mContext.numVertices() - INITIAL_MESH_VERTICES;
 	}
 
 	public Vertex site(int index) {
@@ -412,11 +412,11 @@ public class Delaunay {
 
 	private void chooseSampleVertices() {
 		int nSamples = determineOptimalSampleSize();
-		ArrayList<Vertex> vertices = mContext.vertexBuffer();
+		int numVertices = mContext.numVertices();
 		mSamples.clear();
 		for (int i = 0; i < nSamples; i++) {
-			int k = mRandom.nextInt(vertices.size());
-			Vertex sample = vertices.get(k);
+			int k = mRandom.nextInt(numVertices);
+			Vertex sample = mContext.vertex(k);
 			mSamples.add(sample);
 		}
 	}
@@ -539,7 +539,7 @@ public class Delaunay {
 		if (s.step())
 			s.show("Bearing line");
 
-		int maxIterations = mContext.vertexBuffer().size();
+		int maxIterations = mContext.numVertices();
 		while (true) {
 			if (maxIterations-- == 0)
 				GeometryException.raise("too many iterations");
@@ -590,7 +590,7 @@ public class Delaunay {
 	}
 
 	private int determineOptimalSampleSize() {
-		int populationSize = mContext.vertexBuffer().size();
+		int populationSize = mContext.numVertices();
 		// Calculate log_2 (population)
 		int optimalSize = (int) (Math.log(populationSize) / .693f);
 		if (s.step())

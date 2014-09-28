@@ -124,7 +124,7 @@ public class GeometryContextTest extends MyTestCase {
 		IOSnapshot.open();
 		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
 		triangulatePolygon();
-		int nVertices = mContext.vertexBuffer().size();
+		int nVertices = mContext.numVertices();
 		while (nVertices != 0) {
 			Vertex v = mContext.vertex(random().nextInt(nVertices));
 			nVertices--;

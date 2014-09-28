@@ -274,7 +274,7 @@ public class Polygon {
 
 	public int embedVertices(GeometryContext context, int vertexFlags) {
 
-		int embeddedVertexIndex = context.vertexBuffer().size();
+		int embeddedVertexIndex = context.numVertices();
 
 		for (int i = 0; i < numVertices(); i++) {
 			Point pt = vertex(i);
@@ -365,8 +365,7 @@ public class Polygon {
 		for (int i = 0; i < numVertices(); i++) {
 			Point v2 = vertex(i);
 			float angle12 = pseudoPolarAngleOfSegment(v1, v2);
-			float subtendedAngle = normalizePseudoAngle(angle12
-					- angle01);
+			float subtendedAngle = normalizePseudoAngle(angle12 - angle01);
 			totalSwept += subtendedAngle;
 			angle01 = angle12;
 			v1 = v2;

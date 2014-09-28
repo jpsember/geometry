@@ -6,10 +6,6 @@ import static com.js.geometry.MyMath.*;
 
 public final class GeometryContext {
 
-	public ArrayList<Vertex> vertexBuffer() {
-		return mVertexBuffer;
-	}
-
 	/**
 	 * Construct a list of all the edges
 	 * 
@@ -42,9 +38,6 @@ public final class GeometryContext {
 			}
 		}
 		return edges;
-	}
-
-	public GeometryContext() {
 	}
 
 	public void clearMesh() {
@@ -156,6 +149,10 @@ public final class GeometryContext {
 		return output;
 	}
 
+	public int numVertices() {
+		return mVertexBuffer.size();
+	}
+
 	public Vertex vertex(int index) {
 		return mVertexBuffer.get(index);
 	}
@@ -207,6 +204,45 @@ public final class GeometryContext {
 
 		edge.addFlags(Edge.FLAG_DELETED);
 		edge.dual().addFlags(Edge.FLAG_DELETED);
+	}
+
+	public String dumpMesh() {
+		return dumpMesh(true, false);
+	}
+
+	public String dumpMesh(boolean withVertexLocations, boolean withVertexNames) {
+		StringBuilder sb = new StringBuilder("GeometryContext:\n");
+		for (Vertex v : mVertexBuffer) {
+			sb.append(" ");
+			if (withVertexNames) {
+				sb.append(nameOf(v, false));
+				sb.append(' ');
+			}
+			if (withVertexLocations) {
+				sb.append(v.toStringAsInts());
+			}
+
+			Edge e = v.edges();
+			if (e != null) {
+				sb.append(" --> ");
+				while (true) {
+					Point dest = e.destVertex();
+					if (withVertexNames) {
+						sb.append(nameOf(dest, false));
+						sb.append(' ');
+					}
+					if (withVertexLocations) {
+						sb.append(dest.toStringAsInts());
+					}
+					e = e.nextEdge();
+					if (e == v.edges())
+						break;
+					sb.append("   ");
+				}
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
 	}
 
 	private void addEdgeToVertex(Edge edge, Vertex vertex) {
@@ -279,45 +315,6 @@ public final class GeometryContext {
 		angleDiff = Math.abs(normalizePseudoAngle(angleDiff));
 		return (angleDiff <= kMinSeparation || angleDiff >= PSEUDO_ANGLE_RANGE_12
 				- kMinSeparation);
-	}
-
-	public String dumpMesh() {
-		return dumpMesh(true, false);
-	}
-
-	public String dumpMesh(boolean withVertexLocations, boolean withVertexNames) {
-		StringBuilder sb = new StringBuilder("GeometryContext:\n");
-		for (Vertex v : mVertexBuffer) {
-			sb.append(" ");
-			if (withVertexNames) {
-				sb.append(nameOf(v, false));
-				sb.append(' ');
-			}
-			if (withVertexLocations) {
-				sb.append(v.toStringAsInts());
-			}
-
-			Edge e = v.edges();
-			if (e != null) {
-				sb.append(" --> ");
-				while (true) {
-					Point dest = e.destVertex();
-					if (withVertexNames) {
-						sb.append(nameOf(dest, false));
-						sb.append(' ');
-					}
-					if (withVertexLocations) {
-						sb.append(dest.toStringAsInts());
-					}
-					e = e.nextEdge();
-					if (e == v.edges())
-						break;
-					sb.append("   ");
-				}
-			}
-			sb.append("\n");
-		}
-		return sb.toString();
 	}
 
 	private ArrayList<Vertex> mVertexBuffer = new ArrayList();

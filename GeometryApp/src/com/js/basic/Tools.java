@@ -407,9 +407,10 @@ public final class Tools {
 			sb.append("' -> ");
 			Object v = m.get(k);
 			String s = "";
-			if (v != null)
+			if (v != null) {
 				s = chomp(v.toString());
-
+				// sb.append(v.getClass().getSimpleName() + ":");
+			}
 			sb.append(d(s));
 			sb.append("\n");
 		}

@@ -532,14 +532,10 @@ public class AlgorithmStepper {
 		sOptions = AlgorithmOptions.sharedInstance();
 
 		// Add hidden widgets to persist the target step, and the total steps
-		for (int i = 0; i < 2; i++) {
-			SliderWidget w = sOptions.buildSlider(i == 0 ? WIDGET_ID_TARGETSTEP
-					: WIDGET_ID_TOTALSTEPS, 0, 1000000);
-			w.attributes().put("hidden", true);
-			w.attributes().put(AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS,
-					false);
-			sOptions.addWidget(w);
-		}
+		sOptions.addSlider(WIDGET_ID_TARGETSTEP, "hidden", true,
+				AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
+		sOptions.addSlider(WIDGET_ID_TOTALSTEPS, "hidden", true,
+				AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
 
 		if (mDelegate == null)
 			die("attempt to prepare options before delegate defined");

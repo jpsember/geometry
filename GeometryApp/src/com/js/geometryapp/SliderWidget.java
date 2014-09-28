@@ -28,6 +28,7 @@ public class SliderWidget extends AbstractWidget {
 
 	public SliderWidget(Context context, Map attributes) {
 		super(context, attributes);
+		setValue(intAttr("value", minValue()));
 
 		if (isHidden())
 			return;

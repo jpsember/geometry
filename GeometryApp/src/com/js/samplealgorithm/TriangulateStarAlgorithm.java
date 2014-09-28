@@ -57,11 +57,11 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		sOptions.addSlider("Seed", 0, 300);
-		sOptions.addSlider("Points", 3, 250);
+		sOptions.addSlider("Seed", "min", 0, "max", 300);
+		sOptions.addSlider("Points", "min", 3, "max", 250);
 		sOptions.addCheckBox("experiment", false);
-		sOptions.addSlider("spikes", 2, 50);
-		sOptions.addSlider("girth", 3, 80).setIntValue(50);
+		sOptions.addSlider("spikes", "min", 2, "max", 50);
+		sOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
 	}
 
 	private Polygon buildStarPolygonFromRadii(FloatArray radii, int startIndex) {

@@ -53,8 +53,8 @@ public class AlgorithmOptions {
 	/**
 	 * Build and add a slider widget
 	 */
-	public SliderWidget addSlider(String id, int min, int max) {
-		SliderWidget w = buildSlider(id, min, max);
+	public SliderWidget addSlider(String id, Object... attributePairs) {
+		SliderWidget w = buildSlider(id, attributePairs);
 		addWidget(w);
 		return w;
 	}
@@ -62,10 +62,8 @@ public class AlgorithmOptions {
 	/**
 	 * Build a slider widget (but don't add it)
 	 */
-	public SliderWidget buildSlider(String id, int min, int max) {
-		Map<String, Object> attributes = buildAttributes(id);
-		attributes.put("min", min);
-		attributes.put("max", max);
+	public SliderWidget buildSlider(String id, Object... attributePairs) {
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		SliderWidget w = new SliderWidget(sContext, attributes);
 		return w;
 	}
@@ -73,8 +71,9 @@ public class AlgorithmOptions {
 	/**
 	 * Add a checkbox widget
 	 */
-	public CheckBoxWidget addCheckBox(String id, boolean initialValue) {
-		Map<String, Object> attributes = buildAttributes(id);
+	public CheckBoxWidget addCheckBox(String id, boolean initialValue,
+			Object... attr) {
+		Map<String, Object> attributes = buildAttributes(id, attr);
 		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
 		addWidget(w);
 		w.setValue(initialValue);
@@ -84,8 +83,8 @@ public class AlgorithmOptions {
 	/**
 	 * Add a combobox widget
 	 */
-	public ComboBoxWidget addComboBox(String id) {
-		Map<String, Object> attributes = buildAttributes(id);
+	public ComboBoxWidget addComboBox(String id, Object... attr) {
+		Map<String, Object> attributes = buildAttributes(id, attr);
 		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
 		addWidget(w);
 		return w;
@@ -240,9 +239,15 @@ public class AlgorithmOptions {
 		mOptionsView = options;
 	}
 
-	private static Map<String, Object> buildAttributes(String identifier) {
+	private static Map<String, Object> buildAttributes(String identifier,
+			Object attrPairs[]) {
+		if (attrPairs.length % 2 != 0)
+			throw new IllegalArgumentException();
 		Map<String, Object> attributes = new HashMap();
 		attributes.put("id", identifier);
+		for (int i = 0; i < attrPairs.length; i += 2) {
+			attributes.put(attrPairs[i + 0].toString(), attrPairs[i + 1]);
+		}
 		return attributes;
 	}
 

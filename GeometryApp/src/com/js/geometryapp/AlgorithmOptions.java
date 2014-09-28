@@ -1,8 +1,6 @@
 package com.js.geometryapp;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
@@ -254,9 +252,6 @@ public class AlgorithmOptions {
 		if (previousMapping != null)
 			die("widget id " + w.getId() + " already exists");
 
-		// Add it to the sequence as well
-		mWidgetsList.add(w);
-
 		// Add it to the options view
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
 				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
@@ -306,8 +301,9 @@ public class AlgorithmOptions {
 	 */
 	private String saveValues() {
 		Map<String, String> values = new HashMap();
-		for (AbstractWidget w : mWidgetsList) {
-			values.put(w.getId(), w.getValue());
+		for (String widgetId : mWidgetsMap.keySet()) {
+			AbstractWidget w = mWidgetsMap.get(widgetId);
+			values.put(widgetId, w.getValue());
 		}
 		return JSONEncoder.toJSON(values);
 	}
@@ -400,7 +396,6 @@ public class AlgorithmOptions {
 	private ViewGroup mOptionsView;
 	private Context sContext;
 	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
-	private List<AbstractWidget> mWidgetsList = new ArrayList();
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
 	private boolean mFlushRequired;
 	// The single valid pending flush operation, or null

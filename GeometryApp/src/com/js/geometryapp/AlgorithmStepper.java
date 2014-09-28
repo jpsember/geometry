@@ -486,12 +486,12 @@ public class AlgorithmStepper {
 		updateStepperView(true);
 	}
 
-	void adjustTargetStep(int delta) {
+	private void adjustTargetStep(int delta) {
 		int seekStep = mTargetStep + delta;
 		setTargetStep(seekStep);
 	}
 
-	void adjustDisplayedMilestone(int delta) {
+	private void adjustDisplayedMilestone(int delta) {
 		int prev = -1, next = -1;
 		for (int i = 0; i < mMilestones.size(); i++) {
 			int k = mMilestones.get(i);
@@ -539,6 +539,27 @@ public class AlgorithmStepper {
 						setTargetStep(widget.getIntValue());
 					}
 				});
+
+		final String[] ids = { AlgorithmStepperView.BUTTON_JUMP_BWD,
+				AlgorithmStepperView.BUTTON_JUMP_FWD,
+				AlgorithmStepperView.BUTTON_STEP_BWD,
+				AlgorithmStepperView.BUTTON_STEP_FWD };
+
+		AbstractWidget.Listener listener = new AbstractWidget.Listener() {
+			@Override
+			public void valueChanged(AbstractWidget widget) {
+				String id = widget.getId();
+				for (int j = 0; j < 2; j++) {
+					if (id == ids[j])
+						adjustDisplayedMilestone(j == 0 ? -1 : 1);
+					if (id == ids[j + 2])
+						adjustTargetStep(j == 0 ? -1 : 1);
+				}
+			}
+		};
+		for (int i = 0; i < ids.length; i++) {
+			sOptions.getWidget(ids[i]).addListener(listener);
+		}
 	}
 
 	private void prepareOptionsAux() {

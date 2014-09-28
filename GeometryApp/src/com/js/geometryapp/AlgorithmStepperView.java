@@ -1,21 +1,22 @@
 package com.js.geometryapp;
 
 import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.SliderWidget;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
 class AlgorithmStepperView {
 
-	private static final String BUTTON_JUMP_BWD = "<<";
-	private static final String BUTTON_JUMP_FWD = ">>";
-	private static final String BUTTON_STEP_BWD = "<";
-	private static final String BUTTON_STEP_FWD = ">";
+	public static final String BUTTON_JUMP_BWD = "<<";
+	public static final String BUTTON_JUMP_FWD = ">>";
+	public static final String BUTTON_STEP_BWD = "<";
+	public static final String BUTTON_STEP_FWD = ">";
 
 	public AlgorithmStepperView(Context context, AlgorithmStepper stepper) {
 		doNothing();
@@ -37,6 +38,11 @@ class AlgorithmStepperView {
 		return v;
 	}
 
+	private void addButton(ViewGroup parent, String label) {
+		ButtonWidget w = sOptions.addButton(label, "detached", true);
+		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
+	}
+
 	protected View view() {
 		if (mView == null) {
 			sOptions = AlgorithmOptions.sharedInstance();
@@ -54,44 +60,20 @@ class AlgorithmStepperView {
 			layout.addView(v1, GeometryActivity.layoutParams(true, false));
 			{
 				LinearLayout v2 = linearLayout(true);
-				v2.addView(button(BUTTON_JUMP_BWD));
-				v2.addView(button(BUTTON_JUMP_FWD));
+				addButton(v2, BUTTON_JUMP_BWD);
+				addButton(v2, BUTTON_JUMP_FWD);
 				v1.addView(v2);
 			}
 			{
 				LinearLayout v2 = linearLayout(true);
-				v2.addView(button(BUTTON_STEP_BWD));
-				v2.addView(button(BUTTON_STEP_FWD));
+				addButton(v2, BUTTON_STEP_BWD);
+				addButton(v2, BUTTON_STEP_FWD);
 				v1.addView(v2);
 			}
 
 			mView = layout;
 		}
 		return mView;
-	}
-
-	private void processButtonPress(String label) {
-		mStepperController.verifyDelegateDefined();
-
-		if (label == BUTTON_STEP_FWD)
-			mStepperController.adjustTargetStep(1);
-		else if (label == BUTTON_STEP_BWD)
-			mStepperController.adjustTargetStep(-1);
-		else if (label == BUTTON_JUMP_FWD)
-			mStepperController.adjustDisplayedMilestone(1);
-		else if (label == BUTTON_JUMP_BWD)
-			mStepperController.adjustDisplayedMilestone(-1);
-	}
-
-	private Button button(final String label) {
-		Button b = new Button(mContext);
-		b.setText(label);
-		b.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View v) {
-				processButtonPress(label);
-			}
-		});
-		return b;
 	}
 
 	private View mView;

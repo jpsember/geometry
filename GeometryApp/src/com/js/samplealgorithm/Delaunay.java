@@ -6,7 +6,7 @@ import java.util.Random;
 import android.graphics.Color;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -46,7 +46,7 @@ public class Delaunay {
 	 * @param boundingRect
 	 *            bounding rect, or null to use (large) default
 	 */
-	public Delaunay(GeometryContext context, Rect boundingRect) {
+	public Delaunay(Mesh context, Rect boundingRect) {
 		doNothing();
 		s = AlgorithmStepper.sharedInstance();
 		constructMesh(context, boundingRect);
@@ -604,7 +604,7 @@ public class Delaunay {
 		return sideOfLine(p1, p2, query) > 0;
 	}
 
-	private void constructMesh(GeometryContext c, Rect boundingRect) {
+	private void constructMesh(Mesh c, Rect boundingRect) {
 		c.clearMesh();
 
 		if (boundingRect == null)
@@ -665,7 +665,7 @@ public class Delaunay {
 	private static AlgorithmStepper s;
 
 	private Random mRandom;
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
 	private ArrayList<Vertex> mSamples = new ArrayList();

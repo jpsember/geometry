@@ -3,7 +3,7 @@ package com.js.samplealgorithm;
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
@@ -61,7 +61,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		ComboBoxWidget w = sOptions.getWidget("polygon");
 		int polygonName = (Integer) w.getSelectedValue();
 
-		mContext = new GeometryContext();
+		mContext = new Mesh();
 		mPolygon = Polygon.testPolygon(polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
 		mPolygon.transformToFitRect(AlgorithmStepper.sharedInstance()
@@ -70,7 +70,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 
 	private static AlgorithmOptions sOptions;
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Polygon mPolygon;
 	private GLSurfaceView mView;
 }

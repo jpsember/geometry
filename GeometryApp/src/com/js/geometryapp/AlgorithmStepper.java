@@ -13,7 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.js.android.MyActivity;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -249,7 +249,7 @@ public class AlgorithmStepper {
 				PolygonElement.Style.POLYLINE));
 	}
 
-	public String plotMesh(GeometryContext meshContext) {
+	public String plotMesh(Mesh meshContext) {
 		return plot(new MeshElement(meshContext));
 	}
 

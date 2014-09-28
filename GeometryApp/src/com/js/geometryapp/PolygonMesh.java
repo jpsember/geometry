@@ -3,7 +3,7 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -104,7 +104,7 @@ public class PolygonMesh {
 	 */
 	private void setPolygon(Polygon polygon) {
 		try {
-			mContext = new GeometryContext();
+			mContext = new Mesh();
 			triangulatePolygon(polygon);
 			extractStrip();
 		} catch (GeometryException e) {
@@ -374,7 +374,7 @@ public class PolygonMesh {
 
 	// These are used only during the triangle strip construction process:
 	private int mTrianglesExtracted;
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private ArrayList<Edge> mInteriorEdgeStack = new ArrayList();
 	private int mInteriorEdgeCount;
 	private int mTrianglesExpected;

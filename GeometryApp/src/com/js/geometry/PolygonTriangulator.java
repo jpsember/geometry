@@ -25,12 +25,12 @@ public class PolygonTriangulator {
 
 	public static final String DETAIL_TRIANGULATE_MONOTONE_FACE = "Triangulate monotone face";
 
-	public static PolygonTriangulator triangulator(GeometryContext context,
+	public static PolygonTriangulator triangulator(Mesh context,
 			Polygon polygon) {
 		return new PolygonTriangulator(context, polygon);
 	}
 
-	private PolygonTriangulator(GeometryContext context, Polygon polygon) {
+	private PolygonTriangulator(Mesh context, Polygon polygon) {
 		s = AlgorithmStepper.sharedInstance();
 		mContext = context;
 		mPolygon = polygon;
@@ -519,7 +519,7 @@ public class PolygonTriangulator {
 	}
 
 	private static AlgorithmStepper s;
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;
 	private TreeSet<SweepEdge> mSweepStatus;

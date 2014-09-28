@@ -3,7 +3,7 @@ package com.js.geometrytest;
 import java.util.ArrayList;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometry.Vertex;
@@ -12,14 +12,14 @@ import com.js.testUtils.MyTestCase;
 import com.js.testUtils.MyTestUtils;
 import static com.js.basic.Tools.*;
 
-public class GeometryContextTest extends MyTestCase {
+public class MeshTest extends MyTestCase {
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Polygon mPolygon;
 
-	private GeometryContext context() {
+	private Mesh context() {
 		if (mContext == null)
-			mContext = new GeometryContext();
+			mContext = new Mesh();
 		return mContext;
 	}
 
@@ -108,7 +108,7 @@ public class GeometryContextTest extends MyTestCase {
 		ArrayList<Edge> edges = context().constructListOfEdges(true);
 		MyTestUtils.permute(random(), edges);
 		for (Edge edge : edges) {
-			pr(context().dumpMesh(false, true));
+			pr(context().dump(false, true));
 			if (random().nextBoolean())
 				edge = edge.dual();
 			pr("Deleting: " + dump(edge));
@@ -116,7 +116,7 @@ public class GeometryContextTest extends MyTestCase {
 			pr("");
 		}
 		pr("after deleting all edges:");
-		pr(context().dumpMesh(false, true));
+		pr(context().dump(false, true));
 		IOSnapshot.close();
 	}
 
@@ -129,13 +129,13 @@ public class GeometryContextTest extends MyTestCase {
 			Vertex v = mContext.vertex(random().nextInt(nVertices));
 			nVertices--;
 
-			pr(context().dumpMesh(false, true));
+			pr(context().dump(false, true));
 			pr("Deleting: " + dump(v));
 			mContext.deleteVertex(v);
 			pr("");
 		}
 		pr("after deleting all vertices:");
-		pr(context().dumpMesh(false, true));
+		pr(context().dump(false, true));
 		IOSnapshot.close();
 	}
 

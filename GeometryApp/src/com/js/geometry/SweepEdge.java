@@ -37,7 +37,7 @@ public class SweepEdge {
 	 * @return intersection point
 	 */
 	public Point positionOnSweepLine(float sweepLinePosition,
-			GeometryContext context, boolean clampWithinRange) {
+			Mesh context, boolean clampWithinRange) {
 		Edge edge = mPolygonEdge;
 
 		Point v1 = edge.sourceVertex();

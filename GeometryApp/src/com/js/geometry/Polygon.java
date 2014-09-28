@@ -254,11 +254,11 @@ public class Polygon {
 	 * Embed the polygon into its context's mesh; returns index of first vertex
 	 * within mesh
 	 */
-	public int embed(GeometryContext context) {
+	public int embed(Mesh context) {
 		return embed(context, 0, 0);
 	}
 
-	public int embed(GeometryContext context, int vertexFlags, int edgeFlags) {
+	public int embed(Mesh context, int vertexFlags, int edgeFlags) {
 		int baseVertex = embedVertices(context, vertexFlags);
 		Vertex prevVertex = context.vertex(baseVertex + numVertices() - 1);
 		for (int i = 0; i < numVertices(); i++) {
@@ -272,7 +272,7 @@ public class Polygon {
 		return baseVertex;
 	}
 
-	public int embedVertices(GeometryContext context, int vertexFlags) {
+	public int embedVertices(Mesh context, int vertexFlags) {
 
 		int embeddedVertexIndex = context.numVertices();
 
@@ -381,7 +381,7 @@ public class Polygon {
 	}
 
 	// Returns true iff polygon has ccw orientation
-	public boolean isCCW(GeometryContext context) {
+	public boolean isCCW(Mesh context) {
 		int orientation = orientation();
 		if (orientation == 0)
 			GeometryException.raise("Polygon winding number unknown");

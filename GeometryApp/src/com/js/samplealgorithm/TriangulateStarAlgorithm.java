@@ -6,7 +6,7 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -33,7 +33,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	@Override
 	public void runAlgorithm() {
 		try {
-			mContext = new GeometryContext();
+			mContext = new Mesh();
 			mRandom = new Random(sOptions.getIntValue("Seed"));
 
 			int baseVertex = buildStarshapedPolygon();
@@ -143,7 +143,7 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	private static AlgorithmStepper mStepper;
 
 	private Point mKernelPoint;
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Random mRandom;
 	private GLSurfaceView mView;
 

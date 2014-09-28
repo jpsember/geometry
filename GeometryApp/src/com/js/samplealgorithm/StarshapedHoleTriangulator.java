@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import android.graphics.Color;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Vertex;
@@ -28,11 +28,11 @@ public class StarshapedHoleTriangulator {
 	 *            edge lying on CCW boundary of hole
 	 */
 	public static StarshapedHoleTriangulator buildTriangulator(
-			GeometryContext mesh, Point kernelPoint, Edge edgeOnHole) {
+			Mesh mesh, Point kernelPoint, Edge edgeOnHole) {
 		return new StarshapedHoleTriangulator(mesh, kernelPoint, edgeOnHole);
 	}
 
-	private StarshapedHoleTriangulator(GeometryContext mesh, Point kernelPoint,
+	private StarshapedHoleTriangulator(Mesh mesh, Point kernelPoint,
 			Edge edgeOnHole) {
 		s = AlgorithmStepper.sharedInstance();
 		mContext = mesh;
@@ -174,7 +174,7 @@ public class StarshapedHoleTriangulator {
 
 	private static AlgorithmStepper s;
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Point mKernelPoint;
 	private Edge mStartEdge;
 	private int mHoleSize;

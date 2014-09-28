@@ -1,11 +1,11 @@
 package com.js.geometryapp;
 
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 
 class MeshElement extends AlgorithmDisplayElement {
 
-	public MeshElement(GeometryContext context) {
+	public MeshElement(Mesh context) {
 		mContext = context;
 	}
 
@@ -18,5 +18,5 @@ class MeshElement extends AlgorithmDisplayElement {
 		}
 	}
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 }

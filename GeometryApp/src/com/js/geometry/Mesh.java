@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 
-public final class GeometryContext {
+public final class Mesh {
 
 	/**
 	 * Construct a list of all the edges
@@ -206,11 +206,11 @@ public final class GeometryContext {
 		edge.dual().addFlags(Edge.FLAG_DELETED);
 	}
 
-	public String dumpMesh() {
-		return dumpMesh(true, false);
+	public String toString() {
+		return dump(true, false);
 	}
 
-	public String dumpMesh(boolean withVertexLocations, boolean withVertexNames) {
+	public String dump(boolean withVertexLocations, boolean withVertexNames) {
 		StringBuilder sb = new StringBuilder("GeometryContext:\n");
 		for (Vertex v : mVertexBuffer) {
 			sb.append(" ");

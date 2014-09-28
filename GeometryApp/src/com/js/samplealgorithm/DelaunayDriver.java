@@ -35,7 +35,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 
-		mContext = new GeometryContext();
+		mContext = new Mesh();
 		mRandom = new Random(sOptions.getIntValue("Seed"));
 		boolean withDeletions = sOptions.getBooleanValue("Deletions");
 		boolean empty = sOptions.getBooleanValue("Empty");
@@ -151,7 +151,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	private static AlgorithmOptions sOptions;
 	private static AlgorithmStepper s;
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Delaunay mDelaunay;
 	private Random mRandom;
 	private GLSurfaceView mView;

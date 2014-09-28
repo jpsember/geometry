@@ -1,6 +1,6 @@
 package com.js.geometrytest;
 
-import com.js.geometry.GeometryContext;
+import com.js.geometry.Mesh;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.testUtils.IOSnapshot;
@@ -9,7 +9,7 @@ import static com.js.basic.Tools.*;
 
 public class PolygonTriangulatorTest extends MyTestCase {
 
-	private GeometryContext mContext;
+	private Mesh mContext;
 	private Polygon mPolygon;
 	private PolygonTriangulator mTriangulator;
 
@@ -19,9 +19,9 @@ public class PolygonTriangulatorTest extends MyTestCase {
 		return mTriangulator;
 	}
 
-	private GeometryContext context() {
+	private Mesh context() {
 		if (mContext == null)
-			mContext = new GeometryContext();
+			mContext = new Mesh();
 		return mContext;
 	}
 
@@ -45,7 +45,7 @@ public class PolygonTriangulatorTest extends MyTestCase {
 
 		triangulate();
 
-		pr(context().dumpMesh());
+		pr(context());
 		IOSnapshot.close();
 	}
 
@@ -58,7 +58,7 @@ public class PolygonTriangulatorTest extends MyTestCase {
 
 		triangulate();
 
-		pr(context().dumpMesh());
+		pr(context());
 		IOSnapshot.close();
 	}
 

@@ -299,6 +299,22 @@ public class AlgorithmStepper {
 		updateStepperView(true);
 	}
 
+	private void setTargetStepField(int value, String context) {
+		final boolean db = AlgorithmOptions.DB_PERSIST;
+		if (mTargetStep == value)
+			return;
+		if (db)
+			pr("setTargetStep from " + d(mTargetStep) + " --> " + d(value)
+					+ " context:" + context);
+		mTargetStep = value;
+		// Update widget that is persisting this value
+		warning("what if options not available?");
+		// Don't notify listeners
+		AlgorithmOptions.sharedInstance().setValue("targetstep", mTargetStep,
+				false);
+
+	}
+
 	private void setTotalStepsKnown() {
 		int previousTotalSteps = mTotalSteps;
 		int previousTargetStep = mTargetStep;
@@ -307,12 +323,13 @@ public class AlgorithmStepper {
 		mTotalSteps = mCurrentStep;
 
 		// Clamp previous target step into new range
-		mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
+		int newTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
 
 		// If previous target step was at maximum, make new one at new max as
 		// well
 		if (previousTargetStep >= previousTotalSteps - 1)
-			mTargetStep = mTotalSteps - 1;
+			newTargetStep = mTotalSteps - 1;
+		setTargetStepField(newTargetStep, "setTotalStepsKnown");
 	}
 
 	/**
@@ -469,7 +486,8 @@ public class AlgorithmStepper {
 		if (mIgnoreStepperView) {
 			return;
 		}
-		mTargetStep = MyMath.clamp(step, 0, mTotalSteps - 1);
+		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps - 1),
+				"setTargetStep");
 		updateStepperView(true);
 	}
 
@@ -510,12 +528,6 @@ public class AlgorithmStepper {
 		return mTotalSteps;
 	}
 
-	void prepareOptions() {
-		if (mDelegate == null)
-			die("attempt to prepare options before delegate defined");
-		mDelegate.prepareOptions();
-	}
-
 	private void initializeActiveState(boolean active) {
 		mActive = active;
 		mActiveStack.clear();
@@ -527,7 +539,11 @@ public class AlgorithmStepper {
 		mOptions.addWidgets(JSONTools
 				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
 
-		prepareOptions();
+		// TODO: avoid attempting to persist widget values before we've restored
+		// stepper state
+		if (mDelegate == null)
+			die("attempt to prepare options before delegate defined");
+		mDelegate.prepareOptions();
 
 		mOptions.restoreStepperState();
 

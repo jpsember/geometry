@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.v4.widget.SlidingPaneLayout;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -28,6 +29,9 @@ import static com.js.basic.Tools.*;
 public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
+
+	// Temporary debugging use
+	public static final boolean DB_PERSIST = false;
 
 	/**
 	 * Get the singleton instance of the options object
@@ -327,10 +331,13 @@ public class AlgorithmOptions {
 	}
 
 	void restoreStepperState() {
-		String widgetValueScript = AppPreferences.getString(
+		final boolean db = DB_PERSIST;
+		String mCurrentWidgetValuesScript = AppPreferences.getString(
 				PERSIST_KEY_WIDGET_VALUES, null);
-		if (widgetValueScript != null) {
-			JSONParser parser = new JSONParser(widgetValueScript);
+		if (db)
+			pr("restoreStepperState, script " + mCurrentWidgetValuesScript);
+		if (mCurrentWidgetValuesScript != null) {
+			JSONParser parser = new JSONParser(mCurrentWidgetValuesScript);
 			Map<String, String> values = (Map) parser.next();
 			for (String key : values.keySet()) {
 				String value = values.get(key);
@@ -341,12 +348,69 @@ public class AlgorithmOptions {
 				w.setValue(value);
 			}
 		}
+		if (db)
+			pr(" done restoring");
 		mPrepared = true;
 	}
 
-	void persistStepperState() {
-		setValue("targetstep", AlgorithmStepper.sharedInstance().targetStep());
-		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES, saveValues());
+	private void persistStepperStateAux() {
+		final boolean db = DB_PERSIST;
+		if (db)
+			pr("persist, flush required " + d(mFlushRequired));
+		if (!mFlushRequired)
+			return;
+		// TODO: targetstep should be persisted whenever slider changes, not
+		// just here
+		String newWidgetValuesScript = null;
+		synchronized (AlgorithmStepper.getLock()) {
+			setValue("targetstep", AlgorithmStepper.sharedInstance()
+					.targetStep());
+			newWidgetValuesScript = saveValues();
+		}
+		if (db)
+			pr(" saving widget values\n");
+		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
+				newWidgetValuesScript);
+		mFlushRequired = false;
+	}
+
+	void persistStepperState(boolean withDelay) {
+		final boolean db = DB_PERSIST;
+		mFlushRequired = true;
+		if (!withDelay) {
+			persistStepperStateAux();
+			return;
+		}
+
+		// Make a delayed call to persist the values (on the UI thread)
+
+		final long FLUSH_DELAY = 5000;
+
+		// If there's already an active handler, don't replace it if it's far
+		// enough in the future
+		long currentTime = System.currentTimeMillis();
+		if (mActiveFlushOperation != null
+				&& mActiveFlushTime >= currentTime + FLUSH_DELAY / 2) {
+			return;
+		}
+
+		mActiveFlushTime = currentTime + FLUSH_DELAY;
+		Handler h = new Handler();
+		mActiveFlushOperation = new Runnable() {
+			@Override
+			public void run() {
+				if (this != mActiveFlushOperation) {
+					return;
+				}
+				if (db)
+					pr("performing delayed flush for handler " + nameOf(this));
+				persistStepperStateAux();
+			}
+		};
+		if (db)
+			pr(" posting delayed flush, handler "
+					+ nameOf(mActiveFlushOperation));
+		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;
@@ -358,5 +422,9 @@ public class AlgorithmOptions {
 	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
 	private List<AbstractWidget> mWidgetsList = new ArrayList();
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
-
+	private boolean mFlushRequired;
+	// The single valid pending flush operation, or null
+	private Runnable mActiveFlushOperation;
+	// Approximate time pending flush will occur at
+	private long mActiveFlushTime;
 }

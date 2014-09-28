@@ -22,7 +22,7 @@ public class GeometryStepperActivity extends GeometryActivity {
 	protected void onPause() {
 		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
 		if (options != null && options.isPrepared()) {
-			options.persistStepperState();
+			options.persistStepperState(false);
 		}
 		super.onPause();
 	}

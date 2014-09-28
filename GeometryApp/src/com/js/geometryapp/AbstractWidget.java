@@ -123,17 +123,20 @@ public abstract class AbstractWidget {
 	 *            true
 	 */
 	final void setValue(String internalValue, boolean notifyListeners) {
+		final boolean db = AlgorithmOptions.DB_PERSIST;
+		assertUIThread();
+
 		if (internalValue == null)
 			throw new IllegalArgumentException("value must not be null");
 
 		// Update value, and notify listeners if it has actually changed
 		updateUserValue(internalValue);
 		String newUserValue = parseUserValue();
-		if (notifyListeners) {
-			if (newUserValue.equals(mWidgetValue)) {
-				notifyListeners = false;
-			}
-		}
+		String oldValue = mWidgetValue;
+		boolean valueHasChanged = !newUserValue.equals(oldValue);
+		if (!valueHasChanged)
+			return;
+
 		mWidgetValue = newUserValue;
 
 		if (!AlgorithmOptions.sharedInstance().isPrepared()) {
@@ -149,6 +152,11 @@ public abstract class AbstractWidget {
 				AlgorithmStepper.sharedInstance().refresh();
 			}
 		}
+
+		if (db)
+			pr("widget " + getId() + " value " + oldValue + " --> "
+					+ internalValue + ", posting persist");
+		AlgorithmOptions.sharedInstance().persistStepperState(true);
 	}
 
 	/**

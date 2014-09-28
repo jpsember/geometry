@@ -11,7 +11,7 @@ import com.js.geometry.*;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
-import com.js.geometryapp.ComboBoxWidget;
+import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
 

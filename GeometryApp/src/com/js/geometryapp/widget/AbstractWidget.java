@@ -1,10 +1,12 @@
-package com.js.geometryapp;
+package com.js.geometryapp.widget;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import com.js.android.MyActivity;
+import com.js.geometryapp.AlgorithmOptions;
+import com.js.geometryapp.OurGLTools;
 
 import android.content.Context;
 import android.view.Gravity;
@@ -24,7 +26,7 @@ public abstract class AbstractWidget {
 
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
-	static final boolean SET_DEBUG_COLORS = false;
+	public static final boolean SET_DEBUG_COLORS = false;
 
 	@Override
 	public String toString() {
@@ -33,23 +35,23 @@ public abstract class AbstractWidget {
 		return sb.toString();
 	}
 
-	protected String getId() {
+	public String getId() {
 		return strAttr("id", "");
 	}
 
-	protected double dblAttr(String key, Number defaultValue) {
+	public double dblAttr(String key, Number defaultValue) {
 		return ((Number) attr(key, defaultValue)).doubleValue();
 	}
 
-	protected int intAttr(String key, Number defaultValue) {
+	public int intAttr(String key, Number defaultValue) {
 		return ((Number) attr(key, defaultValue)).intValue();
 	}
 
-	protected String strAttr(String key, String defaultValue) {
+	public String strAttr(String key, String defaultValue) {
 		return (String) attr(key, defaultValue);
 	}
 
-	protected boolean boolAttr(String key, boolean defaultValue) {
+	public boolean boolAttr(String key, boolean defaultValue) {
 		return (Boolean) attr(key, defaultValue);
 	}
 
@@ -129,21 +131,8 @@ public abstract class AbstractWidget {
 
 		mWidgetValue = newUserValue;
 
-		if (!AlgorithmOptions.sharedInstance().isPrepared())
-			return;
-
-		synchronized (AlgorithmStepper.getLock()) {
-			for (Listener listener : mListeners) {
-				listener.valueChanged(this);
-			}
-			// Every event that changes a widget value triggers a refresh.
-			// In addition, always recalculate algorithm steps unless this
-			// widget's 'recalc' flag exists and is false
-			boolean recalcFlag = this.boolAttr(ATTR_RECALC_ALGORITHM_STEPS,
-					true);
-			AlgorithmStepper.sharedInstance().refresh(recalcFlag);
-		}
-		AlgorithmOptions.sharedInstance().persistStepperState(true);
+		AlgorithmOptions.sharedInstance().processWidgetValue(this,
+				this.mListeners);
 	}
 
 	/**

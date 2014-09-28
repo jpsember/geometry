@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.geometryapp.widget;
 
 import java.util.ArrayList;
 import java.util.HashMap;

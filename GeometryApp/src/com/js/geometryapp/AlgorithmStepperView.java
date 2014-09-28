@@ -1,5 +1,8 @@
 package com.js.geometryapp;
 
+import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.SliderWidget;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;

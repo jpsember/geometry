@@ -18,6 +18,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
+import com.js.geometryapp.widget.AbstractWidget;
 
 public class AlgorithmStepper {
 
@@ -577,7 +578,7 @@ public class AlgorithmStepper {
 	 * 
 	 * @return
 	 */
-	static Object getLock() {
+	public static Object getLock() {
 		return sSynchronizationLock;
 	}
 

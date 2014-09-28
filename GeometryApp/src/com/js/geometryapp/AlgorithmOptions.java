@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +16,11 @@ import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
+import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.CheckBoxWidget;
+import com.js.geometryapp.widget.ComboBoxWidget;
+import com.js.geometryapp.widget.SliderWidget;
+import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.json.JSONEncoder;
 import com.js.json.JSONParser;
 
@@ -290,7 +296,7 @@ public class AlgorithmOptions {
 		return widget;
 	}
 
-	boolean isPrepared() {
+	public boolean isPrepared() {
 		return mPrepared;
 	}
 
@@ -387,6 +393,26 @@ public class AlgorithmOptions {
 		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
 	}
 
+	public void processWidgetValue(AbstractWidget widget,
+			Collection<Listener> listeners) {
+
+		if (!isPrepared())
+			return;
+
+		synchronized (AlgorithmStepper.getLock()) {
+			for (Listener listener : listeners) {
+				listener.valueChanged(widget);
+			}
+			// Every event that changes a widget value triggers a refresh.
+			// In addition, always recalculate algorithm steps unless this
+			// widget's 'recalc' flag exists and is false
+			boolean recalcFlag = widget.boolAttr(
+					AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, true);
+			AlgorithmStepper.sharedInstance().refresh(recalcFlag);
+		}
+		persistStepperState(true);
+	}
+
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private boolean mPrepared;
@@ -400,4 +426,5 @@ public class AlgorithmOptions {
 	private Runnable mActiveFlushOperation;
 	// Approximate time pending flush will occur at
 	private long mActiveFlushTime;
+
 }

@@ -146,7 +146,7 @@ public abstract class AbstractWidget {
 					listener.valueChanged(this);
 				}
 				// Every event that changes a widget value triggers a refresh
-				AlgorithmStepper.sharedInstance().requestUpdate();
+				AlgorithmStepper.sharedInstance().refresh();
 			}
 		}
 	}

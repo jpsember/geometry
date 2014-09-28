@@ -22,7 +22,7 @@ import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
 
-	// Simulate what performance will be if we replace update()+show() with just
+	// Simulate what performance will be if we replace step()+show() with just
 	// show()
 	static final boolean UPDATE_EXPERIMENT = false;
 
@@ -276,11 +276,23 @@ public class AlgorithmStepper {
 		return "";
 	}
 
-	public void requestUpdate() {
-		// Run algorithm to completion to determine the number of steps
+	/**
+	 * Request a refresh of the algorithm display.
+	 * 
+	 * Recalculates the number of steps in the algorithm, then runs to the
+	 * target step and displays that frame.
+	 */
+	public void refresh() {
 		mTotalStepsKnown = false;
-		performAlgorithm();
-		setTotalStepsKnown();
+		refreshAux();
+	}
+
+	private void refreshAux() {
+		if (!mTotalStepsKnown) {
+			// Run algorithm to completion to determine the number of steps
+			performAlgorithm();
+			setTotalStepsKnown();
+		}
 
 		// Propagate these values to the stepper control panel (without
 		// causing a recursive update)
@@ -471,7 +483,7 @@ public class AlgorithmStepper {
 				mIgnoreStepperView = false;
 				mStepperView.setTargetStep(mTargetStep);
 				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
-					requestUpdate();
+					refreshAux();
 				}
 			}
 		}

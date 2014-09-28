@@ -54,11 +54,21 @@ public class SliderWidget extends AbstractWidget {
 				setValue(Integer.toString(progress + minValue()));
 			}
 		});
-		getView().addView(buildLabelView(true));
+
+		if (boolAttr("withlabel", true))
+			getView().addView(buildLabelView(true));
 
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+				LayoutParams.MATCH_PARENT, intAttr("layout_vert",
+						LayoutParams.WRAP_CONTENT));
 		getView().addView(mSeekBar, p);
+	}
+
+	public void setMaxValue(int maxValue) {
+		setAttribute("max", maxValue);
+		if (mSeekBar != null) {
+			mSeekBar.setMax(maxValue() - minValue());
+		}
 	}
 
 	private int minValue() {
@@ -76,8 +86,9 @@ public class SliderWidget extends AbstractWidget {
 
 		int max = maxValue();
 		mSliderValue = MyMath.clamp(sliderValue, min, max);
-		if (mSeekBar != null)
+		if (mSeekBar != null) {
 			mSeekBar.setProgress(mSliderValue - min);
+		}
 	}
 
 	public void setValue(int progress) {

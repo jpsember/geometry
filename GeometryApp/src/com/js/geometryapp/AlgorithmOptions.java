@@ -32,6 +32,7 @@ public class AlgorithmOptions {
 	 * Get the singleton instance of the options object
 	 */
 	public static AlgorithmOptions sharedInstance() {
+		ASSERT(sAlgorithmOptions != null);
 		return sAlgorithmOptions;
 	}
 
@@ -247,10 +248,12 @@ public class AlgorithmOptions {
 		if (previousMapping != null)
 			die("widget id " + w.getId() + " already exists");
 
-		// Add it to the options view
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		mOptionsView.addView(w.getView(), p);
+		// Add it to the options view, if it's not a 'detached' widget
+		if (!w.boolAttr("detached", false)) {
+			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			mOptionsView.addView(w.getView(), p);
+		}
 	}
 
 	private static AbstractWidget.Factory[] basicWidgets = {

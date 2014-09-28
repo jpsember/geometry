@@ -469,7 +469,6 @@ public class AlgorithmStepper {
 				mIgnoreStepperView = true;
 				mStepperView.setTotalSteps(mTotalSteps);
 				mIgnoreStepperView = false;
-				mStepperView.setTargetStep(mTargetStep);
 				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
 					refresh(false);
 				}
@@ -477,7 +476,7 @@ public class AlgorithmStepper {
 		}
 	}
 
-	void setTargetStep(int step) {
+	private void setTargetStep(int step) {
 		ASSERT(mTotalSteps > 0);
 		if (mIgnoreStepperView) {
 			return;
@@ -528,14 +527,27 @@ public class AlgorithmStepper {
 		mActiveStack.clear();
 	}
 
+	private void addStepperViewListeners() {
+		// Issue #68:
+		// It would be nice if we could do this when the stepper view is
+		// constructed; this would entail building the options view sooner.
+		sOptions.getWidget(WIDGET_ID_TARGETSTEP).addListener(
+				new AbstractWidget.Listener() {
+					@Override
+					public void valueChanged(AbstractWidget widget) {
+						setTargetStep(widget.getIntValue());
+					}
+				});
+	}
+
 	private void prepareOptionsAux() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		// Add hidden widgets to persist the target step, and the total steps
-		sOptions.addSlider(WIDGET_ID_TARGETSTEP, "hidden", true,
-				AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
+		// Add a hidden widget to persist the total steps
 		sOptions.addSlider(WIDGET_ID_TOTALSTEPS, "hidden", true,
 				AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
+
+		addStepperViewListeners();
 
 		if (mDelegate == null)
 			die("attempt to prepare options before delegate defined");

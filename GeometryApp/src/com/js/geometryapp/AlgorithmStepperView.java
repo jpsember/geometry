@@ -2,10 +2,9 @@ package com.js.geometryapp;
 
 import android.content.Context;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 import static com.js.basic.Tools.*;
 
 class AlgorithmStepperView {
@@ -23,11 +22,9 @@ class AlgorithmStepperView {
 	}
 
 	public void setTotalSteps(int totalSteps) {
-		mSeekBar.setMax(totalSteps - 1);
-	}
-
-	public void setTargetStep(int s) {
-		mSeekBar.setProgress(s);
+		SliderWidget w = sOptions
+				.getWidget(AlgorithmStepper.WIDGET_ID_TARGETSTEP);
+		w.setMaxValue(totalSteps - 1);
 	}
 
 	private LinearLayout linearLayout(boolean horizontal) {
@@ -37,32 +34,18 @@ class AlgorithmStepperView {
 		return v;
 	}
 
-	private void buildSeekBar() {
-		SeekBar seekBar = new SeekBar(mContext);
-		mSeekBar = seekBar;
-
-		seekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
-
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				mStepperController.setTargetStep(progress);
-			}
-		});
-	}
-
 	protected View view() {
 		if (mView == null) {
+			sOptions = AlgorithmOptions.sharedInstance();
 			LinearLayout layout = linearLayout(true);
-			buildSeekBar();
-			layout.addView(mSeekBar, GeometryActivity.layoutParams(true, true));
+
+			AbstractWidget w = sOptions.addSlider(
+					AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
+					"detached", true, "withlabel", false, //
+					"layout_vert", LayoutParams.MATCH_PARENT);
+
+			layout.addView(w.getView(),
+					GeometryActivity.layoutParams(true, true));
 
 			LinearLayout v1 = linearLayout(false);
 			layout.addView(v1, GeometryActivity.layoutParams(true, false));
@@ -108,8 +91,8 @@ class AlgorithmStepperView {
 		return b;
 	}
 
-	private SeekBar mSeekBar;
 	private View mView;
 	private Context mContext;
 	private AlgorithmStepper mStepperController;
+	private AlgorithmOptions sOptions;
 }

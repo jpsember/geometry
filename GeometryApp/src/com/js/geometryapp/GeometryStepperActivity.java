@@ -46,9 +46,8 @@ public class GeometryStepperActivity extends GeometryActivity {
 
 	protected ViewGroup buildContentView() {
 		ViewGroup mainView = super.buildContentView();
-		mainView.addView(mAlgorithmStepper.controllerView(this));
-
 		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
+		mainView.addView(mAlgorithmStepper.controllerView(this));
 
 		return mOptions.getView();
 	}

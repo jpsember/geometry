@@ -186,7 +186,6 @@ public class Rect {
 		y = MyMath.snapToGrid(y, gridSize);
 		width = MyMath.snapToGrid(x2, gridSize) - x;
 		height = MyMath.snapToGrid(y2, gridSize) - y;
-
 	}
 
 	/**

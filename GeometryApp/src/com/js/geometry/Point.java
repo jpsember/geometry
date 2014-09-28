@@ -47,10 +47,6 @@ public class Point {
 		return MyMath.magnitudeOfRay(x, y);
 	}
 
-	public final float pseudoAngle() {
-		return MyMath.pseudoAngle(x, y);
-	}
-
 	public final void add(Point point) {
 		x += point.x;
 		y += point.y;

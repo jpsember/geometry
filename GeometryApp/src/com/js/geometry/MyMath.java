@@ -144,34 +144,8 @@ public final class MyMath {
 		return new Point(x, y);
 	}
 
-	public static float pseudoAngle(float x, float y) {
-		// For consistency, always insist that y is nonnegative
-		boolean negateFlag = (y <= 0);
-		if (negateFlag)
-			y = -y;
-
-		float ret;
-		if (y > Math.abs(x)) {
-			float rat = x / y;
-			ret = PSEUDO_ANGLE_RANGE_14 - rat;
-		} else {
-			if (x == 0)
-				throw new GeometryException("degenerate ray");
-			float rat = y / x;
-			if (x < 0) {
-				ret = PSEUDO_ANGLE_RANGE_12 + rat;
-			} else {
-				ret = rat;
-			}
-		}
-		if (negateFlag)
-			ret = -ret;
-
-		return ret;
-	}
-
 	public static double pseudoAngleOfSegment(Point s1, Point s2) {
-		return pseudoAngle(s2.x - s1.x, s2.y - s1.y);
+		return pseudoPolarAngle(s2.x - s1.x, s2.y - s1.y);
 	}
 
 	public static double normalizePseudoAngle(double a) {

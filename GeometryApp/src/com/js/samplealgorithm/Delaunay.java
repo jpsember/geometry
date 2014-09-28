@@ -23,7 +23,6 @@ public class Delaunay {
 
 	public static final String DETAIL_SWAPS = "Swaps";
 	public static final String DETAIL_FIND_TRIANGLE = "Find Triangle";
-	public static final String DETAIL_SAMPLES = "Samples";
 
 	private static final float HORIZON = 1e7f;
 	// Add prefix to distinguish this algorithm's elements from others
@@ -255,11 +254,12 @@ public class Delaunay {
 
 		Vertex vc = bcEdge.destVertex();
 
-		Edge ad = mContext.addEdge(va, v);
-		Edge bd = mContext.addEdge(vb, v);
-		Edge cd = mContext.addEdge(vc, v);
+		mContext.addEdge(va, v);
+		mContext.addEdge(vb, v);
+		mContext.addEdge(vc, v);
 		if (s.step())
-			s.show("Partitioned triangle" + plot(ad) + plot(bd) + plot(cd));
+			s.show("Partitioned triangle" + plot(va, vb, vc)
+					+ s.plotLine(va, v) + s.plotLine(vb, v) + s.plotLine(vc, v));
 
 		// Note (see issue #53): the sequence of edges examined in each of the
 		// three swapTest calls are disjoint, so no special bookkeeping is
@@ -517,9 +517,6 @@ public class Delaunay {
 		Edge bEdge = null;
 		Edge cEdge = null;
 
-		if (s.step())
-			s.show("Initial edge" + plot(aEdge));
-
 		if (!pointLeftOfEdge(queryPoint, aEdge)) {
 			GeometryException.raise("query point " + queryPoint
 					+ " not to left of search edge " + aEdge);
@@ -536,8 +533,6 @@ public class Delaunay {
 			s.plotRay(bearingStartPoint, queryPoint);
 			s.closeLayer();
 		}
-		if (s.step())
-			s.show("Bearing line");
 
 		int maxIterations = mContext.numVertices();
 		while (true) {

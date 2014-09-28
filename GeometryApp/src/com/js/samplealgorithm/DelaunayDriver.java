@@ -133,7 +133,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		sOptions = AlgorithmOptions.sharedInstance();
 
 		sOptions.addSlider("Seed", 1, 300);
-		sOptions.addSlider("Points", 1, 250);
 		sOptions.addCheckBox("Deletions", true);
 		sOptions.addCheckBox("Empty", true);
 		sOptions.addCheckBox("Voronoi cells", false);
@@ -141,10 +140,10 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		w.addItem("Random");
 		w.addItem("Circle");
 		w.prepare();
+		sOptions.addSlider("Points", 1, 250);
 
 		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS, true);
 		sOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, true);
-		sOptions.addCheckBox(Delaunay.DETAIL_SAMPLES, true);
 	}
 
 	private static AlgorithmOptions sOptions;

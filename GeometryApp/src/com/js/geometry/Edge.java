@@ -101,6 +101,13 @@ public final class Edge {
 		return dual().prevEdge();
 	}
 
+	/**
+	 * Find the previous edge in the CCW face this edge bounds
+	 */
+	public Edge prevFaceEdge() {
+		return nextEdge().dual();
+	}
+
 	void setAngle(float angle) {
 		mPseudoAngle = angle;
 	}

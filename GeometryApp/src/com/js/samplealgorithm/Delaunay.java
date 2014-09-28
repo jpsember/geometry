@@ -33,6 +33,7 @@ public class Delaunay {
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	private static final int EDGEFLAG_HOLEBOUNDARY = (1 << 0);
+	private static final int EDGEFLAG_HORIZON = (1 << 1);
 
 	private static final int INITIAL_MESH_VERTICES = 4;
 
@@ -234,24 +235,7 @@ public class Delaunay {
 		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (s.step())
 				s.show("Process next hole edge" + plot(abEdge));
-			if (abEdge.deleted()) {
-				if (s.step())
-					s.show("Deleted, skipping");
-				continue;
-			}
-
-			// Determine the parameters for the two calls to swapTest(), one for
-			// each side of the edge. The call may end up deleting some edges,
-			// so figure this out before making these calls
-			Edge baEdge = abEdge.dual();
-			Edge bcEdge = abEdge.nextFaceEdge();
-			Edge adEdge = baEdge.nextFaceEdge();
-
-			Vertex c = bcEdge.destVertex();
-			swapTest(abEdge, c);
-
-			Vertex d = adEdge.destVertex();
-			swapTest(baEdge, d);
+			swapTestQuad(abEdge);
 		}
 	}
 
@@ -307,30 +291,20 @@ public class Delaunay {
 	 * @param p
 	 */
 	private void swapTest(Edge abEdge, Vertex p) {
+		ASSERT(!abEdge.deleted());
 
-		// If this edge has been deleted, do nothing
-		if (abEdge.deleted()) {
-			if (s.step())
-				s.show("SwapTest, edge has been deleted"
-						+ plot(abEdge.sourceVertex(), abEdge.destVertex()));
+		// This is perhaps not necessary, since if no opposite face exists,
+		// it would choose the next horizon vertex which should always
+		// fail the incircle test;
+		// but that is a subtle point so we'll be explicit
+		if (abEdge.hasFlags(EDGEFLAG_HORIZON))
 			return;
-		}
-		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
-			if (s.step())
-				s.show("SwapTest, hole boundary" + plot(abEdge));
-			return;
-		}
 
 		Edge baEdge = abEdge.dual();
 		Edge awEdge = baEdge.nextFaceEdge();
 		Vertex w = awEdge.destVertex();
 		if (s.step())
 			s.show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
-		if (!pointLeftOfEdge(w, baEdge)) {
-			if (s.step())
-				s.show("Boundary edge detected" + plot(baEdge) + plot(w));
-			return;
-		}
 
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
@@ -339,18 +313,72 @@ public class Delaunay {
 		if (s.step())
 			s.show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
+
 			if (s.step())
 				s.show("Flipping edge" + plot(abEdge) + plot(p, w));
 
 			mContext.deleteEdge(abEdge);
 			Edge pw = mContext.addEdge(p, w);
 			Edge wbEdge = pw.nextFaceEdge();
-			if (s.step())
-				s.show("Recursive swap test" + plot(awEdge));
 			swapTest(awEdge, p);
-			if (s.step())
-				s.show("Recursive swap test" + plot(wbEdge));
 			swapTest(wbEdge, p);
+		}
+	}
+
+	/**
+	 * Given edge ab, of face abc, determines if a face baw to the right of ab
+	 * exists, and if so, whether its third vertex w intersects the circumcircle
+	 * of abc. If so, flips ab with wc, and recursively tests the four edges aw,
+	 * wb, bc, and ca.
+	 * 
+	 * @param abEdge
+	 */
+	private void swapTestQuad(Edge abEdge) {
+
+		// If this edge has been deleted, do nothing
+		if (abEdge.deleted()) {
+			if (s.step())
+				s.show("SwapTestQuad, edge has been deleted"
+						+ plot(abEdge.sourceVertex(), abEdge.destVertex()));
+			return;
+		}
+		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
+			if (s.step())
+				s.show("SwapTestQuad, hole boundary" + plot(abEdge));
+			return;
+		}
+
+		Edge baEdge = abEdge.dual();
+		Edge awEdge = baEdge.nextFaceEdge();
+
+		Vertex w = awEdge.destVertex();
+		if (s.step())
+			s.show("SwapTestQuad" + plot(abEdge) + plot(baEdge.nextFaceEdge())
+					+ plot(baEdge.prevFaceEdge()) + plot(abEdge.nextFaceEdge())
+					+ plot(abEdge.prevFaceEdge()) + plot(w));
+
+		Point a = abEdge.sourceVertex();
+		Point b = abEdge.destVertex();
+		Vertex c = abEdge.nextFaceEdge().destVertex();
+
+		double determinant = doInCircleTest(a, b, w, c);
+		if (s.step())
+			s.show("Sign of determinant: " + Math.signum(determinant));
+		if (determinant > 0) {
+			if (s.step())
+				s.show("Flipping edge" + plot(abEdge) + plot(c, w));
+
+			mContext.deleteEdge(abEdge);
+
+			Edge cwEdge = mContext.addEdge(c, w);
+			Edge wbEdge = cwEdge.nextFaceEdge();
+			Edge bcEdge = cwEdge.prevFaceEdge();
+			Edge caEdge = cwEdge.prevEdge();
+
+			swapTestQuad(awEdge);
+			swapTestQuad(wbEdge);
+			swapTestQuad(bcEdge);
+			swapTestQuad(caEdge);
 		}
 	}
 
@@ -596,10 +624,12 @@ public class Delaunay {
 		p3.y += 1e-3f;
 		Vertex v3 = c.addVertex(p3);
 
-		c.addEdge(v0, v1);
-		c.addEdge(v1, v2);
-		c.addEdge(v2, v3);
-		c.addEdge(v3, v0);
+		// Mark these four edges (not their duals) as horizon edges
+		c.addEdge(v0, v1).addFlags(EDGEFLAG_HORIZON);
+		c.addEdge(v1, v2).addFlags(EDGEFLAG_HORIZON);
+		c.addEdge(v2, v3).addFlags(EDGEFLAG_HORIZON);
+		c.addEdge(v3, v0).addFlags(EDGEFLAG_HORIZON);
+
 		c.addEdge(v0, v2);
 
 		mContext = c;

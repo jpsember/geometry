@@ -46,15 +46,20 @@ public class AlgorithmStepper {
 		return sStepper;
 	}
 
-	/**
-	 * Set the delegate, which actually performs the algorithm, and displays it
-	 */
-	void setDelegate(Delegate delegate) {
-		mDelegate = delegate;
-		// Now that views have been built, restore option values
-		prepareOptionsAux();
+	public Rect algorithmRect() {
+		if (mAlgorithmRect == null) {
+			DisplayMetrics m = MyActivity.displayMetrics();
+			if (m.widthPixels > m.heightPixels) {
+				setAlgorithmRect(new Rect(0, 0, 1200, 1000));
+			} else {
+				setAlgorithmRect(new Rect(0, 0, 1000, 1200));
+			}
+		}
+		return mAlgorithmRect;
+	}
 
-		resetStep();
+	public void setAlgorithmRect(Rect r) {
+		mAlgorithmRect = r;
 	}
 
 	/**
@@ -256,13 +261,12 @@ public class AlgorithmStepper {
 						: PolygonElement.Style.BOUNDARY));
 	}
 
-	public String plotPolyline(Collection<Point> endpoints, boolean closed) {
+	public String plotPolyline(Collection<Point> endpoints) {
 		return plotElement(new PolygonElement(new Polygon(endpoints),
-				closed ? PolygonElement.Style.BOUNDARY
-						: PolygonElement.Style.POLYLINE));
+				PolygonElement.Style.POLYLINE));
 	}
 
-	public String plot(GeometryContext meshContext) {
+	public String plotMesh(GeometryContext meshContext) {
 		return plotElement(new MeshElement(meshContext));
 	}
 
@@ -304,22 +308,6 @@ public class AlgorithmStepper {
 		}
 	}
 
-	public Rect algorithmRect() {
-		if (mAlgorithmRect == null) {
-			DisplayMetrics m = MyActivity.displayMetrics();
-			if (m.widthPixels > m.heightPixels) {
-				setAlgorithmRect(new Rect(0, 0, 1200, 1000));
-			} else {
-				setAlgorithmRect(new Rect(0, 0, 1000, 1200));
-			}
-		}
-		return mAlgorithmRect;
-	}
-
-	public void setAlgorithmRect(Rect r) {
-		mAlgorithmRect = r;
-	}
-
 	private void resetStep() {
 		// Run algorithm to completion to determine the number of steps
 		mTotalStepsKnown = false;
@@ -342,6 +330,17 @@ public class AlgorithmStepper {
 		// well
 		if (previousTargetStep >= previousTotalSteps - 1)
 			mTargetStep = mTotalSteps - 1;
+	}
+
+	/**
+	 * Set the delegate, which actually performs the algorithm, and displays it
+	 */
+	void setDelegate(Delegate delegate) {
+		mDelegate = delegate;
+		// Now that views have been built, restore option values
+		prepareOptionsAux();
+
+		resetStep();
 	}
 
 	/**

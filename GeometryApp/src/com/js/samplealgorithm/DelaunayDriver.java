@@ -45,7 +45,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plot(mContext);
+			s.plotMesh(mContext);
 			s.closeLayer();
 		}
 

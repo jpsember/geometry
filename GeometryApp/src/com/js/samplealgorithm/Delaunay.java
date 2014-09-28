@@ -1,6 +1,7 @@
 package com.js.samplealgorithm;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import android.graphics.Color;
 
@@ -49,6 +50,7 @@ public class Delaunay {
 		doNothing();
 		s = AlgorithmStepper.sharedInstance();
 		constructMesh(context, boundingRect);
+		mRandom = new Random(1);
 	}
 
 	/**
@@ -75,12 +77,6 @@ public class Delaunay {
 
 		if (s.isActive()) {
 			s.removeLayer(BGND_ELEMENT_QUERY_POINT);
-		}
-
-		if (false) { // For testing issue #52
-			if (mContext.random().nextInt(20) == 17)
-				GeometryException
-						.raise("simulating an exception during stepping");
 		}
 
 		return newVertex;
@@ -419,7 +415,7 @@ public class Delaunay {
 		ArrayList<Vertex> vertices = mContext.vertexBuffer();
 		mSamples.clear();
 		for (int i = 0; i < nSamples; i++) {
-			int k = mContext.random().nextInt(vertices.size());
+			int k = mRandom.nextInt(vertices.size());
 			Vertex sample = vertices.get(k);
 			mSamples.add(sample);
 		}
@@ -668,6 +664,7 @@ public class Delaunay {
 
 	private static AlgorithmStepper s;
 
+	private Random mRandom;
 	private GeometryContext mContext;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();

@@ -104,7 +104,7 @@ public class PolygonMesh {
 	 */
 	private void setPolygon(Polygon polygon) {
 		try {
-			mContext = new GeometryContext(1965);
+			mContext = new GeometryContext();
 			triangulatePolygon(polygon);
 			extractStrip();
 		} catch (GeometryException e) {

@@ -1,15 +1,10 @@
 package com.js.geometry;
 
 import java.util.ArrayList;
-import java.util.Random;
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 
 public final class GeometryContext {
-
-	public Random random() {
-		return mRandom;
-	}
 
 	public ArrayList<Vertex> vertexBuffer() {
 		return mVertexBuffer;
@@ -49,29 +44,7 @@ public final class GeometryContext {
 		return edges;
 	}
 
-	public int seed() {
-		return mSeed;
-	}
-
-	public static GeometryContext contextWithRandomSeed(int seed) {
-		return new GeometryContext(seed);
-	}
-
-	public GeometryContext(int seed) {
-		resetWithSeed(seed);
-	}
-
-	public void resetWithSeed(int seed) {
-		mSeed = seed;
-		resetRandom(mSeed);
-		clearMesh();
-	}
-
-	public void resetRandom(int seed) {
-		if (seed == 0)
-			mRandom = new Random();
-		else
-			mRandom = new Random(seed);
+	public GeometryContext() {
 	}
 
 	public void clearMesh() {
@@ -347,7 +320,5 @@ public final class GeometryContext {
 		return sb.toString();
 	}
 
-	private Random mRandom;
-	private int mSeed;
 	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
 }

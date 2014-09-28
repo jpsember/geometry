@@ -19,7 +19,7 @@ public class GeometryContextTest extends MyTestCase {
 
 	private GeometryContext context() {
 		if (mContext == null)
-			mContext = new GeometryContext(42);
+			mContext = new GeometryContext();
 		return mContext;
 	}
 
@@ -36,7 +36,7 @@ public class GeometryContextTest extends MyTestCase {
 
 	private Polygon polygon(int defaultName) {
 		if (mPolygon == null) {
-			mPolygon = Polygon.testPolygon(new GeometryContext(1), defaultName);
+			mPolygon = Polygon.testPolygon(defaultName);
 		}
 		return mPolygon;
 	}

@@ -21,12 +21,12 @@ public class PolygonTriangulatorTest extends MyTestCase {
 
 	private GeometryContext context() {
 		if (mContext == null)
-			mContext = new GeometryContext(42);
+			mContext = new GeometryContext();
 		return mContext;
 	}
 
 	private void buildTestPolygon(int variety) {
-		mPolygon = Polygon.testPolygon(context(), variety);
+		mPolygon = Polygon.testPolygon(variety);
 	}
 
 	public void testDragonPolygonConsistent() {

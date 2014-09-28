@@ -1,20 +1,12 @@
 package com.js.geometrytest;
 
-import com.js.geometry.GeometryContext;
 import com.js.geometry.Polygon;
 import com.js.testUtils.MyTestCase;
 import static com.js.basic.Tools.*;
 
 public class PolygonTest extends MyTestCase {
 
-	private GeometryContext mContext;
 	private Polygon mPolygon;
-
-	private GeometryContext context() {
-		if (mContext == null)
-			mContext = new GeometryContext(42);
-		return mContext;
-	}
 
 	public void testPolygonConvexityTest() {
 		doNothing();
@@ -37,7 +29,7 @@ public class PolygonTest extends MyTestCase {
 	}
 
 	private void buildTestPolygon(int variety) {
-		mPolygon = Polygon.testPolygon(context(), variety);
+		mPolygon = Polygon.testPolygon(variety);
 	}
 
 }

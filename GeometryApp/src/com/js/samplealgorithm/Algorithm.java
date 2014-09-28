@@ -61,8 +61,8 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		ComboBoxWidget w = sOptions.getWidget("polygon");
 		int polygonName = (Integer) w.getSelectedValue();
 
-		mContext = GeometryContext.contextWithRandomSeed(1965);
-		mPolygon = Polygon.testPolygon(mContext, polygonName);
+		mContext = new GeometryContext();
+		mPolygon = Polygon.testPolygon(polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
 		mPolygon.transformToFitRect(AlgorithmStepper.sharedInstance()
 				.algorithmRect(), false);

@@ -33,9 +33,8 @@ public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
 	@Override
 	public void runAlgorithm() {
 		try {
-			mContext = GeometryContext.contextWithRandomSeed(sOptions
-					.getIntValue("Seed"));
-			mRandom = mContext.random();
+			mContext = new GeometryContext();
+			mRandom = new Random(sOptions.getIntValue("Seed"));
 
 			int baseVertex = buildStarshapedPolygon();
 			Edge edge = mContext.polygonEdgeFromVertex(mContext

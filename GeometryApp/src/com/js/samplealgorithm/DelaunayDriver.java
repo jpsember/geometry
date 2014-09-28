@@ -35,12 +35,12 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 
-		mContext = GeometryContext.contextWithRandomSeed(sOptions
-				.getIntValue("Seed"));
+		mContext = new GeometryContext();
+		mRandom = new Random(sOptions.getIntValue("Seed"));
 		boolean withDeletions = sOptions.getBooleanValue("Deletions");
 		boolean empty = sOptions.getBooleanValue("Empty");
 
-		mRandom = mContext.random();
+		mRandom = new Random(1);
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);

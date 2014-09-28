@@ -116,13 +116,11 @@ public class Polygon {
 			// A largish convex polygon
 			"36  21    59  15    80  13    94  14   102  17   106  23   109  33   111  46   107  68    95  82    67  91    40  91    23  84    11  70    16  35", };
 
-	public static Polygon testPolygon(GeometryContext context, int index) {
-
-		// DBG
-		// pr(@"constructing test poly, index %d, context %p\n",index,context);
+	public static Polygon testPolygon(int index) {
+		Random random = new Random(1);
 		Polygon poly;
 		if (index >= TESTPOLY_DRAGON_X && index < TESTPOLY_DRAGON_X + 15) {
-			poly = dragonPolygon(context, index - TESTPOLY_DRAGON_X);
+			poly = dragonPolygon(index - TESTPOLY_DRAGON_X);
 		} else if (index == TESTPOLY_QUADRATIC_FILTER) {
 			poly = polygon();
 			int nv = 400;
@@ -160,8 +158,8 @@ public class Polygon {
 						* scale);
 				if (index == TESTPOLY_SPIROGRAPH2) {
 					float drift = 20;
-					pt.x += context.random().nextFloat() * drift;
-					pt.y += context.random().nextFloat() * drift;
+					pt.x += random.nextFloat() * drift;
+					pt.y += random.nextFloat() * drift;
 				}
 				poly.add(pt);
 			}
@@ -187,7 +185,7 @@ public class Polygon {
 		return polygon;
 	}
 
-	private static Polygon dragonPolygon(GeometryContext context, int depth) {
+	private static Polygon dragonPolygon(int depth) {
 
 		String startScript = "200 500 800 510 700 705 880 780 890 250 300 260 310 600 180 610 180 500";
 		if (depth < 6)

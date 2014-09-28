@@ -28,13 +28,16 @@ public class SliderWidget extends AbstractWidget {
 
 	public SliderWidget(Context context, Map attributes) {
 		super(context, attributes);
-		setValue(intAttr("value", minValue()));
+		int initialValue = intAttr("value", minValue());
 
-		if (isHidden())
+		if (isHidden()) {
+			setValue(initialValue);
 			return;
+		}
 
 		mSeekBar = new SeekBar(context);
 		mSeekBar.setMax(maxValue() - minValue());
+		setValue(initialValue);
 
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 			@Override

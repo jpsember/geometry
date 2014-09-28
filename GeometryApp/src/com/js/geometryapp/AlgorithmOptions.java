@@ -54,37 +54,27 @@ public class AlgorithmOptions {
 	 * Build and add a slider widget
 	 */
 	public SliderWidget addSlider(String id, Object... attributePairs) {
-		SliderWidget w = buildSlider(id, attributePairs);
-		addWidget(w);
-		return w;
-	}
-
-	/**
-	 * Build a slider widget (but don't add it)
-	 */
-	public SliderWidget buildSlider(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		SliderWidget w = new SliderWidget(sContext, attributes);
+		addWidget(w);
 		return w;
 	}
 
 	/**
 	 * Add a checkbox widget
 	 */
-	public CheckBoxWidget addCheckBox(String id, boolean initialValue,
-			Object... attr) {
-		Map<String, Object> attributes = buildAttributes(id, attr);
+	public CheckBoxWidget addCheckBox(String id, Object... attributePairs) {
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
 		addWidget(w);
-		w.setValue(initialValue);
 		return w;
 	}
 
 	/**
 	 * Add a combobox widget
 	 */
-	public ComboBoxWidget addComboBox(String id, Object... attr) {
-		Map<String, Object> attributes = buildAttributes(id, attr);
+	public ComboBoxWidget addComboBox(String id, Object... attributePairs) {
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
 		addWidget(w);
 		return w;

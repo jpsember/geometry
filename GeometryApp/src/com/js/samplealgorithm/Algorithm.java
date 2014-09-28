@@ -54,7 +54,7 @@ public class Algorithm implements AlgorithmStepper.Delegate {
 		w.addItem("Dragon #8", Polygon.TESTPOLY_DRAGON_X + 8);
 		w.prepare();
 
-		sOptions.addCheckBox("Triangulate monotone face", false);
+		sOptions.addCheckBox("Triangulate monotone face");
 	}
 
 	private void prepareInput() {

@@ -56,14 +56,22 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Add a slider widget
+	 * Build and add a slider widget
 	 */
 	public SliderWidget addSlider(String id, int min, int max) {
+		SliderWidget w = buildSlider(id, min, max);
+		addWidget(w);
+		return w;
+	}
+
+	/**
+	 * Build a slider widget (but don't add it)
+	 */
+	public SliderWidget buildSlider(String id, int min, int max) {
 		Map<String, Object> attributes = buildAttributes(id);
 		attributes.put("min", min);
 		attributes.put("max", max);
 		SliderWidget w = new SliderWidget(sContext, attributes);
-		addWidget(w);
 		return w;
 	}
 
@@ -103,7 +111,7 @@ public class AlgorithmOptions {
 	}
 
 	public void setValue(String widgetId, int intValue) {
-		setValue(widgetId, Integer.valueOf(intValue), true);
+		getWidget(widgetId).setValue(Integer.toString(intValue));
 	}
 
 	/**
@@ -111,13 +119,6 @@ public class AlgorithmOptions {
 	 */
 	public boolean getBooleanValue(String widgetId) {
 		return getWidget(widgetId).getBooleanValue();
-	}
-
-	/**
-	 * Write value to widget
-	 */
-	public void setValue(String fieldName, Object value, boolean notifyListeners) {
-		getWidget(fieldName).setValue(value.toString(), notifyListeners);
 	}
 
 	/**
@@ -250,7 +251,7 @@ public class AlgorithmOptions {
 		return attributes;
 	}
 
-	private void addWidget(AbstractWidget w) {
+	void addWidget(AbstractWidget w) {
 		// Add it to the map
 		AbstractWidget previousMapping = mWidgetsMap.put(w.getId(), w);
 		if (previousMapping != null)

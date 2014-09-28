@@ -18,7 +18,6 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
-import com.js.json.JSONTools;
 
 public class AlgorithmStepper {
 
@@ -88,7 +87,7 @@ public class AlgorithmStepper {
 	public void pushActive(String widgetId) {
 		boolean value = mActive;
 		if (value)
-			value = AlgorithmOptions.sharedInstance().getBooleanValue(widgetId);
+			value = sOptions.getBooleanValue(widgetId);
 		pushActive(value);
 	}
 
@@ -269,12 +268,21 @@ public class AlgorithmStepper {
 	 * Recalculates the number of steps in the algorithm, then runs to the
 	 * target step and displays that frame.
 	 */
-	public void refresh() {
-		mTotalStepsKnown = false;
-		refreshAux();
+	public void refresh(String debugContext) {
+		refresh(true, debugContext);
 	}
 
-	private void refreshAux() {
+	/**
+	 * Request a refresh of the algorithm display, optionally recalculating
+	 * steps.
+	 */
+	void refresh(boolean recalculateAlgorithmSteps, String debugContext) {
+		mTotalStepsKnown = false;
+
+		if (recalculateAlgorithmSteps) {
+			mTotalStepsKnown = false;
+		}
+
 		if (!mTotalStepsKnown) {
 			// Run algorithm to completion to determine the number of steps
 			performAlgorithm();
@@ -291,14 +299,6 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private void resetStep() {
-		// Run algorithm to completion to determine the number of steps
-		mTotalStepsKnown = false;
-		performAlgorithm();
-		setTotalStepsKnown();
-		updateStepperView(true);
-	}
-
 	private void setTargetStepField(int value, String context) {
 		final boolean db = AlgorithmOptions.DB_PERSIST;
 		if (mTargetStep == value)
@@ -308,11 +308,7 @@ public class AlgorithmStepper {
 					+ " context:" + context);
 		mTargetStep = value;
 		// Update widget that is persisting this value
-		warning("what if options not available?");
-		// Don't notify listeners
-		AlgorithmOptions.sharedInstance().setValue("targetstep", mTargetStep,
-				false);
-
+		sOptions.setValue("targetstep", mTargetStep);
 	}
 
 	private void setTotalStepsKnown() {
@@ -339,8 +335,11 @@ public class AlgorithmStepper {
 		mDelegate = delegate;
 		// Now that views have been built, restore option values
 		prepareOptionsAux();
-
-		resetStep();
+		// Run algorithm to completion to determine the number of steps
+		mTotalStepsKnown = false;
+		performAlgorithm();
+		setTotalStepsKnown();
+		updateStepperView(true);
 	}
 
 	/**
@@ -476,7 +475,7 @@ public class AlgorithmStepper {
 				mIgnoreStepperView = false;
 				mStepperView.setTargetStep(mTargetStep);
 				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
-					refreshAux();
+					refresh(false, "updateStepperView");
 				}
 			}
 		}
@@ -534,20 +533,21 @@ public class AlgorithmStepper {
 	}
 
 	private void prepareOptionsAux() {
-		AlgorithmOptions mOptions = AlgorithmOptions.sharedInstance();
-		// Add a hidden widget to persist the target step
-		mOptions.addWidgets(JSONTools
-				.swapQuotes("[{'id':'targetstep','type':'slider','hidden':true}]"));
+		sOptions = AlgorithmOptions.sharedInstance();
 
-		// TODO: avoid attempting to persist widget values before we've restored
-		// stepper state
+		// Add a hidden widget to persist the target step
+		SliderWidget w = sOptions.buildSlider("targetstep", 0, 1000000);
+		w.attributes().put("hidden", true);
+		w.attributes().put(AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
+		sOptions.addWidget(w);
+
 		if (mDelegate == null)
 			die("attempt to prepare options before delegate defined");
 		mDelegate.prepareOptions();
 
-		mOptions.restoreStepperState();
+		sOptions.restoreStepperState();
 
-		setTargetStep(mOptions.getIntValue("targetstep"));
+		setTargetStep(sOptions.getIntValue("targetstep"));
 	}
 
 	/**
@@ -587,6 +587,7 @@ public class AlgorithmStepper {
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 	private static Object sSynchronizationLock = new Object();
+	private static AlgorithmOptions sOptions;
 
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();

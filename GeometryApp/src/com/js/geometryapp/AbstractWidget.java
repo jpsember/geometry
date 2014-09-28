@@ -20,6 +20,8 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
+	public static final String ATTR_RECALC_ALGORITHM_STEPS = "recalc";
+
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
 	static final boolean SET_DEBUG_COLORS = false;
@@ -99,6 +101,10 @@ public abstract class AbstractWidget {
 		return mPrimaryView.getContext();
 	}
 
+	public final void setIntValue(int internalValue) {
+		setValue(Integer.toString(internalValue));
+	}
+
 	/**
 	 * Set value as string; calls updateUserValue(...) which subclasses should
 	 * override to convert 'internal' string representation to user-displayable
@@ -108,21 +114,6 @@ public abstract class AbstractWidget {
 	 *            the new internal string representation of the value
 	 */
 	public final void setValue(String internalValue) {
-		setValue(internalValue, true);
-	}
-
-	public final void setIntValue(int internalValue) {
-		setValue(Integer.toString(internalValue));
-	}
-
-	/**
-	 * Same as {@link #setValue(String)}, but with option to notify listeners
-	 * 
-	 * @param notifyListeners
-	 *            if value has changed, listeners are notified only if this is
-	 *            true
-	 */
-	final void setValue(String internalValue, boolean notifyListeners) {
 		final boolean db = AlgorithmOptions.DB_PERSIST;
 		assertUIThread();
 
@@ -139,23 +130,30 @@ public abstract class AbstractWidget {
 
 		mWidgetValue = newUserValue;
 
-		if (!AlgorithmOptions.sharedInstance().isPrepared()) {
-			notifyListeners = false;
-		}
-
-		if (notifyListeners) {
-			synchronized (AlgorithmStepper.getLock()) {
-				for (Listener listener : mListeners) {
-					listener.valueChanged(this);
-				}
-				// Every event that changes a widget value triggers a refresh
-				AlgorithmStepper.sharedInstance().refresh();
-			}
-		}
+		if (!AlgorithmOptions.sharedInstance().isPrepared())
+			return;
 
 		if (db)
 			pr("widget " + getId() + " value " + oldValue + " --> "
-					+ internalValue + ", posting persist");
+					+ internalValue);
+		synchronized (AlgorithmStepper.getLock()) {
+			for (Listener listener : mListeners) {
+				listener.valueChanged(this);
+			}
+			// Every event that changes a widget value triggers a refresh
+			if (db)
+				pr("  refreshing stepper state");
+
+			// Always recalculate algorithm steps unless this widget's
+			// 'recalc' flag exists and is false
+			boolean recalcFlag = this.boolAttr(ATTR_RECALC_ALGORITHM_STEPS,
+					true);
+			AlgorithmStepper.sharedInstance().refresh(recalcFlag,
+					"new value '" + internalValue + "' for " + getId());
+		}
+		if (db)
+			pr("  posting persist");
+
 		AlgorithmOptions.sharedInstance().persistStepperState(true);
 	}
 

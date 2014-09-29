@@ -21,9 +21,7 @@ public class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected void onPause() {
 		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
-		if (options != null && options.isPrepared()) {
-			options.persistStepperState(false);
-		}
+		options.persistStepperState(false);
 		super.onPause();
 	}
 
@@ -39,11 +37,16 @@ public class GeometryStepperActivity extends GeometryActivity {
 	}
 
 	protected ViewGroup buildContentView() {
+		AlgorithmOptions options = AlgorithmOptions.construct(this);
+
 		ViewGroup mainView = super.buildContentView();
-		AlgorithmOptions mOptions = AlgorithmOptions.construct(this, mainView);
+
+		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
+		options.setContainingView(twinViews.getAuxilliaryView());
+
 		mainView.addView(mAlgorithmStepper.controllerView(this));
 
-		return mOptions.getView();
+		return twinViews.getContainer();
 	}
 
 	protected final GLSurfaceView buildOpenGLView() {

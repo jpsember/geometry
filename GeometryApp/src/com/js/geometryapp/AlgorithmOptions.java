@@ -6,16 +6,11 @@ import java.util.Map;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.v4.widget.SlidingPaneLayout;
-import android.util.DisplayMetrics;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
-import com.js.android.MyActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
@@ -27,13 +22,21 @@ import com.js.json.JSONParser;
 
 import static com.js.basic.Tools.*;
 
-/**
- * Encapsulates the user-defined options. These appear in a SlidingPaneLayout,
- * to preserve screen real estate on small devices
- */
 public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
+
+	static AlgorithmOptions construct(Context context) {
+		sAlgorithmOptions = new AlgorithmOptions(context);
+		return sharedInstance();
+	}
+
+	/**
+	 * Specify the view group to which widgets are to be added
+	 */
+	void setContainingView(ViewGroup v) {
+		mContainingView = v;
+	}
 
 	/**
 	 * Get the singleton instance of the options object
@@ -44,15 +47,7 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Hide the options pane to reveal the main view (has no effect if both are
-	 * always visible)
-	 */
-	public void hide() {
-		mSlidingPane.openPane();
-	}
-
-	/**
-	 * Build and add a slider widget
+	 * Add a slider widget
 	 */
 	public SliderWidget addSlider(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
@@ -128,112 +123,10 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Construct an options object
-	 * 
-	 * @param context
-	 * @param mainView
-	 *            the main view (i.e. the original 'content' view), it will
-	 *            actually be placed within the options SlidingPaneLayout, which
-	 *            becomes the new content view
-	 */
-	static AlgorithmOptions construct(Context context, View mainView) {
-		AlgorithmOptions v = new AlgorithmOptions(context);
-		v.buildSlidingPane(context);
-		v.buildOptionsView();
-		v.addChildViews(mainView);
-		sAlgorithmOptions = v;
-		return v;
-	}
-
-	/**
-	 * Get the view that contains both the main view and the options
-	 */
-	ViewGroup getView() {
-		return mSlidingPane;
-	}
-
-	/**
 	 * Private constructor
 	 */
 	private AlgorithmOptions(Context context) {
 		sContext = context;
-	}
-
-	private void buildSlidingPane(Context context) {
-		mSlidingPane = new SlidingPaneLayout(context);
-	}
-
-	/**
-	 * Add the main content view and options views to the sliding pane
-	 */
-	private void addChildViews(View mainView) {
-
-		// Determine if device in current orientation is large enough to display
-		// both panes at once
-
-		final float PREFERRED_MAIN_WIDTH_INCHES = 3;
-		final float PREFERRED_OPTIONS_WIDTH_INCHES = 2;
-		final float TOTAL_WIDTH_INCHES = (PREFERRED_MAIN_WIDTH_INCHES + PREFERRED_OPTIONS_WIDTH_INCHES);
-
-		DisplayMetrics displayMetrics = MyActivity.displayMetrics();
-		float mainWidth;
-		float optionsWidth;
-
-		boolean landscapeMode = displayMetrics.widthPixels > displayMetrics.heightPixels;
-		float deviceWidthInInches = displayMetrics.widthPixels
-				/ displayMetrics.xdpi;
-		boolean bothFit = landscapeMode
-				&& deviceWidthInInches >= PREFERRED_MAIN_WIDTH_INCHES
-						+ PREFERRED_OPTIONS_WIDTH_INCHES;
-
-		if (bothFit) {
-			mainWidth = displayMetrics.widthPixels
-					* (PREFERRED_MAIN_WIDTH_INCHES / TOTAL_WIDTH_INCHES);
-			optionsWidth = displayMetrics.widthPixels
-					* (PREFERRED_OPTIONS_WIDTH_INCHES / TOTAL_WIDTH_INCHES);
-		} else {
-			mainWidth = LayoutParams.MATCH_PARENT;
-			optionsWidth = LayoutParams.MATCH_PARENT;
-		}
-
-		SlidingPaneLayout.LayoutParams lp = new SlidingPaneLayout.LayoutParams(
-				(int) mainWidth, LayoutParams.MATCH_PARENT);
-		lp.weight = 1;
-		mSlidingPane.addView(mainView, lp);
-
-		lp = new SlidingPaneLayout.LayoutParams((int) optionsWidth,
-				LayoutParams.MATCH_PARENT);
-
-		// Add some padding around the actual options
-		ViewGroup optionsContainer = mOptionsView;
-		{
-			FrameLayout frame = new FrameLayout(getContext());
-			if (AbstractWidget.SET_DEBUG_COLORS) {
-				frame.setBackgroundColor(OurGLTools.debugColor());
-			}
-			int padding = MyActivity.inchesToPixels(.05f);
-			frame.setPadding(padding, padding, padding, padding);
-			frame.addView(mOptionsView);
-			optionsContainer = frame;
-		}
-		mSlidingPane.addView(optionsContainer, lp);
-
-		if (!bothFit)
-			hide();
-	}
-
-	private Context getContext() {
-		return mSlidingPane.getContext();
-	}
-
-	/**
-	 * Build a view to contain the various user controls (buttons, checkboxes,
-	 * etc) that will appear in the sliding pane
-	 */
-	private void buildOptionsView() {
-		LinearLayout options = new LinearLayout(getContext());
-		options.setOrientation(LinearLayout.VERTICAL);
-		mOptionsView = options;
 	}
 
 	private static Map<String, Object> buildAttributes(String identifier,
@@ -254,16 +147,20 @@ public class AlgorithmOptions {
 		if (previousMapping != null)
 			die("widget id " + w.getId() + " already exists");
 
+		if (mContainingView != null) {
+			addWidgetToContainer(w);
+		} else {
+			warning("No containing view defined for " + w.getId());
+		}
+	}
+
+	private void addWidgetToContainer(AbstractWidget w) {
 		// Add it to the options view, if it's not detached
 		if (!w.boolAttr(AbstractWidget.OPTION_DETACHED, false)) {
 			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
 					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			mOptionsView.addView(w.getView(), p);
+			mContainingView.addView(w.getView(), p);
 		}
-	}
-
-	public boolean isPrepared() {
-		return mPrepared;
 	}
 
 	/**
@@ -361,10 +258,19 @@ public class AlgorithmOptions {
 		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
 	}
 
+	/**
+	 * Process a change in a widget's value (or a button click, if it's a
+	 * button); notify any listeners, and trigger a refresh of the algorithm
+	 * view
+	 * 
+	 * @param widget
+	 * @param listeners
+	 *            listeners to notify
+	 */
 	public void processWidgetValue(AbstractWidget widget,
 			Collection<Listener> listeners) {
 
-		if (!isPrepared())
+		if (!mPrepared)
 			return;
 
 		synchronized (AlgorithmStepper.getLock()) {
@@ -382,9 +288,8 @@ public class AlgorithmOptions {
 
 	private static AlgorithmOptions sAlgorithmOptions;
 
+	private ViewGroup mContainingView;
 	private boolean mPrepared;
-	private SlidingPaneLayout mSlidingPane;
-	private ViewGroup mOptionsView;
 	private Context sContext;
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
 	private boolean mFlushRequired;

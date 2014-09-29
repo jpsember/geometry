@@ -34,7 +34,7 @@ public class AlgorithmStepper {
 	/**
 	 * Enables diagnostic printing related to milestones
 	 */
-	public static final boolean DIAGNOSE_MILESTONES = false;
+	private static final boolean DIAGNOSE_MILESTONES = true;
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
@@ -122,14 +122,36 @@ public class AlgorithmStepper {
 	}
 
 	private boolean stepAux(boolean milestone) {
-		final boolean db = DIAGNOSE_STEPS;
+		final boolean db = DIAGNOSE_STEPS || DIAGNOSE_MILESTONES;
 		boolean output = false;
 		do {
 			if (isActive()) {
 				if (MILESTONES_ENABLED) {
-					if (milestone)
+					if (milestone) {
 						addMilestone(mCurrentStep);
+					}
+					// If we're jumping forward, see if this is the milestone we
+					// were looking for
+					if (mJumpToNextMilestoneFlag) {
+						if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
+							if (db)
+								pr("found next milestone ("
+										+ mCurrentStep
+										+ "); setting as target and turning off flag");
+							mJumpToNextMilestoneFlag = false;
+							mTargetStep = mCurrentStep;
+						} else {
+							// Keep target just in front of current, so we
+							// continue searching
+							if (db)
+								pr("keeping target ahead of current step "
+										+ mCurrentStep);
+							mTargetStep = Math.min(mTotalSteps,
+									mCurrentStep + 1);
+						}
+					}
 				}
+
 				if (mCurrentStep == mTargetStep) {
 					// If the target step equals the total steps, we would have
 					// expected to complete the algorithm without halting, so
@@ -388,8 +410,6 @@ public class AlgorithmStepper {
 				if (MILESTONES_ENABLED) {
 					mMilestones.clear();
 					addMilestone(mCurrentStep);
-				} else {
-					warning("milestones have been disabled");
 				}
 
 				mCompleted = false;
@@ -447,6 +467,10 @@ public class AlgorithmStepper {
 				}
 			} catch (DesiredStepReachedException e) {
 			} finally {
+				if (db)
+					pr("clearing mForwardtoNextMilestoneFlag (currently "
+							+ d(mJumpToNextMilestoneFlag) + ")");
+				mJumpToNextMilestoneFlag = false;
 				initializeActiveState(false);
 			}
 
@@ -506,7 +530,11 @@ public class AlgorithmStepper {
 		setTargetStep(seekStep);
 	}
 
-	private void adjustDisplayedMilestone(int delta) {
+	private void adjustTargetMilestone(int delta) {
+		final boolean db = DIAGNOSE_MILESTONES;
+		if (db)
+			pr("adjustTargetMilestone " + delta + ", current target "
+					+ mTargetStep);
 		if (!MILESTONES_ENABLED)
 			return;
 		int seekStep = -1;
@@ -515,10 +543,24 @@ public class AlgorithmStepper {
 				if (k < mTargetStep)
 					seekStep = k;
 			}
+			if (db)
+				pr("seek step " + seekStep);
 		} else {
-			pr("Step forward has been disabled");
+			// Act as if we're just stepping forward by one, but set a special
+			// flag which indicates we want to continue stepping forward until
+			// we reach a milestone
+			seekStep = Math.min(mTotalSteps, mTargetStep + 1);
+			// We must be careful to only set the 'jump to next' flag if we're
+			// actually going to perform any stepping, otherwise it won't get
+			// cleared
+			if (seekStep > mCurrentStep) {
+				mJumpToNextMilestoneFlag = true;
+				mMinimumMilestoneStep = seekStep;
+				if (db)
+					pr("setting forwardToNextMilestoneFlag, minimum "
+							+ mMinimumMilestoneStep);
+			}
 		}
-
 		if (seekStep >= 0) {
 			setTargetStep(seekStep);
 		}
@@ -567,7 +609,7 @@ public class AlgorithmStepper {
 				String id = widget.getId();
 				for (int j = 0; j < 2; j++) {
 					if (id == ids[j])
-						adjustDisplayedMilestone(j == 0 ? -1 : 1);
+						adjustTargetMilestone(j == 0 ? -1 : 1);
 					if (id == ids[j + 2])
 						adjustTargetStep(j == 0 ? -1 : 1);
 				}
@@ -659,4 +701,9 @@ public class AlgorithmStepper {
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;
 	private boolean mDiagnosticMessagePrintedFlag;
+
+	// True if jumping forward to next milestone;
+	private boolean mJumpToNextMilestoneFlag;
+	// stop at first milestone whose step is at least this
+	private int mMinimumMilestoneStep;
 }

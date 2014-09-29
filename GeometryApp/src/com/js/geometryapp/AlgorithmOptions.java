@@ -36,6 +36,11 @@ public class AlgorithmOptions {
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
 	/**
+	 * Enables diagnostic printing related to persisting widget values
+	 */
+	public static final boolean DIAGNOSE_PERSISTENCE = false;
+
+	/**
 	 * Get the singleton instance of the options object
 	 */
 	public static AlgorithmOptions sharedInstance() {
@@ -367,7 +372,7 @@ public class AlgorithmOptions {
 		synchronized (AlgorithmStepper.getLock()) {
 			newWidgetValuesScript = saveValues();
 		}
-		if (AlgorithmStepper.DIAGNOSE_MILESTONES) {
+		if (DIAGNOSE_PERSISTENCE) {
 			pr("Writing widget values to preferences:\n"
 					+ newWidgetValuesScript);
 		}
@@ -386,7 +391,7 @@ public class AlgorithmOptions {
 
 		// Make a delayed call to persist the values (on the UI thread)
 
-		final long FLUSH_DELAY = 2200;
+		final long FLUSH_DELAY = DIAGNOSE_PERSISTENCE ? 1200 : 5000;
 
 		// If there's already an active handler, don't replace it if it's far
 		// enough in the future
@@ -423,7 +428,7 @@ public class AlgorithmOptions {
 			// Unless the 'refresh' option exists and is false,
 			// trigger a refresh of the algorithm view.
 			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
-				if (AlgorithmStepper.DIAGNOSE_MILESTONES)
+				if (DIAGNOSE_PERSISTENCE)
 					pr("Refresh stepper due to widget " + widget.getId());
 				AlgorithmStepper.sharedInstance().refresh();
 			}

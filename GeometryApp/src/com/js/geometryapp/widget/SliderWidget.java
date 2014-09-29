@@ -9,22 +9,8 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import static com.js.basic.Tools.*;
 
 public class SliderWidget extends AbstractWidget {
-
-	public static final Factory FACTORY = new AbstractWidget.Factory() {
-		@Override
-		public String getName() {
-			doNothing();
-			return "slider";
-		}
-
-		@Override
-		public AbstractWidget constructInstance(Context context, Map attributes) {
-			return new SliderWidget(context, attributes);
-		}
-	};
 
 	public SliderWidget(Context context, Map attributes) {
 		super(context, attributes);

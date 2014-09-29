@@ -257,15 +257,6 @@ public abstract class AbstractWidget {
 		return container;
 	}
 
-	/**
-	 * Factory that each widget type must supply
-	 */
-	public static interface Factory {
-		String getName();
-
-		AbstractWidget constructInstance(Context context, Map attributes);
-	}
-
 	public static interface Listener {
 		public void valueChanged(AbstractWidget widget);
 	}

@@ -12,7 +12,7 @@ public class SampleActivity extends GeometryStepperActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 
-		int appNum = 0;
+		int appNum = 2;
 
 		if (false) {
 			AppPreferences.prepare(this);

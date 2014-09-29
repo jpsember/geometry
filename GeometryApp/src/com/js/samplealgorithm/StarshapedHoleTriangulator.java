@@ -27,8 +27,8 @@ public class StarshapedHoleTriangulator {
 	 * @param edgeOnHole
 	 *            edge lying on CCW boundary of hole
 	 */
-	public static StarshapedHoleTriangulator buildTriangulator(
-			Mesh mesh, Point kernelPoint, Edge edgeOnHole) {
+	public static StarshapedHoleTriangulator buildTriangulator(Mesh mesh,
+			Point kernelPoint, Edge edgeOnHole) {
 		return new StarshapedHoleTriangulator(mesh, kernelPoint, edgeOnHole);
 	}
 
@@ -160,8 +160,11 @@ public class StarshapedHoleTriangulator {
 
 		if (s.isActive()) {
 			s.removeLayer(BGND_ELEMENT_KERNEL);
-			s.removeLayer(BGND_ELEMENT_MESH);
 			s.removeLayer(BGND_ELEMENT_HOLE_POLYGON);
+			// Don't remove the mesh; we want it to remain visible when the
+			// algorithm completes.
+			// Issue #70: if we nest this algorithm within others, the layer
+			// will never get removed
 		}
 	}
 

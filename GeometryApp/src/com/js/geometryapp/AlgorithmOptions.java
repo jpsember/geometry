@@ -52,13 +52,6 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Add widgets defined by a JSON script
-	 */
-	public void addWidgets(String jsonString) {
-		parseWidgets(new JSONParser(jsonString));
-	}
-
-	/**
 	 * Build and add a slider widget
 	 */
 	public SliderWidget addSlider(String id, Object... attributePairs) {
@@ -164,10 +157,6 @@ public class AlgorithmOptions {
 	 */
 	private AlgorithmOptions(Context context) {
 		sContext = context;
-		for (int i = 0; i < basicWidgets.length; i++) {
-			AbstractWidget.Factory factory = basicWidgets[i];
-			mWidgetFactoryMap.put(factory.getName(), factory);
-		}
 	}
 
 	private void buildSlidingPane(Context context) {
@@ -271,40 +260,6 @@ public class AlgorithmOptions {
 					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			mOptionsView.addView(w.getView(), p);
 		}
-	}
-
-	private static AbstractWidget.Factory[] basicWidgets = {
-			CheckBoxWidget.FACTORY, ComboBoxWidget.FACTORY,
-			SliderWidget.FACTORY };
-
-	private void parseWidgets(JSONParser json) {
-		json.enterList();
-		while (json.hasNext()) {
-			Map attributes = (Map) json.next();
-			AbstractWidget item = build(attributes);
-			String id = item.getId();
-			if (!id.isEmpty()) {
-				addWidget(item);
-			}
-		}
-		json.exit();
-	}
-
-	/**
-	 * Construct a widget from a set of attributes, by using an appropriate
-	 * factory constructor
-	 */
-	private AbstractWidget build(Map attributes) {
-		AbstractWidget widget;
-		String type = (String) attributes.get("type");
-		if (type == null)
-			throw new IllegalArgumentException("no type found");
-		AbstractWidget.Factory factory = mWidgetFactoryMap.get(type);
-		if (factory == null)
-			throw new IllegalArgumentException(
-					"no factory found for widget type " + type);
-		widget = factory.constructInstance(sContext, attributes);
-		return widget;
 	}
 
 	public boolean isPrepared() {
@@ -431,7 +386,6 @@ public class AlgorithmOptions {
 	private SlidingPaneLayout mSlidingPane;
 	private ViewGroup mOptionsView;
 	private Context sContext;
-	private Map<String, AbstractWidget.Factory> mWidgetFactoryMap = new HashMap();
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
 	private boolean mFlushRequired;
 	// The single valid pending flush operation, or null

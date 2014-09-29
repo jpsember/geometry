@@ -19,19 +19,6 @@ import static com.js.basic.Tools.*;
 
 public class ComboBoxWidget extends AbstractWidget {
 
-	public static final Factory FACTORY = new AbstractWidget.Factory() {
-		@Override
-		public String getName() {
-			doNothing();
-			return "combobox";
-		}
-
-		@Override
-		public AbstractWidget constructInstance(Context context, Map attributes) {
-			return new ComboBoxWidget(context, attributes);
-		}
-	};
-
 	static final String ATTR_OPTIONS = "options";
 
 	private void prepareOptions(Map options) {

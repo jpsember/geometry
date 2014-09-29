@@ -11,22 +11,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import static com.js.basic.Tools.*;
 
 public class CheckBoxWidget extends AbstractWidget {
-
-	public static final Factory FACTORY = new AbstractWidget.Factory() {
-		@Override
-		public String getName() {
-			doNothing();
-			return "checkbox";
-		}
-
-		@Override
-		public AbstractWidget constructInstance(Context context, Map attributes) {
-			return new CheckBoxWidget(context, attributes);
-		}
-	};
 
 	public CheckBoxWidget(Context context, Map attributes) {
 		super(context, attributes);

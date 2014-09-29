@@ -44,13 +44,6 @@ public abstract class AbstractWidget {
 	public static final String OPTION_REFRESH_ALGORITHM = "refresh_algorithm";
 
 	/**
-	 * If true, any changes to this widget's value will induce a recalculation
-	 * of the algorithm's total steps (though this may go away soon, per issue
-	 * #69)
-	 */
-	public static final String OPTION_RECALC_ALGORITHM_STEPS = "recalc";
-
-	/**
 	 * If this option is true, the widget's view will not be added to the main
 	 * options view. The user can choose to add it to some other view, or leave
 	 * it hidden (it can still be used to store state).

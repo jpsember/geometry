@@ -583,8 +583,7 @@ public class AlgorithmStepper {
 
 		// Add a detached widget to persist the total steps
 		sOptions.addSlider(WIDGET_ID_TOTALSTEPS,
-				AbstractWidget.OPTION_DETACHED, true,
-				AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, false);
+				AbstractWidget.OPTION_DETACHED, true);
 
 		addStepperViewListeners();
 

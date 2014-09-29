@@ -11,8 +11,6 @@ import com.js.geometry.*;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
-import com.js.geometryapp.widget.AbstractWidget;
-import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
@@ -39,8 +37,9 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 		mContext = new Mesh();
 		mRandom = new Random(sOptions.getIntValue("Seed"));
-		boolean withDeletions = sOptions.getBooleanValue("Deletions");
-		boolean empty = sOptions.getBooleanValue("Empty");
+		boolean deleteAll = sOptions.getBooleanValue("Delete all");
+		boolean withDeletions = deleteAll
+				|| sOptions.getBooleanValue("Deletions");
 
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_MESH);
@@ -91,7 +90,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 			}
 		}
 
-		if (withDeletions && empty) {
+		if (deleteAll) {
 			while (!mVertices.isEmpty())
 				removeArbitraryVertex();
 		}
@@ -132,23 +131,17 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 		sOptions = AlgorithmOptions.sharedInstance();
 
 		sOptions.addSlider("Seed", "min", 1, "max", 300);
-		sOptions.addCheckBox("Deletions", "value",true);
-		sOptions.addCheckBox("Empty","value", true);
-		sOptions.addCheckBox("Voronoi cells" );
+		sOptions.addCheckBox("Deletions", "value", true);
+		sOptions.addCheckBox("Delete all");
+		sOptions.addCheckBox("Voronoi cells");
 		ComboBoxWidget w = sOptions.addComboBox("Pattern");
 		w.addItem("Random");
 		w.addItem("Circle");
 		w.prepare();
 		sOptions.addSlider("Points", "min", 1, "max", 250, "value", 25);
 
-		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS,"value",true);
+		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
 		sOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
-		sOptions.addButton("Sample Button").addListener(new Listener() {
-			@Override
-			public void valueChanged(AbstractWidget widget) {
-				pr("Button pressed.");
-			}
-		});
 	}
 
 	private static AlgorithmOptions sOptions;

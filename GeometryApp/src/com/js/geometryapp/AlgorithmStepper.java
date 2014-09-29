@@ -13,7 +13,6 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.js.android.MyActivity;
-import com.js.basic.Tools;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -23,18 +22,6 @@ import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.SliderWidget;
 
 public class AlgorithmStepper {
-
-	private static final boolean MILESTONES_ENABLED = true;
-
-	/**
-	 * Enables diagnostic printing related to target, total steps
-	 */
-	private static final boolean DIAGNOSE_STEPS = false;
-
-	/**
-	 * Enables diagnostic printing related to milestones
-	 */
-	private static final boolean DIAGNOSE_MILESTONES = true;
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
@@ -122,33 +109,22 @@ public class AlgorithmStepper {
 	}
 
 	private boolean stepAux(boolean milestone) {
-		final boolean db = DIAGNOSE_STEPS || DIAGNOSE_MILESTONES;
 		boolean output = false;
 		do {
 			if (isActive()) {
-				if (MILESTONES_ENABLED) {
-					if (milestone) {
-						addMilestone(mCurrentStep);
-					}
-					// If we're jumping forward, see if this is the milestone we
-					// were looking for
-					if (mJumpToNextMilestoneFlag) {
-						if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
-							if (db)
-								pr("found next milestone ("
-										+ mCurrentStep
-										+ "); setting as target and turning off flag");
-							mJumpToNextMilestoneFlag = false;
-							mTargetStep = mCurrentStep;
-						} else {
-							// Keep target just in front of current, so we
-							// continue searching
-							if (db)
-								pr("keeping target ahead of current step "
-										+ mCurrentStep);
-							mTargetStep = Math.min(mTotalSteps,
-									mCurrentStep + 1);
-						}
+				if (milestone) {
+					addMilestone(mCurrentStep);
+				}
+				// If we're jumping forward, see if this is the milestone we
+				// were looking for
+				if (mJumpToNextMilestoneFlag) {
+					if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
+						mJumpToNextMilestoneFlag = false;
+						mTargetStep = mCurrentStep;
+					} else {
+						// Keep target just in front of current, so we
+						// continue searching
+						mTargetStep = Math.min(mTotalSteps, mCurrentStep + 1);
 					}
 				}
 
@@ -159,13 +135,6 @@ public class AlgorithmStepper {
 					// Increase the target step and total steps so that we end
 					// up going all the way to the new end.
 					if (!mCompleted && mTargetStep == mTotalSteps) {
-						if (db) {
-							if (!mDiagnosticMessagePrintedFlag) {
-								mDiagnosticMessagePrintedFlag = true;
-								pr("Expected to complete without halting; "
-										+ dumpStepInfo() + "; incrementing");
-							}
-						}
 						mTotalSteps++;
 						mTargetStep++;
 					} else {
@@ -200,10 +169,6 @@ public class AlgorithmStepper {
 	 */
 	public void show(Object message) {
 		String messageString = message.toString();
-		if (DIAGNOSE_STEPS) {
-			messageString = "#" + f(mCurrentStep, 4) + "/" + f(mTotalSteps, 4)
-					+ " " + messageString;
-		}
 		mFrameTitle = messageString;
 		throw new DesiredStepReachedException(messageString);
 	}
@@ -348,15 +313,11 @@ public class AlgorithmStepper {
 		return AlgorithmStepperPanel.build(context);
 	}
 
-	private int nDebugFrame;
-
 	/**
 	 * Render algorithm frame, by plotting all previously constructed layers and
 	 * the frame's title
 	 */
 	void render() {
-		if (DIAGNOSE_MILESTONES)
-			pr(Tools.sp(nDebugFrame++ & 1) + "rendering...");
 		renderBackgroundElements();
 		mForegroundLayer.render();
 		if (mFrameTitle != null) {
@@ -386,14 +347,7 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private String dumpStepInfo() {
-		return "[ Current:" + f(mCurrentStep, 4, true) + " Target:"
-				+ f(mTargetStep, 4, true) + " Total:" + f(mTotalSteps, 4, true)
-				+ " ] ";
-	}
-
 	private void performAlgorithm() {
-		final boolean db = DIAGNOSE_STEPS;
 
 		synchronized (AlgorithmStepper.getLock()) {
 			try {
@@ -407,13 +361,10 @@ public class AlgorithmStepper {
 
 				AlgorithmDisplayElement.resetRenderStateVars();
 
-				if (MILESTONES_ENABLED) {
-					mMilestones.clear();
-					addMilestone(mCurrentStep);
-				}
+				mMilestones.clear();
+				addMilestone(mCurrentStep);
 
 				mCompleted = false;
-				mDiagnosticMessagePrintedFlag = false;
 				try {
 					mDelegate.runAlgorithm();
 
@@ -427,10 +378,6 @@ public class AlgorithmStepper {
 					// If the target step was not the maximum, the maximum is
 					// too high.
 					if (mCurrentStep < mTotalSteps) {
-						if (db)
-							pr("Completed algorithm; "
-									+ dumpStepInfo()
-									+ "\n  total steps was too high, setting to current");
 						mTotalSteps = mCurrentStep;
 						mTargetStep = mTotalSteps;
 					}
@@ -446,8 +393,6 @@ public class AlgorithmStepper {
 						// thought was the last step, the total steps is too
 						// low.
 						if (mCurrentStep == mTotalSteps) {
-							pr("Halted, total steps was too low, increasing; "
-									+ dumpStepInfo());
 							mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
 						}
 					}
@@ -467,9 +412,6 @@ public class AlgorithmStepper {
 				}
 			} catch (DesiredStepReachedException e) {
 			} finally {
-				if (db)
-					pr("clearing mForwardtoNextMilestoneFlag (currently "
-							+ d(mJumpToNextMilestoneFlag) + ")");
 				mJumpToNextMilestoneFlag = false;
 				initializeActiveState(false);
 			}
@@ -486,7 +428,6 @@ public class AlgorithmStepper {
 	 * fields
 	 */
 	private void writeStepValuesToWidgets() {
-		final boolean db = DIAGNOSE_STEPS;
 
 		SliderWidget wTotal = sOptions.getWidget(WIDGET_ID_TOTALSTEPS);
 		SliderWidget wTarget = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
@@ -495,11 +436,6 @@ public class AlgorithmStepper {
 		int widgetTargetStep = wTarget.getIntValue();
 
 		if (wTotalStepsValue != mTotalSteps || widgetTargetStep != mTargetStep) {
-			if (db) {
-				pr("Update length from target " + f(widgetTargetStep, 4)
-						+ ", total " + f(wTotalStepsValue, 4) + "; now "
-						+ dumpStepInfo());
-			}
 			// While changing the widget's total steps, the controller view may
 			// try to change the target step on us; ignore such events
 			mIgnoreStepperView = true;
@@ -516,11 +452,6 @@ public class AlgorithmStepper {
 		if (mIgnoreStepperView) {
 			return;
 		}
-		final boolean db = DIAGNOSE_MILESTONES;
-		if (db)
-			pr("setTargetStepField to " + targetStep + " (currently "
-					+ mTargetStep + "); widget "
-					+ sOptions.getIntValue(WIDGET_ID_TARGETSTEP));
 		mTargetStep = targetStep;
 		writeStepValuesToWidgets();
 	}
@@ -531,20 +462,12 @@ public class AlgorithmStepper {
 	}
 
 	private void adjustTargetMilestone(int delta) {
-		final boolean db = DIAGNOSE_MILESTONES;
-		if (db)
-			pr("adjustTargetMilestone " + delta + ", current target "
-					+ mTargetStep);
-		if (!MILESTONES_ENABLED)
-			return;
 		int seekStep = -1;
 		if (delta < 0) {
 			for (int k : mMilestones) {
 				if (k < mTargetStep)
 					seekStep = k;
 			}
-			if (db)
-				pr("seek step " + seekStep);
 		} else {
 			// Act as if we're just stepping forward by one, but set a special
 			// flag which indicates we want to continue stepping forward until
@@ -556,9 +479,6 @@ public class AlgorithmStepper {
 			if (seekStep > mCurrentStep) {
 				mJumpToNextMilestoneFlag = true;
 				mMinimumMilestoneStep = seekStep;
-				if (db)
-					pr("setting forwardToNextMilestoneFlag, minimum "
-							+ mMinimumMilestoneStep);
 			}
 		}
 		if (seekStep >= 0) {
@@ -700,7 +620,6 @@ public class AlgorithmStepper {
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;
-	private boolean mDiagnosticMessagePrintedFlag;
 
 	// True if jumping forward to next milestone;
 	private boolean mJumpToNextMilestoneFlag;

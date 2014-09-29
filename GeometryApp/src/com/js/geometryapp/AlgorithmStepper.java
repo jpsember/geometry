@@ -116,6 +116,7 @@ public class AlgorithmStepper {
 	}
 
 	private boolean stepAux(boolean milestone) {
+		final boolean db = DIAGNOSE_STEPS;
 		boolean output = false;
 		do {
 			if (isActive()) {
@@ -124,8 +125,25 @@ public class AlgorithmStepper {
 						addMilestone(mCurrentStep);
 				}
 				if (mCurrentStep == mTargetStep) {
-					output = true;
-					break;
+					// If the target step equals the total steps, we would have
+					// expected to complete the algorithm without halting, so
+					// the total steps is too small.
+					// Increase the target step and total steps so that we end
+					// up going all the way to the new end.
+					if (!mCompleted && mTargetStep == mTotalSteps) {
+						if (db) {
+							if (!mDiagnosticMessagePrintedFlag) {
+								mDiagnosticMessagePrintedFlag = true;
+								pr("Expected to complete without halting; "
+										+ dumpStepInfo() + "; incrementing");
+							}
+						}
+						mTotalSteps++;
+						mTargetStep++;
+					} else {
+						output = true;
+						break;
+					}
 				}
 				if (mTargetStep < mCurrentStep)
 					die("target " + mTargetStep + " but current "
@@ -373,7 +391,8 @@ public class AlgorithmStepper {
 					warning("milestones have been disabled");
 				}
 
-				boolean completed = false;
+				mCompleted = false;
+				mDiagnosticMessagePrintedFlag = false;
 				try {
 					mDelegate.runAlgorithm();
 
@@ -382,7 +401,7 @@ public class AlgorithmStepper {
 					// We're about to throw an exception that will be caught
 					// below; set flag so that we know we completed without
 					// halting.
-					completed = true;
+					mCompleted = true;
 
 					// If the target step was not the maximum, the maximum is
 					// too high.
@@ -401,7 +420,7 @@ public class AlgorithmStepper {
 						die("unexpected!");
 					}
 				} catch (DesiredStepReachedException e) {
-					if (!completed) {
+					if (!mCompleted) {
 						// We halted without completing. If we halted on what we
 						// thought was the last step, the total steps is too
 						// low.
@@ -453,9 +472,9 @@ public class AlgorithmStepper {
 		if (currentTotalSteps != mTotalSteps
 				|| currentTargetStep != mTargetStep) {
 			if (db) {
-				pr("updateAlgorithmLength, previous target "
-						+ currentTargetStep + " of total " + currentTotalSteps
-						+ "; updating to " + dumpStepInfo());
+				pr("Update length from target " + f(currentTargetStep, 4)
+						+ ", total " + f(currentTotalSteps, 4) + "; now "
+						+ dumpStepInfo());
 			}
 			// While changing the total steps, the controller view may try
 			// to change the target step on us; ignore such events
@@ -632,4 +651,6 @@ public class AlgorithmStepper {
 	private Delegate mDelegate;
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
+	private boolean mCompleted;
+	private boolean mDiagnosticMessagePrintedFlag;
 }

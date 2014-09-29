@@ -40,6 +40,7 @@ public class GeometryStepperActivity extends GeometryActivity {
 		AlgorithmOptions options = AlgorithmOptions.construct(this);
 
 		ViewGroup mainView = super.buildContentView();
+		mAlgorithmStepper.setGLSurfaceView(getGLSurfaceView());
 
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		options.setContainingView(twinViews.getAuxilliaryView());

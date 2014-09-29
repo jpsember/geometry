@@ -1,14 +1,12 @@
 package com.js.samplealgorithm;
 
 import android.content.Context;
-import android.opengl.GLSurfaceView;
 
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
@@ -20,10 +18,6 @@ public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
 		doNothing();
 	}
 
-	public void setView(GLSurfaceView view, AlgorithmRenderer renderer) {
-		mView = view;
-	}
-
 	@Override
 	public void runAlgorithm() {
 		prepareInput();
@@ -32,11 +26,6 @@ public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
 				mPolygon);
 
 		t.triangulate();
-	}
-
-	@Override
-	public void displayResults() {
-		mView.requestRender();
 	}
 
 	@Override
@@ -72,5 +61,4 @@ public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
 
 	private Mesh mContext;
 	private Polygon mPolygon;
-	private GLSurfaceView mView;
 }

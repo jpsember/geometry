@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.View;
 
@@ -34,8 +35,6 @@ public class AlgorithmStepper {
 		public void prepareOptions();
 
 		public void runAlgorithm();
-
-		public void displayResults();
 	}
 
 	/**
@@ -46,6 +45,10 @@ public class AlgorithmStepper {
 			sStepper = new AlgorithmStepper();
 		}
 		return sStepper;
+	}
+
+	void setGLSurfaceView(GLSurfaceView glSurfaceView) {
+		mglSurfaceView = glSurfaceView;
 	}
 
 	public Rect algorithmRect() {
@@ -282,7 +285,7 @@ public class AlgorithmStepper {
 	public void refresh() {
 		synchronized (AlgorithmStepper.getLock()) {
 			performAlgorithm();
-			mDelegate.displayResults();
+			mglSurfaceView.requestRender();
 		}
 	}
 
@@ -566,6 +569,7 @@ public class AlgorithmStepper {
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;
+	private GLSurfaceView mglSurfaceView;
 
 	// True if jumping forward to next milestone;
 	private boolean mJumpToNextMilestoneFlag;

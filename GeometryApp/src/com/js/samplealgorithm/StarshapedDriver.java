@@ -3,7 +3,6 @@ package com.js.samplealgorithm;
 import java.util.Random;
 
 import android.content.Context;
-import android.opengl.GLSurfaceView;
 
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
@@ -26,10 +25,6 @@ public class StarshapedDriver implements AlgorithmStepper.Delegate {
 		mStepper = AlgorithmStepper.sharedInstance();
 	}
 
-	public void setView(GLSurfaceView view) {
-		mView = view;
-	}
-
 	@Override
 	public void runAlgorithm() {
 		try {
@@ -46,11 +41,6 @@ public class StarshapedDriver implements AlgorithmStepper.Delegate {
 			mStepper.show("caught exception: " + e);
 			pr("\n\ncaught exception:\n" + e);
 		}
-	}
-
-	@Override
-	public void displayResults() {
-		mView.requestRender();
 	}
 
 	@Override
@@ -145,6 +135,5 @@ public class StarshapedDriver implements AlgorithmStepper.Delegate {
 	private Point mKernelPoint;
 	private Mesh mContext;
 	private Random mRandom;
-	private GLSurfaceView mView;
 
 }

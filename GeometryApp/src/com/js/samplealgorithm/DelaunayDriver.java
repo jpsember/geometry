@@ -5,7 +5,6 @@ import java.util.Random;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.opengl.GLSurfaceView;
 
 import com.js.geometry.*;
 import com.js.geometryapp.AlgorithmDisplayElement;
@@ -24,10 +23,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	public DelaunayDriver(Context context) {
 		doNothing();
 		s = AlgorithmStepper.sharedInstance();
-	}
-
-	public void setView(GLSurfaceView view) {
-		mView = view;
 	}
 
 	@Override
@@ -122,11 +117,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	}
 
 	@Override
-	public void displayResults() {
-		mView.requestRender();
-	}
-
-	@Override
 	public void prepareOptions() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
@@ -150,6 +140,5 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	private Mesh mContext;
 	private Delaunay mDelaunay;
 	private Random mRandom;
-	private GLSurfaceView mView;
 	private ArrayList<Vertex> mVertices;
 }

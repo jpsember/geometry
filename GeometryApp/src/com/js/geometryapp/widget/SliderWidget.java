@@ -31,7 +31,7 @@ public class SliderWidget extends AbstractWidget {
 
 		mSeekBar = new SeekBar(context);
 		mSeekBar.setMax(maxValue() - minValue());
-		int initialValue = intAttr("value", minValue());
+		int initialValue = intAttr(OPTION_VALUE, minValue());
 		setValue(initialValue);
 
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -50,11 +50,11 @@ public class SliderWidget extends AbstractWidget {
 			}
 		});
 
-		if (boolAttr("withlabel", true))
+		if (boolAttr(OPTION_HAS_LABEL, true))
 			getView().addView(buildLabelView(true));
 
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, intAttr("layout_vert",
+				LayoutParams.MATCH_PARENT, intAttr(OPTION_LAYOUT_HEIGHT,
 						LayoutParams.WRAP_CONTENT));
 		getView().addView(mSeekBar, p);
 	}

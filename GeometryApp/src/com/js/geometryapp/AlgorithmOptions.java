@@ -420,7 +420,7 @@ public class AlgorithmOptions {
 			// In addition, always recalculate algorithm steps unless this
 			// widget's 'recalc' flag exists and is false
 			boolean recalcFlag = widget.boolAttr(
-					AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, true);
+					AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, true);
 			AlgorithmStepper.sharedInstance().refresh(recalcFlag);
 		}
 		persistStepperState(true);

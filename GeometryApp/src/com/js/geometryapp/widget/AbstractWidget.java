@@ -22,7 +22,27 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
-	public static final String ATTR_RECALC_ALGORITHM_STEPS = "recalc";
+	/**
+	 * Value of widget; widget-specific type
+	 */
+	public static final String OPTION_VALUE = "value";
+
+	/**
+	 * String-valued label; if missing, uses id as label
+	 */
+	public static final String OPTION_LABEL = "label";
+
+	/**
+	 * If true, no label will be added to the widget
+	 */
+	public static final String OPTION_HAS_LABEL = "has_label";
+
+	/**
+	 * If true, any changes to this widget's value will induce a recalculation
+	 * of the algorithm's total steps (though this may go away soon, per issue
+	 * #69)
+	 */
+	public static final String OPTION_RECALC_ALGORITHM_STEPS = "recalc";
 
 	/**
 	 * If this option is true, the widget's view will not be added to the main
@@ -30,6 +50,17 @@ public abstract class AbstractWidget {
 	 * it hidden (it can still be used to store state).
 	 */
 	public static final String OPTION_DETACHED = "detached";
+
+	/**
+	 * Integer-valued LayoutParams width argument
+	 */
+	public static final String OPTION_LAYOUT_WIDTH = "layout_width";
+
+	/**
+	 * Integer-valued LayoutParams height argument
+	 */
+	public static final String OPTION_LAYOUT_HEIGHT = "layout_height";
+
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
 	public static final boolean SET_DEBUG_COLORS = false;
@@ -160,7 +191,7 @@ public abstract class AbstractWidget {
 	}
 
 	public String getLabel(boolean addColon) {
-		String labelValue = strAttr("label", getId());
+		String labelValue = strAttr(OPTION_LABEL, getId());
 		labelValue = applyStringSubstitution(context(), labelValue);
 		if (addColon && !labelValue.endsWith(":"))
 			labelValue += ":";
@@ -247,7 +278,7 @@ public abstract class AbstractWidget {
 	}
 
 	public AbstractWidget setLabel(String label) {
-		mAttributes.put("label", label);
+		mAttributes.put(OPTION_LABEL, label);
 		return this;
 	}
 

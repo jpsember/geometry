@@ -45,35 +45,35 @@ class AlgorithmStepperPanel {
 	}
 
 	private View view() {
-		if (mView == null) {
-			sOptions = AlgorithmOptions.sharedInstance();
-			LinearLayout layout = linearLayout(true);
+		if (mView != null)
+			return mView;
+		sOptions = AlgorithmOptions.sharedInstance();
+		LinearLayout layout = linearLayout(true);
 
-			AbstractWidget w = sOptions.addSlider(
-					AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
-					AbstractWidget.OPTION_DETACHED, true, "withlabel", false, //
-					"layout_vert", LayoutParams.MATCH_PARENT);
+		AbstractWidget w = sOptions.addSlider(
+				AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
+				AbstractWidget.OPTION_DETACHED, true, //
+				AbstractWidget.OPTION_HAS_LABEL, false, //
+				AbstractWidget.OPTION_LAYOUT_HEIGHT, LayoutParams.MATCH_PARENT);
 
-			layout.addView(w.getView(),
-					GeometryActivity.layoutParams(true, true));
+		layout.addView(w.getView(), GeometryActivity.layoutParams(true, true));
 
-			LinearLayout v1 = linearLayout(false);
-			layout.addView(v1, GeometryActivity.layoutParams(true, false));
-			{
-				LinearLayout v2 = linearLayout(true);
-				addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_BWD);
-				addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_FWD);
-				v1.addView(v2);
-			}
-			{
-				LinearLayout v2 = linearLayout(true);
-				addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_BWD);
-				addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_FWD);
-				v1.addView(v2);
-			}
-
-			mView = layout;
+		LinearLayout v1 = linearLayout(false);
+		layout.addView(v1, GeometryActivity.layoutParams(true, false));
+		{
+			LinearLayout v2 = linearLayout(true);
+			addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_BWD);
+			addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_FWD);
+			v1.addView(v2);
 		}
+		{
+			LinearLayout v2 = linearLayout(true);
+			addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_BWD);
+			addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_FWD);
+			v1.addView(v2);
+		}
+
+		mView = layout;
 		return mView;
 	}
 

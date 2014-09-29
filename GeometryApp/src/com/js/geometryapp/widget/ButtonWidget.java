@@ -42,8 +42,8 @@ public class ButtonWidget extends AbstractWidget {
 		});
 
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(intAttr(
-				"layout_horz", LayoutParams.MATCH_PARENT), intAttr(
-				"layout_vert", LayoutParams.WRAP_CONTENT));
+				OPTION_LAYOUT_WIDTH, LayoutParams.MATCH_PARENT), intAttr(
+				OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT));
 		getView().addView(mButton, p);
 	}
 

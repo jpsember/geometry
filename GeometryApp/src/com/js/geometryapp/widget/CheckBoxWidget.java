@@ -32,7 +32,7 @@ public class CheckBoxWidget extends AbstractWidget {
 		super(context, attributes);
 
 		mCheckBox = new CheckBox(context);
-		mCheckBox.setChecked(boolAttr("value", false));
+		mCheckBox.setChecked(boolAttr(OPTION_VALUE, false));
 		mCheckBox
 				.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {
 					@Override

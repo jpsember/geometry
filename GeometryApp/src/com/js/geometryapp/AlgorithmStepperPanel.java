@@ -2,7 +2,6 @@ package com.js.geometryapp;
 
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
-import com.js.geometryapp.widget.SliderWidget;
 
 import android.content.Context;
 import android.view.View;
@@ -11,24 +10,25 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
-class AlgorithmStepperView {
+/**
+ * View that contains the step controls (slider and page / step buttons)
+ */
+class AlgorithmStepperPanel {
 
-	public static final String BUTTON_JUMP_BWD = "<<";
-	public static final String BUTTON_JUMP_FWD = ">>";
-	public static final String BUTTON_STEP_BWD = "<";
-	public static final String BUTTON_STEP_FWD = ">";
-
-	public AlgorithmStepperView(Context context, AlgorithmStepper stepper) {
-		doNothing();
-		mContext = context;
-		mStepperController = stepper;
-		mStepperController.setStepperView(this);
+	/**
+	 * Factory constructor
+	 * 
+	 * @param context
+	 * @return View containing the various controls
+	 */
+	public static View build(Context context) {
+		AlgorithmStepperPanel v = new AlgorithmStepperPanel(context);
+		return v.view();
 	}
 
-	public void setTotalSteps(int totalSteps) {
-		SliderWidget w = sOptions
-				.getWidget(AlgorithmStepper.WIDGET_ID_TARGETSTEP);
-		w.setMaxValue(totalSteps - 1);
+	private AlgorithmStepperPanel(Context context) {
+		doNothing();
+		mContext = context;
 	}
 
 	private LinearLayout linearLayout(boolean horizontal) {
@@ -43,7 +43,7 @@ class AlgorithmStepperView {
 		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
 	}
 
-	protected View view() {
+	private View view() {
 		if (mView == null) {
 			sOptions = AlgorithmOptions.sharedInstance();
 			LinearLayout layout = linearLayout(true);
@@ -60,14 +60,14 @@ class AlgorithmStepperView {
 			layout.addView(v1, GeometryActivity.layoutParams(true, false));
 			{
 				LinearLayout v2 = linearLayout(true);
-				addButton(v2, BUTTON_JUMP_BWD);
-				addButton(v2, BUTTON_JUMP_FWD);
+				addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_BWD);
+				addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_FWD);
 				v1.addView(v2);
 			}
 			{
 				LinearLayout v2 = linearLayout(true);
-				addButton(v2, BUTTON_STEP_BWD);
-				addButton(v2, BUTTON_STEP_FWD);
+				addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_BWD);
+				addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_FWD);
 				v1.addView(v2);
 			}
 
@@ -78,6 +78,5 @@ class AlgorithmStepperView {
 
 	private View mView;
 	private Context mContext;
-	private AlgorithmStepper mStepperController;
 	private AlgorithmOptions sOptions;
 }

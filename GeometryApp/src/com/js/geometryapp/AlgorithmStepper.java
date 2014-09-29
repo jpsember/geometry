@@ -19,11 +19,16 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.SliderWidget;
 
 public class AlgorithmStepper {
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
+	static final String WIDGET_ID_JUMP_BWD = "<<";
+	static final String WIDGET_ID_JUMP_FWD = ">>";
+	static final String WIDGET_ID_STEP_BWD = "<";
+	static final String WIDGET_ID_STEP_FWD = ">";
 
 	public static interface Delegate {
 		public void prepareOptions();
@@ -295,7 +300,7 @@ public class AlgorithmStepper {
 
 		// Propagate these values to the stepper control panel (without
 		// causing a recursive update)
-		updateStepperView(false);
+		updateTargetWidgetMax(false);
 
 		synchronized (AlgorithmStepper.getLock()) {
 			performAlgorithm();
@@ -349,17 +354,10 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Get the stepper controller view, constructing it if necessary
-	 * 
-	 * @param context
-	 *            context to use, in case construction necessary
-	 * @return view
+	 * Construct stepper controller view
 	 */
 	View controllerView(Context context) {
-		if (mStepperView == null) {
-			mStepperView = new AlgorithmStepperView(context, this);
-		}
-		return mStepperView.view();
+		return AlgorithmStepperPanel.build(context);
 	}
 
 	/**
@@ -368,7 +366,6 @@ public class AlgorithmStepper {
 	 */
 	void destroy() {
 		mTotalStepsKnown = false;
-		mStepperView = null;
 	}
 
 	/**
@@ -451,28 +448,22 @@ public class AlgorithmStepper {
 		}
 	}
 
-	void setStepperView(AlgorithmStepperView view) {
-		mStepperView = view;
-		updateStepperView(true);
-	}
-
 	private AlgorithmStepper() {
 	}
 
 	/**
-	 * Propagate values from this (the controller) to the controller's view.
+	 * Update target step slider to be within range of maximum total steps
 	 */
-	private void updateStepperView(boolean requestUpdateIfChanged) {
-		if (mStepperView != null) {
-			if (mTotalStepsKnown) {
-				// While changing the total steps, the controller view may try
-				// to change the target step on us; ignore such events
-				mIgnoreStepperView = true;
-				mStepperView.setTotalSteps(mTotalSteps);
-				mIgnoreStepperView = false;
-				if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
-					refresh(false);
-				}
+	private void updateTargetWidgetMax(boolean requestUpdateIfChanged) {
+		if (mTotalStepsKnown) {
+			// While changing the total steps, the controller view may try
+			// to change the target step on us; ignore such events
+			mIgnoreStepperView = true;
+			SliderWidget w = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
+			w.setMaxValue(mTotalSteps - 1);
+			mIgnoreStepperView = false;
+			if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
+				refresh(false);
 			}
 		}
 	}
@@ -483,7 +474,7 @@ public class AlgorithmStepper {
 			return;
 		}
 		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps - 1));
-		updateStepperView(true);
+		updateTargetWidgetMax(true);
 	}
 
 	private void adjustTargetStep(int delta) {
@@ -540,10 +531,8 @@ public class AlgorithmStepper {
 					}
 				});
 
-		final String[] ids = { AlgorithmStepperView.BUTTON_JUMP_BWD,
-				AlgorithmStepperView.BUTTON_JUMP_FWD,
-				AlgorithmStepperView.BUTTON_STEP_BWD,
-				AlgorithmStepperView.BUTTON_STEP_FWD };
+		final String[] ids = { WIDGET_ID_JUMP_BWD, WIDGET_ID_JUMP_FWD,
+				WIDGET_ID_STEP_BWD, WIDGET_ID_STEP_FWD };
 
 		AbstractWidget.Listener listener = new AbstractWidget.Listener() {
 			@Override
@@ -590,7 +579,7 @@ public class AlgorithmStepper {
 			performAlgorithm();
 			setTotalStepsKnown();
 		}
-		updateStepperView(true);
+		updateTargetWidgetMax(true);
 	}
 
 	/**
@@ -643,7 +632,6 @@ public class AlgorithmStepper {
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private boolean mTotalStepsKnown;
-	private AlgorithmStepperView mStepperView;
 	private Delegate mDelegate;
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;

@@ -19,9 +19,9 @@ import static com.js.geometry.MyMath.*;
 
 import static com.js.basic.Tools.*;
 
-public class TriangulateStarAlgorithm implements AlgorithmStepper.Delegate {
+public class StarshapedDriver implements AlgorithmStepper.Delegate {
 
-	public TriangulateStarAlgorithm(Context context) {
+	public StarshapedDriver(Context context) {
 		doNothing();
 		mStepper = AlgorithmStepper.sharedInstance();
 	}

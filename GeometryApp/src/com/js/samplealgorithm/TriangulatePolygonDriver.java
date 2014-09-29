@@ -14,9 +14,9 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
 
-public class Algorithm implements AlgorithmStepper.Delegate {
+public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
 
-	public Algorithm(Context context) {
+	public TriangulatePolygonDriver(Context context) {
 		doNothing();
 	}
 

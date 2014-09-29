@@ -23,7 +23,7 @@ public class SampleActivity extends GeometryStepperActivity {
 			setAlgorithmDelegate(algorithm);
 		} else if (appNum == 1) {
 			super.onCreate(savedInstanceState);
-			TriangulateStarAlgorithm algorithm = new TriangulateStarAlgorithm(
+			StarshapedDriver algorithm = new StarshapedDriver(
 					this);
 
 			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();
@@ -31,7 +31,7 @@ public class SampleActivity extends GeometryStepperActivity {
 
 			setAlgorithmDelegate(algorithm);
 		} else {
-			Algorithm algorithm = new Algorithm(this);
+			TriangulatePolygonDriver algorithm = new TriangulatePolygonDriver(this);
 			super.onCreate(savedInstanceState);
 
 			OurGLSurfaceView view = (OurGLSurfaceView) getGLSurfaceView();

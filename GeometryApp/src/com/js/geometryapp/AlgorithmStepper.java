@@ -445,7 +445,7 @@ public class AlgorithmStepper {
 			// Act as if we're just stepping forward by one, but set a special
 			// flag which indicates we want to continue stepping forward until
 			// we reach a milestone
-		  int totalSteps = readTotalSteps();
+			int totalSteps = readTotalSteps();
 			seekStep = Math.min(totalSteps, targetStep + 1);
 			// We must be careful to only set the 'jump to next' flag if we're
 			// actually going to perform any stepping, otherwise it won't get

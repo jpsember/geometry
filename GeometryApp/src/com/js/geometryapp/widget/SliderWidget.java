@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import static com.js.basic.Tools.*;
 
 public class SliderWidget extends AbstractWidget {
 
@@ -66,8 +67,19 @@ public class SliderWidget extends AbstractWidget {
 
 		int max = maxValue();
 		int userIntValue = MyMath.clamp(sliderValue, min, max);
+		int progress = userIntValue - min;
 
-		mSeekBar.setProgress(userIntValue - min);
+		if (false) {
+			warning("examining max progress");
+			int maxProg = mSeekBar.getMax();
+			if (progress > maxProg) {
+				pr(getId() + ": attempt to set progress to " + progress
+						+ " (internal value " + internalValue
+						+ ") when max is " + maxProg);
+			}
+		}
+
+		mSeekBar.setProgress(progress);
 	}
 
 	public void setValue(int progress) {

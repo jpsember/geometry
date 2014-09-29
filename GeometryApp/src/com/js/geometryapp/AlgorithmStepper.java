@@ -425,25 +425,19 @@ public class AlgorithmStepper {
 
 	/**
 	 * Update the total, target widget values to correspond to our instance
-	 * fields
+	 * fields; also update the target slider's maximum
 	 */
 	private void writeStepValuesToWidgets() {
-
 		SliderWidget wTotal = sOptions.getWidget(WIDGET_ID_TOTALSTEPS);
 		SliderWidget wTarget = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
 
-		int wTotalStepsValue = wTotal.getIntValue();
-		int widgetTargetStep = wTarget.getIntValue();
-
-		if (wTotalStepsValue != mTotalSteps || widgetTargetStep != mTargetStep) {
-			// While changing the widget's total steps, the controller view may
-			// try to change the target step on us; ignore such events
-			mIgnoreStepperView = true;
-			wTarget.setMaxValue(mTotalSteps);
-			wTotal.setValue(mTotalSteps);
-			wTarget.setValue(mTargetStep);
-			mIgnoreStepperView = false;
-		}
+		// While changing the widget's total steps, the controller view may
+		// try to change the target step on us; ignore such events
+		mIgnoreStepperView = true;
+		wTarget.setMaxValue(mTotalSteps);
+		wTotal.setValue(mTotalSteps);
+		wTarget.setValue(mTargetStep);
+		mIgnoreStepperView = false;
 	}
 
 	private void setTargetStep(int targetStep) {

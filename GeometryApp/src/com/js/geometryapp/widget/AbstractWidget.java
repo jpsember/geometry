@@ -22,6 +22,11 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
+  /**
+   * Set this to a widget id to print changes to its value
+   */
+	public static final String TRACE_WIDGET_VALUE = null;
+
 	/**
 	 * Value of widget; widget-specific type
 	 */
@@ -165,6 +170,13 @@ public abstract class AbstractWidget {
 		boolean valueHasChanged = !newUserValue.equals(oldValue);
 		if (!valueHasChanged)
 			return;
+
+		if (TRACE_WIDGET_VALUE != null) {
+			if (TRACE_WIDGET_VALUE.equals(getId())) {
+				pr("Widget '" + getId() + "' value changing from '" + oldValue
+						+ "' to '" + newUserValue + "'");
+			}
+		}
 
 		mWidgetValue = newUserValue;
 

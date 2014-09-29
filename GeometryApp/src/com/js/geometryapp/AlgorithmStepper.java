@@ -298,15 +298,6 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Print a warning if no delegate has been defined
-	 */
-	void verifyDelegateDefined() {
-		if (mDelegate == null) {
-			warning("no algorithm delegate defined");
-		}
-	}
-
-	/**
 	 * Construct stepper controller view
 	 */
 	View controllerView(Context context) {
@@ -487,14 +478,6 @@ public class AlgorithmStepper {
 		}
 		if (n != lastMilestone)
 			mMilestones.add(n);
-	}
-
-	int targetStep() {
-		return mTargetStep;
-	}
-
-	int totalSteps() {
-		return mTotalSteps;
 	}
 
 	private void initializeActiveState(boolean active) {

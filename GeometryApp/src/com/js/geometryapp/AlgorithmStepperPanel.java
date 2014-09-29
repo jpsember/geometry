@@ -39,7 +39,8 @@ class AlgorithmStepperPanel {
 	}
 
 	private void addButton(ViewGroup parent, String label) {
-		ButtonWidget w = sOptions.addButton(label, "detached", true);
+		ButtonWidget w = sOptions.addButton(label,
+				AbstractWidget.OPTION_DETACHED, true);
 		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
 	}
 
@@ -50,7 +51,7 @@ class AlgorithmStepperPanel {
 
 			AbstractWidget w = sOptions.addSlider(
 					AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
-					"detached", true, "withlabel", false, //
+					AbstractWidget.OPTION_DETACHED, true, "withlabel", false, //
 					"layout_vert", LayoutParams.MATCH_PARENT);
 
 			layout.addView(w.getView(),

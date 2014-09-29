@@ -554,8 +554,9 @@ public class AlgorithmStepper {
 	private void prepareOptionsAux() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		// Add a hidden widget to persist the total steps
-		sOptions.addSlider(WIDGET_ID_TOTALSTEPS, "hidden", true,
+		// Add a detached widget to persist the total steps
+		sOptions.addSlider(WIDGET_ID_TOTALSTEPS,
+				AbstractWidget.OPTION_DETACHED, true,
 				AbstractWidget.ATTR_RECALC_ALGORITHM_STEPS, false);
 
 		addStepperViewListeners();

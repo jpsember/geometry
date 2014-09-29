@@ -28,15 +28,10 @@ public class SliderWidget extends AbstractWidget {
 
 	public SliderWidget(Context context, Map attributes) {
 		super(context, attributes);
-		int initialValue = intAttr("value", minValue());
-
-		if (isHidden()) {
-			setValue(initialValue);
-			return;
-		}
 
 		mSeekBar = new SeekBar(context);
 		mSeekBar.setMax(maxValue() - minValue());
+		int initialValue = intAttr("value", minValue());
 		setValue(initialValue);
 
 		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
@@ -105,8 +100,6 @@ public class SliderWidget extends AbstractWidget {
 		return Integer.toString(mSliderValue);
 	}
 
-	// value of slider, which will be read from seekbar only if not hidden
 	private int mSliderValue;
-	// null if widget is hidden
 	private SeekBar mSeekBar;
 }

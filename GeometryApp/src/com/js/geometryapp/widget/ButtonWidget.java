@@ -30,23 +30,21 @@ public class ButtonWidget extends AbstractWidget {
 		super(context, attributes);
 		attributes.put("hasvalue", false);
 
-		if (!isHidden()) {
-			mButton = new Button(context);
-			mButton.setText(getLabel(false));
-			mButton.setOnClickListener(new Button.OnClickListener() {
+		mButton = new Button(context);
+		mButton.setText(getLabel(false));
+		mButton.setOnClickListener(new Button.OnClickListener() {
 
-				@Override
-				public void onClick(View v) {
-					AlgorithmOptions.sharedInstance().processWidgetValue(
-							ButtonWidget.this, mListeners);
-				}
-			});
+			@Override
+			public void onClick(View v) {
+				AlgorithmOptions.sharedInstance().processWidgetValue(
+						ButtonWidget.this, mListeners);
+			}
+		});
 
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					intAttr("layout_horz", LayoutParams.MATCH_PARENT), intAttr(
-							"layout_vert", LayoutParams.WRAP_CONTENT));
-			getView().addView(mButton, p);
-		}
+		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(intAttr(
+				"layout_horz", LayoutParams.MATCH_PARENT), intAttr(
+				"layout_vert", LayoutParams.WRAP_CONTENT));
+		getView().addView(mButton, p);
 	}
 
 	private Button mButton;

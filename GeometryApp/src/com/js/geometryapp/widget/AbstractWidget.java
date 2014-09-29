@@ -24,6 +24,12 @@ public abstract class AbstractWidget {
 
 	public static final String ATTR_RECALC_ALGORITHM_STEPS = "recalc";
 
+	/**
+	 * If this option is true, the widget's view will not be added to the main
+	 * options view. The user can choose to add it to some other view, or leave
+	 * it hidden (it can still be used to store state).
+	 */
+	public static final String OPTION_DETACHED = "detached";
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
 	public static final boolean SET_DEBUG_COLORS = false;
@@ -243,10 +249,6 @@ public abstract class AbstractWidget {
 	public AbstractWidget setLabel(String label) {
 		mAttributes.put("label", label);
 		return this;
-	}
-
-	boolean isHidden() {
-		return boolAttr("hidden", false);
 	}
 
 	Map attributes() {

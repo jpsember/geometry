@@ -265,8 +265,8 @@ public class AlgorithmOptions {
 		if (previousMapping != null)
 			die("widget id " + w.getId() + " already exists");
 
-		// Add it to the options view, if it's not a 'detached' widget
-		if (!w.boolAttr("detached", false)) {
+		// Add it to the options view, if it's not detached
+		if (!w.boolAttr(AbstractWidget.OPTION_DETACHED, false)) {
 			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
 					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
 			mOptionsView.addView(w.getView(), p);

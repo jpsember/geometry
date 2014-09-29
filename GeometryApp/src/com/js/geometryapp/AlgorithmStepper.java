@@ -13,6 +13,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.js.android.MyActivity;
+import com.js.basic.Tools;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -23,12 +24,17 @@ import com.js.geometryapp.widget.SliderWidget;
 
 public class AlgorithmStepper {
 
-	private static final boolean MILESTONES_ENABLED = false;
+	private static final boolean MILESTONES_ENABLED = true;
 
 	/**
 	 * Enables diagnostic printing related to target, total steps
 	 */
-	private static final boolean DIAGNOSE_STEPS = true;
+	private static final boolean DIAGNOSE_STEPS = false;
+
+	/**
+	 * Enables diagnostic printing related to milestones
+	 */
+	public static final boolean DIAGNOSE_MILESTONES = false;
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
@@ -295,15 +301,6 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private void setTargetStepField(int value) {
-		ASSERT(value >= 0);
-		if (mTargetStep == value)
-			return;
-		mTargetStep = value;
-		// Update widget that is persisting this value
-		sOptions.setValue(WIDGET_ID_TARGETSTEP, mTargetStep);
-	}
-
 	/**
 	 * Set the delegate, which actually performs the algorithm, and displays it
 	 */
@@ -329,11 +326,15 @@ public class AlgorithmStepper {
 		return AlgorithmStepperPanel.build(context);
 	}
 
+	private int nDebugFrame;
+
 	/**
-	 * Render algorithm frame, by plotting (and disposing of) any added
-	 * elements, as well as the frame's title
+	 * Render algorithm frame, by plotting all previously constructed layers and
+	 * the frame's title
 	 */
 	void render() {
+		if (DIAGNOSE_MILESTONES)
+			pr(Tools.sp(nDebugFrame++ & 1) + "rendering...");
 		renderBackgroundElements();
 		mForegroundLayer.render();
 		if (mFrameTitle != null) {
@@ -449,35 +450,34 @@ public class AlgorithmStepper {
 				initializeActiveState(false);
 			}
 
-			updateAlgorithmLength();
+			writeStepValuesToWidgets();
 		}
 	}
 
 	private AlgorithmStepper() {
-		unimp("if desired step is presumed last step, don't halt since we want to run to completion");
 	}
 
 	/**
-	 * Update target step slider maximum and current values to be consistent
-	 * with our estimates
+	 * Update the total, target widget values to correspond to our instance
+	 * fields
 	 */
-	private void updateAlgorithmLength() {
+	private void writeStepValuesToWidgets() {
 		final boolean db = DIAGNOSE_STEPS;
 
 		SliderWidget wTotal = sOptions.getWidget(WIDGET_ID_TOTALSTEPS);
-		int currentTotalSteps = wTotal.getIntValue();
 		SliderWidget wTarget = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
-		int currentTargetStep = wTarget.getIntValue();
 
-		if (currentTotalSteps != mTotalSteps
-				|| currentTargetStep != mTargetStep) {
+		int wTotalStepsValue = wTotal.getIntValue();
+		int widgetTargetStep = wTarget.getIntValue();
+
+		if (wTotalStepsValue != mTotalSteps || widgetTargetStep != mTargetStep) {
 			if (db) {
-				pr("Update length from target " + f(currentTargetStep, 4)
-						+ ", total " + f(currentTotalSteps, 4) + "; now "
+				pr("Update length from target " + f(widgetTargetStep, 4)
+						+ ", total " + f(wTotalStepsValue, 4) + "; now "
 						+ dumpStepInfo());
 			}
-			// While changing the total steps, the controller view may try
-			// to change the target step on us; ignore such events
+			// While changing the widget's total steps, the controller view may
+			// try to change the target step on us; ignore such events
 			mIgnoreStepperView = true;
 			wTarget.setMaxValue(mTotalSteps);
 			wTotal.setValue(mTotalSteps);
@@ -486,13 +486,19 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private void setTargetStep(int step) {
+	private void setTargetStep(int targetStep) {
 		ASSERT(mTotalSteps > 0);
+		targetStep = MyMath.clamp(targetStep, 0, mTotalSteps);
 		if (mIgnoreStepperView) {
 			return;
 		}
-		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps));
-		updateAlgorithmLength();
+		final boolean db = DIAGNOSE_MILESTONES;
+		if (db)
+			pr("setTargetStepField to " + targetStep + " (currently "
+					+ mTargetStep + "); widget "
+					+ sOptions.getIntValue(WIDGET_ID_TARGETSTEP));
+		mTargetStep = targetStep;
+		writeStepValuesToWidgets();
 	}
 
 	private void adjustTargetStep(int delta) {
@@ -503,15 +509,16 @@ public class AlgorithmStepper {
 	private void adjustDisplayedMilestone(int delta) {
 		if (!MILESTONES_ENABLED)
 			return;
-		int prev = -1, next = -1;
-		for (int i = 0; i < mMilestones.size(); i++) {
-			int k = mMilestones.get(i);
-			if (k < mTargetStep)
-				prev = k;
-			if (k > mTargetStep && next < 0)
-				next = k;
+		int seekStep = -1;
+		if (delta < 0) {
+			for (int k : mMilestones) {
+				if (k < mTargetStep)
+					seekStep = k;
+			}
+		} else {
+			pr("Step forward has been disabled");
 		}
-		int seekStep = (delta < 0) ? prev : next;
+
 		if (seekStep >= 0) {
 			setTargetStep(seekStep);
 		}
@@ -520,7 +527,7 @@ public class AlgorithmStepper {
 	private void addMilestone(int n) {
 		int lastMilestone = -1;
 		if (!mMilestones.isEmpty()) {
-			lastMilestone = mMilestones.get(mMilestones.size() - 1);
+			lastMilestone = last(mMilestones);
 		}
 		if (n != lastMilestone)
 			mMilestones.add(n);

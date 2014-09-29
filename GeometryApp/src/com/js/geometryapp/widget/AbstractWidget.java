@@ -38,6 +38,12 @@ public abstract class AbstractWidget {
 	public static final String OPTION_HAS_LABEL = "has_label";
 
 	/**
+	 * If true (the default), any change to widget value triggers a refresh of
+	 * the algorithm view
+	 */
+	public static final String OPTION_REFRESH_ALGORITHM = "refresh_algorithm";
+
+	/**
 	 * If true, any changes to this widget's value will induce a recalculation
 	 * of the algorithm's total steps (though this may go away soon, per issue
 	 * #69)

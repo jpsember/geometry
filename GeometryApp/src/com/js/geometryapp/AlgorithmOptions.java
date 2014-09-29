@@ -367,6 +367,10 @@ public class AlgorithmOptions {
 		synchronized (AlgorithmStepper.getLock()) {
 			newWidgetValuesScript = saveValues();
 		}
+		if (AlgorithmStepper.DIAGNOSE_MILESTONES) {
+			pr("Writing widget values to preferences:\n"
+					+ newWidgetValuesScript);
+		}
 		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
 				newWidgetValuesScript);
 
@@ -382,7 +386,7 @@ public class AlgorithmOptions {
 
 		// Make a delayed call to persist the values (on the UI thread)
 
-		final long FLUSH_DELAY = 5000;
+		final long FLUSH_DELAY = 2200;
 
 		// If there's already an active handler, don't replace it if it's far
 		// enough in the future
@@ -416,8 +420,13 @@ public class AlgorithmOptions {
 			for (Listener listener : listeners) {
 				listener.valueChanged(widget);
 			}
-			// Every event that changes a widget value triggers a refresh.
-			AlgorithmStepper.sharedInstance().refresh();
+			// Unless the 'refresh' option exists and is false,
+			// trigger a refresh of the algorithm view.
+			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
+				if (AlgorithmStepper.DIAGNOSE_MILESTONES)
+					pr("Refresh stepper due to widget " + widget.getId());
+				AlgorithmStepper.sharedInstance().refresh();
+			}
 		}
 		persistStepperState(true);
 	}

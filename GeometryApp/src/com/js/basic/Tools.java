@@ -1131,6 +1131,13 @@ public final class Tools {
 	}
 
 	/**
+	 * Look at last item in a list, without removing it
+	 */
+	public static <T> T last(List<T> list) {
+		return list.get(list.size() - 1);
+	}
+
+	/**
 	 * Remove an item from a list, and fill gap with last element
 	 * 
 	 * @param list

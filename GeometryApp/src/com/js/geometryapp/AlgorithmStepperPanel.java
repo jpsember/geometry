@@ -40,7 +40,8 @@ class AlgorithmStepperPanel {
 
 	private void addButton(ViewGroup parent, String label) {
 		ButtonWidget w = sOptions.addButton(label,
-				AbstractWidget.OPTION_DETACHED, true);
+				AbstractWidget.OPTION_DETACHED, true,
+				AbstractWidget.OPTION_REFRESH_ALGORITHM, false);
 		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
 	}
 

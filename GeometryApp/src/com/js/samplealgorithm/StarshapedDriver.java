@@ -2,8 +2,6 @@ package com.js.samplealgorithm;
 
 import java.util.Random;
 
-import android.content.Context;
-
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
@@ -20,8 +18,7 @@ import static com.js.basic.Tools.*;
 
 public class StarshapedDriver implements AlgorithmStepper.Delegate {
 
-	public StarshapedDriver(Context context) {
-		doNothing();
+	public StarshapedDriver() {
 		mStepper = AlgorithmStepper.sharedInstance();
 	}
 

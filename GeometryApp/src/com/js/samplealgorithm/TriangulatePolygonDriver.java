@@ -1,7 +1,5 @@
 package com.js.samplealgorithm;
 
-import android.content.Context;
-
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
@@ -10,13 +8,7 @@ import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
-import static com.js.basic.Tools.*;
-
 public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
-
-	public TriangulatePolygonDriver(Context context) {
-		doNothing();
-	}
 
 	@Override
 	public void runAlgorithm() {

@@ -3,7 +3,6 @@ package com.js.samplealgorithm;
 import java.util.ArrayList;
 import java.util.Random;
 
-import android.content.Context;
 import android.graphics.Color;
 
 import com.js.geometry.*;
@@ -20,8 +19,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 
-	public DelaunayDriver(Context context) {
-		doNothing();
+	public DelaunayDriver() {
 		s = AlgorithmStepper.sharedInstance();
 	}
 

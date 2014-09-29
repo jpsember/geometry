@@ -13,11 +13,11 @@ public class SampleActivity extends GeometryStepperActivity {
 		int appNum = 0;
 
 		if (appNum == 0) {
-			setAlgorithmDelegate(new DelaunayDriver(this));
+			setAlgorithmDelegate(new DelaunayDriver());
 		} else if (appNum == 1) {
-			setAlgorithmDelegate(new StarshapedDriver(this));
+			setAlgorithmDelegate(new StarshapedDriver());
 		} else {
-			setAlgorithmDelegate(new TriangulatePolygonDriver(this));
+			setAlgorithmDelegate(new TriangulatePolygonDriver());
 		}
 	}
 }

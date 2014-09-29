@@ -96,9 +96,6 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 				removeArbitraryVertex();
 		}
 
-		if (s.bigStep())
-			s.show("Done");
-
 		if (sOptions.getBooleanValue("Voronoi cells")) {
 			if (s.step())
 				s.show("Voronoi cells" + s.plot(mVoronoiElement));

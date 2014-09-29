@@ -68,6 +68,7 @@ public abstract class AbstractWidget {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(nameOf(this));
+		sb.append(" id:" + getId());
 		sb.append(" value:" + mWidgetValue);
 		return sb.toString();
 	}
@@ -185,6 +186,9 @@ public abstract class AbstractWidget {
 
 	/**
 	 * Get displayed value, and transform to 'internal' representation.
+	 * 
+	 * TODO: The parseUserValue() / updateUserValue() method names are
+	 * confusing.
 	 */
 	public String parseUserValue() {
 		throw new UnsupportedOperationException();

@@ -417,11 +417,7 @@ public class AlgorithmOptions {
 				listener.valueChanged(widget);
 			}
 			// Every event that changes a widget value triggers a refresh.
-			// In addition, always recalculate algorithm steps unless this
-			// widget's 'recalc' flag exists and is false
-			boolean recalcFlag = widget.boolAttr(
-					AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, true);
-			AlgorithmStepper.sharedInstance().refresh(recalcFlag);
+			AlgorithmStepper.sharedInstance().refresh();
 		}
 		persistStepperState(true);
 	}

@@ -61,9 +61,8 @@ public class SliderWidget extends AbstractWidget {
 
 	public void setMaxValue(int maxValue) {
 		setAttribute("max", maxValue);
-		if (mSeekBar != null) {
-			mSeekBar.setMax(maxValue() - minValue());
-		}
+		int internalMax = maxValue() - minValue();
+		mSeekBar.setMax(internalMax);
 	}
 
 	private int minValue() {
@@ -80,10 +79,9 @@ public class SliderWidget extends AbstractWidget {
 		int min = minValue();
 
 		int max = maxValue();
-		mSliderValue = MyMath.clamp(sliderValue, min, max);
-		if (mSeekBar != null) {
-			mSeekBar.setProgress(mSliderValue - min);
-		}
+		int userIntValue = MyMath.clamp(sliderValue, min, max);
+
+		mSeekBar.setProgress(userIntValue - min);
 	}
 
 	public void setValue(int progress) {
@@ -92,14 +90,11 @@ public class SliderWidget extends AbstractWidget {
 
 	@Override
 	public String parseUserValue() {
-		if (mSeekBar != null) {
-			int progress = mSeekBar.getProgress();
-			int min = minValue();
-			mSliderValue = progress + min;
-		}
-		return Integer.toString(mSliderValue);
+		int progress = mSeekBar.getProgress();
+		int min = minValue();
+		int userIntValue = progress + min;
+		return Integer.toString(userIntValue);
 	}
 
-	private int mSliderValue;
 	private SeekBar mSeekBar;
 }

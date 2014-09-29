@@ -97,9 +97,6 @@ public class PolygonTriangulator {
 			s.removeLayer(BGND_ELEMENT_SWEEPSTATUS);
 		}
 
-		if (s.bigStep())
-			s.show("Done triangulating polygon");
-
 	}
 
 	private void createSweepStatus() {

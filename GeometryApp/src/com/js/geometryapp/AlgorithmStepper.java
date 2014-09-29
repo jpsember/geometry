@@ -23,6 +23,13 @@ import com.js.geometryapp.widget.SliderWidget;
 
 public class AlgorithmStepper {
 
+	private static final boolean MILESTONES_ENABLED = false;
+
+	/**
+	 * Enables diagnostic printing related to target, total steps
+	 */
+	private static final boolean DIAGNOSE_STEPS = true;
+
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
 	static final String WIDGET_ID_JUMP_BWD = "<<";
@@ -112,20 +119,18 @@ public class AlgorithmStepper {
 		boolean output = false;
 		do {
 			if (isActive()) {
-				if (!mTotalStepsKnown) {
+				if (MILESTONES_ENABLED) {
 					if (milestone)
 						addMilestone(mCurrentStep);
-					mCurrentStep++;
-				} else {
-					if (mCurrentStep == mTargetStep) {
-						output = true;
-						break;
-					}
-					if (mTargetStep < mCurrentStep)
-						die("target " + mTargetStep + " but current "
-								+ mCurrentStep);
-					mCurrentStep++;
 				}
+				if (mCurrentStep == mTargetStep) {
+					output = true;
+					break;
+				}
+				if (mTargetStep < mCurrentStep)
+					die("target " + mTargetStep + " but current "
+							+ mCurrentStep);
+				mCurrentStep++;
 			}
 		} while (false);
 
@@ -148,11 +153,11 @@ public class AlgorithmStepper {
 	 *            displayed via side effects
 	 */
 	public void show(Object message) {
-		// Every call to show() should be guarded by call to step(), which only
-		// returns true if total steps are known
-		ASSERT(mTotalStepsKnown);
-
 		String messageString = message.toString();
+		if (DIAGNOSE_STEPS) {
+			messageString = "#" + f(mCurrentStep, 4) + "/" + f(mTotalSteps, 4)
+					+ " " + messageString;
+		}
 		mFrameTitle = messageString;
 		throw new DesiredStepReachedException(messageString);
 	}
@@ -168,9 +173,6 @@ public class AlgorithmStepper {
 	 *            uniquely distinguishes this layer from others
 	 */
 	public void openLayer(String key) {
-		// Do nothing if we're running just to calculate the total steps
-		if (!mTotalStepsKnown)
-			return;
 		if (mActiveBackgroundLayer != null)
 			throw new IllegalStateException("layer already open");
 		AlgorithmDisplayElement.resetRenderStateVars();
@@ -182,9 +184,6 @@ public class AlgorithmStepper {
 	 * Close layer previously opened via openLayer()
 	 */
 	public void closeLayer() {
-		// Do nothing if we're running just to calculate the total steps
-		if (!mTotalStepsKnown)
-			return;
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = null;
 	}
@@ -211,10 +210,6 @@ public class AlgorithmStepper {
 				element.render();
 				break;
 			}
-
-			// Do nothing if we're running just to calculate the total steps
-			if (!mTotalStepsKnown)
-				break;
 
 			// If there's an active background layer, add it to that instead
 			Layer targetLayer = mActiveBackgroundLayer;
@@ -272,36 +267,10 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Request a refresh of the algorithm display.
-	 * 
-	 * Recalculates the number of steps in the algorithm, then runs to the
-	 * target step and displays that frame.
+	 * Request a refresh of the algorithm display. Runs to the target step (if
+	 * possible) and displays that frame.
 	 */
 	public void refresh() {
-		refresh(true);
-	}
-
-	/**
-	 * Request a refresh of the algorithm display, optionally recalculating
-	 * steps.
-	 */
-	void refresh(boolean recalculateAlgorithmSteps) {
-		mTotalStepsKnown = false;
-
-		if (recalculateAlgorithmSteps) {
-			mTotalStepsKnown = false;
-		}
-
-		if (!mTotalStepsKnown) {
-			// Run algorithm to completion to determine the number of steps
-			performAlgorithm();
-			setTotalStepsKnown();
-		}
-
-		// Propagate these values to the stepper control panel (without
-		// causing a recursive update)
-		updateTargetWidgetMax(false);
-
 		synchronized (AlgorithmStepper.getLock()) {
 			performAlgorithm();
 			mDelegate.displayResults();
@@ -315,24 +284,6 @@ public class AlgorithmStepper {
 		mTargetStep = value;
 		// Update widget that is persisting this value
 		sOptions.setValue(WIDGET_ID_TARGETSTEP, mTargetStep);
-	}
-
-	private void setTotalStepsKnown() {
-		int previousTotalSteps = mTotalSteps;
-		int previousTargetStep = mTargetStep;
-
-		mTotalStepsKnown = true;
-		mTotalSteps = mCurrentStep;
-		sOptions.setValue(WIDGET_ID_TOTALSTEPS, mTotalSteps);
-
-		// Clamp previous target step into new range
-		int newTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps - 1);
-
-		// If previous target step was at maximum, make new one at new max as
-		// well
-		if (previousTargetStep >= previousTotalSteps - 1)
-			newTargetStep = mTotalSteps - 1;
-		setTargetStepField(newTargetStep);
 	}
 
 	/**
@@ -358,14 +309,6 @@ public class AlgorithmStepper {
 	 */
 	View controllerView(Context context) {
 		return AlgorithmStepperPanel.build(context);
-	}
-
-	/**
-	 * Dispose of the controller's view; should be called when activity's
-	 * onDestroy() is called
-	 */
-	void destroy() {
-		mTotalStepsKnown = false;
 	}
 
 	/**
@@ -402,7 +345,15 @@ public class AlgorithmStepper {
 		}
 	}
 
+	private String dumpStepInfo() {
+		return "[ Current:" + f(mCurrentStep, 4, true) + " Target:"
+				+ f(mTargetStep, 4, true) + " Total:" + f(mTotalSteps, 4, true)
+				+ " ] ";
+	}
+
 	private void performAlgorithm() {
+		final boolean db = DIAGNOSE_STEPS;
+
 		synchronized (AlgorithmStepper.getLock()) {
 			try {
 				initializeActiveState(true);
@@ -415,14 +366,51 @@ public class AlgorithmStepper {
 
 				AlgorithmDisplayElement.resetRenderStateVars();
 
-				if (!mTotalStepsKnown) {
+				if (MILESTONES_ENABLED) {
 					mMilestones.clear();
 					addMilestone(mCurrentStep);
+				} else {
+					warning("milestones have been disabled");
 				}
 
+				boolean completed = false;
 				try {
 					mDelegate.runAlgorithm();
+
+					// We completed the algorithm without halting.
+
+					// We're about to throw an exception that will be caught
+					// below; set flag so that we know we completed without
+					// halting.
+					completed = true;
+
+					// If the target step was not the maximum, the maximum is
+					// too high.
+					if (mCurrentStep < mTotalSteps) {
+						if (db)
+							pr("Completed algorithm; "
+									+ dumpStepInfo()
+									+ "\n  total steps was too high, setting to current");
+						mTotalSteps = mCurrentStep;
+						mTargetStep = mTotalSteps;
+					}
+					// Always end an algorithm with a bigStep/show combination
+					if (bigStep()) { // should always return true
+						show("Done");
+					} else {
+						die("unexpected!");
+					}
 				} catch (DesiredStepReachedException e) {
+					if (!completed) {
+						// We halted without completing. If we halted on what we
+						// thought was the last step, the total steps is too
+						// low.
+						if (mCurrentStep == mTotalSteps) {
+							pr("Halted, total steps was too low, increasing; "
+									+ dumpStepInfo());
+							mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
+						}
+					}
 					throw e;
 				} catch (Throwable t) {
 					// Pop active stack until it's empty; we want to make sure
@@ -437,34 +425,45 @@ public class AlgorithmStepper {
 						show("Caught: " + t);
 					}
 				}
-
-				if (!mTotalStepsKnown) {
-					addMilestone(mCurrentStep);
-				}
 			} catch (DesiredStepReachedException e) {
 			} finally {
 				initializeActiveState(false);
 			}
+
+			updateAlgorithmLength();
 		}
 	}
 
 	private AlgorithmStepper() {
+		unimp("if desired step is presumed last step, don't halt since we want to run to completion");
 	}
 
 	/**
-	 * Update target step slider to be within range of maximum total steps
+	 * Update target step slider maximum and current values to be consistent
+	 * with our estimates
 	 */
-	private void updateTargetWidgetMax(boolean requestUpdateIfChanged) {
-		if (mTotalStepsKnown) {
+	private void updateAlgorithmLength() {
+		final boolean db = DIAGNOSE_STEPS;
+
+		SliderWidget wTotal = sOptions.getWidget(WIDGET_ID_TOTALSTEPS);
+		int currentTotalSteps = wTotal.getIntValue();
+		SliderWidget wTarget = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
+		int currentTargetStep = wTarget.getIntValue();
+
+		if (currentTotalSteps != mTotalSteps
+				|| currentTargetStep != mTargetStep) {
+			if (db) {
+				pr("updateAlgorithmLength, previous target "
+						+ currentTargetStep + " of total " + currentTotalSteps
+						+ "; updating to " + dumpStepInfo());
+			}
 			// While changing the total steps, the controller view may try
 			// to change the target step on us; ignore such events
 			mIgnoreStepperView = true;
-			SliderWidget w = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
-			w.setMaxValue(mTotalSteps - 1);
+			wTarget.setMaxValue(mTotalSteps);
+			wTotal.setValue(mTotalSteps);
+			wTarget.setValue(mTargetStep);
 			mIgnoreStepperView = false;
-			if (requestUpdateIfChanged && mTargetStep != mCurrentStep) {
-				refresh(false);
-			}
 		}
 	}
 
@@ -473,8 +472,8 @@ public class AlgorithmStepper {
 		if (mIgnoreStepperView) {
 			return;
 		}
-		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps - 1));
-		updateTargetWidgetMax(true);
+		setTargetStepField(MyMath.clamp(step, 0, mTotalSteps));
+		updateAlgorithmLength();
 	}
 
 	private void adjustTargetStep(int delta) {
@@ -483,6 +482,8 @@ public class AlgorithmStepper {
 	}
 
 	private void adjustDisplayedMilestone(int delta) {
+		if (!MILESTONES_ENABLED)
+			return;
 		int prev = -1, next = -1;
 		for (int i = 0; i < mMilestones.size(); i++) {
 			int k = mMilestones.get(i);
@@ -568,19 +569,15 @@ public class AlgorithmStepper {
 		sOptions.restoreStepperState();
 
 		// Restore algorithm information from saved widget values, if possible
-		mTotalStepsKnown = false;
-		int totalSteps = sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
-		int targetStep = sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
-		if (targetStep < totalSteps) {
-			mTotalStepsKnown = true;
-			mTotalSteps = totalSteps;
-			mTargetStep = targetStep;
-		} else {
-			// Run algorithm to completion to determine the number of steps
-			performAlgorithm();
-			setTotalStepsKnown();
+		mTotalSteps = sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
+		mTargetStep = sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
+		if (mTotalSteps == 0) {
+			mTotalSteps = 100;
+			mTargetStep = 100;
 		}
-		updateTargetWidgetMax(true);
+		mTargetStep = Math.min(mTargetStep, mTotalSteps);
+
+		refresh();
 	}
 
 	/**
@@ -632,7 +629,6 @@ public class AlgorithmStepper {
 	private int mTotalSteps;
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
-	private boolean mTotalStepsKnown;
 	private Delegate mDelegate;
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;

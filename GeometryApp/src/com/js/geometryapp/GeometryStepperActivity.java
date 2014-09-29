@@ -27,12 +27,6 @@ public class GeometryStepperActivity extends GeometryActivity {
 		super.onPause();
 	}
 
-	@Override
-	protected void onDestroy() {
-		mAlgorithmStepper.destroy();
-		super.onDestroy();
-	}
-
 	/**
 	 * Hide the title bar, to conserve screen real estate
 	 */

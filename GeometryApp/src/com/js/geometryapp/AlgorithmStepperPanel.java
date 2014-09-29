@@ -2,6 +2,7 @@ package com.js.geometryapp;
 
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
+import com.js.geometryapp.widget.SliderWidget;
 
 import android.content.Context;
 import android.view.View;
@@ -51,13 +52,31 @@ class AlgorithmStepperPanel {
 		sOptions = AlgorithmOptions.sharedInstance();
 		LinearLayout layout = linearLayout(true);
 
-		AbstractWidget w = sOptions.addSlider(
+		final int defaultTotalSteps = 500;
+
+		final SliderWidget targetStepSlider = sOptions.addSlider(
 				AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
 				AbstractWidget.OPTION_DETACHED, true, //
 				AbstractWidget.OPTION_HAS_LABEL, false, //
 				AbstractWidget.OPTION_LAYOUT_HEIGHT, LayoutParams.MATCH_PARENT);
 
-		layout.addView(w.getView(), GeometryActivity.layoutParams(true, true));
+		layout.addView(targetStepSlider.getView(),
+				GeometryActivity.layoutParams(true, true));
+
+		// Add another detached widget to store the total steps
+		AbstractWidget totalStepsSlider = sOptions.addSlider(
+				AlgorithmStepper.WIDGET_ID_TOTALSTEPS,//
+				"value", defaultTotalSteps,//
+				AbstractWidget.OPTION_DETACHED, true);
+
+		// Listen for changes to total steps, to change maximum value of target
+		// step
+		totalStepsSlider.addListener(new AbstractWidget.Listener() {
+			@Override
+			public void valueChanged(AbstractWidget widget) {
+				targetStepSlider.setMaxValue(widget.getIntValue());
+			}
+		});
 
 		LinearLayout v1 = linearLayout(false);
 		layout.addView(v1, GeometryActivity.layoutParams(true, false));

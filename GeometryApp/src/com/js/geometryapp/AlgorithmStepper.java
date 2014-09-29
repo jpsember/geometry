@@ -142,9 +142,7 @@ public class AlgorithmStepper {
 						break;
 					}
 				}
-				if (mTargetStep < mCurrentStep)
-					die("target " + mTargetStep + " but current "
-							+ mCurrentStep);
+				ASSERT(mCurrentStep <= mTargetStep);
 				mCurrentStep++;
 			}
 		} while (false);
@@ -344,7 +342,12 @@ public class AlgorithmStepper {
 			try {
 				initializeActiveState(true);
 
+				// Cache values from widgets to our temporary registers
+				mTargetStep = readTargetStep();
+				mTotalSteps = readTotalSteps();
+
 				mCurrentStep = 0;
+
 				mActiveBackgroundLayer = null;
 				mBackgroundLayers.clear();
 				mForegroundLayer.clear();
@@ -407,7 +410,9 @@ public class AlgorithmStepper {
 				initializeActiveState(false);
 			}
 
-			writeStepValuesToWidgets();
+			// Write cached values back to widgets
+			sOptions.setValue(WIDGET_ID_TOTALSTEPS, mTotalSteps);
+			sOptions.setValue(WIDGET_ID_TARGETSTEP, mTargetStep);
 		}
 	}
 
@@ -415,59 +420,43 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Update the total, target widget values to correspond to our instance
-	 * fields; also update the target slider's maximum
+	 * Read total steps from widget
 	 */
-	private void writeStepValuesToWidgets() {
-		SliderWidget wTotal = sOptions.getWidget(WIDGET_ID_TOTALSTEPS);
-		SliderWidget wTarget = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
-
-		// While changing the widget's total steps, the controller view may
-		// try to change the target step on us; ignore such events
-		mIgnoreStepperView = true;
-		wTarget.setMaxValue(mTotalSteps);
-		wTotal.setValue(mTotalSteps);
-		wTarget.setValue(mTargetStep);
-		mIgnoreStepperView = false;
+	private int readTotalSteps() {
+		return sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
 	}
 
-	private void setTargetStep(int targetStep) {
-		ASSERT(mTotalSteps > 0);
-		targetStep = MyMath.clamp(targetStep, 0, mTotalSteps);
-		if (mIgnoreStepperView) {
-			return;
-		}
-		mTargetStep = targetStep;
-		writeStepValuesToWidgets();
-	}
-
-	private void adjustTargetStep(int delta) {
-		int seekStep = mTargetStep + delta;
-		setTargetStep(seekStep);
+	/**
+	 * Read target step from widget
+	 */
+	private int readTargetStep() {
+		return sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
 	}
 
 	private void adjustTargetMilestone(int delta) {
 		int seekStep = -1;
+		int targetStep = readTargetStep();
 		if (delta < 0) {
 			for (int k : mMilestones) {
-				if (k < mTargetStep)
+				if (k < targetStep)
 					seekStep = k;
 			}
 		} else {
 			// Act as if we're just stepping forward by one, but set a special
 			// flag which indicates we want to continue stepping forward until
 			// we reach a milestone
-			seekStep = Math.min(mTotalSteps, mTargetStep + 1);
+		  int totalSteps = readTotalSteps();
+			seekStep = Math.min(totalSteps, targetStep + 1);
 			// We must be careful to only set the 'jump to next' flag if we're
 			// actually going to perform any stepping, otherwise it won't get
 			// cleared
-			if (seekStep > mCurrentStep) {
+			if (seekStep > targetStep) {
 				mJumpToNextMilestoneFlag = true;
 				mMinimumMilestoneStep = seekStep;
 			}
 		}
 		if (seekStep >= 0) {
-			setTargetStep(seekStep);
+			sOptions.setValue(WIDGET_ID_TARGETSTEP, seekStep);
 		}
 	}
 
@@ -486,16 +475,6 @@ public class AlgorithmStepper {
 	}
 
 	private void addStepperViewListeners() {
-		// Issue #68:
-		// It would be nice if we could do this when the stepper view is
-		// constructed; this would entail building the options view sooner.
-		sOptions.getWidget(WIDGET_ID_TARGETSTEP).addListener(
-				new AbstractWidget.Listener() {
-					@Override
-					public void valueChanged(AbstractWidget widget) {
-						setTargetStep(widget.getIntValue());
-					}
-				});
 
 		final String[] ids = { WIDGET_ID_JUMP_BWD, WIDGET_ID_JUMP_FWD,
 				WIDGET_ID_STEP_BWD, WIDGET_ID_STEP_FWD };
@@ -507,8 +486,11 @@ public class AlgorithmStepper {
 				for (int j = 0; j < 2; j++) {
 					if (id == ids[j])
 						adjustTargetMilestone(j == 0 ? -1 : 1);
-					if (id == ids[j + 2])
-						adjustTargetStep(j == 0 ? -1 : 1);
+					if (id == ids[j + 2]) {
+						int seekStep = readTargetStep() + (j == 0 ? -1 : 1);
+						seekStep = MyMath.clamp(seekStep, 0, readTotalSteps());
+						sOptions.setValue(WIDGET_ID_TARGETSTEP, seekStep);
+					}
 				}
 			}
 		};
@@ -520,26 +502,17 @@ public class AlgorithmStepper {
 	private void prepareOptionsAux() {
 		sOptions = AlgorithmOptions.sharedInstance();
 
-		// Add a detached widget to persist the total steps
-		sOptions.addSlider(WIDGET_ID_TOTALSTEPS,
-				AbstractWidget.OPTION_DETACHED, true);
-
 		addStepperViewListeners();
-
-		if (mDelegate == null)
-			die("attempt to prepare options before delegate defined");
 		mDelegate.prepareOptions();
 
 		sOptions.restoreStepperState();
 
-		// Restore algorithm information from saved widget values, if possible
-		mTotalSteps = sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
-		mTargetStep = sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
-		if (mTotalSteps == 0) {
-			mTotalSteps = 100;
-			mTargetStep = 100;
-		}
-		mTargetStep = Math.min(mTargetStep, mTotalSteps);
+		// Bound the target step to the total step slider's value. We must do
+		// this explicitly here, because
+		// the listener that normally does this was disabled while restoring the
+		// stepper state
+		SliderWidget s = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
+		s.setMaxValue(readTotalSteps());
 
 		refresh();
 	}
@@ -586,11 +559,7 @@ public class AlgorithmStepper {
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();
 	private String mFrameTitle;
-	private boolean mIgnoreStepperView;
 	private ArrayList<Integer> mMilestones = new ArrayList();
-	private int mTargetStep;
-	private int mCurrentStep;
-	private int mTotalSteps;
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private Delegate mDelegate;
@@ -602,4 +571,11 @@ public class AlgorithmStepper {
 	private boolean mJumpToNextMilestoneFlag;
 	// stop at first milestone whose step is at least this
 	private int mMinimumMilestoneStep;
+
+	// For efficiency, cached values of target / total steps widgets used only
+	// during performAlgorithm()
+	private int mTargetStep;
+	private int mTotalSteps;
+	private int mCurrentStep;
+
 }

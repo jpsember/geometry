@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,10 +33,29 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Specify the view group to which widgets are to be added
+	 * Prepare the options views
+	 * 
+	 * @param containingView
+	 *            the view into which the option views should be placed
 	 */
-	void setContainingView(ViewGroup v) {
-		mContainingView = v;
+	void prepareViews(ViewGroup containingView) {
+		mContainingView = containingView;
+
+		// Construct primary and secondary views within this one
+		mPrimaryWidgetGroup = new WidgetGroup(constructSubView());
+		mSecondaryWidgetGroup = new WidgetGroup(constructSubView());
+
+		addPrimaryWidgets();
+
+		mContainingView.addView(mPrimaryWidgetGroup.view());
+		mContainingView.addView(mSecondaryWidgetGroup.view());
+
+		selectWidgetGroup(mSecondaryWidgetGroup);
+	}
+
+	private void addPrimaryWidgets() {
+		selectWidgetGroup(mPrimaryWidgetGroup);
+		addButton("_testprimary_");
 	}
 
 	/**
@@ -147,20 +167,14 @@ public class AlgorithmOptions {
 		if (previousMapping != null)
 			die("widget id " + w.getId() + " already exists");
 
-		if (mContainingView != null) {
-			addWidgetToContainer(w);
-		} else {
-			warning("No containing view defined for " + w.getId());
-		}
-	}
-
-	private void addWidgetToContainer(AbstractWidget w) {
 		// Add it to the options view, if it's not detached
-		if (!w.boolAttr(AbstractWidget.OPTION_DETACHED, false)) {
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			mContainingView.addView(w.getView(), p);
-		}
+		if (w.boolAttr(AbstractWidget.OPTION_DETACHED, false))
+			return;
+
+		if (mWidgetGroup == null)
+			die("no widget group selected");
+
+		mWidgetGroup.add(w);
 	}
 
 	/**
@@ -286,12 +300,57 @@ public class AlgorithmOptions {
 		persistStepperState(true);
 	}
 
+	/**
+	 * Construct a view that will be stacked vertically with others within the
+	 * main container view
+	 */
+	private ViewGroup constructSubView() {
+		LinearLayout view = new LinearLayout(sContext);
+		view.setOrientation(LinearLayout.VERTICAL);
+		if (AbstractWidget.SET_DEBUG_COLORS) {
+			view.setBackgroundColor(OurGLTools.debugColor());
+		}
+		return view;
+	}
+
+	void selectWidgetGroup(WidgetGroup group) {
+		mWidgetGroup = group;
+	}
+
+	private static class WidgetGroup {
+		public WidgetGroup(ViewGroup view) {
+			mView = view;
+			mWidgets = new ArrayList();
+		}
+
+		public ViewGroup view() {
+			return mView;
+		}
+
+		public ArrayList<AbstractWidget> widgets() {
+			return mWidgets;
+		}
+
+		public void add(AbstractWidget widget) {
+			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			mView.addView(widget.getView(), p);
+			mWidgets.add(widget);
+		}
+
+		private ViewGroup mView;
+		private ArrayList<AbstractWidget> mWidgets;
+	}
+
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private ViewGroup mContainingView;
 	private boolean mPrepared;
 	private Context sContext;
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
+	private WidgetGroup mPrimaryWidgetGroup, mSecondaryWidgetGroup;
+	private WidgetGroup mWidgetGroup;
+
 	private boolean mFlushRequired;
 	// The single valid pending flush operation, or null
 	private Runnable mActiveFlushOperation;

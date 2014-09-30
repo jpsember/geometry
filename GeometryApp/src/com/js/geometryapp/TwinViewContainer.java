@@ -1,7 +1,6 @@
 package com.js.geometryapp;
 
 import com.js.android.MyActivity;
-import com.js.geometryapp.widget.AbstractWidget;
 
 import android.content.Context;
 import android.support.v4.widget.SlidingPaneLayout;
@@ -9,7 +8,6 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 /**

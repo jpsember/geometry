@@ -45,8 +45,7 @@ public class GeometryStepperActivity extends GeometryActivity {
 		mAlgorithmStepper.setGLSurfaceView(getGLSurfaceView());
 
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
-		options.setContainingView(twinViews.getAuxilliaryView());
-
+		options.prepareViews(twinViews.getAuxilliaryView());
 		mainView.addView(mAlgorithmStepper.controllerView(this));
 
 		return twinViews.getContainer();

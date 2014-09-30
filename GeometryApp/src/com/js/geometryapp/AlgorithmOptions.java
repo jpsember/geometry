@@ -29,7 +29,7 @@ public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
-	private static final boolean DIAGNOSE_PERSISTENCE = true;
+	private static final boolean DIAGNOSE_PERSISTENCE = false;
 
 	static AlgorithmOptions construct(Context context) {
 		sAlgorithmOptions = new AlgorithmOptions(context);
@@ -263,16 +263,23 @@ public class AlgorithmOptions {
 		selectAlgorithm(mAlgorithms.get(getIntValue("_algorithm_")));
 	}
 
+	/**
+	 * Save total, target steps to algorithm-specific versions (if there's an
+	 * active algorithm)
+	 */
+	private void saveStepsInformation() {
+		if (mActiveAlgorithm != null) {
+			setValue("_" + WIDGET_ID_TOTALSTEPS, readTotalSteps());
+			setValue("_" + WIDGET_ID_TARGETSTEP, readTargetStep());
+		}
+	}
+
 	private void selectAlgorithm(AlgorithmRecord ar) {
 		if (mActiveAlgorithm == ar)
 			return;
 		mPrepared = false;
 
-		// Save total, target steps to algorithm-specific versions
-		if (mActiveAlgorithm != null) {
-			setValue("_" + WIDGET_ID_TOTALSTEPS, readTotalSteps());
-			setValue("_" + WIDGET_ID_TARGETSTEP, readTargetStep());
-		}
+		saveStepsInformation();
 
 		activateSecondaryWidgetGroup(ar);
 		if (mActiveAlgorithm != null)
@@ -291,8 +298,7 @@ public class AlgorithmOptions {
 		// the listener that normally does this was disabled while restoring the
 		// stepper state
 		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(getIntValue(WIDGET_ID_TOTALSTEPS));
-
+		s.setMaxValue(readTotalSteps());
 	}
 
 	private void persistStepperStateAux() {
@@ -301,9 +307,11 @@ public class AlgorithmOptions {
 			return;
 
 		// At present, it only saves widgets that appear in a WidgetGroup. This
-		// omits the target step slider, but that's probably ok, because we'll
-		// use other methods to persist its value (probably by having dedicated
-		// hidden controls for each AlgorithmRecord)
+		// omits the target step slider, but that's ok, because we have hidden
+		// algorithm-specific versions that serve this purpose.
+		// But we must make sure those versions are up to date:
+		saveStepsInformation();
+
 		String newWidgetValuesScript = null;
 		synchronized (AlgorithmStepper.getLock()) {
 			newWidgetValuesScript = saveValues();

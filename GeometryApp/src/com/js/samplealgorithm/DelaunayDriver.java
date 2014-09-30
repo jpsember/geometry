@@ -17,6 +17,7 @@ import static com.js.basic.Tools.*;
 public class DelaunayDriver implements Algorithm {
 
 	private static final String BGND_ELEMENT_MESH = "00";
+	private static final String BGND_ELEMENT_VORONOI_CELLS = "01";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 
@@ -95,25 +96,26 @@ public class DelaunayDriver implements Algorithm {
 		}
 
 		if (sOptions.getBooleanValue("Voronoi cells")) {
+			s.openLayer(BGND_ELEMENT_VORONOI_CELLS);
+			s.plot(new AlgorithmDisplayElement() {
+				@Override
+				public void render() {
+					s.setLineWidth(2);
+					s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
+
+					for (int i = 0; i < mDelaunay.nSites(); i++) {
+						Vertex v = mDelaunay.site(i);
+						s.plot(v);
+						Polygon p = mDelaunay.constructVoronoiPolygon(i);
+						s.plot(p, false);
+					}
+				}
+			});
+			s.closeLayer();
 			if (s.step())
-				s.show("Voronoi cells" + s.plot(mVoronoiElement));
+				s.show("Voronoi cells");
 		}
 	}
-
-	private AlgorithmDisplayElement mVoronoiElement = new AlgorithmDisplayElement() {
-		@Override
-		public void render() {
-			s.setLineWidth(2);
-			s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
-
-			for (int i = 0; i < mDelaunay.nSites(); i++) {
-				Vertex v = mDelaunay.site(i);
-				s.plot(v);
-				Polygon p = mDelaunay.constructVoronoiPolygon(i);
-				s.plot(p, false);
-			}
-		}
-	};
 
 	private void removeArbitraryVertex() {
 		Vertex v = removeAndFill(mVertices, mRandom.nextInt(mVertices.size()));
@@ -127,7 +129,7 @@ public class DelaunayDriver implements Algorithm {
 		sOptions.addSlider("Seed", "min", 1, "max", 300);
 		sOptions.addCheckBox("Deletions", "value", true);
 		sOptions.addCheckBox("Delete all");
-		sOptions.addCheckBox("Voronoi cells");
+		sOptions.addCheckBox("Voronoi cells", "value", true);
 		ComboBoxWidget w = sOptions.addComboBox("Pattern");
 		w.addItem("Random");
 		w.addItem("Circle");

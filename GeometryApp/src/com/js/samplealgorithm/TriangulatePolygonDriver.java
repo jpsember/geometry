@@ -41,7 +41,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 		w.addItem("Dragon #8", Polygon.TESTPOLY_DRAGON_X + 8);
 		w.prepare();
 
-		sOptions.addCheckBox("Triangulate monotone face");
+		sOptions.addCheckBox("Triangulate monotone face", "value", true);
 	}
 
 	private void prepareInput() {

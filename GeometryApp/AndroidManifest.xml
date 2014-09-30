@@ -15,7 +15,7 @@
         android:label="@string/app_name" >
 
         <activity
-            android:name="com.js.samplealgorithm.SampleActivity"
+            android:name="com.js.samplealgorithm.SampleGeometryActivity"
             android:label="Algorithm"
             android:icon="@drawable/ic_algorithm" >
             <intent-filter>

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 
-public class SampleActivity extends GeometryStepperActivity {
+public class SampleGeometryActivity extends GeometryStepperActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

@@ -54,7 +54,7 @@ public class AlgorithmOptions {
 	private void addPrimaryWidgets() {
 		if (mAlgorithms.size() == 1) {
 			AlgorithmRecord r = mAlgorithms.get(0);
-			addStaticText(r.delegate().getAlgorithmName());
+			addHeader(r.delegate().getAlgorithmName());
 		} else {
 			ComboBoxWidget w = addComboBox(WIDGET_ID_ALGORITHM, "label",
 					"Algorithm");
@@ -70,6 +70,9 @@ public class AlgorithmOptions {
 				}
 			});
 		}
+		// Add some vertical space by adding blank text; perhaps later we'll add
+		// widgets for this purpose
+		addStaticText("");
 	}
 
 	/**
@@ -134,6 +137,11 @@ public class AlgorithmOptions {
 		TextWidget w = new TextWidget(sContext, attributes);
 		addWidget(w);
 		return w;
+	}
+
+	public TextWidget addHeader(String content) {
+		return addStaticText(content, TextWidget.OPTION_HEADER, true,
+				TextWidget.OPTION_CENTER, true);
 	}
 
 	/**

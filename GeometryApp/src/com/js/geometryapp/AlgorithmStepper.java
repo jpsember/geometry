@@ -20,12 +20,9 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.widget.AbstractWidget;
-import com.js.geometryapp.widget.SliderWidget;
 
 public class AlgorithmStepper {
 
-	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
-	static final String WIDGET_ID_TARGETSTEP = "_target_";
 	static final String WIDGET_ID_JUMP_BWD = "<<";
 	static final String WIDGET_ID_JUMP_FWD = ">>";
 	static final String WIDGET_ID_STEP_BWD = "<";
@@ -342,8 +339,8 @@ public class AlgorithmStepper {
 				initializeActiveState(true);
 
 				// Cache values from widgets to our temporary registers
-				mTargetStep = readTargetStep();
-				mTotalSteps = readTotalSteps();
+				mTargetStep = sOptions.readTargetStep();
+				mTotalSteps = sOptions.readTotalSteps();
 
 				mCurrentStep = 0;
 
@@ -410,31 +407,17 @@ public class AlgorithmStepper {
 			}
 
 			// Write cached values back to widgets
-			sOptions.setValue(WIDGET_ID_TOTALSTEPS, mTotalSteps);
-			sOptions.setValue(WIDGET_ID_TARGETSTEP, mTargetStep);
+			sOptions.setTotalSteps(mTotalSteps);
+			sOptions.setTargetStep(mTargetStep);
 		}
 	}
 
 	private AlgorithmStepper() {
 	}
 
-	/**
-	 * Read total steps from widget
-	 */
-	private int readTotalSteps() {
-		return sOptions.getIntValue(WIDGET_ID_TOTALSTEPS);
-	}
-
-	/**
-	 * Read target step from widget
-	 */
-	private int readTargetStep() {
-		return sOptions.getIntValue(WIDGET_ID_TARGETSTEP);
-	}
-
 	private void adjustTargetMilestone(int delta) {
 		int seekStep = -1;
-		int targetStep = readTargetStep();
+		int targetStep = sOptions.readTargetStep();
 		if (delta < 0) {
 			for (int k : mMilestones) {
 				if (k < targetStep)
@@ -444,7 +427,7 @@ public class AlgorithmStepper {
 			// Act as if we're just stepping forward by one, but set a special
 			// flag which indicates we want to continue stepping forward until
 			// we reach a milestone
-			int totalSteps = readTotalSteps();
+			int totalSteps = sOptions.readTotalSteps();
 			seekStep = Math.min(totalSteps, targetStep + 1);
 			// We must be careful to only set the 'jump to next' flag if we're
 			// actually going to perform any stepping, otherwise it won't get
@@ -455,7 +438,7 @@ public class AlgorithmStepper {
 			}
 		}
 		if (seekStep >= 0) {
-			sOptions.setValue(WIDGET_ID_TARGETSTEP, seekStep);
+			sOptions.setTargetStep(seekStep);
 		}
 	}
 
@@ -473,8 +456,7 @@ public class AlgorithmStepper {
 		mActiveStack.clear();
 	}
 
-	// TODO: this could be moved to AlgorithmOptions
-	private void addStepperViewListeners() {
+	void addStepperViewListeners() {
 
 		final String[] ids = { WIDGET_ID_JUMP_BWD, WIDGET_ID_JUMP_FWD,
 				WIDGET_ID_STEP_BWD, WIDGET_ID_STEP_FWD };
@@ -487,9 +469,11 @@ public class AlgorithmStepper {
 					if (id == ids[j])
 						adjustTargetMilestone(j == 0 ? -1 : 1);
 					if (id == ids[j + 2]) {
-						int seekStep = readTargetStep() + (j == 0 ? -1 : 1);
-						seekStep = MyMath.clamp(seekStep, 0, readTotalSteps());
-						sOptions.setValue(WIDGET_ID_TARGETSTEP, seekStep);
+						int seekStep = sOptions.readTargetStep()
+								+ (j == 0 ? -1 : 1);
+						seekStep = MyMath.clamp(seekStep, 0,
+								sOptions.readTotalSteps());
+						sOptions.setTargetStep(seekStep);
 					}
 				}
 			}
@@ -497,19 +481,6 @@ public class AlgorithmStepper {
 		for (int i = 0; i < ids.length; i++) {
 			sOptions.getWidget(ids[i]).addListener(listener);
 		}
-	}
-
-	private void prepareOptionsAux() {
-		addStepperViewListeners();
-
-		// Bound the target step to the total step slider's value. We must do
-		// this explicitly here, because
-		// the listener that normally does this was disabled while restoring the
-		// stepper state
-		SliderWidget s = sOptions.getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(readTotalSteps());
-
-		refresh();
 	}
 
 	/**
@@ -555,8 +526,7 @@ public class AlgorithmStepper {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		sOptions.resume(mAlgorithms);
-		// Now that views have been built, restore option values
-		prepareOptionsAux();
+		refresh();
 	}
 
 	ArrayList<Algorithm> algorithms() {

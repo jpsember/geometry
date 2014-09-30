@@ -24,6 +24,9 @@ import static com.js.basic.Tools.*;
 
 public class AlgorithmOptions {
 
+	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
+	static final String WIDGET_ID_TARGETSTEP = "_target_";
+
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
 	private static final boolean DIAGNOSE_PERSISTENCE = false;
@@ -49,8 +52,8 @@ public class AlgorithmOptions {
 	private void addPrimaryWidgets() {
 		// tell addWidget() to add widgets to the primary group
 		mAddingPrimaryWidgets = true;
-		if (mAlgorithms.size() == 1) {
-			unimp("add a label for the single algorithm");
+		unimp("add a label for the single algorithm");
+		if (false && mAlgorithms.size() == 1) {
 		} else {
 			ComboBoxWidget w = addComboBox("Algorithm");
 			for (AlgorithmRecord r : mAlgorithms)
@@ -147,7 +150,7 @@ public class AlgorithmOptions {
 		T field = (T) mWidgetsMap.get(widgetName);
 		if (field == null)
 			throw new IllegalArgumentException("no widget found with name "
-					+ widgetName);
+					+ widgetName + "; map:\n" + d(mWidgetsMap));
 		return field;
 	}
 
@@ -235,27 +238,26 @@ public class AlgorithmOptions {
 		String script = AppPreferences.getString(PERSIST_KEY_WIDGET_VALUES,
 				null);
 		if (db)
-			pr("\nRestoring JSON:\n" + script + "\n");
+			pr("\nRestoring JSON:\n" + script + "\n" + "Widgets:\n"
+					+ d(mWidgetsMap) + "\n");
 
 		if (script != null) {
 			JSONParser parser = new JSONParser(script);
 			Map<String, Map> values = (Map) parser.next();
 			for (String algName : values.keySet()) {
 				if (algName.equals(PRIMARY_GROUP_KEY)) {
-					selectWidgetGroup(mPrimaryWidgetGroup);
+					activateSecondaryWidgetGroup(null);
 				} else {
 					AlgorithmRecord rec = findAlgorithm(algName);
 					if (rec == null) {
 						warning("can't find algorithm '" + algName + "'");
 						continue;
 					}
-					selectWidgetGroup(rec.widgets());
+					activateSecondaryWidgetGroup(rec.widgets());
 				}
 				Map<String, String> widgetValues = values.get(algName);
 				for (String key : widgetValues.keySet()) {
 					String value = widgetValues.get(key);
-					// ..remove widgets from global map whenever we select a
-					// widget group?
 					AbstractWidget w = mWidgetsMap.get(key);
 					if (w == null) {
 						warning("can't find widget named '" + key + "'");
@@ -266,14 +268,12 @@ public class AlgorithmOptions {
 				}
 			}
 		}
-		selectWidgetGroup(null);
+		selectAlgorithm(mAlgorithms.get(getIntValue("Algorithm")));
 		mPrepared = true;
-
-		selectAlgorithm(mAlgorithms.get(0));
 	}
 
 	private void selectAlgorithm(AlgorithmRecord ar) {
-		selectWidgetGroup(ar.widgets());
+		activateSecondaryWidgetGroup(ar.widgets());
 		if (mPlottedSecondaryGroup != ar.widgets()) {
 			if (mPlottedSecondaryGroup != null)
 				mContainingView.removeView(mPlottedSecondaryGroup.view());
@@ -407,12 +407,11 @@ public class AlgorithmOptions {
 	 * @param group
 	 *            secondary group, or null
 	 */
-	void selectWidgetGroup(WidgetGroup group) {
-		warning("what about installing / removing this view from the container?");
+	void activateSecondaryWidgetGroup(WidgetGroup group) {
+		ASSERT(group != mPrimaryWidgetGroup);
 		if (group == mSecondaryWidgetGroup)
 			return;
 		if (mSecondaryWidgetGroup != null) {
-			// Remove old secondary widgets from master map
 			for (AbstractWidget w : mSecondaryWidgetGroup.widgets()) {
 				mWidgetsMap.remove(w.getId());
 			}
@@ -420,7 +419,6 @@ public class AlgorithmOptions {
 		}
 		mSecondaryWidgetGroup = group;
 		if (group != null) {
-			// Remove old secondary widgets from master map
 			for (AbstractWidget w : group.widgets()) {
 				mWidgetsMap.put(w.getId(), w);
 			}
@@ -431,26 +429,58 @@ public class AlgorithmOptions {
 		// Create a WidgetGroup for each algorithm
 		mAlgorithms = new ArrayList();
 		for (Algorithm a : algorithms) {
-			pr("Options.resume, alg " + a.getAlgorithmName());
 			AlgorithmRecord arec = new AlgorithmRecord();
 			arec.setDelegate(a);
 			WidgetGroup g = new WidgetGroup(constructSubView());
 			arec.setWidgetGroup(g);
-			selectWidgetGroup(g);
+			activateSecondaryWidgetGroup(g);
 			a.prepareOptions();
 			mAlgorithms.add(arec);
 		}
-		selectWidgetGroup(null);
+		activateSecondaryWidgetGroup(null);
 
 		addPrimaryWidgets();
 
 		restoreStepperState();
+
+		mStepper.addStepperViewListeners();
+
+		// Bound the target step to the total step slider's value. We must do
+		// this explicitly here, because
+		// the listener that normally does this was disabled while restoring the
+		// stepper state
+		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
+		s.setMaxValue(getIntValue(WIDGET_ID_TOTALSTEPS));
+	}
+
+	/**
+	 * Read total steps from widget
+	 */
+	int readTotalSteps() {
+		return getIntValue(AlgorithmOptions.WIDGET_ID_TOTALSTEPS);
+	}
+
+	/**
+	 * Read target step from widget
+	 */
+	int readTargetStep() {
+		return getIntValue(AlgorithmOptions.WIDGET_ID_TARGETSTEP);
+	}
+
+	void setTargetStep(int targetStep) {
+		setValue(AlgorithmOptions.WIDGET_ID_TARGETSTEP, targetStep);
+	}
+
+	void setTotalSteps(int totalSteps) {
+		setValue(AlgorithmOptions.WIDGET_ID_TOTALSTEPS, totalSteps);
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private AlgorithmStepper mStepper;
 	private ViewGroup mContainingView;
+	// Until this flag is true, no listeners are sent messages about widget
+	// value changes
 	private boolean mPrepared;
 	private Context sContext;
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();

@@ -55,7 +55,7 @@ class AlgorithmStepperPanel {
 		final int defaultTotalSteps = 500;
 
 		final SliderWidget targetStepSlider = sOptions.addSlider(
-				AlgorithmStepper.WIDGET_ID_TARGETSTEP, //
+				AlgorithmOptions.WIDGET_ID_TARGETSTEP, //
 				AbstractWidget.OPTION_DETACHED, true, //
 				AbstractWidget.OPTION_HAS_LABEL, false, //
 				AbstractWidget.OPTION_LAYOUT_HEIGHT, LayoutParams.MATCH_PARENT);
@@ -65,7 +65,7 @@ class AlgorithmStepperPanel {
 
 		// Add another detached widget to store the total steps
 		AbstractWidget totalStepsSlider = sOptions.addSlider(
-				AlgorithmStepper.WIDGET_ID_TOTALSTEPS,//
+				AlgorithmOptions.WIDGET_ID_TOTALSTEPS,//
 				"value", defaultTotalSteps,//
 				AbstractWidget.OPTION_DETACHED, true);
 

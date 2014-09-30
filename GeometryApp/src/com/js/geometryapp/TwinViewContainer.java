@@ -99,19 +99,7 @@ class TwinViewContainer {
 		lp = new SlidingPaneLayout.LayoutParams((int) auxWidth,
 				LayoutParams.MATCH_PARENT);
 
-		// Add some padding around the actual auxilliary view
-		ViewGroup auxilliaryContainer = mAuxilliaryView;
-		{
-			FrameLayout frame = new FrameLayout(getContext());
-			if (AbstractWidget.SET_DEBUG_COLORS) {
-				frame.setBackgroundColor(OurGLTools.debugColor());
-			}
-			int padding = MyActivity.inchesToPixels(.05f);
-			frame.setPadding(padding, padding, padding, padding);
-			frame.addView(mAuxilliaryView);
-			auxilliaryContainer = frame;
-		}
-		mSlidingPane.addView(auxilliaryContainer, lp);
+		mSlidingPane.addView(mAuxilliaryView, lp);
 
 		if (!bothFit)
 			mSlidingPane.openPane();

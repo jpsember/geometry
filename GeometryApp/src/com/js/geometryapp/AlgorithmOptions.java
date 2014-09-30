@@ -17,6 +17,7 @@ import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.ComboBoxWidget;
 import com.js.geometryapp.widget.SliderWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
+import com.js.geometryapp.widget.TextWidget;
 import com.js.json.JSONEncoder;
 import com.js.json.JSONParser;
 
@@ -26,6 +27,7 @@ public class AlgorithmOptions {
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
+	private static final String WIDGET_ID_ALGORITHM = "_algorithm_";
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
@@ -50,10 +52,12 @@ public class AlgorithmOptions {
 	}
 
 	private void addPrimaryWidgets() {
-		unimp("add a label for the single algorithm");
-		if (false && mAlgorithms.size() == 1) {
+		if (mAlgorithms.size() == 1) {
+			AlgorithmRecord r = mAlgorithms.get(0);
+			addStaticText(r.delegate().getAlgorithmName());
 		} else {
-			ComboBoxWidget w = addComboBox("_algorithm_", "label", "Algorithm");
+			ComboBoxWidget w = addComboBox(WIDGET_ID_ALGORITHM, "label",
+					"Algorithm");
 			for (AlgorithmRecord r : mAlgorithms) {
 				w.addItem(r.delegate().getAlgorithmName());
 			}
@@ -112,6 +116,22 @@ public class AlgorithmOptions {
 	public ButtonWidget addButton(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		ButtonWidget w = new ButtonWidget(sContext, attributes);
+		addWidget(w);
+		return w;
+	}
+
+	/**
+	 * Add a text widget; assigns it a unique id
+	 * 
+	 * @param content
+	 *            the text appearing in the widget
+	 */
+	public TextWidget addStaticText(String content, Object... attributePairs) {
+		mPreviousTextIndex++;
+		String id = "__text_" + mPreviousTextIndex;
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
+		attributes.put("label", content);
+		TextWidget w = new TextWidget(sContext, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -260,7 +280,10 @@ public class AlgorithmOptions {
 			}
 		}
 		mPrepared = true;
-		selectAlgorithm(mAlgorithms.get(getIntValue("_algorithm_")));
+		int algNumber = 0;
+		if (mAlgorithms.size() > 1)
+			algNumber = getIntValue(WIDGET_ID_ALGORITHM);
+		selectAlgorithm(mAlgorithms.get(algNumber));
 	}
 
 	/**
@@ -525,4 +548,6 @@ public class AlgorithmOptions {
 	// Approximate time pending flush will occur at
 	private long mActiveFlushTime;
 
+	// For generating unique text ids
+	private int mPreviousTextIndex;
 }

@@ -39,6 +39,9 @@ public class TriangulatePolygonDriver implements Algorithm {
 		w.addItem("Quadratic function", Polygon.TESTPOLY_Y_EQUALS_X_SQUARED);
 		w.addItem("Large rectangle", Polygon.TESTPOLY_LARGE_RECTANGLE);
 		w.addItem("Dragon #8", Polygon.TESTPOLY_DRAGON_X + 8);
+		w.addItem("Star-shaped (small)", Polygon.TESTPOLY_STARSHAPED_X + 15);
+		w.addItem("Star-shaped (large)", Polygon.TESTPOLY_STARSHAPED_X + 100);
+
 		w.prepare();
 
 		sOptions.addCheckBox("Triangulate monotone face", "value", true);

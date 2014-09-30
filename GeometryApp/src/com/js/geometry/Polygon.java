@@ -28,8 +28,12 @@ public class Polygon {
 	public static final int TESTPOLY_QUADRATIC_FILTER = 12;
 	public static final int TESTPOLY_SPIROGRAPH = 13;
 	public static final int TESTPOLY_SPIROGRAPH2 = 14;
-
 	public static final int TESTPOLY_DRAGON_X = 1000;
+
+	/**
+	 * Generate a star-shaped polygon with X+2 edges:
+	 */
+	public static final int TESTPOLY_STARSHAPED_X = 2000;
 
 	public int numVertices() {
 		return mVertices.size();
@@ -121,6 +125,9 @@ public class Polygon {
 		Polygon poly;
 		if (index >= TESTPOLY_DRAGON_X && index < TESTPOLY_DRAGON_X + 15) {
 			poly = dragonPolygon(index - TESTPOLY_DRAGON_X);
+		} else if (index >= TESTPOLY_STARSHAPED_X
+				&& index < TESTPOLY_STARSHAPED_X + 1000) {
+			poly = starshapedPolygon(index - TESTPOLY_STARSHAPED_X);
 		} else if (index == TESTPOLY_QUADRATIC_FILTER) {
 			poly = polygon();
 			int nv = 400;
@@ -181,6 +188,29 @@ public class Polygon {
 			Point v = MyMath.pointOnCircle(new Point(300, 300), MyMath.M_DEG
 					* i * (360.0f / numberOfSides), 100);
 			polygon.add(v);
+		}
+		return polygon;
+	}
+
+	private static Polygon starshapedPolygon(int size) {
+		ArrayList<Float> radii = new ArrayList();
+		Random random = new Random(5);
+		int nPoints = size + 3;
+		for (int i = 0; i < nPoints; i++) {
+			float t = random.nextFloat();
+			t = 1 - t * t;
+			float radius = (t * .8f + .2f);
+			radii.add(radius);
+		}
+		Rect bounds = new Rect(0, 0, 500, 500);
+		float radius = bounds.minDim() * .5f;
+		Polygon polygon = new Polygon();
+		Point mid = bounds.midPoint();
+		for (int i = 0; i < nPoints; i++) {
+			float rayLength = radius * radii.get(i);
+			float angle = (2 * PI * i) / nPoints;
+			Point q = pointOnCircle(mid, angle, rayLength);
+			polygon.add(q);
 		}
 		return polygon;
 	}

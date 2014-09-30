@@ -23,9 +23,11 @@ public class WidgetGroup {
 	}
 
 	public void add(AbstractWidget widget) {
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-		mView.addView(widget.getView(), p);
+		if (!widget.boolAttr(AbstractWidget.OPTION_HIDDEN, false)) {
+			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			mView.addView(widget.getView(), p);
+		}
 		mWidgets.add(widget);
 	}
 

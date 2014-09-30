@@ -285,13 +285,6 @@ public class AlgorithmStepper {
 	}
 
 	/**
-	 * Set the delegate, which actually performs the algorithm, and displays it
-	 */
-	void setDelegate(Algorithm delegate) {
-		mDelegate = delegate;
-	}
-
-	/**
 	 * Construct stepper controller view
 	 */
 	View controllerView(Context context) {
@@ -356,7 +349,7 @@ public class AlgorithmStepper {
 
 				mCompleted = false;
 				try {
-					mDelegate.run();
+					sOptions.runActiveAlgorithm();
 
 					// We completed the algorithm without halting.
 
@@ -533,6 +526,12 @@ public class AlgorithmStepper {
 		return mAlgorithms;
 	}
 
+	static void clearGlobals() {
+		sStepper = null;
+		sOptions = null;
+		AlgorithmOptions.clearGlobals();
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 	private static Object sSynchronizationLock = new Object();
@@ -545,7 +544,6 @@ public class AlgorithmStepper {
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
-	private Algorithm mDelegate;
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;

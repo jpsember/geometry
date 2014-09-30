@@ -29,7 +29,7 @@ public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
-	private static final boolean DIAGNOSE_PERSISTENCE = false;
+	private static final boolean DIAGNOSE_PERSISTENCE = true;
 
 	static AlgorithmOptions construct(Context context) {
 		sAlgorithmOptions = new AlgorithmOptions(context);
@@ -50,14 +50,13 @@ public class AlgorithmOptions {
 	}
 
 	private void addPrimaryWidgets() {
-		// tell addWidget() to add widgets to the primary group
-		mAddingPrimaryWidgets = true;
 		unimp("add a label for the single algorithm");
 		if (false && mAlgorithms.size() == 1) {
 		} else {
-			ComboBoxWidget w = addComboBox("Algorithm");
-			for (AlgorithmRecord r : mAlgorithms)
+			ComboBoxWidget w = addComboBox("_algorithm_", "label", "Algorithm");
+			for (AlgorithmRecord r : mAlgorithms) {
 				w.addItem(r.delegate().getAlgorithmName());
+			}
 			w.prepare();
 			w.addListener(new Listener() {
 				@Override
@@ -67,7 +66,6 @@ public class AlgorithmOptions {
 				}
 			});
 		}
-		mAddingPrimaryWidgets = false;
 	}
 
 	/**
@@ -184,15 +182,8 @@ public class AlgorithmOptions {
 		if (w.boolAttr(AbstractWidget.OPTION_DETACHED, false))
 			return;
 
-		WidgetGroup destination;
-		if (mAddingPrimaryWidgets) {
-			destination = mPrimaryWidgetGroup;
-		} else {
-			destination = mSecondaryWidgetGroup;
-		}
-		if (destination == null)
-			die("no widget group selected");
-
+		WidgetGroup destination = (mSecondaryWidgetGroup == null) ? mPrimaryWidgetGroup
+				: mSecondaryWidgetGroup.widgets();
 		destination.add(w);
 	}
 
@@ -253,7 +244,7 @@ public class AlgorithmOptions {
 						warning("can't find algorithm '" + algName + "'");
 						continue;
 					}
-					activateSecondaryWidgetGroup(rec.widgets());
+					activateSecondaryWidgetGroup(rec);
 				}
 				Map<String, String> widgetValues = values.get(algName);
 				for (String key : widgetValues.keySet()) {
@@ -268,19 +259,40 @@ public class AlgorithmOptions {
 				}
 			}
 		}
-		selectAlgorithm(mAlgorithms.get(getIntValue("Algorithm")));
 		mPrepared = true;
+		selectAlgorithm(mAlgorithms.get(getIntValue("_algorithm_")));
 	}
 
 	private void selectAlgorithm(AlgorithmRecord ar) {
-		activateSecondaryWidgetGroup(ar.widgets());
-		if (mPlottedSecondaryGroup != ar.widgets()) {
-			if (mPlottedSecondaryGroup != null)
-				mContainingView.removeView(mPlottedSecondaryGroup.view());
-			mPlottedSecondaryGroup = ar.widgets();
-			mContainingView.addView(mPlottedSecondaryGroup.view());
+		if (mActiveAlgorithm == ar)
+			return;
+		mPrepared = false;
+
+		// Save total, target steps to algorithm-specific versions
+		if (mActiveAlgorithm != null) {
+			setValue("_" + WIDGET_ID_TOTALSTEPS, readTotalSteps());
+			setValue("_" + WIDGET_ID_TARGETSTEP, readTargetStep());
 		}
-		mStepper.setDelegate(ar.delegate());
+
+		activateSecondaryWidgetGroup(ar);
+		if (mActiveAlgorithm != null)
+			mContainingView.removeView(mActiveAlgorithm.widgets().view());
+		mActiveAlgorithm = ar;
+		mContainingView.addView(mActiveAlgorithm.widgets().view());
+
+		// Copy total, target steps from algorithm-specific versions
+		setTotalSteps(getIntValue("_" + WIDGET_ID_TOTALSTEPS));
+		setTargetStep(getIntValue("_" + WIDGET_ID_TARGETSTEP));
+
+		mPrepared = true;
+
+		// Bound the target step to the total step slider's value. We must do
+		// this explicitly here, because
+		// the listener that normally does this was disabled while restoring the
+		// stepper state
+		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
+		s.setMaxValue(getIntValue(WIDGET_ID_TOTALSTEPS));
+
 	}
 
 	private void persistStepperStateAux() {
@@ -407,19 +419,18 @@ public class AlgorithmOptions {
 	 * @param group
 	 *            secondary group, or null
 	 */
-	void activateSecondaryWidgetGroup(WidgetGroup group) {
-		ASSERT(group != mPrimaryWidgetGroup);
-		if (group == mSecondaryWidgetGroup)
+	void activateSecondaryWidgetGroup(AlgorithmRecord algorithmRecord) {
+		if (algorithmRecord == mSecondaryWidgetGroup)
 			return;
 		if (mSecondaryWidgetGroup != null) {
-			for (AbstractWidget w : mSecondaryWidgetGroup.widgets()) {
+			for (AbstractWidget w : mSecondaryWidgetGroup.widgets().widgets()) {
 				mWidgetsMap.remove(w.getId());
 			}
 			mSecondaryWidgetGroup = null;
 		}
-		mSecondaryWidgetGroup = group;
-		if (group != null) {
-			for (AbstractWidget w : group.widgets()) {
+		mSecondaryWidgetGroup = algorithmRecord;
+		if (algorithmRecord != null) {
+			for (AbstractWidget w : algorithmRecord.widgets().widgets()) {
 				mWidgetsMap.put(w.getId(), w);
 			}
 		}
@@ -428,29 +439,29 @@ public class AlgorithmOptions {
 	void resume(ArrayList<Algorithm> algorithms) {
 		// Create a WidgetGroup for each algorithm
 		mAlgorithms = new ArrayList();
-		for (Algorithm a : algorithms) {
-			AlgorithmRecord arec = new AlgorithmRecord();
-			arec.setDelegate(a);
-			WidgetGroup g = new WidgetGroup(constructSubView());
-			arec.setWidgetGroup(g);
-			activateSecondaryWidgetGroup(g);
-			a.prepareOptions();
-			mAlgorithms.add(arec);
+		for (Algorithm algorithm : algorithms) {
+			AlgorithmRecord algorithmRecord = new AlgorithmRecord();
+			mAlgorithms.add(algorithmRecord);
+
+			algorithmRecord.setDelegate(algorithm);
+			algorithmRecord.setWidgetGroup(new WidgetGroup(constructSubView()));
+			activateSecondaryWidgetGroup(algorithmRecord);
+			// Add hidden values to represent total, target steps; these will be
+			// copied to/from the main slider as the algorithm becomes
+			// active/inactive
+			addSlider("_" + WIDGET_ID_TARGETSTEP, AbstractWidget.OPTION_HIDDEN,
+					true);
+			addSlider("_" + WIDGET_ID_TOTALSTEPS, AbstractWidget.OPTION_HIDDEN,
+					true);
+
+			algorithm.prepareOptions();
 		}
 		activateSecondaryWidgetGroup(null);
 
 		addPrimaryWidgets();
-
-		restoreStepperState();
-
 		mStepper.addStepperViewListeners();
 
-		// Bound the target step to the total step slider's value. We must do
-		// this explicitly here, because
-		// the listener that normally does this was disabled while restoring the
-		// stepper state
-		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(getIntValue(WIDGET_ID_TOTALSTEPS));
+		restoreStepperState();
 	}
 
 	/**
@@ -475,6 +486,17 @@ public class AlgorithmOptions {
 		setValue(AlgorithmOptions.WIDGET_ID_TOTALSTEPS, totalSteps);
 	}
 
+	/**
+	 * Call the active algorithm's run() method
+	 */
+	void runActiveAlgorithm() {
+		mActiveAlgorithm.delegate().run();
+	}
+
+	static void clearGlobals() {
+		sAlgorithmOptions = null;
+	}
+
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private AlgorithmStepper mStepper;
@@ -485,11 +507,9 @@ public class AlgorithmOptions {
 	private Context sContext;
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
 	private WidgetGroup mPrimaryWidgetGroup;
-	private WidgetGroup mSecondaryWidgetGroup;
-	// Which widget group's views, if any, are visible
-	private WidgetGroup mPlottedSecondaryGroup;
 	private ArrayList<AlgorithmRecord> mAlgorithms;
-	private boolean mAddingPrimaryWidgets;
+	private AlgorithmRecord mActiveAlgorithm;
+	private AlgorithmRecord mSecondaryWidgetGroup;
 
 	private boolean mFlushRequired;
 	// The single valid pending flush operation, or null

@@ -12,6 +12,8 @@ public class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		doNothing();
+		AlgorithmStepper.clearGlobals();
+
 		mAlgorithmStepper = AlgorithmStepper.sharedInstance();
 		hideTitle();
 

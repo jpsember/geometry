@@ -22,9 +22,9 @@ import static com.js.android.Tools.*;
 
 public abstract class AbstractWidget {
 
-  /**
-   * Set this to a widget id to print changes to its value
-   */
+	/**
+	 * Set this to a widget id to print changes to its value
+	 */
 	public static final String TRACE_WIDGET_VALUE = null;
 
 	/**
@@ -49,9 +49,17 @@ public abstract class AbstractWidget {
 	public static final String OPTION_REFRESH_ALGORITHM = "refresh_algorithm";
 
 	/**
-	 * If this option is true, the widget's view will not be added to the main
-	 * options view. The user can choose to add it to some other view, or leave
-	 * it hidden (it can still be used to store state).
+	 * If true, the widget's view will not be added to its group's view
+	 */
+	public static final String OPTION_HIDDEN = "hidden";
+
+	/**
+	 * If this option is true, the widget will not be added to a group. Its view
+	 * can be added to some other view if desired, and it can still be used to
+	 * store state.
+	 * 
+	 * This should be considered an internal flag; users probably want
+	 * OPTION_HIDDEN.
 	 */
 	public static final String OPTION_DETACHED = "detached";
 

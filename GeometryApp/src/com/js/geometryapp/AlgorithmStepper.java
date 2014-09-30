@@ -31,12 +31,6 @@ public class AlgorithmStepper {
 	static final String WIDGET_ID_STEP_BWD = "<";
 	static final String WIDGET_ID_STEP_FWD = ">";
 
-	public static interface Delegate {
-		public void prepareOptions();
-
-		public void runAlgorithm();
-	}
-
 	/**
 	 * Get the singleton instance of the stepper
 	 */
@@ -51,7 +45,7 @@ public class AlgorithmStepper {
 		mglSurfaceView = glSurfaceView;
 	}
 
-	public void addAlgorithm(Delegate delegate) {
+	public void addAlgorithm(Algorithm delegate) {
 		mAlgorithms.add(delegate);
 	}
 
@@ -296,7 +290,7 @@ public class AlgorithmStepper {
 	/**
 	 * Set the delegate, which actually performs the algorithm, and displays it
 	 */
-	void setDelegate(Delegate delegate) {
+	void setDelegate(Algorithm delegate) {
 		mDelegate = delegate;
 		// Now that views have been built, restore option values
 		prepareOptionsAux();
@@ -367,7 +361,7 @@ public class AlgorithmStepper {
 
 				mCompleted = false;
 				try {
-					mDelegate.runAlgorithm();
+					mDelegate.run();
 
 					// We completed the algorithm without halting.
 
@@ -574,14 +568,14 @@ public class AlgorithmStepper {
 	private static Object sSynchronizationLock = new Object();
 	private static AlgorithmOptions sOptions;
 
-	private ArrayList<AlgorithmStepper.Delegate> mAlgorithms = new ArrayList();
+	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();
 	private String mFrameTitle;
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
-	private Delegate mDelegate;
+	private Algorithm mDelegate;
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;

@@ -6,6 +6,7 @@ import java.util.Random;
 import android.graphics.Color;
 
 import com.js.geometry.*;
+import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
@@ -13,7 +14,7 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
 
-public class DelaunayDriver implements AlgorithmStepper.Delegate {
+public class DelaunayDriver implements Algorithm {
 
 	private static final String BGND_ELEMENT_MESH = "00";
 
@@ -24,7 +25,7 @@ public class DelaunayDriver implements AlgorithmStepper.Delegate {
 	}
 
 	@Override
-	public void runAlgorithm() {
+	public void run() {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 

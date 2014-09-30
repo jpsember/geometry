@@ -8,6 +8,7 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
+import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.FloatArray;
@@ -16,14 +17,14 @@ import static com.js.geometry.MyMath.*;
 
 import static com.js.basic.Tools.*;
 
-public class StarshapedDriver implements AlgorithmStepper.Delegate {
+public class StarshapedDriver implements Algorithm {
 
 	public StarshapedDriver() {
 		mStepper = AlgorithmStepper.sharedInstance();
 	}
 
 	@Override
-	public void runAlgorithm() {
+	public void run() {
 		try {
 			mContext = new Mesh();
 			mRandom = new Random(sOptions.getIntValue("Seed"));

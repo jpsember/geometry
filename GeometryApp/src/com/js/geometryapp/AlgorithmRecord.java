@@ -6,7 +6,7 @@ package com.js.geometryapp;
  */
 public class AlgorithmRecord {
 
-	public void setDelegate(AlgorithmStepper.Delegate delegate) {
+	public void setDelegate(Algorithm delegate) {
 	}
 
 }

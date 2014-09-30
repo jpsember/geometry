@@ -4,14 +4,15 @@ import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
+import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
-public class TriangulatePolygonDriver implements AlgorithmStepper.Delegate {
+public class TriangulatePolygonDriver implements Algorithm {
 
 	@Override
-	public void runAlgorithm() {
+	public void run() {
 		prepareInput();
 
 		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,

@@ -2,8 +2,6 @@ package com.js.geometryapp.widget;
 
 import java.util.Map;
 
-import com.js.geometryapp.AlgorithmOptions;
-
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
@@ -19,11 +17,9 @@ public class ButtonWidget extends AbstractWidget {
 		mButton = new Button(context);
 		mButton.setText(getLabel(false));
 		mButton.setOnClickListener(new Button.OnClickListener() {
-
 			@Override
 			public void onClick(View v) {
-				AlgorithmOptions.sharedInstance().processWidgetValue(
-						ButtonWidget.this, mListeners);
+				notifyListeners();
 			}
 		});
 

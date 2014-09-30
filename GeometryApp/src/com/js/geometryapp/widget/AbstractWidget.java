@@ -179,9 +179,7 @@ public abstract class AbstractWidget {
 		}
 
 		mWidgetValue = newUserValue;
-
-		AlgorithmOptions.sharedInstance().processWidgetValue(this,
-				this.mListeners);
+		notifyListeners();
 	}
 
 	/**
@@ -290,6 +288,11 @@ public abstract class AbstractWidget {
 
 	Map attributes() {
 		return mAttributes;
+	}
+
+	protected void notifyListeners() {
+		AlgorithmOptions.sharedInstance().processWidgetValue(this,
+				this.mListeners);
 	}
 
 	// View representing this widget. It probably contains subviews that include

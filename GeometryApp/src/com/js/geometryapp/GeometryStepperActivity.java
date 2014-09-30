@@ -19,6 +19,12 @@ public class GeometryStepperActivity extends GeometryActivity {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		mAlgorithmStepper.resume();
+	}
+
+	@Override
 	protected void onPause() {
 		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
 		options.persistStepperState(false);
@@ -30,10 +36,6 @@ public class GeometryStepperActivity extends GeometryActivity {
 	 */
 	private void hideTitle() {
 		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
-	}
-
-	public void setAlgorithmDelegate(AlgorithmStepper.Delegate delegate) {
-		mAlgorithmStepper.setDelegate(delegate);
 	}
 
 	protected ViewGroup buildContentView() {
@@ -64,4 +66,5 @@ public class GeometryStepperActivity extends GeometryActivity {
 	}
 
 	private AlgorithmStepper mAlgorithmStepper;
+
 }

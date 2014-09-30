@@ -51,6 +51,10 @@ public class AlgorithmStepper {
 		mglSurfaceView = glSurfaceView;
 	}
 
+	public void addAlgorithm(Delegate delegate) {
+		mAlgorithms.add(delegate);
+	}
+
 	public Rect algorithmRect() {
 		if (mAlgorithmRect == null) {
 			DisplayMetrics m = MyActivity.displayMetrics();
@@ -554,11 +558,23 @@ public class AlgorithmStepper {
 		private ArrayList<AlgorithmDisplayElement> mElements = new ArrayList();
 	}
 
+	/**
+	 * Called by activity's onResume(). Process the algorithms added during
+	 * onCreate()
+	 */
+	void resume() {
+		if (mAlgorithms.isEmpty())
+			die("no algorithms specified");
+		setDelegate(mAlgorithms.get(0));
+		warning("ignoring extra algorithms");
+	}
+
 	// The singleton instance of this class
 	private static AlgorithmStepper sStepper;
 	private static Object sSynchronizationLock = new Object();
 	private static AlgorithmOptions sOptions;
 
+	private ArrayList<AlgorithmStepper.Delegate> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();
 	private String mFrameTitle;

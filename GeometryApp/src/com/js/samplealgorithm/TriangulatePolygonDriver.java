@@ -12,6 +12,11 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 public class TriangulatePolygonDriver implements Algorithm {
 
 	@Override
+	public String getAlgorithmName() {
+		return "Triangulate Polygon";
+	}
+
+	@Override
 	public void run() {
 		prepareInput();
 

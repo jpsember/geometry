@@ -8,7 +8,6 @@ import java.util.Map;
 import android.content.Context;
 import android.os.Handler;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
@@ -27,6 +26,8 @@ public class AlgorithmOptions {
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
 
+	private static final boolean DIAGNOSE_PERSISTENCE = false;
+
 	static AlgorithmOptions construct(Context context) {
 		sAlgorithmOptions = new AlgorithmOptions(context);
 		return sharedInstance();
@@ -41,21 +42,16 @@ public class AlgorithmOptions {
 	void prepareViews(ViewGroup containingView) {
 		mContainingView = containingView;
 
-		// Construct primary and secondary views within this one
 		mPrimaryWidgetGroup = new WidgetGroup(constructSubView());
-		mSecondaryWidgetGroup = new WidgetGroup(constructSubView());
-
 		addPrimaryWidgets();
-
 		mContainingView.addView(mPrimaryWidgetGroup.view());
-		mContainingView.addView(mSecondaryWidgetGroup.view());
-
-		selectWidgetGroup(mSecondaryWidgetGroup);
 	}
 
 	private void addPrimaryWidgets() {
-		selectWidgetGroup(mPrimaryWidgetGroup);
+		// tell addWidget() to add widgets to the primary group
+		mAddingPrimaryWidgets = true;
 		addButton("_testprimary_");
+		mAddingPrimaryWidgets = false;
 	}
 
 	/**
@@ -171,68 +167,126 @@ public class AlgorithmOptions {
 		if (w.boolAttr(AbstractWidget.OPTION_DETACHED, false))
 			return;
 
-		if (mWidgetGroup == null)
+		WidgetGroup destination;
+		if (mAddingPrimaryWidgets) {
+			destination = mPrimaryWidgetGroup;
+		} else {
+			destination = mSecondaryWidgetGroup;
+		}
+		if (destination == null)
 			die("no widget group selected");
 
-		mWidgetGroup.add(w);
+		destination.add(w);
+	}
+
+	private AlgorithmRecord findAlgorithm(String name) {
+		for (AlgorithmRecord rec : mAlgorithms) {
+			if (rec.delegate().getAlgorithmName().equals(name))
+				return rec;
+		}
+		return null;
 	}
 
 	/**
 	 * Compile widget values to JSON string
 	 */
 	private String saveValues() {
+		Map<String, Map> groupValues = new HashMap();
+		groupValues.put(PRIMARY_GROUP_KEY,
+				getWidgetValueMap(mPrimaryWidgetGroup));
+
+		for (AlgorithmRecord a : mAlgorithms) {
+			groupValues.put(a.delegate().getAlgorithmName(),
+					getWidgetValueMap(a.widgets()));
+		}
+		return JSONEncoder.toJSON(groupValues);
+	}
+
+	private Map getWidgetValueMap(WidgetGroup group) {
 		Map<String, String> values = new HashMap();
-		for (String widgetId : mWidgetsMap.keySet()) {
-			AbstractWidget w = mWidgetsMap.get(widgetId);
+		for (AbstractWidget w : group.widgets()) {
 			if (!w.boolAttr("hasvalue", true))
 				continue;
-			values.put(widgetId, w.getValue());
+			values.put(w.getId(), w.getValue());
 		}
-		return JSONEncoder.toJSON(values);
+		return values;
 	}
 
-	/**
-	 * Determine if tracing for a particular detail is enabled
-	 * 
-	 * @param detailName
-	 *            name of detail
-	 * @return value of checkbox with id = detailName
-	 */
-	boolean detailTraceActive(String detailName) {
-		AbstractWidget widget = mWidgetsMap.get(detailName);
-		if (widget == null) {
-			warning("no detail widget found: " + detailName);
-			return true;
-		}
-		return widget.getBooleanValue();
-	}
+	private static final String PRIMARY_GROUP_KEY = "_primarygroup_";
 
 	void restoreStepperState() {
-		String mCurrentWidgetValuesScript = AppPreferences.getString(
-				PERSIST_KEY_WIDGET_VALUES, null);
-		if (mCurrentWidgetValuesScript != null) {
-			JSONParser parser = new JSONParser(mCurrentWidgetValuesScript);
-			Map<String, String> values = (Map) parser.next();
-			for (String key : values.keySet()) {
-				String value = values.get(key);
-				AbstractWidget w = mWidgetsMap.get(key);
-				if (w == null)
-					continue;
-				// TODO: catch exceptions that may get thrown here
-				w.setValue(value);
+		final boolean db = DIAGNOSE_PERSISTENCE;
+
+		String script = AppPreferences.getString(PERSIST_KEY_WIDGET_VALUES,
+				null);
+		if (db)
+			pr("\nRestoring JSON:\n" + script + "\n");
+
+		if (script != null) {
+			JSONParser parser = new JSONParser(script);
+			Map<String, Map> values = (Map) parser.next();
+			for (String algName : values.keySet()) {
+				if (algName.equals(PRIMARY_GROUP_KEY)) {
+					selectWidgetGroup(mPrimaryWidgetGroup);
+				} else {
+					AlgorithmRecord rec = findAlgorithm(algName);
+					if (rec == null) {
+						warning("can't find algorithm '" + algName + "'");
+						continue;
+					}
+					selectWidgetGroup(rec.widgets());
+				}
+				Map<String, String> widgetValues = values.get(algName);
+				for (String key : widgetValues.keySet()) {
+					String value = widgetValues.get(key);
+					// ..remove widgets from global map whenever we select a
+					// widget group?
+					AbstractWidget w = mWidgetsMap.get(key);
+					if (w == null) {
+						warning("can't find widget named '" + key + "'");
+						continue;
+					}
+					// TODO: catch exceptions that may get thrown here
+					w.setValue(value);
+				}
 			}
 		}
+		selectWidgetGroup(null);
 		mPrepared = true;
+
+		selectAlgorithm(mAlgorithms.get(0).delegate().getAlgorithmName());
+	}
+
+	private void selectAlgorithm(String name) {
+		AlgorithmRecord ar = findAlgorithm(name);
+		ASSERT(ar != null);
+		selectWidgetGroup(ar.widgets());
+		if (mPlottedSecondaryGroup != ar.widgets()) {
+			if (mPlottedSecondaryGroup != null)
+				mContainingView.removeView(mPlottedSecondaryGroup.view());
+			mPlottedSecondaryGroup = ar.widgets();
+			mContainingView.addView(mPlottedSecondaryGroup.view());
+		}
 	}
 
 	private void persistStepperStateAux() {
+		final boolean db = DIAGNOSE_PERSISTENCE;
 		if (!mFlushRequired)
 			return;
 
+		// At present, it only saves widgets that appear in a WidgetGroup. This
+		// omits the target step slider, but that's probably ok, because we'll
+		// use other methods to persist its value (probably by having dedicated
+		// hidden controls for each AlgorithmRecord)
 		String newWidgetValuesScript = null;
 		synchronized (AlgorithmStepper.getLock()) {
 			newWidgetValuesScript = saveValues();
 		}
+		if (db) {
+			pr("\nSaving JSON:\n" + newWidgetValuesScript + "\n"
+					+ "Widget map:\n" + d(mWidgetsMap) + "\n");
+		}
+
 		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
 				newWidgetValuesScript);
 
@@ -270,6 +324,22 @@ public class AlgorithmOptions {
 			}
 		};
 		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
+	}
+
+	/**
+	 * Determine if tracing for a particular detail is enabled
+	 * 
+	 * @param detailName
+	 *            name of detail
+	 * @return value of checkbox with id = detailName
+	 */
+	boolean detailTraceActive(String detailName) {
+		AbstractWidget widget = mWidgetsMap.get(detailName);
+		if (widget == null) {
+			warning("no detail widget found: " + detailName);
+			return true;
+		}
+		return widget.getBooleanValue();
 	}
 
 	/**
@@ -313,33 +383,50 @@ public class AlgorithmOptions {
 		return view;
 	}
 
+	/**
+	 * Select the active secondary widget group. Any old auxilliary widget
+	 * group's widgets are removed from the map, and the new one's are added.
+	 * This means only one secondary group's widgets are accessible to the
+	 * options at a time, and allows the same name to be used for different
+	 * widgets (as long as they are in different secondary groups).
+	 * 
+	 * @param group
+	 *            secondary group, or null
+	 */
 	void selectWidgetGroup(WidgetGroup group) {
-		mWidgetGroup = group;
+		warning("what about installing / removing this view from the container?");
+		if (group == mSecondaryWidgetGroup)
+			return;
+		if (mSecondaryWidgetGroup != null) {
+			// Remove old secondary widgets from master map
+			for (AbstractWidget w : mSecondaryWidgetGroup.widgets()) {
+				mWidgetsMap.remove(w.getId());
+			}
+			mSecondaryWidgetGroup = null;
+		}
+		mSecondaryWidgetGroup = group;
+		if (group != null) {
+			// Remove old secondary widgets from master map
+			for (AbstractWidget w : group.widgets()) {
+				mWidgetsMap.put(w.getId(), w);
+			}
+		}
 	}
 
-	private static class WidgetGroup {
-		public WidgetGroup(ViewGroup view) {
-			mView = view;
-			mWidgets = new ArrayList();
+	void resume(ArrayList<Algorithm> algorithms) {
+		// Create a WidgetGroup for each algorithm
+		mAlgorithms = new ArrayList();
+		for (Algorithm a : algorithms) {
+			pr("Options.resume, alg " + a.getAlgorithmName());
+			AlgorithmRecord arec = new AlgorithmRecord();
+			arec.setDelegate(a);
+			WidgetGroup g = new WidgetGroup(constructSubView());
+			arec.setWidgetGroup(g);
+			selectWidgetGroup(g);
+			a.prepareOptions();
+			mAlgorithms.add(arec);
 		}
-
-		public ViewGroup view() {
-			return mView;
-		}
-
-		public ArrayList<AbstractWidget> widgets() {
-			return mWidgets;
-		}
-
-		public void add(AbstractWidget widget) {
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			mView.addView(widget.getView(), p);
-			mWidgets.add(widget);
-		}
-
-		private ViewGroup mView;
-		private ArrayList<AbstractWidget> mWidgets;
+		selectWidgetGroup(null);
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;
@@ -348,8 +435,12 @@ public class AlgorithmOptions {
 	private boolean mPrepared;
 	private Context sContext;
 	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
-	private WidgetGroup mPrimaryWidgetGroup, mSecondaryWidgetGroup;
-	private WidgetGroup mWidgetGroup;
+	private WidgetGroup mPrimaryWidgetGroup;
+	private WidgetGroup mSecondaryWidgetGroup;
+	// Which widget group's views, if any, are visible
+	private WidgetGroup mPlottedSecondaryGroup;
+	private ArrayList<AlgorithmRecord> mAlgorithms;
+	private boolean mAddingPrimaryWidgets;
 
 	private boolean mFlushRequired;
 	// The single valid pending flush operation, or null

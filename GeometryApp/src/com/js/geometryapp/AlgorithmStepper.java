@@ -501,10 +501,7 @@ public class AlgorithmStepper {
 	}
 
 	private void prepareOptionsAux() {
-		sOptions = AlgorithmOptions.sharedInstance();
-
 		addStepperViewListeners();
-		mDelegate.prepareOptions();
 
 		sOptions.restoreStepperState();
 
@@ -557,10 +554,16 @@ public class AlgorithmStepper {
 	 * onCreate()
 	 */
 	void resume() {
+		sOptions = AlgorithmOptions.sharedInstance();
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
+		sOptions.resume(mAlgorithms);
 		setDelegate(mAlgorithms.get(0));
 		warning("ignoring extra algorithms");
+	}
+
+	ArrayList<Algorithm> algorithms() {
+		return mAlgorithms;
 	}
 
 	// The singleton instance of this class

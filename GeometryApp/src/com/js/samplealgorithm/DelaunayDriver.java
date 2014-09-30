@@ -25,6 +25,11 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	@Override
+	public String getAlgorithmName() {
+		return "Delaunay Triangulation";
+	}
+
+	@Override
 	public void run() {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);

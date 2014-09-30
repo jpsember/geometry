@@ -24,6 +24,11 @@ public class StarshapedDriver implements Algorithm {
 	}
 
 	@Override
+	public String getAlgorithmName() {
+		return "Triangulate Star-shaped Polygon";
+	}
+
+	@Override
 	public void run() {
 		try {
 			mContext = new Mesh();

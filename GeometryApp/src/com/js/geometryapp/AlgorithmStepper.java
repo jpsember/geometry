@@ -292,8 +292,6 @@ public class AlgorithmStepper {
 	 */
 	void setDelegate(Algorithm delegate) {
 		mDelegate = delegate;
-		// Now that views have been built, restore option values
-		prepareOptionsAux();
 	}
 
 	/**
@@ -475,6 +473,7 @@ public class AlgorithmStepper {
 		mActiveStack.clear();
 	}
 
+	// TODO: this could be moved to AlgorithmOptions
 	private void addStepperViewListeners() {
 
 		final String[] ids = { WIDGET_ID_JUMP_BWD, WIDGET_ID_JUMP_FWD,
@@ -502,8 +501,6 @@ public class AlgorithmStepper {
 
 	private void prepareOptionsAux() {
 		addStepperViewListeners();
-
-		sOptions.restoreStepperState();
 
 		// Bound the target step to the total step slider's value. We must do
 		// this explicitly here, because
@@ -558,8 +555,8 @@ public class AlgorithmStepper {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		sOptions.resume(mAlgorithms);
-		setDelegate(mAlgorithms.get(0));
-		warning("ignoring extra algorithms");
+		// Now that views have been built, restore option values
+		prepareOptionsAux();
 	}
 
 	ArrayList<Algorithm> algorithms() {

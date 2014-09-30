@@ -67,7 +67,7 @@ public abstract class AbstractWidget {
 
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
-	public static final boolean SET_DEBUG_COLORS = true;
+	public static final boolean SET_DEBUG_COLORS = false;
 
 	@Override
 	public String toString() {

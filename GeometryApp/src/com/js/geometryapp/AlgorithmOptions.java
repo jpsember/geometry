@@ -43,14 +43,27 @@ public class AlgorithmOptions {
 		mContainingView = containingView;
 
 		mPrimaryWidgetGroup = new WidgetGroup(constructSubView());
-		addPrimaryWidgets();
 		mContainingView.addView(mPrimaryWidgetGroup.view());
 	}
 
 	private void addPrimaryWidgets() {
 		// tell addWidget() to add widgets to the primary group
 		mAddingPrimaryWidgets = true;
-		addButton("_testprimary_");
+		if (mAlgorithms.size() == 1) {
+			unimp("add a label for the single algorithm");
+		} else {
+			ComboBoxWidget w = addComboBox("Algorithm");
+			for (AlgorithmRecord r : mAlgorithms)
+				w.addItem(r.delegate().getAlgorithmName());
+			w.prepare();
+			w.addListener(new Listener() {
+				@Override
+				public void valueChanged(AbstractWidget widget) {
+					int index = widget.getIntValue();
+					selectAlgorithm(mAlgorithms.get(index));
+				}
+			});
+		}
 		mAddingPrimaryWidgets = false;
 	}
 
@@ -143,6 +156,7 @@ public class AlgorithmOptions {
 	 */
 	private AlgorithmOptions(Context context) {
 		sContext = context;
+		mStepper = AlgorithmStepper.sharedInstance();
 	}
 
 	private static Map<String, Object> buildAttributes(String identifier,
@@ -214,7 +228,8 @@ public class AlgorithmOptions {
 
 	private static final String PRIMARY_GROUP_KEY = "_primarygroup_";
 
-	void restoreStepperState() {
+	private void restoreStepperState() {
+
 		final boolean db = DIAGNOSE_PERSISTENCE;
 
 		String script = AppPreferences.getString(PERSIST_KEY_WIDGET_VALUES,
@@ -254,12 +269,10 @@ public class AlgorithmOptions {
 		selectWidgetGroup(null);
 		mPrepared = true;
 
-		selectAlgorithm(mAlgorithms.get(0).delegate().getAlgorithmName());
+		selectAlgorithm(mAlgorithms.get(0));
 	}
 
-	private void selectAlgorithm(String name) {
-		AlgorithmRecord ar = findAlgorithm(name);
-		ASSERT(ar != null);
+	private void selectAlgorithm(AlgorithmRecord ar) {
 		selectWidgetGroup(ar.widgets());
 		if (mPlottedSecondaryGroup != ar.widgets()) {
 			if (mPlottedSecondaryGroup != null)
@@ -267,6 +280,7 @@ public class AlgorithmOptions {
 			mPlottedSecondaryGroup = ar.widgets();
 			mContainingView.addView(mPlottedSecondaryGroup.view());
 		}
+		mStepper.setDelegate(ar.delegate());
 	}
 
 	private void persistStepperStateAux() {
@@ -364,7 +378,7 @@ public class AlgorithmOptions {
 			// Unless the 'refresh' option exists and is false,
 			// trigger a refresh of the algorithm view.
 			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
-				AlgorithmStepper.sharedInstance().refresh();
+				mStepper.refresh();
 			}
 		}
 		persistStepperState(true);
@@ -427,10 +441,15 @@ public class AlgorithmOptions {
 			mAlgorithms.add(arec);
 		}
 		selectWidgetGroup(null);
+
+		addPrimaryWidgets();
+
+		restoreStepperState();
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;
 
+	private AlgorithmStepper mStepper;
 	private ViewGroup mContainingView;
 	private boolean mPrepared;
 	private Context sContext;

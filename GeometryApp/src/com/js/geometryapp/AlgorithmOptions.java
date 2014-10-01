@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
-import android.os.Handler;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
+import com.js.android.QuiescentDelayOperation;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
@@ -27,6 +27,13 @@ public class AlgorithmOptions {
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
+
+	// Algorithm-specific versions of the target & total steps
+	private static final String WIDGET_ID_TOTALSTEPS_AUX = "_"
+			+ WIDGET_ID_TOTALSTEPS;
+	private static final String WIDGET_ID_TARGETSTEP_AUX = "_"
+			+ WIDGET_ID_TARGETSTEP;
+
 	private static final String WIDGET_ID_ALGORITHM = "_algorithm_";
 
 	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
@@ -295,8 +302,8 @@ public class AlgorithmOptions {
 	 */
 	private void saveStepsInformation() {
 		if (mActiveAlgorithm != null) {
-			setValue("_" + WIDGET_ID_TOTALSTEPS, readTotalSteps());
-			setValue("_" + WIDGET_ID_TARGETSTEP, readTargetStep());
+			setValue(WIDGET_ID_TOTALSTEPS_AUX, readTotalSteps());
+			setValue(WIDGET_ID_TARGETSTEP_AUX, readTargetStep());
 		}
 	}
 
@@ -314,8 +321,8 @@ public class AlgorithmOptions {
 		mContainingView.addView(mActiveAlgorithm.widgets().view());
 
 		// Copy total, target steps from algorithm-specific versions
-		setTotalSteps(getIntValue("_" + WIDGET_ID_TOTALSTEPS));
-		setTargetStep(getIntValue("_" + WIDGET_ID_TARGETSTEP));
+		setTotalSteps(getIntValue(WIDGET_ID_TOTALSTEPS_AUX));
+		setTargetStep(getIntValue(WIDGET_ID_TARGETSTEP_AUX));
 
 		mPrepared = true;
 
@@ -335,8 +342,11 @@ public class AlgorithmOptions {
 		// At present, it only saves widgets that appear in a WidgetGroup. This
 		// omits the target step slider, but that's ok, because we have hidden
 		// algorithm-specific versions that serve this purpose.
-		// But we must make sure those versions are up to date:
+		// But we must now make sure those versions are up to date.
+		// Disable recursive flush attempts while updating these (issue #82):
+		mPrepared = false;
 		saveStepsInformation();
+		mPrepared = true;
 
 		String newWidgetValuesScript = null;
 		synchronized (mStepper.getLock()) {
@@ -354,36 +364,32 @@ public class AlgorithmOptions {
 	}
 
 	void persistStepperState(boolean withDelay) {
+		pr("persistStepperState withDelay=" + withDelay + " mIgnorePending="
+				+ mIgnorePending);
+		if (mIgnorePending)
+			return;
 		mFlushRequired = true;
 		if (!withDelay) {
 			persistStepperStateAux();
 			return;
 		}
 
-		// Make a delayed call to persist the values (on the UI thread)
-
 		final long FLUSH_DELAY = 5000;
 
-		// If there's already an active handler, don't replace it if it's far
-		// enough in the future
-		long currentTime = System.currentTimeMillis();
-		if (mActiveFlushOperation != null
-				&& mActiveFlushTime >= currentTime + FLUSH_DELAY / 2) {
-			return;
-		}
+		pr("persistStepperState");
+		sleepFor(100);
 
-		mActiveFlushTime = currentTime + FLUSH_DELAY;
-		Handler h = new Handler();
-		mActiveFlushOperation = new Runnable() {
-			@Override
-			public void run() {
-				if (this != mActiveFlushOperation) {
-					return;
-				}
-				persistStepperStateAux();
-			}
-		};
-		h.postDelayed(mActiveFlushOperation, FLUSH_DELAY);
+		// Make a delayed call to persist the values (on the UI thread)
+		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
+			mPendingFlushOperation = new QuiescentDelayOperation(FLUSH_DELAY,
+					new Runnable() {
+						@Override
+						public void run() {
+							pr("   ----------------- persist stepper state aux");
+							persistStepperStateAux();
+						}
+					});
+		}
 	}
 
 	/**
@@ -488,9 +494,9 @@ public class AlgorithmOptions {
 			// Add hidden values to represent total, target steps; these will be
 			// copied to/from the main slider as the algorithm becomes
 			// active/inactive
-			addSlider("_" + WIDGET_ID_TARGETSTEP, AbstractWidget.OPTION_HIDDEN,
+			addSlider(WIDGET_ID_TARGETSTEP_AUX, AbstractWidget.OPTION_HIDDEN,
 					true);
-			addSlider("_" + WIDGET_ID_TOTALSTEPS, AbstractWidget.OPTION_HIDDEN,
+			addSlider(WIDGET_ID_TOTALSTEPS_AUX, AbstractWidget.OPTION_HIDDEN,
 					true);
 
 			algorithm.prepareOptions(this);
@@ -549,10 +555,9 @@ public class AlgorithmOptions {
 	private AlgorithmRecord mSecondaryWidgetGroup;
 
 	private boolean mFlushRequired;
+	private boolean mIgnorePending;
 	// The single valid pending flush operation, or null
-	private Runnable mActiveFlushOperation;
-	// Approximate time pending flush will occur at
-	private long mActiveFlushTime;
+	private QuiescentDelayOperation mPendingFlushOperation;
 
 	// For generating unique text ids
 	private int mPreviousTextIndex;

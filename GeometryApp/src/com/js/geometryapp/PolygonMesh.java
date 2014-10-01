@@ -275,7 +275,7 @@ public class PolygonMesh {
 	 */
 	private Point peekLastPoint(int distanceFromEnd) {
 		int position = mFloatArray.size() - distanceFromEnd * VERTEX_COMPONENTS;
-		float[] array = mFloatArray.array();
+		float[] array = mFloatArray.array(false);
 		return new Point(array[position], array[position + 1]);
 	}
 

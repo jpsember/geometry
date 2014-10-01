@@ -67,7 +67,7 @@ public class Polyline {
 			mBuffer = ByteBuffer
 					.allocateDirect(mArray.size() * OurGLTools.BYTES_PER_FLOAT)
 					.order(ByteOrder.nativeOrder()).asFloatBuffer();
-			mBuffer.put(mArray.array(), 0, mArray.size());
+			mBuffer.put(mArray.array(false), 0, mArray.size());
 		}
 		return mBuffer;
 	}

@@ -28,8 +28,10 @@ public class FloatArray {
 	 * Get array containing this FloatArray's values. Note: the array returned
 	 * may contain more elements than are in the FloatArray
 	 */
-	public float[] array() {
-		return mArray;
+	public float[] array(boolean trimToSize) {
+		if (!trimToSize || mArray.length == mSize)
+			return mArray;
+		return Arrays.copyOf(mArray, mSize);
 	}
 
 	private void growTo(int required) {

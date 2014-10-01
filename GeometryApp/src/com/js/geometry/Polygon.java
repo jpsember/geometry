@@ -127,7 +127,8 @@ public class Polygon {
 			poly = dragonPolygon(index - TESTPOLY_DRAGON_X);
 		} else if (index >= TESTPOLY_STARSHAPED_X
 				&& index < TESTPOLY_STARSHAPED_X + 1000) {
-			poly = starshapedPolygon(index - TESTPOLY_STARSHAPED_X);
+			poly = starshapedPolygon((index - TESTPOLY_STARSHAPED_X + 2),
+					new Random(5));
 		} else if (index == TESTPOLY_QUADRATIC_FILTER) {
 			poly = polygon();
 			int nv = 400;
@@ -192,27 +193,39 @@ public class Polygon {
 		return polygon;
 	}
 
-	private static Polygon starshapedPolygon(int size) {
-		ArrayList<Float> radii = new ArrayList();
-		Random random = new Random(5);
-		int nPoints = size + 3;
-		for (int i = 0; i < nPoints; i++) {
-			float t = random.nextFloat();
-			t = 1 - t * t;
-			float radius = (t * .8f + .2f);
-			radii.add(radius);
-		}
-		Rect bounds = new Rect(0, 0, 500, 500);
+	/**
+	 * Build a star-shaped polygon
+	 * 
+	 * @param bounds
+	 *            bounding rectangle; the polygon will fit in a disc centered
+	 *            within this rectangle
+	 * @param radii
+	 *            distance of vertices from center, where 0 is at the center,
+	 *            and 1 is on the disc boundary
+	 */
+	public static Polygon starshapedPolygon(Rect bounds, float[] radii) {
 		float radius = bounds.minDim() * .5f;
 		Polygon polygon = new Polygon();
 		Point mid = bounds.midPoint();
-		for (int i = 0; i < nPoints; i++) {
-			float rayLength = radius * radii.get(i);
-			float angle = (2 * PI * i) / nPoints;
+		for (int i = 0; i < radii.length; i++) {
+			float rayLength = radius * radii[i];
+			float angle = (2 * PI * i) / radii.length;
 			Point q = pointOnCircle(mid, angle, rayLength);
 			polygon.add(q);
 		}
 		return polygon;
+	}
+
+	public static Polygon starshapedPolygon(int nPoints, Random random) {
+		float[] radii = new float[nPoints];
+		for (int i = 0; i < nPoints; i++) {
+			float t = random.nextFloat();
+			t = 1 - t * t;
+			float radius = (t * .8f + .2f);
+			radii[i] = radius;
+		}
+		Rect bounds = new Rect(0, 0, 500, 500);
+		return starshapedPolygon(bounds, radii);
 	}
 
 	private static Polygon dragonPolygon(int depth) {

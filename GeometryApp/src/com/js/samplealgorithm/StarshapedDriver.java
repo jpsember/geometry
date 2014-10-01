@@ -13,8 +13,6 @@ import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.FloatArray;
 
-import static com.js.geometry.MyMath.*;
-
 import static com.js.basic.Tools.*;
 
 public class StarshapedDriver implements Algorithm {
@@ -57,19 +55,9 @@ public class StarshapedDriver implements Algorithm {
 		sOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
 	}
 
-	private Polygon buildStarPolygonFromRadii(FloatArray radii, int startIndex) {
+	private Polygon buildStarPolygonFromRadii(FloatArray radii) {
 		Rect r = mStepper.algorithmRect();
-		float radius = r.minDim() * .5f;
-		Polygon p = new Polygon();
-
-		int nPoints = radii.size();
-		for (int i = 0; i < nPoints; i++) {
-			float rayLength = radius * radii.get((i + startIndex) % nPoints);
-			float angle = (2 * PI * i) / nPoints;
-			Point q = pointOnCircle(mKernelPoint, angle, rayLength);
-			p.add(q);
-		}
-		return p;
+		return Polygon.starshapedPolygon(r, radii.array(true));
 	}
 
 	private Polygon buildExperimentalPolygon(int nPoints) {
@@ -100,11 +88,19 @@ public class StarshapedDriver implements Algorithm {
 		{
 			FloatArray b = new FloatArray();
 			for (int i = 0; i < nSpikes; i++)
-				b.add(a.array(), 0, a.size());
+				b.add(a.array(false), 0, a.size());
 			a = b;
 		}
 
-		return buildStarPolygonFromRadii(a, arcPoints / 2);
+		// Shift floats forward
+		{
+			FloatArray b = new FloatArray();
+			for (int i = 0; i < a.size(); i++)
+				b.add(a.get((i + (arcPoints / 2)) % a.size()));
+			a = b;
+		}
+
+		return buildStarPolygonFromRadii(a);
 	}
 
 	private Polygon buildRandomPolygon(int nPoints) {
@@ -115,7 +111,7 @@ public class StarshapedDriver implements Algorithm {
 			float radius = (t * .8f + .2f);
 			radii.add(radius);
 		}
-		return buildStarPolygonFromRadii(radii, 0);
+		return buildStarPolygonFromRadii(radii);
 	}
 
 	private int buildStarshapedPolygon() {

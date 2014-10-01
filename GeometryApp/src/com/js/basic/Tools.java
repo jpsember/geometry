@@ -79,7 +79,7 @@ public final class Tools {
 	 * @return String
 	 */
 	public static String stackTrace(Throwable t) {
-		return stackTrace(1, 10, t);
+		return stackTrace(0, 10, t);
 	}
 
 	/**

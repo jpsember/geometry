@@ -25,8 +25,11 @@ public class FloatArray {
 	}
 
 	/**
-	 * Get array containing this FloatArray's values. Note: the array returned
-	 * may contain more elements than are in the FloatArray
+	 * Get the array containing this FloatArray's values
+	 * 
+	 * @param trimToSize
+	 *            if false, the returned array may have extra padding; if true,
+	 *            it will not, but may be a copy of the original
 	 */
 	public float[] array(boolean trimToSize) {
 		if (!trimToSize || mArray.length == mSize)

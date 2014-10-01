@@ -127,8 +127,8 @@ public class Polygon {
 			poly = dragonPolygon(index - TESTPOLY_DRAGON_X);
 		} else if (index >= TESTPOLY_STARSHAPED_X
 				&& index < TESTPOLY_STARSHAPED_X + 1000) {
-			poly = starshapedPolygon((index - TESTPOLY_STARSHAPED_X + 2),
-					new Random(5));
+			poly = starshapedPolygon(new Rect(0, 0, 500, 500), index
+					- TESTPOLY_STARSHAPED_X + 2, new Random(5));
 		} else if (index == TESTPOLY_QUADRATIC_FILTER) {
 			poly = polygon();
 			int nv = 400;
@@ -216,7 +216,8 @@ public class Polygon {
 		return polygon;
 	}
 
-	public static Polygon starshapedPolygon(int nPoints, Random random) {
+	public static Polygon starshapedPolygon(Rect bounds, int nPoints,
+			Random random) {
 		float[] radii = new float[nPoints];
 		for (int i = 0; i < nPoints; i++) {
 			float t = random.nextFloat();
@@ -224,7 +225,6 @@ public class Polygon {
 			float radius = (t * .8f + .2f);
 			radii[i] = radius;
 		}
-		Rect bounds = new Rect(0, 0, 500, 500);
 		return starshapedPolygon(bounds, radii);
 	}
 

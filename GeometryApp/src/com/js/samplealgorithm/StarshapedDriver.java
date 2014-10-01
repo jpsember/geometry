@@ -32,7 +32,7 @@ public class StarshapedDriver implements Algorithm {
 			mContext = new Mesh();
 			mRandom = new Random(sOptions.getIntValue("Seed"));
 
-			int baseVertex = buildStarshapedPolygon();
+			int baseVertex = buildPolygon();
 			Edge edge = mContext.polygonEdgeFromVertex(mContext
 					.vertex(baseVertex));
 			StarshapedHoleTriangulator t = StarshapedHoleTriangulator
@@ -53,11 +53,6 @@ public class StarshapedDriver implements Algorithm {
 		sOptions.addCheckBox("experiment");
 		sOptions.addSlider("spikes", "min", 2, "max", 50);
 		sOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
-	}
-
-	private Polygon buildStarPolygonFromRadii(FloatArray radii) {
-		Rect r = mStepper.algorithmRect();
-		return Polygon.starshapedPolygon(r, radii.array(true));
 	}
 
 	private Polygon buildExperimentalPolygon(int nPoints) {
@@ -99,22 +94,11 @@ public class StarshapedDriver implements Algorithm {
 				b.add(a.get((i + (arcPoints / 2)) % a.size()));
 			a = b;
 		}
-
-		return buildStarPolygonFromRadii(a);
+		Rect r = mStepper.algorithmRect();
+		return Polygon.starshapedPolygon(r, a.array(true));
 	}
 
-	private Polygon buildRandomPolygon(int nPoints) {
-		FloatArray radii = new FloatArray();
-		for (int i = 0; i < nPoints; i++) {
-			float t = mRandom.nextFloat();
-			t = 1 - t * t;
-			float radius = (t * .8f + .2f);
-			radii.add(radius);
-		}
-		return buildStarPolygonFromRadii(radii);
-	}
-
-	private int buildStarshapedPolygon() {
+	private int buildPolygon() {
 		int nPoints = sOptions.getIntValue("Points");
 		mKernelPoint = mStepper.algorithmRect().midPoint();
 		Polygon p;
@@ -122,7 +106,8 @@ public class StarshapedDriver implements Algorithm {
 		if (sOptions.getBooleanValue("experiment")) {
 			p = buildExperimentalPolygon(nPoints);
 		} else {
-			p = buildRandomPolygon(nPoints);
+			p = Polygon.starshapedPolygon(mStepper.algorithmRect(), nPoints,
+					mRandom);
 		}
 		int baseVertex = p.embed(mContext);
 		return baseVertex;

@@ -20,15 +20,14 @@ public class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected void onPause() {
-		AlgorithmOptions options = AlgorithmOptions.sharedInstance();
-		options.persistStepperState(false);
+		mOptions.persistStepperState(false);
 		super.onPause();
 	}
 
 	@Override
 	protected View buildContentView() {
-		AlgorithmOptions options = AlgorithmOptions.construct(this,
-				getStepper());
+		mOptions = new AlgorithmOptions(this, getStepper());
+		getStepper().setOptions(mOptions);
 
 		// Have superclass construct the OpenGL view
 		View glView = super.buildContentView();
@@ -45,10 +44,10 @@ public class GeometryStepperActivity extends GeometryActivity {
 			mainView.addView(glView, p);
 		}
 		// Add the stepper control panel to this container
-		mainView.addView(getStepper().controllerView(this));
+		mainView.addView(getStepper().controllerView());
 		// Make the container the main view of a TwinViewContainer
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
-		options.prepareViews(twinViews.getAuxilliaryView());
+		mOptions.prepareViews(twinViews.getAuxilliaryView());
 		return twinViews.getContainer();
 	}
 
@@ -75,4 +74,5 @@ public class GeometryStepperActivity extends GeometryActivity {
 	}
 
 	private AlgorithmStepper mStepper;
+	private AlgorithmOptions mOptions;
 }

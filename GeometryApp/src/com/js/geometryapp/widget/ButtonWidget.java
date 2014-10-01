@@ -2,7 +2,8 @@ package com.js.geometryapp.widget;
 
 import java.util.Map;
 
-import android.content.Context;
+import com.js.geometryapp.AlgorithmOptions;
+
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
@@ -10,11 +11,11 @@ import android.widget.LinearLayout;
 
 public class ButtonWidget extends AbstractWidget {
 
-	public ButtonWidget(Context context, Map attributes) {
-		super(context, attributes);
+	public ButtonWidget(AlgorithmOptions options, Map attributes) {
+		super(options, attributes);
 		attributes.put("hasvalue", false);
 
-		mButton = new Button(context);
+		mButton = new Button(options.getContext());
 		mButton.setText(getLabel(false));
 		mButton.setOnClickListener(new Button.OnClickListener() {
 			@Override

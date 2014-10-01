@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -94,7 +93,7 @@ public class AlgorithmStepper {
 	public void pushActive(String widgetId) {
 		boolean value = mActive;
 		if (value)
-			value = sOptions.getBooleanValue(widgetId);
+			value = mOptions.getBooleanValue(widgetId);
 		pushActive(value);
 	}
 
@@ -287,7 +286,7 @@ public class AlgorithmStepper {
 	 * possible) and displays that frame.
 	 */
 	public void refresh() {
-		synchronized (AlgorithmStepper.getLock()) {
+		synchronized (getLock()) {
 			performAlgorithm();
 			mglSurfaceView.requestRender();
 		}
@@ -296,8 +295,8 @@ public class AlgorithmStepper {
 	/**
 	 * Construct stepper controller view
 	 */
-	View controllerView(Context context) {
-		return AlgorithmStepperPanel.build(context);
+	View controllerView() {
+		return AlgorithmStepperPanel.build(mOptions);
 	}
 
 	/**
@@ -336,13 +335,13 @@ public class AlgorithmStepper {
 
 	private void performAlgorithm() {
 
-		synchronized (AlgorithmStepper.getLock()) {
+		synchronized (getLock()) {
 			try {
 				initializeActiveState(true);
 
 				// Cache values from widgets to our temporary registers
-				mTargetStep = sOptions.readTargetStep();
-				mTotalSteps = sOptions.readTotalSteps();
+				mTargetStep = mOptions.readTargetStep();
+				mTotalSteps = mOptions.readTotalSteps();
 
 				mCurrentStep = 0;
 
@@ -358,7 +357,7 @@ public class AlgorithmStepper {
 
 				mCompleted = false;
 				try {
-					sOptions.runActiveAlgorithm();
+					mOptions.runActiveAlgorithm();
 
 					// We completed the algorithm without halting.
 
@@ -411,14 +410,14 @@ public class AlgorithmStepper {
 			}
 
 			// Write cached values back to widgets
-			sOptions.setTotalSteps(mTotalSteps);
-			sOptions.setTargetStep(mTargetStep);
+			mOptions.setTotalSteps(mTotalSteps);
+			mOptions.setTargetStep(mTargetStep);
 		}
 	}
 
 	private void adjustTargetMilestone(int delta) {
 		int seekStep = -1;
-		int targetStep = sOptions.readTargetStep();
+		int targetStep = mOptions.readTargetStep();
 		if (delta < 0) {
 			for (int k : mMilestones) {
 				if (k < targetStep)
@@ -428,7 +427,7 @@ public class AlgorithmStepper {
 			// Act as if we're just stepping forward by one, but set a special
 			// flag which indicates we want to continue stepping forward until
 			// we reach a milestone
-			int totalSteps = sOptions.readTotalSteps();
+			int totalSteps = mOptions.readTotalSteps();
 			seekStep = Math.min(totalSteps, targetStep + 1);
 			// We must be careful to only set the 'jump to next' flag if we're
 			// actually going to perform any stepping, otherwise it won't get
@@ -439,7 +438,7 @@ public class AlgorithmStepper {
 			}
 		}
 		if (seekStep >= 0) {
-			sOptions.setTargetStep(seekStep);
+			mOptions.setTargetStep(seekStep);
 		}
 	}
 
@@ -470,27 +469,27 @@ public class AlgorithmStepper {
 					if (id == ids[j])
 						adjustTargetMilestone(j == 0 ? -1 : 1);
 					if (id == ids[j + 2]) {
-						int seekStep = sOptions.readTargetStep()
+						int seekStep = mOptions.readTargetStep()
 								+ (j == 0 ? -1 : 1);
 						seekStep = MyMath.clamp(seekStep, 0,
-								sOptions.readTotalSteps());
-						sOptions.setTargetStep(seekStep);
+								mOptions.readTotalSteps());
+						mOptions.setTargetStep(seekStep);
 					}
 				}
 			}
 		};
 		for (int i = 0; i < ids.length; i++) {
-			sOptions.getWidget(ids[i]).addListener(listener);
+			mOptions.getWidget(ids[i]).addListener(listener);
 		}
 	}
 
 	/**
-	 * Get the singleton object that serves as the synchronization lock to avoid
-	 * race conditions between the UI and OpenGL threads
+	 * Get the object that serves as the synchronization lock to avoid race
+	 * conditions between the UI and OpenGL threads
 	 * 
 	 * @return
 	 */
-	public static Object getLock() {
+	/*public*/ Object getLock() {
 		return sSynchronizationLock;
 	}
 
@@ -519,10 +518,9 @@ public class AlgorithmStepper {
 	}
 
 	public void begin() {
-		sOptions = AlgorithmOptions.sharedInstance();
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
-		sOptions.begin(mAlgorithms);
+		mOptions.begin(mAlgorithms);
 		refresh();
 	}
 
@@ -530,9 +528,12 @@ public class AlgorithmStepper {
 		return mAlgorithms;
 	}
 
-	private static Object sSynchronizationLock = new Object();
-	private static AlgorithmOptions sOptions;
+	void setOptions(AlgorithmOptions options) {
+		mOptions = options;
+	}
 
+	private Object sSynchronizationLock = new Object();
+	private AlgorithmOptions mOptions;
 	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();

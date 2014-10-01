@@ -33,11 +33,6 @@ public class AlgorithmOptions {
 
 	private static final boolean DIAGNOSE_PERSISTENCE = false;
 
-	static AlgorithmOptions construct(Context context, AlgorithmStepper stepper) {
-		sAlgorithmOptions = new AlgorithmOptions(context, stepper);
-		return sharedInstance();
-	}
-
 	/**
 	 * Prepare the options views
 	 * 
@@ -76,19 +71,11 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Get the singleton instance of the options object
-	 */
-	public static AlgorithmOptions sharedInstance() {
-		ASSERT(sAlgorithmOptions != null);
-		return sAlgorithmOptions;
-	}
-
-	/**
 	 * Add a slider widget
 	 */
 	public SliderWidget addSlider(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
-		SliderWidget w = new SliderWidget(sContext, attributes);
+		SliderWidget w = new SliderWidget(this, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -98,7 +85,7 @@ public class AlgorithmOptions {
 	 */
 	public CheckBoxWidget addCheckBox(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
-		CheckBoxWidget w = new CheckBoxWidget(sContext, attributes);
+		CheckBoxWidget w = new CheckBoxWidget(this, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -108,7 +95,7 @@ public class AlgorithmOptions {
 	 */
 	public ComboBoxWidget addComboBox(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
-		ComboBoxWidget w = new ComboBoxWidget(sContext, attributes);
+		ComboBoxWidget w = new ComboBoxWidget(this, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -118,7 +105,7 @@ public class AlgorithmOptions {
 	 */
 	public ButtonWidget addButton(String id, Object... attributePairs) {
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
-		ButtonWidget w = new ButtonWidget(sContext, attributes);
+		ButtonWidget w = new ButtonWidget(this, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -134,7 +121,7 @@ public class AlgorithmOptions {
 		String id = "__text_" + mPreviousTextIndex;
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		attributes.put("label", content);
-		TextWidget w = new TextWidget(sContext, attributes);
+		TextWidget w = new TextWidget(this, attributes);
 		addWidget(w);
 		return w;
 	}
@@ -180,11 +167,8 @@ public class AlgorithmOptions {
 		return field;
 	}
 
-	/**
-	 * Private constructor
-	 */
-	private AlgorithmOptions(Context context, AlgorithmStepper stepper) {
-		sContext = context;
+	AlgorithmOptions(Context context, AlgorithmStepper stepper) {
+		mContext = context;
 		mStepper = stepper;
 
 		mWidgetsMap = new HashMap();
@@ -347,7 +331,7 @@ public class AlgorithmOptions {
 		saveStepsInformation();
 
 		String newWidgetValuesScript = null;
-		synchronized (AlgorithmStepper.getLock()) {
+		synchronized (mStepper.getLock()) {
 			newWidgetValuesScript = saveValues();
 		}
 		if (db) {
@@ -425,7 +409,7 @@ public class AlgorithmOptions {
 		if (!mPrepared)
 			return;
 
-		synchronized (AlgorithmStepper.getLock()) {
+		synchronized (mStepper.getLock()) {
 			for (Listener listener : listeners) {
 				listener.valueChanged(widget);
 			}
@@ -443,7 +427,7 @@ public class AlgorithmOptions {
 	 * main container view
 	 */
 	private ViewGroup constructSubView() {
-		LinearLayout view = new LinearLayout(sContext);
+		LinearLayout view = new LinearLayout(mContext);
 		view.setOrientation(LinearLayout.VERTICAL);
 		OurGLTools.applyDebugColors(view);
 		return view;
@@ -493,7 +477,7 @@ public class AlgorithmOptions {
 			addSlider("_" + WIDGET_ID_TOTALSTEPS, AbstractWidget.OPTION_HIDDEN,
 					true);
 
-			algorithm.prepareOptions();
+			algorithm.prepareOptions(this);
 		}
 		activateSecondaryWidgetGroup(null);
 
@@ -532,14 +516,16 @@ public class AlgorithmOptions {
 		mActiveAlgorithm.delegate().run(mStepper);
 	}
 
-	private static AlgorithmOptions sAlgorithmOptions;
+	public Context getContext() {
+		return mContext;
+	}
 
 	private AlgorithmStepper mStepper;
 	private ViewGroup mContainingView;
 	// Until this flag is true, no listeners are sent messages about widget
 	// value changes
 	private boolean mPrepared;
-	private Context sContext;
+	private Context mContext;
 	private Map<String, AbstractWidget> mWidgetsMap;
 	private WidgetGroup mPrimaryWidgetGroup;
 	private ArrayList<AlgorithmRecord> mAlgorithms;

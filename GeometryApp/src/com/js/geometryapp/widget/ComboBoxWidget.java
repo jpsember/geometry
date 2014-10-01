@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.js.geometry.MyMath;
+import com.js.geometryapp.AlgorithmOptions;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.AdapterView;
@@ -28,16 +28,16 @@ public class ComboBoxWidget extends AbstractWidget {
 		}
 	}
 
-	public ComboBoxWidget(Context context, Map attributes) {
-		super(context, attributes);
+	public ComboBoxWidget(AlgorithmOptions options, Map attributes) {
+		super(options, attributes);
 
-		mSpinner = new Spinner(context);
+		mSpinner = new Spinner(options.getContext());
 
-		Object options = attributes.get(ATTR_OPTIONS);
-		if (options instanceof Map) {
-			prepareOptions((Map) options);
-		} else if (options instanceof List) {
-			mKeys.addAll((List) options);
+		Object comboOptions = attributes.get(ATTR_OPTIONS);
+		if (comboOptions instanceof Map) {
+			prepareOptions((Map) comboOptions);
+		} else if (comboOptions instanceof List) {
+			mKeys.addAll((List) comboOptions);
 		}
 
 		getView().addView(buildLabelView(true));

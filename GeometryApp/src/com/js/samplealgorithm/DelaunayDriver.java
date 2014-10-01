@@ -32,10 +32,10 @@ public class DelaunayDriver implements Algorithm {
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 		s = stepper;
 		mContext = new Mesh();
-		mRandom = new Random(sOptions.getIntValue("Seed"));
-		boolean deleteAll = sOptions.getBooleanValue("Delete all");
+		mRandom = new Random(mOptions.getIntValue("Seed"));
+		boolean deleteAll = mOptions.getBooleanValue("Delete all");
 		boolean withDeletions = deleteAll
-				|| sOptions.getBooleanValue("Deletions");
+				|| mOptions.getBooleanValue("Deletions");
 
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_MESH);
@@ -51,10 +51,10 @@ public class DelaunayDriver implements Algorithm {
 		if (s.bigStep())
 			s.show("Initial triangulation");
 
-		int numPoints = sOptions.getIntValue("Points");
+		int numPoints = mOptions.getIntValue("Points");
 		mVertices = new ArrayList();
 
-		ComboBoxWidget w = sOptions.getWidget("Pattern");
+		ComboBoxWidget w = mOptions.getWidget("Pattern");
 		String pattern = (String) w.getSelectedKey();
 
 		for (int i = 0; i < numPoints; i++) {
@@ -91,7 +91,7 @@ public class DelaunayDriver implements Algorithm {
 				removeArbitraryVertex();
 		}
 
-		if (sOptions.getBooleanValue("Voronoi cells")) {
+		if (mOptions.getBooleanValue("Voronoi cells")) {
 			s.openLayer(BGND_ELEMENT_VORONOI_CELLS);
 			s.plot(new AlgorithmDisplayElement() {
 				@Override
@@ -119,26 +119,24 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	@Override
-	public void prepareOptions() {
-		sOptions = AlgorithmOptions.sharedInstance();
-
-		sOptions.addSlider("Seed", "min", 1, "max", 300);
-		sOptions.addCheckBox("Deletions", "value", true);
-		sOptions.addCheckBox("Delete all");
-		sOptions.addCheckBox("Voronoi cells", "value", true);
-		ComboBoxWidget w = sOptions.addComboBox("Pattern");
+	public void prepareOptions(AlgorithmOptions options) {
+		mOptions = options;
+		mOptions.addSlider("Seed", "min", 1, "max", 300);
+		mOptions.addCheckBox("Deletions", "value", true);
+		mOptions.addCheckBox("Delete all");
+		mOptions.addCheckBox("Voronoi cells", "value", true);
+		ComboBoxWidget w = mOptions.addComboBox("Pattern");
 		w.addItem("Random");
 		w.addItem("Circle");
 		w.prepare();
-		sOptions.addSlider("Points", "min", 1, "max", 250, "value", 25);
+		mOptions.addSlider("Points", "min", 1, "max", 250, "value", 25);
 
-		sOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
-		sOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
+		mOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
+		mOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
 	}
 
-	private static AlgorithmOptions sOptions;
-
 	private AlgorithmStepper s;
+	private AlgorithmOptions mOptions;
 	private Mesh mContext;
 	private Delaunay mDelaunay;
 	private Random mRandom;

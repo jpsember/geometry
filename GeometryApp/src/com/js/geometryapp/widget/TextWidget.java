@@ -2,7 +2,8 @@ package com.js.geometryapp.widget;
 
 import java.util.Map;
 
-import android.content.Context;
+import com.js.geometryapp.AlgorithmOptions;
+
 import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
@@ -20,11 +21,11 @@ public class TextWidget extends AbstractWidget {
 	 */
 	public static final String OPTION_CENTER = "center";
 
-	public TextWidget(Context context, Map attributes) {
-		super(context, attributes);
+	public TextWidget(AlgorithmOptions options, Map attributes) {
+		super(options, attributes);
 		attributes.put("hasvalue", false);
 
-		mTextView = new TextView(context);
+		mTextView = new TextView(options.getContext());
 		mTextView.setText(this.getLabel(false));
 
 		if (boolAttr("header", false)) {

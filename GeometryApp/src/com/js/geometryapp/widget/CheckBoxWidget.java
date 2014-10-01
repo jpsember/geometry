@@ -3,8 +3,8 @@ package com.js.geometryapp.widget;
 import java.util.Map;
 
 import com.js.android.MyActivity;
+import com.js.geometryapp.AlgorithmOptions;
 
-import android.content.Context;
 import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.CheckBox;
@@ -14,10 +14,10 @@ import android.widget.TextView;
 
 public class CheckBoxWidget extends AbstractWidget {
 
-	public CheckBoxWidget(Context context, Map attributes) {
-		super(context, attributes);
+	public CheckBoxWidget(AlgorithmOptions options, Map attributes) {
+		super(options, attributes);
 
-		mCheckBox = new CheckBox(context);
+		mCheckBox = new CheckBox(options.getContext());
 		mCheckBox.setChecked(boolAttr(OPTION_VALUE, false));
 		mCheckBox
 				.setOnCheckedChangeListener(new CheckBox.OnCheckedChangeListener() {

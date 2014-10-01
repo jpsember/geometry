@@ -25,7 +25,7 @@ public class StarshapedDriver implements Algorithm {
 	public void run(AlgorithmStepper stepper) {
 		mStepper = stepper;
 		mContext = new Mesh();
-		mRandom = new Random(sOptions.getIntValue("Seed"));
+		mRandom = new Random(mOptions.getIntValue("Seed"));
 
 		int baseVertex = buildPolygon();
 		Edge edge = mContext.polygonEdgeFromVertex(mContext.vertex(baseVertex));
@@ -35,19 +35,18 @@ public class StarshapedDriver implements Algorithm {
 	}
 
 	@Override
-	public void prepareOptions() {
-		sOptions = AlgorithmOptions.sharedInstance();
-
-		sOptions.addSlider("Seed", "min", 0, "max", 300);
-		sOptions.addSlider("Points", "min", 3, "max", 250, "value", 18);
-		sOptions.addCheckBox("experiment");
-		sOptions.addSlider("spikes", "min", 2, "max", 50);
-		sOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
+	public void prepareOptions(AlgorithmOptions options) {
+		mOptions = options;
+		mOptions.addSlider("Seed", "min", 0, "max", 300);
+		mOptions.addSlider("Points", "min", 3, "max", 250, "value", 18);
+		mOptions.addCheckBox("experiment");
+		mOptions.addSlider("spikes", "min", 2, "max", 50);
+		mOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
 	}
 
 	private Polygon buildExperimentalPolygon(int nPoints) {
-		int nSpikes = sOptions.getIntValue("spikes");
-		float girth = sOptions.getIntValue("girth") * (.5f / 100);
+		int nSpikes = mOptions.getIntValue("spikes");
+		float girth = mOptions.getIntValue("girth") * (.5f / 100);
 
 		float spikeWidthRatio = .5f;
 		nPoints = Math.max(4, nPoints);
@@ -89,11 +88,11 @@ public class StarshapedDriver implements Algorithm {
 	}
 
 	private int buildPolygon() {
-		int nPoints = sOptions.getIntValue("Points");
+		int nPoints = mOptions.getIntValue("Points");
 		mKernelPoint = mStepper.algorithmRect().midPoint();
 		Polygon p;
 
-		if (sOptions.getBooleanValue("experiment")) {
+		if (mOptions.getBooleanValue("experiment")) {
 			p = buildExperimentalPolygon(nPoints);
 		} else {
 			p = Polygon.starshapedPolygon(mStepper.algorithmRect(), nPoints,
@@ -107,9 +106,8 @@ public class StarshapedDriver implements Algorithm {
 		doNothing();
 	}
 
-	private static AlgorithmOptions sOptions;
-
 	private AlgorithmStepper mStepper;
+	private AlgorithmOptions mOptions;
 	private Point mKernelPoint;
 	private Mesh mContext;
 	private Random mRandom;

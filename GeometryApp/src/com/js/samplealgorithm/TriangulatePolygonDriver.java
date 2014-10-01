@@ -28,10 +28,10 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	@Override
-	public void prepareOptions() {
-		sOptions = AlgorithmOptions.sharedInstance();
+	public void prepareOptions(AlgorithmOptions options) {
+		mOptions = options;
 
-		ComboBoxWidget w = sOptions.addComboBox("polygon");
+		ComboBoxWidget w = mOptions.addComboBox("polygon");
 		w.setLabel("Polygon:");
 
 		w.addItem("Dragon #6", Polygon.TESTPOLY_DRAGON_X + 6);
@@ -45,11 +45,11 @@ public class TriangulatePolygonDriver implements Algorithm {
 
 		w.prepare();
 
-		sOptions.addCheckBox("Triangulate monotone face", "value", true);
+		mOptions.addCheckBox("Triangulate monotone face", "value", true);
 	}
 
 	private void prepareInput() {
-		ComboBoxWidget w = sOptions.getWidget("polygon");
+		ComboBoxWidget w = mOptions.getWidget("polygon");
 		int polygonName = (Integer) w.getSelectedValue();
 
 		mContext = new Mesh();
@@ -58,7 +58,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 		mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
 	}
 
-	private static AlgorithmOptions sOptions;
+	private AlgorithmOptions mOptions;
 	private AlgorithmStepper mStepper;
 	private Mesh mContext;
 	private Polygon mPolygon;

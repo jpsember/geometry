@@ -4,7 +4,6 @@ import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.SliderWidget;
 
-import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -22,25 +21,25 @@ class AlgorithmStepperPanel {
 	 * @param context
 	 * @return View containing the various controls
 	 */
-	public static View build(Context context) {
-		AlgorithmStepperPanel v = new AlgorithmStepperPanel(context);
+	public static View build(AlgorithmOptions options) {
+		AlgorithmStepperPanel v = new AlgorithmStepperPanel(options);
 		return v.view();
 	}
 
-	private AlgorithmStepperPanel(Context context) {
+	AlgorithmStepperPanel(AlgorithmOptions options) {
 		doNothing();
-		mContext = context;
+		mOptions = options;
 	}
 
 	private LinearLayout linearLayout(boolean horizontal) {
-		LinearLayout v = new LinearLayout(mContext);
+		LinearLayout v = new LinearLayout(mOptions.getContext());
 		v.setOrientation(horizontal ? LinearLayout.HORIZONTAL
 				: LinearLayout.VERTICAL);
 		return v;
 	}
 
 	private void addButton(ViewGroup parent, String label) {
-		ButtonWidget w = sOptions.addButton(label,
+		ButtonWidget w = mOptions.addButton(label,
 				AbstractWidget.OPTION_DETACHED, true,
 				AbstractWidget.OPTION_REFRESH_ALGORITHM, false,
 				AbstractWidget.OPTION_PADDING, false);
@@ -50,12 +49,11 @@ class AlgorithmStepperPanel {
 	private View view() {
 		if (mView != null)
 			return mView;
-		sOptions = AlgorithmOptions.sharedInstance();
 		LinearLayout layout = linearLayout(true);
 
 		final int defaultTotalSteps = 500;
 
-		final SliderWidget targetStepSlider = sOptions.addSlider(
+		final SliderWidget targetStepSlider = mOptions.addSlider(
 				AlgorithmOptions.WIDGET_ID_TARGETSTEP, //
 				AbstractWidget.OPTION_DETACHED, true, //
 				AbstractWidget.OPTION_HAS_LABEL, false, //
@@ -66,7 +64,7 @@ class AlgorithmStepperPanel {
 				GeometryActivity.layoutParams(true, true));
 
 		// Add another detached widget to store the total steps
-		AbstractWidget totalStepsSlider = sOptions.addSlider(
+		AbstractWidget totalStepsSlider = mOptions.addSlider(
 				AlgorithmOptions.WIDGET_ID_TOTALSTEPS,//
 				"value", defaultTotalSteps,//
 				AbstractWidget.OPTION_DETACHED, true);
@@ -100,6 +98,5 @@ class AlgorithmStepperPanel {
 	}
 
 	private View mView;
-	private Context mContext;
-	private AlgorithmOptions sOptions;
+	private AlgorithmOptions mOptions;
 }

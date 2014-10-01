@@ -3,8 +3,8 @@ package com.js.geometryapp.widget;
 import java.util.Map;
 
 import com.js.geometry.MyMath;
+import com.js.geometryapp.AlgorithmOptions;
 
-import android.content.Context;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -13,10 +13,10 @@ import static com.js.basic.Tools.*;
 
 public class SliderWidget extends AbstractWidget {
 
-	public SliderWidget(Context context, Map attributes) {
-		super(context, attributes);
+	public SliderWidget(AlgorithmOptions options, Map attributes) {
+		super(options, attributes);
 
-		mSeekBar = new SeekBar(context);
+		mSeekBar = new SeekBar(options.getContext());
 		mSeekBar.setMax(maxValue() - minValue());
 		int initialValue = intAttr(OPTION_VALUE, minValue());
 		setValue(initialValue);

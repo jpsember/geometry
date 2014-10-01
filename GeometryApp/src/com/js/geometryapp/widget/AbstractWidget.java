@@ -115,11 +115,12 @@ public abstract class AbstractWidget {
 		return value;
 	}
 
-	protected AbstractWidget(Context context, Map attributes) {
-		this.mAttributes = attributes;
-		this.mWidgetValue = "";
+	protected AbstractWidget(AlgorithmOptions options, Map attributes) {
+		mOptions = options;
+		mAttributes = attributes;
+		mWidgetValue = "";
 
-		LinearLayout widgetContainer = new LinearLayout(context);
+		LinearLayout widgetContainer = new LinearLayout(options.getContext());
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);
 		widgetContainer.setLayoutParams(params);
@@ -299,7 +300,7 @@ public abstract class AbstractWidget {
 	}
 
 	protected void notifyListeners() {
-		AlgorithmOptions.sharedInstance().processWidgetValue(this,
+		mOptions.processWidgetValue(this,
 				this.mListeners);
 	}
 
@@ -313,6 +314,8 @@ public abstract class AbstractWidget {
 	// This is the value this widget represents, if any. It is an 'internal'
 	// string representation of the value
 	private String mWidgetValue;
+
+	private AlgorithmOptions mOptions;
 
 	protected Set<Listener> mListeners = new HashSet();
 }

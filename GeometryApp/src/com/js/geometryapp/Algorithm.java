@@ -4,7 +4,7 @@ public interface Algorithm {
 
 	public String getAlgorithmName();
 
-	public void prepareOptions();
+	public void prepareOptions(AlgorithmOptions options);
 
 	public void run(AlgorithmStepper stepper);
 }

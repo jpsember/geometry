@@ -73,9 +73,10 @@ public abstract class AbstractWidget {
 	 */
 	public static final String OPTION_LAYOUT_HEIGHT = "layout_height";
 
-	private static final float WIDGET_PADDING_HORZ = .05f;
-	private static final float WIDGET_PADDING_VERT = .02f;
-
+	/**
+	 * If true (the default), adds some padding to the widget
+	 */
+	public static final String OPTION_PADDING = "padding";
 
 	@Override
 	public String toString() {
@@ -122,9 +123,11 @@ public abstract class AbstractWidget {
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);
 		widgetContainer.setLayoutParams(params);
-		int hPadding = MyActivity.inchesToPixels(WIDGET_PADDING_HORZ);
-		int vPadding = MyActivity.inchesToPixels(WIDGET_PADDING_VERT);
-		widgetContainer.setPadding(hPadding, vPadding, hPadding, vPadding);
+		if (boolAttr(OPTION_PADDING, true)) {
+			int hPadding = MyActivity.inchesToPixels(.05f);
+			int vPadding = MyActivity.inchesToPixels(.02f);
+			widgetContainer.setPadding(hPadding, vPadding, hPadding, vPadding);
+		}
 
 		OurGLTools.applyDebugColors(widgetContainer);
 

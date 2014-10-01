@@ -197,9 +197,17 @@ public class AlgorithmOptions {
 		if (w.boolAttr(AbstractWidget.OPTION_DETACHED, false))
 			return;
 
-		WidgetGroup destination = (mSecondaryWidgetGroup == null) ? mPrimaryWidgetGroup
-				: mSecondaryWidgetGroup.widgets();
+		boolean algSpecific = (mSecondaryWidgetGroup != null);
+		WidgetGroup destination = algSpecific ? mSecondaryWidgetGroup.widgets()
+				: mPrimaryWidgetGroup;
 		destination.add(w);
+
+		// If this is being added to the secondary (i.e. algorithm-specific)
+		// group, and it's not hidden, flag it as a widget that changes the
+		// algorithm total steps
+		if (algSpecific && !w.boolAttr(AbstractWidget.OPTION_HIDDEN, false)) {
+			w.setAttribute(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, true);
+		}
 	}
 
 	private AlgorithmRecord findAlgorithm(String name) {
@@ -413,10 +421,18 @@ public class AlgorithmOptions {
 			for (Listener listener : listeners) {
 				listener.valueChanged(widget);
 			}
+
 			// Unless the 'refresh' option exists and is false,
 			// trigger a refresh of the algorithm view.
 			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
 				mStepper.refresh();
+			}
+
+			// If this is a widget that may change the algorithm total steps,
+			// trigger a recalculation after a delay
+			if (widget.boolAttr(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS,
+					false)) {
+				pr("recalc for " + widget.getId());
 			}
 		}
 		persistStepperState(true);

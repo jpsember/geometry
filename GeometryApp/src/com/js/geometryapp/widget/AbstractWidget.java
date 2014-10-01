@@ -49,6 +49,11 @@ public abstract class AbstractWidget {
 	public static final String OPTION_REFRESH_ALGORITHM = "refresh_algorithm";
 
 	/**
+	 * If true, any change to widget value implies the total steps may change
+	 */
+	public static final String OPTION_RECALC_ALGORITHM_STEPS = "recalc_algorithm";
+
+	/**
 	 * If true, the widget's view will not be added to its group's view
 	 */
 	public static final String OPTION_HIDDEN = "hidden";

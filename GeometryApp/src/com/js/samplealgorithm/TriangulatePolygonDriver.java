@@ -17,11 +17,12 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	@Override
-	public void run() {
+	public void run(AlgorithmStepper stepper) {
+		mStepper = stepper;
 		prepareInput();
 
-		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
-				mPolygon);
+		PolygonTriangulator t = PolygonTriangulator.triangulator(mStepper,
+				mContext, mPolygon);
 
 		t.triangulate();
 	}
@@ -54,12 +55,11 @@ public class TriangulatePolygonDriver implements Algorithm {
 		mContext = new Mesh();
 		mPolygon = Polygon.testPolygon(polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
-		mPolygon.transformToFitRect(AlgorithmStepper.sharedInstance()
-				.algorithmRect(), false);
+		mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
 	}
 
 	private static AlgorithmOptions sOptions;
-
+	private AlgorithmStepper mStepper;
 	private Mesh mContext;
 	private Polygon mPolygon;
 }

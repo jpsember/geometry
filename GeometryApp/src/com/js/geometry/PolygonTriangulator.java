@@ -25,13 +25,16 @@ public class PolygonTriangulator {
 
 	public static final String DETAIL_TRIANGULATE_MONOTONE_FACE = "Triangulate monotone face";
 
-	public static PolygonTriangulator triangulator(Mesh context,
-			Polygon polygon) {
-		return new PolygonTriangulator(context, polygon);
+	public static PolygonTriangulator triangulator(AlgorithmStepper stepper,
+			Mesh context, Polygon polygon) {
+		return new PolygonTriangulator(stepper, context, polygon);
 	}
 
-	private PolygonTriangulator(Mesh context, Polygon polygon) {
-		s = AlgorithmStepper.sharedInstance();
+	private PolygonTriangulator(AlgorithmStepper stepper, Mesh context,
+			Polygon polygon) {
+		if (stepper == null)
+			stepper = AlgorithmStepper.INACTIVE_STEPPER;
+		s = stepper;
 		mContext = context;
 		mPolygon = polygon;
 		ASSERT(polygon.isCCW(context));
@@ -201,8 +204,8 @@ public class PolygonTriangulator {
 		int type;
 		if (opt.y > v.y) {
 			if (ipt.y > v.y) {
-				if (pseudoAngleIsConvex(outgoing.angle(), incoming
-						.dual().angle())) {
+				if (pseudoAngleIsConvex(outgoing.angle(), incoming.dual()
+						.angle())) {
 					type = VTYPE_START;
 				} else {
 					type = VTYPE_SPLIT;
@@ -212,8 +215,8 @@ public class PolygonTriangulator {
 			}
 		} else {
 			if (ipt.y < v.y) {
-				if (pseudoAngleIsConvex(outgoing.angle(), incoming
-						.dual().angle())) {
+				if (pseudoAngleIsConvex(outgoing.angle(), incoming.dual()
+						.angle())) {
 					type = VTYPE_END;
 				} else {
 					type = VTYPE_MERGE;
@@ -469,8 +472,7 @@ public class PolygonTriangulator {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					Vertex v1 = mMonotoneQueue.peek(false, 0);
 					Vertex v2 = mMonotoneQueue.peek(false, 1);
-					float distance = pointUnitLineSignedDistance(
-							vertex, v1, v2);
+					float distance = pointUnitLineSignedDistance(vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (s.step())
 						s.show("Test for convex angle" + plot(v1) + plot(v2));
@@ -515,7 +517,7 @@ public class PolygonTriangulator {
 		return s.plot(v);
 	}
 
-	private static AlgorithmStepper s;
+	private AlgorithmStepper s;
 	private Mesh mContext;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;

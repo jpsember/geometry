@@ -14,7 +14,8 @@ public class PolygonTriangulatorTest extends MyTestCase {
 	private PolygonTriangulator mTriangulator;
 
 	private PolygonTriangulator triangulate() {
-		mTriangulator = PolygonTriangulator.triangulator(context(), mPolygon);
+		mTriangulator = PolygonTriangulator.triangulator(null, context(),
+				mPolygon);
 		mTriangulator.triangulate();
 		return mTriangulator;
 	}

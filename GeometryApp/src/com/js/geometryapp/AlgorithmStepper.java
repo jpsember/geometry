@@ -30,19 +30,12 @@ public class AlgorithmStepper {
 	static final String WIDGET_ID_STEP_FWD = ">";
 
 	/**
-	 * Throw out any old singleton instance, and construct a new one
+	 * A stepper object that is designed to do nothing, i.e., allows normal
+	 * algorithm operation
 	 */
-	static void constructSingleton() {
-		sStepper = new AlgorithmStepper();
-	}
+	public static final AlgorithmStepper INACTIVE_STEPPER = new AlgorithmStepper();
 
-	/**
-	 * Get the singleton instance of the stepper
-	 */
-	public static AlgorithmStepper sharedInstance() {
-		if (sStepper == null)
-			constructSingleton();
-		return sStepper;
+	AlgorithmStepper() {
 	}
 
 	void setGLSurfaceView(GLSurfaceView glSurfaceView) {
@@ -176,6 +169,11 @@ public class AlgorithmStepper {
 		throw new DesiredStepReachedException(messageString);
 	}
 
+	private void assertActive() {
+		if (!isActive())
+			throw new IllegalStateException("stepper must be active");
+	}
+
 	/**
 	 * Open a background layer. Subsequent plot() commands will be redirected to
 	 * this layer. Must be balanced by a call to closeLayer(). Layers are
@@ -187,6 +185,8 @@ public class AlgorithmStepper {
 	 *            uniquely distinguishes this layer from others
 	 */
 	public void openLayer(String key) {
+		assertActive();
+
 		if (mActiveBackgroundLayer != null)
 			throw new IllegalStateException("layer already open");
 		AlgorithmDisplayElement.resetRenderStateVars();
@@ -198,6 +198,7 @@ public class AlgorithmStepper {
 	 * Close layer previously opened via openLayer()
 	 */
 	public void closeLayer() {
+		assertActive();
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = null;
 	}
@@ -208,6 +209,7 @@ public class AlgorithmStepper {
 	 * @param key
 	 */
 	public void removeLayer(String key) {
+		assertActive();
 		mBackgroundLayers.remove(key);
 	}
 
@@ -414,9 +416,6 @@ public class AlgorithmStepper {
 		}
 	}
 
-	private AlgorithmStepper() {
-	}
-
 	private void adjustTargetMilestone(int delta) {
 		int seekStep = -1;
 		int targetStep = sOptions.readTargetStep();
@@ -531,8 +530,6 @@ public class AlgorithmStepper {
 		return mAlgorithms;
 	}
 
-	// The singleton instance of this class
-	private static AlgorithmStepper sStepper;
 	private static Object sSynchronizationLock = new Object();
 	private static AlgorithmOptions sOptions;
 

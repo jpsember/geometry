@@ -45,9 +45,9 @@ public class Delaunay {
 	 * @param boundingRect
 	 *            bounding rect, or null to use (large) default
 	 */
-	public Delaunay(Mesh context, Rect boundingRect) {
+	public Delaunay(Mesh context, Rect boundingRect, AlgorithmStepper stepper) {
 		doNothing();
-		s = AlgorithmStepper.sharedInstance();
+		s = stepper;
 		constructMesh(context, boundingRect);
 		mRandom = new Random(1);
 	}
@@ -222,7 +222,7 @@ public class Delaunay {
 		if (s.step())
 			s.show("Triangulating hole");
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
-				.buildTriangulator(mContext, kernelPoint, mHoleEdges.get(0));
+				.buildTriangulator(s, mContext, kernelPoint, mHoleEdges.get(0));
 		s.pushActive(false);
 		triangulator.run();
 		s.popActive();
@@ -657,8 +657,7 @@ public class Delaunay {
 		return p;
 	}
 
-	private static AlgorithmStepper s;
-
+	private AlgorithmStepper s;
 	private Random mRandom;
 	private Mesh mContext;
 	private ArrayList<Edge> mSearchHistory;

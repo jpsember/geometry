@@ -46,8 +46,8 @@ public class MeshTest extends MyTestCase {
 	}
 
 	private void triangulatePolygon() {
-		PolygonTriangulator tri = PolygonTriangulator.triangulator(context(),
-				polygon());
+		PolygonTriangulator tri = PolygonTriangulator.triangulator(null,
+				context(), polygon());
 		tri.triangulate();
 	}
 

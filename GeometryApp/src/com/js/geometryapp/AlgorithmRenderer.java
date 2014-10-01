@@ -17,8 +17,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_NDC = "algorithm->ndc";
 
-	public AlgorithmRenderer(Context context) {
+	public AlgorithmRenderer(Context context, AlgorithmStepper stepper) {
 		super(context);
+		mStepper = stepper;
 		doNothing();
 	}
 
@@ -58,7 +59,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 			AlgorithmDisplayElement.setRendering(true);
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
-			AlgorithmStepper.sharedInstance().render();
+			mStepper.render();
 			// Call user method, now that synchronized
 			onDrawFrame();
 			AlgorithmDisplayElement.setRendering(false);
@@ -92,8 +93,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		paddedDeviceRect.height -= paddingInset * 2 + titleInset;
 
 		Matrix mAlgorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
-				AlgorithmStepper.sharedInstance().algorithmRect(),
-				paddedDeviceRect);
+				mStepper.algorithmRect(), paddedDeviceRect);
 		float[] v = new float[9];
 		mAlgorithmToDeviceTransform.getValues(v);
 		sAlgorithmToDensityPixels = (1.0f / v[0]) * MyActivity.density();
@@ -114,5 +114,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	}
 
 	private static float sAlgorithmToDensityPixels;
+
+	private AlgorithmStepper mStepper;
 
 }

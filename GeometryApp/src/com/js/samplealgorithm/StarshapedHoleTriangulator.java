@@ -27,14 +27,16 @@ public class StarshapedHoleTriangulator {
 	 * @param edgeOnHole
 	 *            edge lying on CCW boundary of hole
 	 */
-	public static StarshapedHoleTriangulator buildTriangulator(Mesh mesh,
-			Point kernelPoint, Edge edgeOnHole) {
-		return new StarshapedHoleTriangulator(mesh, kernelPoint, edgeOnHole);
+	public static StarshapedHoleTriangulator buildTriangulator(
+			AlgorithmStepper stepper, Mesh mesh, Point kernelPoint,
+			Edge edgeOnHole) {
+		return new StarshapedHoleTriangulator(stepper, mesh, kernelPoint,
+				edgeOnHole);
 	}
 
-	private StarshapedHoleTriangulator(Mesh mesh, Point kernelPoint,
-			Edge edgeOnHole) {
-		s = AlgorithmStepper.sharedInstance();
+	private StarshapedHoleTriangulator(AlgorithmStepper stepper, Mesh mesh,
+			Point kernelPoint, Edge edgeOnHole) {
+		s = stepper;
 		mContext = mesh;
 		mKernelPoint = kernelPoint;
 		mStartEdge = edgeOnHole;
@@ -175,8 +177,7 @@ public class StarshapedHoleTriangulator {
 		return mNewEdges;
 	}
 
-	private static AlgorithmStepper s;
-
+	private AlgorithmStepper s;
 	private Mesh mContext;
 	private Point mKernelPoint;
 	private Edge mStartEdge;

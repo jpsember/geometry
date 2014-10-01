@@ -9,11 +9,12 @@ import static com.js.basic.Tools.*;
 
 public class GeometryStepperActivity extends GeometryActivity {
 
+	public GeometryStepperActivity() {
+		mStepper = new AlgorithmStepper();
+	}
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// Construct a new singleton for the algorithm stepper, replacing any
-		// old one
-		AlgorithmStepper.constructSingleton();
 		super.onCreate(savedInstanceState);
 	}
 
@@ -24,17 +25,14 @@ public class GeometryStepperActivity extends GeometryActivity {
 		super.onPause();
 	}
 
-	private AlgorithmStepper stepper() {
-		return AlgorithmStepper.sharedInstance();
-	}
-
 	@Override
 	protected View buildContentView() {
-		AlgorithmOptions options = AlgorithmOptions.construct(this);
+		AlgorithmOptions options = AlgorithmOptions.construct(this,
+				getStepper());
 
 		// Have superclass construct the OpenGL view
 		View glView = super.buildContentView();
-		stepper().setGLSurfaceView(getGLSurfaceView());
+		getStepper().setGLSurfaceView(getGLSurfaceView());
 
 		// Wrap it in a containing view
 		LinearLayout mainView = new LinearLayout(this);
@@ -47,7 +45,7 @@ public class GeometryStepperActivity extends GeometryActivity {
 			mainView.addView(glView, p);
 		}
 		// Add the stepper control panel to this container
-		mainView.addView(stepper().controllerView(this));
+		mainView.addView(getStepper().controllerView(this));
 		// Make the container the main view of a TwinViewContainer
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		options.prepareViews(twinViews.getAuxilliaryView());
@@ -65,11 +63,16 @@ public class GeometryStepperActivity extends GeometryActivity {
 	 * Subclass can override this method to build their own renderer
 	 */
 	protected AlgorithmRenderer buildRenderer(Context context) {
-		return new AlgorithmRenderer(context);
+		return new AlgorithmRenderer(context, getStepper());
+	}
+
+	public AlgorithmStepper getStepper() {
+		return mStepper;
 	}
 
 	static {
 		doNothing();
 	}
 
+	private AlgorithmStepper mStepper;
 }

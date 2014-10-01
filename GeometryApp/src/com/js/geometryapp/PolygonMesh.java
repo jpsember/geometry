@@ -125,7 +125,8 @@ public class PolygonMesh {
 	}
 
 	private void triangulatePolygon(Polygon polygon) {
-		PolygonTriangulator t = PolygonTriangulator.triangulator(mContext,
+		PolygonTriangulator t = PolygonTriangulator.triangulator(null,
+				mContext,
 				polygon);
 		t.triangulate();
 	}

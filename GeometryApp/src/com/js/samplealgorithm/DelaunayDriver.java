@@ -21,20 +21,16 @@ public class DelaunayDriver implements Algorithm {
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 
-	public DelaunayDriver() {
-		s = AlgorithmStepper.sharedInstance();
-	}
-
 	@Override
 	public String getAlgorithmName() {
 		return "Delaunay Triangulation";
 	}
 
 	@Override
-	public void run() {
+	public void run(AlgorithmStepper stepper) {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
-
+		s = stepper;
 		mContext = new Mesh();
 		mRandom = new Random(sOptions.getIntValue("Seed"));
 		boolean deleteAll = sOptions.getBooleanValue("Delete all");
@@ -51,7 +47,7 @@ public class DelaunayDriver implements Algorithm {
 
 		Rect delaunayBounds = new Rect(pointBounds);
 		delaunayBounds.inset(-10, -10);
-		mDelaunay = new Delaunay(mContext, delaunayBounds);
+		mDelaunay = new Delaunay(mContext, delaunayBounds, stepper);
 		if (s.bigStep())
 			s.show("Initial triangulation");
 
@@ -141,8 +137,8 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	private static AlgorithmOptions sOptions;
-	private static AlgorithmStepper s;
 
+	private AlgorithmStepper s;
 	private Mesh mContext;
 	private Delaunay mDelaunay;
 	private Random mRandom;

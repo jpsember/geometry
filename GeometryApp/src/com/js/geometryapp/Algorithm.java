@@ -6,5 +6,5 @@ public interface Algorithm {
 
 	public void prepareOptions();
 
-	public void run();
+	public void run(AlgorithmStepper stepper);
 }

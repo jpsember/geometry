@@ -12,7 +12,7 @@ public class SampleGeometryActivity extends GeometryStepperActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-		AlgorithmStepper s = AlgorithmStepper.sharedInstance();
+		AlgorithmStepper s = getStepper();
 		s.addAlgorithm(new DelaunayDriver());
 		s.addAlgorithm(new StarshapedDriver());
 		s.addAlgorithm(new TriangulatePolygonDriver());

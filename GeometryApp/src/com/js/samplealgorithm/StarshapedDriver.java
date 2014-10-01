@@ -4,7 +4,6 @@ import java.util.Random;
 
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
-import com.js.geometry.GeometryException;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
@@ -17,31 +16,22 @@ import static com.js.basic.Tools.*;
 
 public class StarshapedDriver implements Algorithm {
 
-	public StarshapedDriver() {
-		mStepper = AlgorithmStepper.sharedInstance();
-	}
-
 	@Override
 	public String getAlgorithmName() {
 		return "Triangulate Star-shaped Polygon";
 	}
 
 	@Override
-	public void run() {
-		try {
-			mContext = new Mesh();
-			mRandom = new Random(sOptions.getIntValue("Seed"));
+	public void run(AlgorithmStepper stepper) {
+		mStepper = stepper;
+		mContext = new Mesh();
+		mRandom = new Random(sOptions.getIntValue("Seed"));
 
-			int baseVertex = buildPolygon();
-			Edge edge = mContext.polygonEdgeFromVertex(mContext
-					.vertex(baseVertex));
-			StarshapedHoleTriangulator t = StarshapedHoleTriangulator
-					.buildTriangulator(mContext, mKernelPoint, edge);
-			t.run();
-		} catch (GeometryException e) {
-			mStepper.show("caught exception: " + e);
-			pr("\n\ncaught exception:\n" + e);
-		}
+		int baseVertex = buildPolygon();
+		Edge edge = mContext.polygonEdgeFromVertex(mContext.vertex(baseVertex));
+		StarshapedHoleTriangulator t = StarshapedHoleTriangulator
+				.buildTriangulator(mStepper, mContext, mKernelPoint, edge);
+		t.run();
 	}
 
 	@Override
@@ -113,9 +103,13 @@ public class StarshapedDriver implements Algorithm {
 		return baseVertex;
 	}
 
-	private static AlgorithmOptions sOptions;
-	private static AlgorithmStepper mStepper;
+	static {
+		doNothing();
+	}
 
+	private static AlgorithmOptions sOptions;
+
+	private AlgorithmStepper mStepper;
 	private Point mKernelPoint;
 	private Mesh mContext;
 	private Random mRandom;

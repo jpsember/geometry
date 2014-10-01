@@ -33,8 +33,8 @@ public class AlgorithmOptions {
 
 	private static final boolean DIAGNOSE_PERSISTENCE = false;
 
-	static AlgorithmOptions construct(Context context) {
-		sAlgorithmOptions = new AlgorithmOptions(context);
+	static AlgorithmOptions construct(Context context, AlgorithmStepper stepper) {
+		sAlgorithmOptions = new AlgorithmOptions(context, stepper);
 		return sharedInstance();
 	}
 
@@ -183,9 +183,9 @@ public class AlgorithmOptions {
 	/**
 	 * Private constructor
 	 */
-	private AlgorithmOptions(Context context) {
+	private AlgorithmOptions(Context context, AlgorithmStepper stepper) {
 		sContext = context;
-		mStepper = AlgorithmStepper.sharedInstance();
+		mStepper = stepper;
 
 		mWidgetsMap = new HashMap();
 		mAlgorithms = new ArrayList();
@@ -529,7 +529,7 @@ public class AlgorithmOptions {
 	 * Call the active algorithm's run() method
 	 */
 	void runActiveAlgorithm() {
-		mActiveAlgorithm.delegate().run();
+		mActiveAlgorithm.delegate().run(mStepper);
 	}
 
 	private static AlgorithmOptions sAlgorithmOptions;

@@ -37,7 +37,7 @@ public class StarshapedHoleTriangulator {
 	private StarshapedHoleTriangulator(AlgorithmStepper stepper, Mesh mesh,
 			Point kernelPoint, Edge edgeOnHole) {
 		s = stepper;
-		mContext = mesh;
+		mMesh = mesh;
 		mKernelPoint = kernelPoint;
 		mStartEdge = edgeOnHole;
 	}
@@ -102,7 +102,7 @@ public class StarshapedHoleTriangulator {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plotMesh(mContext);
+			s.plotMesh(mMesh);
 			s.closeLayer();
 
 			s.openLayer(BGND_ELEMENT_KERNEL);
@@ -148,7 +148,7 @@ public class StarshapedHoleTriangulator {
 				continue;
 			}
 
-			mStartEdge = mContext.addEdge(v0, v2);
+			mStartEdge = mMesh.addEdge(v0, v2);
 			mNewEdges.add(mStartEdge);
 
 			if (s.step())
@@ -178,7 +178,7 @@ public class StarshapedHoleTriangulator {
 	}
 
 	private AlgorithmStepper s;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Point mKernelPoint;
 	private Edge mStartEdge;
 	private int mHoleSize;

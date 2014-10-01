@@ -5,18 +5,18 @@ import com.js.geometry.Mesh;
 
 class MeshElement extends AlgorithmDisplayElement {
 
-	public MeshElement(Mesh context) {
-		mContext = context;
+	public MeshElement(Mesh mesh) {
+		mMesh = mesh;
 	}
 
 	@Override
 	public void render() {
 		setColorState(color());
 		setLineWidthState(lineWidth());
-		for (Edge e : mContext.constructListOfEdges(true)) {
+		for (Edge e : mMesh.constructListOfEdges(true)) {
 			renderLine(e.sourceVertex(), e.destVertex());
 		}
 	}
 
-	private Mesh mContext;
+	private Mesh mMesh;
 }

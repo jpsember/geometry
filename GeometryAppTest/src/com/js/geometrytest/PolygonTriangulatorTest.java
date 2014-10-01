@@ -9,21 +9,21 @@ import static com.js.basic.Tools.*;
 
 public class PolygonTriangulatorTest extends MyTestCase {
 
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Polygon mPolygon;
 	private PolygonTriangulator mTriangulator;
 
 	private PolygonTriangulator triangulate() {
-		mTriangulator = PolygonTriangulator.triangulator(null, context(),
+		mTriangulator = PolygonTriangulator.triangulator(null, mesh(),
 				mPolygon);
 		mTriangulator.triangulate();
 		return mTriangulator;
 	}
 
-	private Mesh context() {
-		if (mContext == null)
-			mContext = new Mesh();
-		return mContext;
+	private Mesh mesh() {
+		if (mMesh == null)
+			mMesh = new Mesh();
+		return mMesh;
 	}
 
 	private void buildTestPolygon(int variety) {
@@ -46,7 +46,7 @@ public class PolygonTriangulatorTest extends MyTestCase {
 
 		triangulate();
 
-		pr(context());
+		pr(mesh());
 		IOSnapshot.close();
 	}
 
@@ -59,7 +59,7 @@ public class PolygonTriangulatorTest extends MyTestCase {
 
 		triangulate();
 
-		pr(context());
+		pr(mesh());
 		IOSnapshot.close();
 	}
 

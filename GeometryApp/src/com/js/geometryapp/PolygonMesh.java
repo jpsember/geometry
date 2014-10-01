@@ -104,7 +104,7 @@ public class PolygonMesh {
 	 */
 	private void setPolygon(Polygon polygon) {
 		try {
-			mContext = new Mesh();
+			mMesh = new Mesh();
 			triangulatePolygon(polygon);
 			extractStrip();
 		} catch (GeometryException e) {
@@ -120,13 +120,13 @@ public class PolygonMesh {
 	 */
 	private void cleanUpConstructionResources() {
 		mFloatArray = null;
-		mContext = null;
+		mMesh = null;
 		mInteriorEdgeStack = null;
 	}
 
 	private void triangulatePolygon(Polygon polygon) {
 		PolygonTriangulator t = PolygonTriangulator.triangulator(null,
-				mContext,
+				mMesh,
 				polygon);
 		t.triangulate();
 	}
@@ -151,7 +151,7 @@ public class PolygonMesh {
 
 		if (DUMP_STRIP)
 			prr("Strip: ");
-		for (Edge edge : mContext.constructListOfEdges()) {
+		for (Edge edge : mMesh.constructListOfEdges()) {
 			if (edge.visited())
 				continue;
 			if (!markedAsInteriorEdge(edge))
@@ -316,9 +316,9 @@ public class PolygonMesh {
 		mInteriorEdgeCount = 0;
 		mInteriorEdgeStack.clear();
 
-		mContext.clearMeshFlags(0, Edge.FLAG_VISITED | EDGE_FLAG_INTERIOR);
+		mMesh.clearFlags(0, Edge.FLAG_VISITED | EDGE_FLAG_INTERIOR);
 
-		for (Edge edge : mContext.constructListOfEdges()) {
+		for (Edge edge : mMesh.constructListOfEdges()) {
 			if (markedAsInteriorEdge(edge))
 				continue;
 
@@ -375,7 +375,7 @@ public class PolygonMesh {
 
 	// These are used only during the triangle strip construction process:
 	private int mTrianglesExtracted;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private ArrayList<Edge> mInteriorEdgeStack = new ArrayList();
 	private int mInteriorEdgeCount;
 	private int mTrianglesExpected;

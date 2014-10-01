@@ -17,17 +17,6 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	@Override
-	public void run(AlgorithmStepper stepper) {
-		mStepper = stepper;
-		prepareInput();
-
-		PolygonTriangulator t = PolygonTriangulator.triangulator(mStepper,
-				mContext, mPolygon);
-
-		t.triangulate();
-	}
-
-	@Override
 	public void prepareOptions(AlgorithmOptions options) {
 		mOptions = options;
 
@@ -48,11 +37,22 @@ public class TriangulatePolygonDriver implements Algorithm {
 		mOptions.addCheckBox("Triangulate monotone face", "value", true);
 	}
 
+	@Override
+	public void run(AlgorithmStepper stepper) {
+		mStepper = stepper;
+		prepareInput();
+
+		PolygonTriangulator t = PolygonTriangulator.triangulator(mStepper,
+				mMesh, mPolygon);
+
+		t.triangulate();
+	}
+
 	private void prepareInput() {
 		ComboBoxWidget w = mOptions.getWidget("polygon");
 		int polygonName = (Integer) w.getSelectedValue();
 
-		mContext = new Mesh();
+		mMesh = new Mesh();
 		mPolygon = Polygon.testPolygon(polygonName);
 		mPolygon.rotateBy(16 * MyMath.M_DEG);
 		mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
@@ -60,6 +60,6 @@ public class TriangulatePolygonDriver implements Algorithm {
 
 	private AlgorithmOptions mOptions;
 	private AlgorithmStepper mStepper;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Polygon mPolygon;
 }

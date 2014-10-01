@@ -30,14 +30,14 @@ public class PolygonTriangulator {
 		return new PolygonTriangulator(stepper, context, polygon);
 	}
 
-	private PolygonTriangulator(AlgorithmStepper stepper, Mesh context,
+	private PolygonTriangulator(AlgorithmStepper stepper, Mesh mesh,
 			Polygon polygon) {
 		if (stepper == null)
 			stepper = AlgorithmStepper.INACTIVE_STEPPER;
 		s = stepper;
-		mContext = context;
+		mMesh = mesh;
 		mPolygon = polygon;
-		ASSERT(polygon.isCCW(context));
+		ASSERT(polygon.isCCW(mesh));
 		mMonotoneQueue = new Queue();
 		mVertexList = new ArrayList();
 	}
@@ -81,14 +81,14 @@ public class PolygonTriangulator {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plotMesh(mContext);
+			s.plotMesh(mMesh);
 			s.closeLayer();
 		}
 
 		if (s.bigStep())
 			s.show("Triangulating polygon");
 
-		mPolygonMeshBase = mPolygon.embed(mContext);
+		mPolygonMeshBase = mPolygon.embed(mMesh);
 		createEventList();
 		createSweepStatus();
 
@@ -106,9 +106,9 @@ public class PolygonTriangulator {
 		mSweepStatus = new TreeSet<SweepEdge>(new Comparator<SweepEdge>() {
 			@Override
 			public int compare(SweepEdge a, SweepEdge b) {
-				Point sa = a.positionOnSweepLine(mSweepLinePosition, mContext,
+				Point sa = a.positionOnSweepLine(mSweepLinePosition, mMesh,
 						false);
-				Point sb = b.positionOnSweepLine(mSweepLinePosition, mContext,
+				Point sb = b.positionOnSweepLine(mSweepLinePosition, mMesh,
 						false);
 				return (int) Math.signum(sa.x - sb.x);
 			}
@@ -139,13 +139,13 @@ public class PolygonTriangulator {
 						float vertExtent = 22 * AlgorithmRenderer
 								.algorithmToDensityPixels();
 						Point p1 = e.positionOnSweepLine(mSweepLinePosition
-								- vertExtent * .8f, mContext, true);
+								- vertExtent * .8f, mMesh, true);
 						Point p2 = e.positionOnSweepLine(mSweepLinePosition
-								+ vertExtent * 1.2f, mContext, true);
+								+ vertExtent * 1.2f, mMesh, true);
 						s.plotRay(p1, p2);
 
 						Point pt = e.positionOnSweepLine(mSweepLinePosition,
-								mContext, false);
+								mMesh, false);
 						s.plot(pt);
 					}
 				}
@@ -157,7 +157,7 @@ public class PolygonTriangulator {
 	private void createEventList() {
 		ArrayList<Vertex> array = new ArrayList();
 		for (int i = 0; i < mPolygon.numVertices(); i++) {
-			Vertex vertex = mContext.vertex(mPolygonMeshBase + i);
+			Vertex vertex = mMesh.vertex(mPolygonMeshBase + i);
 			vertex.clearFlags();
 			array.add(vertex);
 		}
@@ -493,7 +493,7 @@ public class PolygonTriangulator {
 	private Edge addEdge(Vertex v1, Vertex v2) {
 		if (s.step())
 			s.show("Adding mesh edge" + plotEdge(v1, v2));
-		return mContext.addEdge(v1, v2);
+		return mMesh.addEdge(v1, v2);
 	}
 
 	// Convenience methods for displaying algorithm objects
@@ -518,7 +518,7 @@ public class PolygonTriangulator {
 	}
 
 	private AlgorithmStepper s;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Polygon mPolygon;
 	private ArrayList<Vertex> mVertexEvents;
 	private TreeSet<SweepEdge> mSweepStatus;

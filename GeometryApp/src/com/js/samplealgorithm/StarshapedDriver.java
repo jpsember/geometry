@@ -22,19 +22,6 @@ public class StarshapedDriver implements Algorithm {
 	}
 
 	@Override
-	public void run(AlgorithmStepper stepper) {
-		mStepper = stepper;
-		mContext = new Mesh();
-		mRandom = new Random(mOptions.getIntValue("Seed"));
-
-		int baseVertex = buildPolygon();
-		Edge edge = mContext.polygonEdgeFromVertex(mContext.vertex(baseVertex));
-		StarshapedHoleTriangulator t = StarshapedHoleTriangulator
-				.buildTriangulator(mStepper, mContext, mKernelPoint, edge);
-		t.run();
-	}
-
-	@Override
 	public void prepareOptions(AlgorithmOptions options) {
 		mOptions = options;
 		mOptions.addSlider("Seed", "min", 0, "max", 300);
@@ -42,6 +29,19 @@ public class StarshapedDriver implements Algorithm {
 		mOptions.addCheckBox("experiment");
 		mOptions.addSlider("spikes", "min", 2, "max", 50);
 		mOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
+	}
+
+	@Override
+	public void run(AlgorithmStepper stepper) {
+		mStepper = stepper;
+		mMesh = new Mesh();
+		mRandom = new Random(mOptions.getIntValue("Seed"));
+
+		int baseVertex = buildPolygon();
+		Edge edge = mMesh.polygonEdgeFromVertex(mMesh.vertex(baseVertex));
+		StarshapedHoleTriangulator t = StarshapedHoleTriangulator
+				.buildTriangulator(mStepper, mMesh, mKernelPoint, edge);
+		t.run();
 	}
 
 	private Polygon buildExperimentalPolygon(int nPoints) {
@@ -98,7 +98,7 @@ public class StarshapedDriver implements Algorithm {
 			p = Polygon.starshapedPolygon(mStepper.algorithmRect(), nPoints,
 					mRandom);
 		}
-		int baseVertex = p.embed(mContext);
+		int baseVertex = p.embed(mMesh);
 		return baseVertex;
 	}
 
@@ -106,10 +106,10 @@ public class StarshapedDriver implements Algorithm {
 		doNothing();
 	}
 
-	private AlgorithmStepper mStepper;
 	private AlgorithmOptions mOptions;
+	private AlgorithmStepper mStepper;
 	private Point mKernelPoint;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Random mRandom;
 
 }

@@ -14,13 +14,13 @@ import static com.js.basic.Tools.*;
 
 public class MeshTest extends MyTestCase {
 
-	private Mesh mContext;
+	private Mesh mMesh;
 	private Polygon mPolygon;
 
-	private Mesh context() {
-		if (mContext == null)
-			mContext = new Mesh();
-		return mContext;
+	private Mesh mesh() {
+		if (mMesh == null)
+			mMesh = new Mesh();
+		return mMesh;
 	}
 
 	private Polygon square() {
@@ -42,17 +42,17 @@ public class MeshTest extends MyTestCase {
 	}
 
 	private void embedPolygon() {
-		polygon().embed(context());
+		polygon().embed(mesh());
 	}
 
 	private void triangulatePolygon() {
 		PolygonTriangulator tri = PolygonTriangulator.triangulator(null,
-				context(), polygon());
+				mesh(), polygon());
 		tri.triangulate();
 	}
 
 	private void verifyEdgesFound(boolean omitDuals) {
-		ArrayList<Edge> edges = context().constructListOfEdges(omitDuals);
+		ArrayList<Edge> edges = mesh().constructListOfEdges(omitDuals);
 		int nVert = polygon().numVertices();
 		int nEdges = nVert + (nVert - 3);
 		if (!omitDuals)
@@ -61,7 +61,7 @@ public class MeshTest extends MyTestCase {
 	}
 
 	private void verifySquareEdgesFound(boolean omitDuals) {
-		ArrayList<Edge> edges = context().constructListOfEdges(omitDuals);
+		ArrayList<Edge> edges = mesh().constructListOfEdges(omitDuals);
 		int nVert = polygon().numVertices();
 		int nEdges = nVert;
 		if (!omitDuals)
@@ -105,18 +105,18 @@ public class MeshTest extends MyTestCase {
 		IOSnapshot.open();
 		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
 		triangulatePolygon();
-		ArrayList<Edge> edges = context().constructListOfEdges(true);
+		ArrayList<Edge> edges = mesh().constructListOfEdges(true);
 		MyTestUtils.permute(random(), edges);
 		for (Edge edge : edges) {
-			pr(context().dump(false, true));
+			pr(mesh().dump(false, true));
 			if (random().nextBoolean())
 				edge = edge.dual();
 			pr("Deleting: " + dump(edge));
-			context().deleteEdge(edge);
+			mesh().deleteEdge(edge);
 			pr("");
 		}
 		pr("after deleting all edges:");
-		pr(context().dump(false, true));
+		pr(mesh().dump(false, true));
 		IOSnapshot.close();
 	}
 
@@ -124,18 +124,18 @@ public class MeshTest extends MyTestCase {
 		IOSnapshot.open();
 		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
 		triangulatePolygon();
-		int nVertices = mContext.numVertices();
+		int nVertices = mMesh.numVertices();
 		while (nVertices != 0) {
-			Vertex v = mContext.vertex(random().nextInt(nVertices));
+			Vertex v = mMesh.vertex(random().nextInt(nVertices));
 			nVertices--;
 
-			pr(context().dump(false, true));
+			pr(mesh().dump(false, true));
 			pr("Deleting: " + dump(v));
-			mContext.deleteVertex(v);
+			mMesh.deleteVertex(v);
 			pr("");
 		}
 		pr("after deleting all vertices:");
-		pr(context().dump(false, true));
+		pr(mesh().dump(false, true));
 		IOSnapshot.close();
 	}
 

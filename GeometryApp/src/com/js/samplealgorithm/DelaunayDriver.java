@@ -27,11 +27,28 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	@Override
+	public void prepareOptions(AlgorithmOptions options) {
+		mOptions = options;
+		mOptions.addSlider("Seed", "min", 1, "max", 300);
+		mOptions.addCheckBox("Deletions", "value", true);
+		mOptions.addCheckBox("Delete all");
+		mOptions.addCheckBox("Voronoi cells", "value", true);
+		ComboBoxWidget w = mOptions.addComboBox("Pattern");
+		w.addItem("Random");
+		w.addItem("Circle");
+		w.prepare();
+		mOptions.addSlider("Points", "min", 1, "max", 250, "value", 25);
+
+		mOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
+		mOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
+	}
+
+	@Override
 	public void run(AlgorithmStepper stepper) {
 
 		Rect pointBounds = new Rect(50, 50, 900, 900);
 		s = stepper;
-		mContext = new Mesh();
+		mMesh = new Mesh();
 		mRandom = new Random(mOptions.getIntValue("Seed"));
 		boolean deleteAll = mOptions.getBooleanValue("Delete all");
 		boolean withDeletions = deleteAll
@@ -41,13 +58,13 @@ public class DelaunayDriver implements Algorithm {
 			s.openLayer(BGND_ELEMENT_MESH);
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plotMesh(mContext);
+			s.plotMesh(mMesh);
 			s.closeLayer();
 		}
 
 		Rect delaunayBounds = new Rect(pointBounds);
 		delaunayBounds.inset(-10, -10);
-		mDelaunay = new Delaunay(mContext, delaunayBounds, stepper);
+		mDelaunay = new Delaunay(mMesh, delaunayBounds, stepper);
 		if (s.bigStep())
 			s.show("Initial triangulation");
 
@@ -118,26 +135,9 @@ public class DelaunayDriver implements Algorithm {
 		mDelaunay.remove(v);
 	}
 
-	@Override
-	public void prepareOptions(AlgorithmOptions options) {
-		mOptions = options;
-		mOptions.addSlider("Seed", "min", 1, "max", 300);
-		mOptions.addCheckBox("Deletions", "value", true);
-		mOptions.addCheckBox("Delete all");
-		mOptions.addCheckBox("Voronoi cells", "value", true);
-		ComboBoxWidget w = mOptions.addComboBox("Pattern");
-		w.addItem("Random");
-		w.addItem("Circle");
-		w.prepare();
-		mOptions.addSlider("Points", "min", 1, "max", 250, "value", 25);
-
-		mOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
-		mOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
-	}
-
-	private AlgorithmStepper s;
 	private AlgorithmOptions mOptions;
-	private Mesh mContext;
+	private AlgorithmStepper s;
+	private Mesh mMesh;
 	private Delaunay mDelaunay;
 	private Random mRandom;
 	private ArrayList<Vertex> mVertices;

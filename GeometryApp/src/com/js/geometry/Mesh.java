@@ -40,11 +40,11 @@ public final class Mesh {
 		return edges;
 	}
 
-	public void clearMesh() {
+	public void clear() {
 		mVertexBuffer.clear();
 	}
 
-	public void clearMeshFlags(int vertexFlags, int edgeFlags) {
+	public void clearFlags(int vertexFlags, int edgeFlags) {
 		if (vertexFlags != 0) {
 			for (Vertex v : mVertexBuffer) {
 				v.clearFlags(vertexFlags);

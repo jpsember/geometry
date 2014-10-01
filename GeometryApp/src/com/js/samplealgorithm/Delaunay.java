@@ -105,7 +105,7 @@ public class Delaunay {
 		if (s.step())
 			s.show("Edge of resulting hole" + plot(holeEdge));
 
-		mContext.deleteVertex(vertex);
+		mMesh.deleteVertex(vertex);
 
 		markHoleBoundary(holeEdge);
 
@@ -120,14 +120,14 @@ public class Delaunay {
 	}
 
 	public int nSites() {
-		return mContext.numVertices() - INITIAL_MESH_VERTICES;
+		return mMesh.numVertices() - INITIAL_MESH_VERTICES;
 	}
 
 	public Vertex site(int index) {
 		if (index < 0)
 			throw new IllegalArgumentException();
 		int i = index + INITIAL_MESH_VERTICES;
-		return mContext.vertex(i);
+		return mMesh.vertex(i);
 	}
 
 	/**
@@ -222,7 +222,7 @@ public class Delaunay {
 		if (s.step())
 			s.show("Triangulating hole");
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
-				.buildTriangulator(s, mContext, kernelPoint, mHoleEdges.get(0));
+				.buildTriangulator(s, mMesh, kernelPoint, mHoleEdges.get(0));
 		s.pushActive(false);
 		triangulator.run();
 		s.popActive();
@@ -246,7 +246,7 @@ public class Delaunay {
 	}
 
 	private Vertex insertPointIntoTriangle(Point point, Edge abEdge) {
-		Vertex v = mContext.addVertex(point);
+		Vertex v = mMesh.addVertex(point);
 		Vertex va = abEdge.sourceVertex();
 		Vertex vb = abEdge.destVertex();
 		Edge bcEdge = abEdge.nextFaceEdge();
@@ -254,9 +254,9 @@ public class Delaunay {
 
 		Vertex vc = bcEdge.destVertex();
 
-		mContext.addEdge(va, v);
-		mContext.addEdge(vb, v);
-		mContext.addEdge(vc, v);
+		mMesh.addEdge(va, v);
+		mMesh.addEdge(vb, v);
+		mMesh.addEdge(vc, v);
 		if (s.step())
 			s.show("Partitioned triangle" + plot(va, vb, vc)
 					+ s.plotLine(va, v) + s.plotLine(vb, v) + s.plotLine(vc, v));
@@ -313,8 +313,8 @@ public class Delaunay {
 			if (s.step())
 				s.show("Flipping edge" + plot(abEdge) + plot(p, w));
 
-			mContext.deleteEdge(abEdge);
-			Edge pw = mContext.addEdge(p, w);
+			mMesh.deleteEdge(abEdge);
+			Edge pw = mMesh.addEdge(p, w);
 			Edge wbEdge = pw.nextFaceEdge();
 			swapTest(awEdge, p);
 			swapTest(wbEdge, p);
@@ -364,9 +364,9 @@ public class Delaunay {
 			if (s.step())
 				s.show("Flipping edge" + plot(abEdge) + plot(c, w));
 
-			mContext.deleteEdge(abEdge);
+			mMesh.deleteEdge(abEdge);
 
-			Edge cwEdge = mContext.addEdge(c, w);
+			Edge cwEdge = mMesh.addEdge(c, w);
 			Edge wbEdge = cwEdge.nextFaceEdge();
 			Edge bcEdge = cwEdge.prevFaceEdge();
 			Edge caEdge = cwEdge.prevEdge();
@@ -412,11 +412,11 @@ public class Delaunay {
 
 	private void chooseSampleVertices() {
 		int nSamples = determineOptimalSampleSize();
-		int numVertices = mContext.numVertices();
+		int numVertices = mMesh.numVertices();
 		mSamples.clear();
 		for (int i = 0; i < nSamples; i++) {
 			int k = mRandom.nextInt(numVertices);
-			Vertex sample = mContext.vertex(k);
+			Vertex sample = mMesh.vertex(k);
 			mSamples.add(sample);
 		}
 	}
@@ -534,7 +534,7 @@ public class Delaunay {
 			s.closeLayer();
 		}
 
-		int maxIterations = mContext.numVertices();
+		int maxIterations = mMesh.numVertices();
 		while (true) {
 			if (maxIterations-- == 0)
 				GeometryException.raise("too many iterations");
@@ -585,7 +585,7 @@ public class Delaunay {
 	}
 
 	private int determineOptimalSampleSize() {
-		int populationSize = mContext.numVertices();
+		int populationSize = mMesh.numVertices();
 		// Calculate log_2 (population)
 		int optimalSize = (int) (Math.log(populationSize) / .693f);
 		if (s.step())
@@ -599,31 +599,31 @@ public class Delaunay {
 		return sideOfLine(p1, p2, query) > 0;
 	}
 
-	private void constructMesh(Mesh c, Rect boundingRect) {
-		c.clearMesh();
+	private void constructMesh(Mesh mesh, Rect boundingRect) {
+		mesh.clear();
 
 		if (boundingRect == null)
 			boundingRect = new Rect(-HORIZON, -HORIZON, HORIZON * 2,
 					HORIZON * 2);
 
-		Vertex v0 = c.addVertex(boundingRect.bottomLeft());
-		Vertex v1 = c.addVertex(boundingRect.bottomRight());
-		Vertex v2 = c.addVertex(boundingRect.topRight());
+		Vertex v0 = mesh.addVertex(boundingRect.bottomLeft());
+		Vertex v1 = mesh.addVertex(boundingRect.bottomRight());
+		Vertex v2 = mesh.addVertex(boundingRect.topRight());
 		Point p3 = boundingRect.topLeft();
 		// Perturb one point so the four points aren't collinear
 		p3.x -= 1e-3f;
 		p3.y += 1e-3f;
-		Vertex v3 = c.addVertex(p3);
+		Vertex v3 = mesh.addVertex(p3);
 
 		// Mark these four edges (not their duals) as horizon edges
-		c.addEdge(v0, v1).addFlags(EDGEFLAG_HORIZON);
-		c.addEdge(v1, v2).addFlags(EDGEFLAG_HORIZON);
-		c.addEdge(v2, v3).addFlags(EDGEFLAG_HORIZON);
-		c.addEdge(v3, v0).addFlags(EDGEFLAG_HORIZON);
+		mesh.addEdge(v0, v1).addFlags(EDGEFLAG_HORIZON);
+		mesh.addEdge(v1, v2).addFlags(EDGEFLAG_HORIZON);
+		mesh.addEdge(v2, v3).addFlags(EDGEFLAG_HORIZON);
+		mesh.addEdge(v3, v0).addFlags(EDGEFLAG_HORIZON);
 
-		c.addEdge(v0, v2);
+		mesh.addEdge(v0, v2);
 
-		mContext = c;
+		mMesh = mesh;
 	}
 
 	// Convenience methods for using stepper
@@ -659,7 +659,7 @@ public class Delaunay {
 
 	private AlgorithmStepper s;
 	private Random mRandom;
-	private Mesh mContext;
+	private Mesh mMesh;
 	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
 	private ArrayList<Vertex> mSamples = new ArrayList();

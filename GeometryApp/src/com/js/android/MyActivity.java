@@ -70,32 +70,6 @@ public abstract class MyActivity extends Activity {
 		super.onDestroy();
 	}
 
-	/**
-	 * Store fragment within FragmentReference, if one has been registered with
-	 * this activity
-	 * 
-	 * @param f
-	 *            fragment
-	 */
-	void registerFragment(MyFragment f) {
-		log("registerFragment " + nameOf(f) + "(name " + f.getName() + ")");
-		FragmentReference reference = mReferenceMap.get(f.getName());
-		if (reference != null) {
-			reference.setFragment(f);
-		}
-	}
-
-	void addReference(FragmentReference reference) {
-		mReferenceMap.put(reference.getName(), reference);
-		reference.refresh();
-	}
-
-	public <T extends MyFragment> FragmentReference<T> buildFragment(
-			Class fragmentClass) {
-		FragmentReference<T> ref = new FragmentReference<T>(this, fragmentClass);
-		return ref;
-	}
-
 	private void prepareSystemOut() {
 		AndroidSystemOutFilter.install();
 		if (sConsoleGreetingPrinted)
@@ -190,7 +164,6 @@ public abstract class MyActivity extends Activity {
 		addResource("search", android.R.drawable.ic_menu_search);
 	}
 
-	private Map<String, FragmentReference> mReferenceMap = new HashMap();
 	private boolean mLogging;
 	private Map<String, Integer> mResourceMap = new HashMap();
 

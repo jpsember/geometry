@@ -83,20 +83,20 @@ public class StarshapedDriver implements Algorithm {
 				b.add(a.get((i + (arcPoints / 2)) % a.size()));
 			a = b;
 		}
-		Rect r = mStepper.algorithmRect();
-		return Polygon.starshapedPolygon(r, a.array(true));
+		return Polygon.starshapedPolygon(mStepper.algorithmRect(),
+				a.array(true));
 	}
 
 	private int buildPolygon() {
 		int nPoints = mOptions.getIntValue("Points");
-		mKernelPoint = mStepper.algorithmRect().midPoint();
+		Rect bounds = mStepper.algorithmRect();
+		mKernelPoint = bounds.midPoint();
 		Polygon p;
 
 		if (mOptions.getBooleanValue("experiment")) {
 			p = buildExperimentalPolygon(nPoints);
 		} else {
-			p = Polygon.starshapedPolygon(mStepper.algorithmRect(), nPoints,
-					mRandom);
+			p = Polygon.starshapedPolygon(bounds, nPoints, mRandom);
 		}
 		int baseVertex = p.embed(mMesh);
 		return baseVertex;

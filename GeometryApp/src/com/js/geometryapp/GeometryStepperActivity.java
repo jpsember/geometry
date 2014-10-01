@@ -16,8 +16,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		addAlgorithms(getStepper());
-		getStepper().begin();
+		addAlgorithms(mStepper);
+		mStepper.begin();
 	}
 
 	public abstract void addAlgorithms(AlgorithmStepper s);
@@ -30,12 +30,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected View buildContentView() {
-		mOptions = new AlgorithmOptions(this, getStepper());
-		getStepper().setOptions(mOptions);
-
 		// Have superclass construct the OpenGL view
 		View glView = super.buildContentView();
-		getStepper().setGLSurfaceView(getGLSurfaceView());
+		mStepper.setGLSurfaceView(getGLSurfaceView());
 
 		// Wrap it in a containing view
 		LinearLayout mainView = new LinearLayout(this);
@@ -47,8 +44,10 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			p.weight = 1;
 			mainView.addView(glView, p);
 		}
+		mOptions = mStepper.constructOptions(this);
+
 		// Add the stepper control panel to this container
-		mainView.addView(getStepper().controllerView());
+		mainView.addView(mStepper.controllerView());
 		// Make the container the main view of a TwinViewContainer
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		mOptions.prepareViews(twinViews.getAuxilliaryView());
@@ -66,7 +65,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	 * Subclass can override this method to build their own renderer
 	 */
 	protected AlgorithmRenderer buildRenderer(Context context) {
-		return new AlgorithmRenderer(context, getStepper());
+		return new AlgorithmRenderer(context, mStepper);
 	}
 
 	public AlgorithmStepper getStepper() {

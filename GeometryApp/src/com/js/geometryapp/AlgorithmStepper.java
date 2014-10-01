@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -49,16 +50,12 @@ public class AlgorithmStepper {
 		if (mAlgorithmRect == null) {
 			DisplayMetrics m = MyActivity.displayMetrics();
 			if (m.widthPixels > m.heightPixels) {
-				setAlgorithmRect(new Rect(0, 0, 1200, 1000));
+				mAlgorithmRect = new Rect(0, 0, 1200, 1000);
 			} else {
-				setAlgorithmRect(new Rect(0, 0, 1000, 1200));
+				mAlgorithmRect = new Rect(0, 0, 1000, 1200);
 			}
 		}
 		return mAlgorithmRect;
-	}
-
-	public void setAlgorithmRect(Rect r) {
-		mAlgorithmRect = r;
 	}
 
 	/**
@@ -162,10 +159,9 @@ public class AlgorithmStepper {
 	 *            message to display, which may cause other elements to be
 	 *            displayed via side effects
 	 */
-	public void show(Object message) {
-		String messageString = message.toString();
-		mFrameTitle = messageString;
-		throw new DesiredStepReachedException(messageString);
+	public void show(String message) {
+		mFrameTitle = message;
+		throw new DesiredStepReachedException(message);
 	}
 
 	private void assertActive() {
@@ -297,6 +293,11 @@ public class AlgorithmStepper {
 	 */
 	View controllerView() {
 		return AlgorithmStepperPanel.build(mOptions);
+	}
+
+	AlgorithmOptions constructOptions(Context context) {
+		mOptions = new AlgorithmOptions(context, this);
+		return mOptions;
 	}
 
 	/**
@@ -522,10 +523,6 @@ public class AlgorithmStepper {
 			die("no algorithms specified");
 		mOptions.begin(mAlgorithms);
 		refresh();
-	}
-
-	void setOptions(AlgorithmOptions options) {
-		mOptions = options;
 	}
 
 	private Object sSynchronizationLock = new Object();

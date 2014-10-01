@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
-public class GeometryStepperActivity extends GeometryActivity {
+public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	public GeometryStepperActivity() {
 		mStepper = new AlgorithmStepper();
@@ -16,7 +16,11 @@ public class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		addAlgorithms(getStepper());
+		getStepper().begin();
 	}
+
+	public abstract void addAlgorithms(AlgorithmStepper s);
 
 	@Override
 	protected void onPause() {

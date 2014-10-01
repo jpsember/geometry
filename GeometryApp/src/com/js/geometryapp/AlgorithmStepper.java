@@ -489,7 +489,7 @@ public class AlgorithmStepper {
 	 * 
 	 * @return
 	 */
-	/*public*/ Object getLock() {
+	Object getLock() {
 		return sSynchronizationLock;
 	}
 
@@ -517,15 +517,11 @@ public class AlgorithmStepper {
 		private ArrayList<AlgorithmDisplayElement> mElements = new ArrayList();
 	}
 
-	public void begin() {
+	void begin() {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		mOptions.begin(mAlgorithms);
 		refresh();
-	}
-
-	ArrayList<Algorithm> algorithms() {
-		return mAlgorithms;
 	}
 
 	void setOptions(AlgorithmOptions options) {

@@ -20,8 +20,10 @@ public class FloatArray {
 	}
 
 	public void add(Point point) {
-		add(point.x);
-		add(point.y);
+		growTo(mSize + 2);
+		mArray[mSize] = point.x;
+		mArray[mSize + 1] = point.y;
+		mSize += 2;
 	}
 
 	/**
@@ -35,17 +37,6 @@ public class FloatArray {
 		if (!trimToSize || mArray.length == mSize)
 			return mArray;
 		return Arrays.copyOf(mArray, mSize);
-	}
-
-	private void growTo(int required) {
-		if (capacity() < required) {
-			required = Math.max(required, capacity() * 2);
-			mArray = Arrays.copyOf(mArray, required);
-		}
-	}
-
-	private int capacity() {
-		return mArray.length;
 	}
 
 	public int size() {
@@ -69,6 +60,17 @@ public class FloatArray {
 		if (index >= mSize)
 			throw new ArrayIndexOutOfBoundsException();
 		return mArray[index];
+	}
+
+	private void growTo(int required) {
+		if (capacity() < required) {
+			required = Math.max(required, capacity() * 2);
+			mArray = Arrays.copyOf(mArray, required);
+		}
+	}
+
+	private int capacity() {
+		return mArray.length;
 	}
 
 	private int mSize;

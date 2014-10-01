@@ -176,7 +176,7 @@ public class AlgorithmOptions {
 		T field = (T) mWidgetsMap.get(widgetName);
 		if (field == null)
 			throw new IllegalArgumentException("no widget found with name "
-					+ widgetName + "; map:\n" + d(mWidgetsMap));
+					+ widgetName + "; ids: " + d(mWidgetsMap.keySet(), false));
 		return field;
 	}
 
@@ -186,6 +186,9 @@ public class AlgorithmOptions {
 	private AlgorithmOptions(Context context) {
 		sContext = context;
 		mStepper = AlgorithmStepper.sharedInstance();
+
+		mWidgetsMap = new HashMap();
+		mAlgorithms = new ArrayList();
 	}
 
 	private static Map<String, Object> buildAttributes(String identifier,
@@ -442,9 +445,7 @@ public class AlgorithmOptions {
 	private ViewGroup constructSubView() {
 		LinearLayout view = new LinearLayout(sContext);
 		view.setOrientation(LinearLayout.VERTICAL);
-		if (AbstractWidget.SET_DEBUG_COLORS) {
-			view.setBackgroundColor(OurGLTools.debugColor());
-		}
+		OurGLTools.applyDebugColors(view);
 		return view;
 	}
 
@@ -475,9 +476,8 @@ public class AlgorithmOptions {
 		}
 	}
 
-	void resume(ArrayList<Algorithm> algorithms) {
+	void begin(ArrayList<Algorithm> algorithms) {
 		// Create a WidgetGroup for each algorithm
-		mAlgorithms = new ArrayList();
 		for (Algorithm algorithm : algorithms) {
 			AlgorithmRecord algorithmRecord = new AlgorithmRecord();
 			mAlgorithms.add(algorithmRecord);
@@ -532,10 +532,6 @@ public class AlgorithmOptions {
 		mActiveAlgorithm.delegate().run();
 	}
 
-	static void clearGlobals() {
-		sAlgorithmOptions = null;
-	}
-
 	private static AlgorithmOptions sAlgorithmOptions;
 
 	private AlgorithmStepper mStepper;
@@ -544,7 +540,7 @@ public class AlgorithmOptions {
 	// value changes
 	private boolean mPrepared;
 	private Context sContext;
-	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
+	private Map<String, AbstractWidget> mWidgetsMap;
 	private WidgetGroup mPrimaryWidgetGroup;
 	private ArrayList<AlgorithmRecord> mAlgorithms;
 	private AlgorithmRecord mActiveAlgorithm;

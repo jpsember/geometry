@@ -14,6 +14,7 @@ import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.js.android.MyActivity;
+import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -29,12 +30,18 @@ public class AlgorithmStepper {
 	static final String WIDGET_ID_STEP_FWD = ">";
 
 	/**
+	 * Throw out any old singleton instance, and construct a new one
+	 */
+	static void constructSingleton() {
+		sStepper = new AlgorithmStepper();
+	}
+
+	/**
 	 * Get the singleton instance of the stepper
 	 */
 	public static AlgorithmStepper sharedInstance() {
-		if (sStepper == null) {
-			sStepper = new AlgorithmStepper();
-		}
+		if (sStepper == null)
+			constructSingleton();
 		return sStepper;
 	}
 
@@ -380,7 +387,7 @@ public class AlgorithmStepper {
 						}
 					}
 					throw e;
-				} catch (Throwable t) {
+				} catch (RuntimeException t) {
 					// Pop active stack until it's empty; we want to make sure
 					// this message gets displayed, even if it occurred during a
 					// sequence for which stepping is disabled
@@ -388,6 +395,8 @@ public class AlgorithmStepper {
 						popActive();
 
 					pr(t + "\n" + stackTrace(t));
+					if (!(t instanceof GeometryException))
+						throw t;
 
 					if (bigStep()) {
 						show("Caught: " + t);
@@ -510,26 +519,16 @@ public class AlgorithmStepper {
 		private ArrayList<AlgorithmDisplayElement> mElements = new ArrayList();
 	}
 
-	/**
-	 * Called by activity's onResume(). Process the algorithms added during
-	 * onCreate()
-	 */
-	void resume() {
+	public void begin() {
 		sOptions = AlgorithmOptions.sharedInstance();
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
-		sOptions.resume(mAlgorithms);
+		sOptions.begin(mAlgorithms);
 		refresh();
 	}
 
 	ArrayList<Algorithm> algorithms() {
 		return mAlgorithms;
-	}
-
-	static void clearGlobals() {
-		sStepper = null;
-		sOptions = null;
-		AlgorithmOptions.clearGlobals();
 	}
 
 	// The singleton instance of this class

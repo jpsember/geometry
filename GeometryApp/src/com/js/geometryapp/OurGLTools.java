@@ -7,6 +7,7 @@ import com.js.geometry.MyMath;
 
 import android.graphics.Color;
 import android.opengl.GLUtils;
+import android.view.View;
 
 public final class OurGLTools {
 
@@ -16,6 +17,8 @@ public final class OurGLTools {
 	 * Generate code that should be 'debug only', i.e., preproduction?
 	 */
 	public static final boolean DEBUG_ONLY_FEATURES = true;
+
+	public static final boolean SET_DEBUG_COLORS = (false && DEBUG_ONLY_FEATURES);
 
 	/**
 	 * Store current thread as the OpenGL rendering thread, for later calls to
@@ -163,6 +166,11 @@ public final class OurGLTools {
 		index = MyMath.myMod(index, debugColors.length / 3) * 3;
 		return Color.argb(255, debugColors[index], debugColors[index + 1],
 				debugColors[index + 2]);
+	}
+
+	public static void applyDebugColors(View view) {
+		if (SET_DEBUG_COLORS)
+			view.setBackgroundColor(debugColor());
 	}
 
 	private static int sDebugColorIndex;

@@ -418,20 +418,26 @@ public final class Tools {
 		return sb.toString();
 	}
 
-	public static String d(Collection c) {
+	public static String d(Collection c, boolean withNewlines) {
 		if (c == null)
 			return "<null>";
 		StringBuilder sb = new StringBuilder();
-		sb.append("[\n");
+		char newlineChar = withNewlines ? '\n' : ' ';
+		sb.append("[");
+		sb.append(newlineChar);
 		Iterator it = c.iterator();
 		while (it.hasNext()) {
 			Object obj = it.next();
-			// sb.append(' ');
 			sb.append(chomp(obj.toString()));
-			sb.append('\n');
+			sb.append(newlineChar);
 		}
-		sb.append("]\n");
+		sb.append("]");
+		sb.append(newlineChar);
 		return sb.toString();
+	}
+
+	public static String d(Collection c) {
+		return d(c, true);
 	}
 
 	public static String d(char c) {

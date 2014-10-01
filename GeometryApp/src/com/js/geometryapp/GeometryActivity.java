@@ -3,16 +3,14 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
-import com.js.geometry.*;
 
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ConfigurationInfo;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.ViewGroup;
+import android.view.View;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -27,6 +25,8 @@ public class GeometryActivity extends MyActivity {
 					Toast.LENGTH_LONG).show();
 			return;
 		}
+		// Hide the title bar, to conserve screen real estate
+		getWindow().requestFeature(Window.FEATURE_NO_TITLE);
 
 		setContentView(buildContentView());
 	}
@@ -55,32 +55,22 @@ public class GeometryActivity extends MyActivity {
 		super.onResume();
 		if (mGLView != null)
 			mGLView.onResume();
+		else
+			warning("onResume with no GLSurfaceView");
 	}
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		return super.onCreateOptionsMenu(menu);
+	/**
+	 * Subclasses should override this to set the activity's content view. The
+	 * default implementation constructs a GLSurfaceView
+	 */
+	protected View buildContentView() {
+		mGLView = buildOpenGLView();
+		return mGLView;
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.action_settings:
-			unimp("settings");
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
-
-	protected ViewGroup buildContentView() {
-		LinearLayout mainView = new LinearLayout(this);
-		{
-			mainView.setOrientation(LinearLayout.VERTICAL);
-			mGLView = buildOpenGLView();
-			mainView.addView(mGLView, layoutParams(false, true));
-		}
-		return mainView;
+	protected GLSurfaceView buildOpenGLView() {
+		GLSurfaceView v = new OurGLSurfaceView(this, new OurGLRenderer(this));
+		return v;
 	}
 
 	public static LinearLayout.LayoutParams layoutParams(boolean horizontal,
@@ -104,13 +94,12 @@ public class GeometryActivity extends MyActivity {
 		return p;
 	}
 
-	protected GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = new OurGLSurfaceView(this, new OurGLRenderer(this));
-		return v;
-	}
-
 	protected GLSurfaceView getGLSurfaceView() {
 		return mGLView;
+	}
+
+	static {
+		doNothing();
 	}
 
 	private GLSurfaceView mGLView;

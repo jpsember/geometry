@@ -75,7 +75,7 @@ public abstract class AbstractWidget {
 
 	private static final float WIDGET_PADDING_HORZ = .05f;
 	private static final float WIDGET_PADDING_VERT = .02f;
-	public static final boolean SET_DEBUG_COLORS = false;
+
 
 	@Override
 	public String toString() {
@@ -126,10 +126,7 @@ public abstract class AbstractWidget {
 		int vPadding = MyActivity.inchesToPixels(WIDGET_PADDING_VERT);
 		widgetContainer.setPadding(hPadding, vPadding, hPadding, vPadding);
 
-		if (SET_DEBUG_COLORS) {
-			warning("setting debug background colors");
-			widgetContainer.setBackgroundColor(OurGLTools.debugColor());
-		}
+		OurGLTools.applyDebugColors(widgetContainer);
 
 		this.mPrimaryView = widgetContainer;
 	}

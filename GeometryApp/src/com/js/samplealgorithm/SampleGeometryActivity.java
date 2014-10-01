@@ -4,6 +4,7 @@ import android.os.Bundle;
 
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
+import static com.js.basic.Tools.*;
 
 public class SampleGeometryActivity extends GeometryStepperActivity {
 
@@ -15,5 +16,10 @@ public class SampleGeometryActivity extends GeometryStepperActivity {
 		s.addAlgorithm(new DelaunayDriver());
 		s.addAlgorithm(new StarshapedDriver());
 		s.addAlgorithm(new TriangulatePolygonDriver());
+		s.begin();
+	}
+
+	static {
+		doNothing();
 	}
 }

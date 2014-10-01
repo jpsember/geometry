@@ -22,6 +22,11 @@ public class AlgorithmRecord {
 		return mWidgets;
 	}
 
+	@Override
+	public String toString() {
+		return "AlgorithmRecord[" + delegate().getAlgorithmName() + "]";
+	}
+
 	private Algorithm mDelegate;
 	private WidgetGroup mWidgets;
 }

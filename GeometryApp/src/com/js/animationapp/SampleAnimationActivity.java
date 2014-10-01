@@ -18,7 +18,7 @@ import com.js.geometryapp.OurGLRenderer;
 import com.js.geometryapp.OurGLSurfaceView;
 import com.js.geometryapp.SpriteContext;
 
-public class SampleActivity extends GeometryActivity {
+public class SampleAnimationActivity extends GeometryActivity {
 
 	protected GLSurfaceView buildOpenGLView() {
 		GLSurfaceView v = new OurGLSurfaceView(this, new SampleRenderer(this));

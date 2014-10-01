@@ -38,6 +38,8 @@ class TwinViewContainer {
 	private void buildAuxilliaryView() {
 		LinearLayout view = new LinearLayout(getContext());
 		view.setOrientation(LinearLayout.VERTICAL);
+		int padding = MyActivity.inchesToPixels(.06f);
+		view.setPadding(padding, padding, padding, padding);
 		mAuxilliaryView = view;
 	}
 

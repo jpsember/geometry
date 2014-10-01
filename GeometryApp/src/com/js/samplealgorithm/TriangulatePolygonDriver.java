@@ -20,7 +20,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 	public void prepareOptions(AlgorithmOptions options) {
 		mOptions = options;
 
-		ComboBoxWidget w = mOptions.addComboBox("polygon");
+		ComboBoxWidget w = mOptions.addComboBox("Polygon");
 		w.setLabel("Polygon:");
 
 		w.addItem("Dragon #6", Polygon.TESTPOLY_DRAGON_X + 6);
@@ -49,7 +49,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	private void prepareInput() {
-		ComboBoxWidget w = mOptions.getWidget("polygon");
+		ComboBoxWidget w = mOptions.getWidget("Polygon");
 		int polygonName = (Integer) w.getSelectedValue();
 
 		mMesh = new Mesh();

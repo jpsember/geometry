@@ -73,11 +73,6 @@ public abstract class AbstractWidget {
 	 */
 	public static final String OPTION_LAYOUT_HEIGHT = "layout_height";
 
-	/**
-	 * If true (the default), adds some padding to the widget
-	 */
-	public static final String OPTION_PADDING = "padding";
-
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(nameOf(this));
@@ -124,12 +119,6 @@ public abstract class AbstractWidget {
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);
 		widgetContainer.setLayoutParams(params);
-		if (boolAttr(OPTION_PADDING, true)) {
-			int hPadding = MyActivity.inchesToPixels(.05f);
-			int vPadding = MyActivity.inchesToPixels(.02f);
-			widgetContainer.setPadding(hPadding, vPadding, hPadding, vPadding);
-		}
-
 		OurGLTools.applyDebugColors(widgetContainer);
 
 		this.mPrimaryView = widgetContainer;
@@ -300,8 +289,7 @@ public abstract class AbstractWidget {
 	}
 
 	protected void notifyListeners() {
-		mOptions.processWidgetValue(this,
-				this.mListeners);
+		mOptions.processWidgetValue(this, this.mListeners);
 	}
 
 	// View representing this widget. It probably contains subviews that include

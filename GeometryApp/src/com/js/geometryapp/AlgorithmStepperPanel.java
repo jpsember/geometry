@@ -41,8 +41,7 @@ class AlgorithmStepperPanel {
 	private void addButton(ViewGroup parent, String label) {
 		ButtonWidget w = mOptions.addButton(label,
 				AbstractWidget.OPTION_DETACHED, true,
-				AbstractWidget.OPTION_REFRESH_ALGORITHM, false,
-				AbstractWidget.OPTION_PADDING, false);
+				AbstractWidget.OPTION_REFRESH_ALGORITHM, false);
 		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
 	}
 
@@ -57,7 +56,6 @@ class AlgorithmStepperPanel {
 				AlgorithmOptions.WIDGET_ID_TARGETSTEP, //
 				AbstractWidget.OPTION_DETACHED, true, //
 				AbstractWidget.OPTION_HAS_LABEL, false, //
-				AbstractWidget.OPTION_PADDING, false, //
 				AbstractWidget.OPTION_LAYOUT_HEIGHT, LayoutParams.MATCH_PARENT);
 
 		layout.addView(targetStepSlider.getView(),

@@ -2,21 +2,12 @@ package com.js.android;
 
 import com.js.basic.Files;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.res.Configuration;
 import android.graphics.Color;
-import android.os.Bundle;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 import static com.js.basic.Tools.*;
 
@@ -29,17 +20,6 @@ public final class Tools {
 	public static final void doNothingAndroid() {
 	}
 
-	/**
-	 * If true, views can be wrapped with diagnostic labels and colors
-	 */
-	public static final boolean DEBUG_VIEWS = false;
-
-	public static final int DEVICESIZE_UNKNOWN = 0;
-	public static final int DEVICESIZE_SMALL = 1;
-	public static final int DEVICESIZE_NORMAL = 2;
-	public static final int DEVICESIZE_LARGE = 3;
-	public static final int DEVICESIZE_XLARGE = 4;
-
 	public static void assertUIThread() {
 		if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
 			die("not running within UI thread");
@@ -50,19 +30,6 @@ public final class Tools {
 		if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
 			die("unexpectedly running within UI thread");
 		}
-	}
-
-	/**
-	 * Construct an Intent for starting an activity
-	 * 
-	 * @param context
-	 *            current activity's context
-	 * @param theClass
-	 *            the activity's class
-	 * @return intent
-	 */
-	public static Intent startIntentFor(Context context, Class theClass) {
-		return new Intent(context, theClass);
 	}
 
 	/**
@@ -91,25 +58,6 @@ public final class Tools {
 		builder.setMessage(warningMessage)
 				.setPositiveButton("Yes", dialogClickListener)
 				.setNegativeButton("No", dialogClickListener).show();
-	}
-
-	/**
-	 * Debug purposes only; get description of an activity's intent
-	 * 
-	 * @param activity
-	 * @return
-	 */
-	public static String dumpIntent(Activity activity) {
-		StringBuilder sb = new StringBuilder(nameOf(activity) + " Intent:");
-
-		Intent intent = activity.getIntent();
-
-		Bundle bundle = intent.getExtras();
-		for (String key : bundle.keySet()) {
-			Object value = bundle.get(key);
-			sb.append("  " + key + " : " + describe(value));
-		}
-		return sb.toString();
 	}
 
 	/**
@@ -155,23 +103,6 @@ public final class Tools {
 		return s;
 	}
 
-	public static int getDeviceSize(Context context) {
-		int screenLayout = context.getResources().getConfiguration().screenLayout;
-		screenLayout &= Configuration.SCREENLAYOUT_SIZE_MASK;
-		switch (screenLayout) {
-		case Configuration.SCREENLAYOUT_SIZE_SMALL:
-			return DEVICESIZE_SMALL;
-		case Configuration.SCREENLAYOUT_SIZE_NORMAL:
-			return DEVICESIZE_NORMAL;
-		case Configuration.SCREENLAYOUT_SIZE_LARGE:
-			return DEVICESIZE_LARGE;
-		case 4: // Configuration.SCREENLAYOUT_SIZE_XLARGE is API >= 9
-			return DEVICESIZE_XLARGE;
-		default:
-			return DEVICESIZE_UNKNOWN;
-		}
-	}
-
 	/**
 	 * Debug utility to set the background color for a view. Each call
 	 * increments a counter to produce a unique color (from a finite set)
@@ -181,39 +112,6 @@ public final class Tools {
 		int i = mDebugBgndColorIndex % debugColorCycle.length;
 		view.setBackgroundColor(Color.parseColor(debugColorCycle[i]));
 		mDebugBgndColorIndex++;
-	}
-
-	public static View wrapView(View view) {
-		return wrapView(view, null);
-	}
-
-	public static View wrapView(View view, String title) {
-		if (!DEBUG_VIEWS)
-			return view;
-
-		// If view already has a parent, something odd is happening
-		if (view.getParent() != null) {
-			pr("wrapView, already has parent: " + describe(view.getParent()));
-			ViewGroup p = (ViewGroup) view.getParent();
-			p.removeView(view);
-		}
-
-		LinearLayout f = new LinearLayout(view.getContext());
-		f.setOrientation(LinearLayout.VERTICAL);
-		final int PADDING = 14;
-		f.setPadding(PADDING, PADDING, PADDING, PADDING);
-		if (title != null) {
-			TextView tv = new TextView(view.getContext());
-			tv.setText(title);
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-			p.gravity = Gravity.CENTER_HORIZONTAL;
-			f.addView(tv, p);
-		}
-
-		f.addView(view);
-		debugChangeBgndColor(f);
-		return f;
 	}
 
 	private static String debugColorCycle[] = { "#402020", "#204020",

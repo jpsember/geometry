@@ -6,6 +6,14 @@ import static com.js.basic.Tools.*;
 public class QuiescentDelayOperation {
 
 	/**
+	 * Cancel an existing pending operation, if one exists
+	 */
+	public static void cancelExisting(QuiescentDelayOperation existing) {
+		if (existing != null)
+			existing.mOperation = null;
+	}
+
+	/**
 	 * Determine whether an existing pending operation should be replaced
 	 * 
 	 * @param existing
@@ -14,10 +22,6 @@ public class QuiescentDelayOperation {
 	 *         enough
 	 */
 	public static boolean replaceExisting(QuiescentDelayOperation existing) {
-		final boolean db = true;
-		if (db)
-			pr("replace? " + existing);
-
 		boolean replace = true;
 		if (existing != null) {
 			long currentTime = System.currentTimeMillis();
@@ -25,12 +29,9 @@ public class QuiescentDelayOperation {
 					+ existing.mActivationDelay / 2)
 				replace = false;
 			if (replace) {
-				pr("  yes, clearing existing\n");
-				existing.mOperation = null;
+				cancelExisting(existing);
 			}
 		}
-		if (!replace)
-			pr("  no.\n");
 		return replace;
 	}
 

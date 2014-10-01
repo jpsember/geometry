@@ -334,6 +334,10 @@ public class AlgorithmStepper {
 		}
 	}
 
+	void calculateAlgorithmTotalSteps() {
+		unimp("calculateAlgorithmTotalSteps");
+	}
+
 	private void performAlgorithm() {
 
 		synchronized (getLock()) {

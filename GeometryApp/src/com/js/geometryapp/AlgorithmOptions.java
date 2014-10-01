@@ -310,6 +310,8 @@ public class AlgorithmOptions {
 	private void selectAlgorithm(AlgorithmRecord ar) {
 		if (mActiveAlgorithm == ar)
 			return;
+		QuiescentDelayOperation.cancelExisting(mPendingRecalculationOperation);
+
 		mPrepared = false;
 
 		saveStepsInformation();
@@ -364,28 +366,18 @@ public class AlgorithmOptions {
 	}
 
 	void persistStepperState(boolean withDelay) {
-		pr("persistStepperState withDelay=" + withDelay + " mIgnorePending="
-				+ mIgnorePending);
-		if (mIgnorePending)
-			return;
 		mFlushRequired = true;
 		if (!withDelay) {
 			persistStepperStateAux();
 			return;
 		}
 
-		final long FLUSH_DELAY = 5000;
-
-		pr("persistStepperState");
-		sleepFor(100);
-
 		// Make a delayed call to persist the values (on the UI thread)
 		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
+			final long FLUSH_DELAY = 5000;
 			mPendingFlushOperation = new QuiescentDelayOperation(FLUSH_DELAY,
 					new Runnable() {
-						@Override
 						public void run() {
-							pr("   ----------------- persist stepper state aux");
 							persistStepperStateAux();
 						}
 					});
@@ -438,7 +430,17 @@ public class AlgorithmOptions {
 			// trigger a recalculation after a delay
 			if (widget.boolAttr(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS,
 					false)) {
-				pr("recalc for " + widget.getId());
+				final long RECALC_DELAY = 5000;
+				if (QuiescentDelayOperation
+						.replaceExisting(mPendingRecalculationOperation)) {
+					mPendingRecalculationOperation = new QuiescentDelayOperation(
+							RECALC_DELAY, new Runnable() {
+								public void run() {
+									pr("   ----------------- recalc algorithm steps");
+									mStepper.calculateAlgorithmTotalSteps();
+								}
+							});
+				}
 			}
 		}
 		persistStepperState(true);
@@ -555,9 +557,8 @@ public class AlgorithmOptions {
 	private AlgorithmRecord mSecondaryWidgetGroup;
 
 	private boolean mFlushRequired;
-	private boolean mIgnorePending;
-	// The single valid pending flush operation, or null
 	private QuiescentDelayOperation mPendingFlushOperation;
+	private QuiescentDelayOperation mPendingRecalculationOperation;
 
 	// For generating unique text ids
 	private int mPreviousTextIndex;

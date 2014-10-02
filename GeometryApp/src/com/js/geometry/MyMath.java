@@ -466,4 +466,10 @@ public final class MyMath {
 		pt.y = perturb(random, pt.y);
 	}
 
+	public static Point randomPointInDisc(Random random, Point origin,
+			float radius) {
+		float val = radius * (float) Math.sqrt(random.nextFloat());
+		return pointOnCircle(origin, random.nextFloat() * PI * 2, val);
+	}
+
 }

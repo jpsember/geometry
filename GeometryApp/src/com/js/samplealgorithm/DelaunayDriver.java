@@ -31,6 +31,7 @@ public class DelaunayDriver implements Algorithm {
 		mOptions = options;
 		mOptions.addSlider("Seed", "min", 1, "max", 300);
 		mOptions.addCheckBox("Small initial mesh", "value", true);
+		mOptions.addCheckBox("Random disc", "value", false);
 		mOptions.addCheckBox("Deletions", "value", true);
 		mOptions.addCheckBox("Delete all");
 		mOptions.addCheckBox("Voronoi cells", "value", true);
@@ -89,9 +90,13 @@ public class DelaunayDriver implements Algorithm {
 							/ (numPoints - 1), .49f * pointBounds.minDim());
 				MyMath.perturb(mRandom, pt);
 			} else {
-				pt = new Point(pointBounds.x + mRandom.nextFloat()
-						* pointBounds.width, pointBounds.y
-						+ mRandom.nextFloat() * pointBounds.height);
+				if (mOptions.getBooleanValue("Random disc")) {
+					pt = MyMath.randomPointInDisc(mRandom,
+							pointBounds.midPoint(), pointBounds.minDim() / 2);
+				} else
+					pt = new Point(pointBounds.x + mRandom.nextFloat()
+							* pointBounds.width, pointBounds.y
+							+ mRandom.nextFloat() * pointBounds.height);
 			}
 
 			mVertices.add(mDelaunay.add(pt));

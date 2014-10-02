@@ -17,17 +17,20 @@
         <activity
             android:name="com.js.samplealgorithm.SampleGeometryActivity"
             android:label="Algorithm"
-            android:icon="@drawable/ic_algorithm" >
-            <intent-filter>
+            android:icon="@drawable/ic_algorithm"
+            android:taskAffinity="com.js.samplealgorithm.SampleGeometryActivity" >
+        <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
 
         <activity
             android:name="com.js.animationapp.SampleAnimationActivity"
             android:label="Animation"
-            android:icon="@drawable/ic_animation" >
+            android:icon="@drawable/ic_animation"
+            android:taskAffinity="com.js.samplealgorithm.SampleAnimationActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

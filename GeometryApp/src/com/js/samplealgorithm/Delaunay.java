@@ -63,7 +63,7 @@ public class Delaunay {
 	public Vertex add(Point point) {
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_QUERY_POINT);
-			plot(point);
+			s.highlight(point);
 			s.closeLayer();
 		}
 
@@ -90,7 +90,7 @@ public class Delaunay {
 	public void remove(Vertex vertex) {
 		if (s.isActive()) {
 			s.openLayer(BGND_ELEMENT_QUERY_POINT);
-			plot(vertex);
+			s.highlight(vertex);
 			s.closeLayer();
 		}
 
@@ -103,7 +103,7 @@ public class Delaunay {
 		Edge edge = vertex.edges();
 		Edge holeEdge = edge.nextFaceEdge();
 		if (s.step())
-			s.show("Edge of resulting hole" + plot(holeEdge));
+			s.show("Edge of resulting hole" + s.highlight(holeEdge));
 
 		mMesh.deleteVertex(vertex);
 
@@ -229,7 +229,7 @@ public class Delaunay {
 
 		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (s.step())
-				s.show("Process next hole edge" + plot(abEdge));
+				s.show("Process next hole edge" + s.highlight(abEdge));
 			swapTestQuad(abEdge);
 		}
 	}
@@ -300,7 +300,8 @@ public class Delaunay {
 		Edge awEdge = baEdge.nextFaceEdge();
 		Vertex w = awEdge.destVertex();
 		if (s.step())
-			s.show("SwapTest" + plot(abEdge) + plot(p) + plot(w));
+			s.show("SwapTest" + s.highlight(abEdge) + s.highlight(p)
+					+ s.highlight(w));
 
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
@@ -311,7 +312,8 @@ public class Delaunay {
 		if (determinant > 0) {
 
 			if (s.step())
-				s.show("Flipping edge" + plot(abEdge) + plot(p, w));
+				s.show("Flipping edge" + s.highlight(abEdge)
+						+ s.highlightLine(p, w));
 
 			mMesh.deleteEdge(abEdge);
 			Edge pw = mMesh.addEdge(p, w);
@@ -335,12 +337,12 @@ public class Delaunay {
 		if (abEdge.deleted()) {
 			if (s.step())
 				s.show("SwapTestQuad, edge has been deleted"
-						+ plot(abEdge.sourceVertex(), abEdge.destVertex()));
+						+ s.highlight(abEdge));
 			return;
 		}
 		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
 			if (s.step())
-				s.show("SwapTestQuad, hole boundary" + plot(abEdge));
+				s.show("SwapTestQuad, hole boundary" + s.highlight(abEdge));
 			return;
 		}
 
@@ -349,9 +351,11 @@ public class Delaunay {
 
 		Vertex w = awEdge.destVertex();
 		if (s.step())
-			s.show("SwapTestQuad" + plot(abEdge) + plot(baEdge.nextFaceEdge())
-					+ plot(baEdge.prevFaceEdge()) + plot(abEdge.nextFaceEdge())
-					+ plot(abEdge.prevFaceEdge()) + plot(w));
+			s.show("SwapTestQuad" + s.highlight(abEdge)
+					+ s.highlight(baEdge.nextFaceEdge())
+					+ s.highlight(baEdge.prevFaceEdge())
+					+ s.highlight(abEdge.nextFaceEdge())
+					+ s.highlight(abEdge.prevFaceEdge()) + s.highlight(w));
 
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
@@ -362,7 +366,8 @@ public class Delaunay {
 			s.show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
 			if (s.step())
-				s.show("Flipping edge" + plot(abEdge) + plot(c, w));
+				s.show("Flipping edge" + s.highlight(abEdge)
+						+ s.highlightLine(c, w));
 
 			mMesh.deleteEdge(abEdge);
 
@@ -446,8 +451,8 @@ public class Delaunay {
 			edge = edge.dual();
 		Edge initialEdge = edge;
 		if (s.step())
-			s.show("Closest sample and initial edge" + plot(initialEdge)
-					+ plot(closestSample)
+			s.show("Closest sample and initial edge" + s.highlight(initialEdge)
+					+ s.highlight(closestSample)
 					+ s.plot(new AlgorithmDisplayElement() {
 						@Override
 						public void render() {
@@ -501,7 +506,7 @@ public class Delaunay {
 								s.plotLine(prevCentroid, midPoint);
 							}
 						}
-						s.plot(centroid, 1.5f);
+						s.plot(centroid);
 						prevEdge = edge;
 						prevCentroid = centroid;
 					}
@@ -549,8 +554,8 @@ public class Delaunay {
 				GeometryException.raise("search edge not adjacent to triangle "
 						+ aEdge);
 			if (s.step())
-				s.show("Current search triangle" + plot(aEdge)
-						+ plot(oppositeVertex(aEdge)));
+				s.show("Current search triangle" + s.highlight(aEdge)
+						+ s.highlight(oppositeVertex(aEdge)));
 
 			boolean bLeftFlag = pointLeftOfEdge(queryPoint, bEdge);
 			boolean cLeftFlag = pointLeftOfEdge(queryPoint, cEdge);
@@ -626,35 +631,19 @@ public class Delaunay {
 		mMesh = mesh;
 	}
 
-	// Convenience methods for using stepper
-
-	private String plot(Point a, Point b, Point c) {
-		s.setLineWidth(2);
-		s.setColor(Color.RED);
-		return s.plotLine(a, b) + s.plotLine(b, c) + s.plotLine(c, a);
-	}
-
-	private String plot(Edge edge) {
-		return plot(edge.sourceVertex(), edge.destVertex());
-	}
-
-	private String plot(Point p1, Point p2) {
-		s.setLineWidth(2);
-		s.setColor(Color.RED);
-		return s.plotRay(p1, p2);
-	}
-
-	private String plot(Point v) {
-		s.setColor(Color.RED);
-		return s.plot(v);
-	}
-
 	private Point faceCentroid(Edge faceEdge) {
 		Point p = new Point(faceEdge.sourceVertex());
 		p.add(faceEdge.destVertex());
 		p.add(oppositeVertex(faceEdge));
 		p.setTo(p.x / 3, p.y / 3);
 		return p;
+	}
+
+	// Convenience methods for using stepper
+
+	private String plot(Point a, Point b, Point c) {
+		return s.highlightLine(a, b) + s.highlightLine(b, c)
+				+ s.highlightLine(c, a);
 	}
 
 	private AlgorithmStepper s;

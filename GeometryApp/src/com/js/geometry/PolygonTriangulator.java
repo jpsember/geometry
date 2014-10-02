@@ -234,8 +234,8 @@ public class PolygonTriangulator {
 	private Edge replaceHelperForEdge(SweepEdge sweepEdge, Vertex newHelper) {
 		Vertex prevHelper = sweepEdge.helper();
 		if (s.step())
-			s.show("Replace edge helper" + plot(prevHelper) + plot(newHelper)
-					+ plot(sweepEdge));
+			s.show("Replace edge helper" + s.highlight(prevHelper)
+					+ s.highlight(newHelper) + highlight(sweepEdge));
 
 		Edge newEdge = null;
 		if ((prevHelper.flags() & VERTEXFLAG_MERGE) != 0) {
@@ -283,7 +283,7 @@ public class PolygonTriangulator {
 
 	private void processVertexEvent(Vertex vertex) {
 		if (s.step())
-			s.show("Process vertex event" + plot(vertex));
+			s.show("Process vertex event" + s.highlight(vertex));
 
 		moveSweepLineTo(vertex.y);
 		Edge edges[] = new Edge[2];
@@ -340,7 +340,7 @@ public class PolygonTriangulator {
 			SweepEdge se = findExistingEdge(delEdge);
 			replaceHelperForEdge(se, vertex);
 			if (s.step())
-				s.show("Removing status edge" + plot(se));
+				s.show("Removing status edge" + highlight(se));
 			boolean existed = mSweepStatus.remove(se);
 			if (!existed) {
 				GeometryException.raise("could not find item in sweep status");
@@ -350,7 +350,7 @@ public class PolygonTriangulator {
 		if (newEdge != null) {
 			SweepEdge se = SweepEdge.edge(newEdge, vertex);
 			if (s.step())
-				s.show("Adding status edge" + plot(se));
+				s.show("Adding status edge" + highlight(se));
 			mSweepStatus.add(se);
 		}
 	}
@@ -419,7 +419,7 @@ public class PolygonTriangulator {
 	private void triangulateMonotoneFaceAux(Edge edgePointingToHighestVertex) {
 		if (s.bigStep())
 			s.show("Triangulate monotone face"
-					+ plot(edgePointingToHighestVertex));
+					+ s.highlight(edgePointingToHighestVertex));
 		if (edgePointingToHighestVertex.visited()) {
 			if (s.step())
 				s.show("Edge already visited");
@@ -439,7 +439,7 @@ public class PolygonTriangulator {
 			mMonotoneQueue.push(v);
 			Vertex v2 = mVertexList.get(vIndex++);
 			if (s.step())
-				s.show("Queuing vertex" + plot(v2));
+				s.show("Queuing vertex" + s.highlight(v2));
 			mMonotoneQueue.push(v2);
 		}
 
@@ -459,13 +459,13 @@ public class PolygonTriangulator {
 					// Skip the first queued vertex
 					Vertex v1 = mMonotoneQueue.pop();
 					if (s.step())
-						s.show("Skipping first queued vertex" + plot(v1));
+						s.show("Skipping first queued vertex" + s.highlight(v1));
 					Vertex v2 = mMonotoneQueue.peek();
 					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
 				if (s.step())
-					s.show("Queuing vertex" + plot(vertex));
+					s.show("Queuing vertex" + s.highlight(vertex));
 				mMonotoneQueue.push(vertex);
 				queueIsLeft ^= true;
 			} else {
@@ -475,7 +475,8 @@ public class PolygonTriangulator {
 					float distance = pointUnitLineSignedDistance(vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (s.step())
-						s.show("Test for convex angle" + plot(v1) + plot(v2));
+						s.show("Test for convex angle" + s.highlight(v1)
+								+ s.highlight(v2));
 
 					if (!isConvex)
 						break;
@@ -484,7 +485,7 @@ public class PolygonTriangulator {
 					mMonotoneQueue.pop(false);
 				}
 				if (s.step())
-					s.show("Queuing vertex" + plot(vertex));
+					s.show("Queuing vertex" + s.highlight(vertex));
 				mMonotoneQueue.push(vertex);
 			}
 		}
@@ -492,29 +493,14 @@ public class PolygonTriangulator {
 
 	private Edge addEdge(Vertex v1, Vertex v2) {
 		if (s.step())
-			s.show("Adding mesh edge" + plotEdge(v1, v2));
+			s.show("Adding mesh edge" + s.highlightLine(v1, v2));
 		return mMesh.addEdge(v1, v2);
 	}
 
 	// Convenience methods for displaying algorithm objects
 
-	private String plot(SweepEdge edge) {
-		return plot(edge.polygonEdge());
-	}
-
-	private String plot(Edge edge) {
-		return plotEdge(edge.sourceVertex(), edge.destVertex());
-	}
-
-	private String plotEdge(Point p1, Point p2) {
-		s.setLineWidth(2);
-		s.setColor(Color.RED);
-		return s.plotLine(p1, p2);
-	}
-
-	private String plot(Point v) {
-		s.setColor(Color.RED);
-		return s.plot(v);
+	private String highlight(SweepEdge edge) {
+		return s.highlight(edge.polygonEdge());
 	}
 
 	private AlgorithmStepper s;

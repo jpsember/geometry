@@ -539,6 +539,9 @@ public class AlgorithmOptions {
 		mActiveAlgorithm.delegate().run(mStepper);
 	}
 
+	/**
+	 * This is public only because the widgets are in a different package.
+	 */
 	public Context getContext() {
 		return mContext;
 	}

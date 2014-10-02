@@ -9,11 +9,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.View;
 
 import com.js.android.MyActivity;
+import com.js.geometry.Edge;
 import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
@@ -28,6 +30,8 @@ public class AlgorithmStepper {
 	static final String WIDGET_ID_JUMP_FWD = ">>";
 	static final String WIDGET_ID_STEP_BWD = "<";
 	static final String WIDGET_ID_STEP_FWD = ">";
+
+	private static final float HIGHLIGHT_LINE_WIDTH = 3.0f;
 
 	/**
 	 * A stepper object that is designed to do nothing, i.e., allows normal
@@ -237,20 +241,64 @@ public class AlgorithmStepper {
 		return "";
 	}
 
+	/**
+	 * Plot a point
+	 */
+	public String plot(Point point) {
+		return plot(point, 1);
+	}
+
+	/**
+	 * Highlight a point
+	 */
+	public String highlight(Point point) {
+		return setColor(Color.RED) + plot(point) + setNormal();
+	}
+
+	/**
+	 * Plot a disc with a particular radius (1 = standard point size)
+	 */
+	public String plot(Point point, float radius) {
+		return plot(new PointElement(point, radius));
+	}
+
+	/**
+	 * Highlight a disc
+	 */
+	public String highlight(Point point, float radius) {
+		return plot(new PointElement(point, radius));
+	}
+
 	public String plotRay(Point p1, Point p2) {
 		return plot(new RayElement(p1, p2));
+	}
+
+	/**
+	 * Plot a (directed) edge
+	 */
+	public String plot(Edge edge) {
+		return plotRay(edge.sourceVertex(), edge.destVertex());
+	}
+
+	public String highlightRay(Point p1, Point p2) {
+		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
+				+ plotRay(p1, p2) + setNormal();
+	}
+
+	/**
+	 * Highlight a (directed) edge
+	 */
+	public String highlight(Edge edge) {
+		return highlightRay(edge.sourceVertex(), edge.destVertex());
 	}
 
 	public String plotLine(Point p1, Point p2) {
 		return plot(new LineElement(p1, p2));
 	}
 
-	public String plot(Point point) {
-		return plot(point, 1);
-	}
-
-	public String plot(Point point, float radius) {
-		return plot(new PointElement(point, radius));
+	public String highlightLine(Point p1, Point p2) {
+		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
+				+ plotLine(p1, p2) + setNormal();
 	}
 
 	public String plot(Polygon polygon) {
@@ -263,9 +311,19 @@ public class AlgorithmStepper {
 						: PolygonElement.Style.BOUNDARY));
 	}
 
+	public String highlight(Polygon polygon, boolean filled) {
+		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
+				+ plot(polygon, filled) + setNormal();
+	}
+
 	public String plotPolyline(Collection<Point> endpoints) {
 		return plot(new PolygonElement(new Polygon(endpoints),
 				PolygonElement.Style.POLYLINE));
+	}
+
+	public String highlightPolyline(Collection<Point> endpoints) {
+		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
+				+ plotPolyline(endpoints) + setNormal();
 	}
 
 	public String plotMesh(Mesh meshContext) {
@@ -280,6 +338,13 @@ public class AlgorithmStepper {
 	public String setLineWidth(float lineWidth) {
 		AlgorithmDisplayElement.setLineWidthState(lineWidth);
 		return "";
+	}
+
+	/**
+	 * Restore default rendering attributes: color = BLUE, line width = 1
+	 */
+	public String setNormal() {
+		return setColor(Color.BLUE) + setLineWidth(1);
 	}
 
 	/**

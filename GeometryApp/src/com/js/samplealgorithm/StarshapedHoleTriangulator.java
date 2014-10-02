@@ -42,23 +42,6 @@ public class StarshapedHoleTriangulator {
 		mStartEdge = edgeOnHole;
 	}
 
-	// Convenience methods for using stepper
-
-	private String plot(Edge edge) {
-		return plotEdge(edge.sourceVertex(), edge.destVertex());
-	}
-
-	private String plotEdge(Point p1, Point p2) {
-		s.setLineWidth(5);
-		s.setColor(Color.RED);
-		return s.plotLine(p1, p2);
-	}
-
-	private String plot(Point v) {
-		s.setColor(Color.RED);
-		return s.plot(v);
-	}
-
 	private static final String BGND_ELEMENT_HOLE_POLYGON = "s10";
 	private static final String BGND_ELEMENT_MESH = "s00";
 	private static final String BGND_ELEMENT_KERNEL = "s05";
@@ -131,19 +114,20 @@ public class StarshapedHoleTriangulator {
 			Vertex v2 = nextEdge.destVertex();
 
 			if (s.step())
-				s.show("Current edge" + plot(mStartEdge));
+				s.show("Current edge" + s.highlight(mStartEdge));
 
 			if (MyMath.sideOfLine(v0, v1, v2) < 0) {
 				if (s.step())
-					s.show("Vertex is reflex" + plot(mStartEdge)
-							+ plot(nextEdge) + plot(v1));
+					s.show("Vertex is reflex" + s.highlight(mStartEdge)
+							+ s.highlight(nextEdge) + s.highlight(v1));
 				mStartEdge = nextEdge;
 				continue;
 			}
 
 			if (MyMath.sideOfLine(v0, v2, mKernelPoint) < 0) {
 				if (s.step())
-					s.show("Kernel to right of candidate" + plotEdge(v0, v2));
+					s.show("Kernel to right of candidate"
+							+ s.highlightLine(v0, v2));
 				mStartEdge = nextEdge;
 				continue;
 			}
@@ -152,7 +136,7 @@ public class StarshapedHoleTriangulator {
 			mNewEdges.add(mStartEdge);
 
 			if (s.step())
-				s.show("Adding edge" + plot(mStartEdge));
+				s.show("Adding edge" + s.highlight(mStartEdge));
 			mHoleSize -= 1;
 			stepsWithoutProgress = 0;
 		}

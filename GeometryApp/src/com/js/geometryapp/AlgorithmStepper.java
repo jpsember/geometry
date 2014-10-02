@@ -409,10 +409,17 @@ public class AlgorithmStepper {
 		performAlgorithm();
 	}
 
-	private void performAlgorithm() {
+	private boolean mPerformingAlgorithm;
 
+	private void performAlgorithm() {
 		synchronized (getLock()) {
+			// Avoid re-entrant calls to this method, which can occur if we
+			// change the current step within, which will trigger a refresh().
+			if (mPerformingAlgorithm) {
+				return;
+			}
 			try {
+				mPerformingAlgorithm = true;
 				initializeActiveState(true);
 
 				// Cache values from widgets to our temporary registers
@@ -494,15 +501,15 @@ public class AlgorithmStepper {
 					show("Caught: " + t);
 				}
 			} catch (DesiredStepReachedException e) {
+				// Write cached values back to widgets
+				mOptions.setTotalSteps(mTotalSteps);
+				mOptions.setTargetStep(mTargetStep);
 			} finally {
 				mJumpToNextMilestoneFlag = false;
 				mCalculatingTotalSteps = false;
 				initializeActiveState(false);
+				mPerformingAlgorithm = false;
 			}
-
-			// Write cached values back to widgets
-			mOptions.setTotalSteps(mTotalSteps);
-			mOptions.setTargetStep(mTargetStep);
 		}
 	}
 

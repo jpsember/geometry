@@ -22,9 +22,13 @@ class AlgorithmRecord {
 		return mWidgets;
 	}
 
+	public String name() {
+		return mDelegate.getAlgorithmName();
+	}
+
 	@Override
 	public String toString() {
-		return "AlgorithmRecord[" + delegate().getAlgorithmName() + "]";
+		return "AlgorithmRecord[" + name() + "]";
 	}
 
 	private Algorithm mDelegate;

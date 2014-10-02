@@ -56,12 +56,12 @@ public class AlgorithmOptions {
 	private void addPrimaryWidgets() {
 		if (mAlgorithms.size() == 1) {
 			AlgorithmRecord r = mAlgorithms.get(0);
-			addHeader(r.delegate().getAlgorithmName());
+			addHeader(r.name());
 		} else {
 			ComboBoxWidget w = addComboBox(WIDGET_ID_ALGORITHM, "label",
 					"Algorithm");
 			for (AlgorithmRecord r : mAlgorithms) {
-				w.addItem(r.delegate().getAlgorithmName());
+				w.addItem(r.name());
 			}
 			w.prepare();
 			w.addListener(new Listener() {
@@ -219,7 +219,7 @@ public class AlgorithmOptions {
 
 	private AlgorithmRecord findAlgorithm(String name) {
 		for (AlgorithmRecord rec : mAlgorithms) {
-			if (rec.delegate().getAlgorithmName().equals(name))
+			if (rec.name().equals(name))
 				return rec;
 		}
 		return null;
@@ -234,8 +234,7 @@ public class AlgorithmOptions {
 				getWidgetValueMap(mPrimaryWidgetGroup));
 
 		for (AlgorithmRecord a : mAlgorithms) {
-			groupValues.put(a.delegate().getAlgorithmName(),
-					getWidgetValueMap(a.widgets()));
+			groupValues.put(a.name(), getWidgetValueMap(a.widgets()));
 		}
 		return JSONEncoder.toJSON(groupValues);
 	}

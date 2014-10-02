@@ -304,25 +304,25 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * possible) and displays that frame.
 	 * 
 	 * @param widget
-	 *            for test purposes only; the widget that induced this call
+	 *            for test purposes only; the widget that induced this call, or
+	 *            null
 	 */
 	void refresh(AbstractWidget widget) {
-		final boolean db = false;
 		if (db)
-			pr("refresh due to " + widget.getId());
-		if (mPerformingAlgorithm) {
+			pr("refresh due to " + widget);
+
+		// If we're currently doing a refresh, do nothing
+		if (mRefreshing) {
 			if (db)
-				pr("...ignoring;\n" + stackTrace(0, 18));
+				pr("...already doing refresh, ignoring;\n" + stackTrace(0, 18));
 			return;
 		}
-		refreshAux();
-	}
-
-	private void refreshAux() {
+		mRefreshing = true;
 		synchronized (getLock()) {
 			performAlgorithm();
 			mglSurfaceView.requestRender();
 		}
+		mRefreshing = false;
 	}
 
 	/**
@@ -382,14 +382,7 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	private void performAlgorithm() {
 		synchronized (getLock()) {
-			ASSERT(!mPerformingAlgorithm);
-			// Avoid re-entrant calls to this method, which can occur if we
-			// change the current step within, which will trigger a refresh().
-			if (mPerformingAlgorithm) {
-				return;
-			}
 			try {
-				mPerformingAlgorithm = true;
 				initializeActiveState(true);
 
 				// Cache values from widgets to our temporary registers
@@ -482,7 +475,6 @@ class ConcreteStepper implements AlgorithmStepper {
 				mJumpToNextMilestoneFlag = false;
 				mCalculatingTotalSteps = false;
 				initializeActiveState(false);
-				mPerformingAlgorithm = false;
 			}
 		}
 	}
@@ -593,7 +585,7 @@ class ConcreteStepper implements AlgorithmStepper {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		mOptions.begin(mAlgorithms);
-		refreshAux();
+		refresh(null);
 	}
 
 	private Object sSynchronizationLock = new Object();
@@ -616,8 +608,8 @@ class ConcreteStepper implements AlgorithmStepper {
 	private int mMinimumMilestoneStep;
 	// True if performing algorithm just to calculate total steps
 	private boolean mCalculatingTotalSteps;
-	// flag to prevent re-entrant calls to performAlgorithm()
-	private boolean mPerformingAlgorithm;
+	// flag to indicate whether refresh() is occurring
+	private boolean mRefreshing;
 
 	// For efficiency, cached values of target / total steps widgets used only
 	// during performAlgorithm()

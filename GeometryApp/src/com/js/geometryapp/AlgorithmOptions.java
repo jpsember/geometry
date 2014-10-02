@@ -498,7 +498,10 @@ public class AlgorithmOptions {
 			addSlider(WIDGET_ID_TARGETSTEP_AUX, AbstractWidget.OPTION_HIDDEN,
 					true);
 			addSlider(WIDGET_ID_TOTALSTEPS_AUX, AbstractWidget.OPTION_HIDDEN,
-					true);
+					true, //
+					// Don't have the total steps trigger a refresh, unlike
+					// target step
+					AbstractWidget.OPTION_REFRESH_ALGORITHM, false);
 
 			algorithm.prepareOptions(this);
 		}

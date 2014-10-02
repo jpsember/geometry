@@ -30,6 +30,7 @@ public class DelaunayDriver implements Algorithm {
 	public void prepareOptions(AlgorithmOptions options) {
 		mOptions = options;
 		mOptions.addSlider("Seed", "min", 1, "max", 300);
+		mOptions.addCheckBox("Small initial mesh", "value", true);
 		mOptions.addCheckBox("Deletions", "value", true);
 		mOptions.addCheckBox("Delete all");
 		mOptions.addCheckBox("Voronoi cells", "value", true);
@@ -62,8 +63,11 @@ public class DelaunayDriver implements Algorithm {
 			s.closeLayer();
 		}
 
-		Rect delaunayBounds = new Rect(pointBounds);
-		delaunayBounds.inset(-10, -10);
+		Rect delaunayBounds = null;
+		if (mOptions.getBooleanValue("Small initial mesh")) {
+			delaunayBounds = new Rect(pointBounds);
+			delaunayBounds.inset(-10, -10);
+		}
 		mDelaunay = new Delaunay(mMesh, delaunayBounds, stepper);
 		if (s.bigStep())
 			s.show("Initial triangulation");

@@ -110,6 +110,8 @@ public class Delaunay {
 		markHoleBoundary(holeEdge);
 
 		triangulateHole(vertex);
+		if (s.bigStep())
+			s.show("Filled hole");
 
 		if (s.isActive()) {
 			s.removeLayer(BGND_ELEMENT_HOLE_BOUNDARY);
@@ -227,11 +229,13 @@ public class Delaunay {
 		triangulator.run();
 		s.popActive();
 
+		s.pushActive(DETAIL_SWAPS);
 		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (s.step())
 				s.show("Process next hole edge" + s.highlight(abEdge));
 			swapTestQuad(abEdge);
 		}
+		s.popActive();
 	}
 
 	/**

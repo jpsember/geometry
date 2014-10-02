@@ -619,9 +619,20 @@ public class Delaunay {
 		Vertex v1 = mesh.addVertex(boundingRect.bottomRight());
 		Vertex v2 = mesh.addVertex(boundingRect.topRight());
 		Point p3 = boundingRect.topLeft();
+
 		// Perturb one point so the four points aren't collinear
-		p3.x -= 1e-3f;
-		p3.y += 1e-3f;
+		if (true) {
+			float perturbAmount = boundingRect.maxDim() * .01f;
+			p3.x += perturbAmount;
+			p3.y += perturbAmount * .7f;
+		} else {
+			// Note with this old way the perturbed v3 is such that the
+			// diagonals are still perpendicular; also the perturbation is not a
+			// fraction of the mesh size, so this leads to robustness issues
+			// with the incircle test, and throws a GeometryException.
+			p3.x -= 1e-3f;
+			p3.y += 1e-3f;
+		}
 		Vertex v3 = mesh.addVertex(p3);
 
 		// Mark these four edges (not their duals) as horizon edges

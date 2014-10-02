@@ -100,57 +100,54 @@ public class AlgorithmStepper {
 
 	/**
 	 * Determine if we should stop and display this frame of the current
-	 * algorithm; should be followed by a call to show() if this returns true
+	 * algorithm; should be followed by a call to show() if this returns true.
+	 * 
+	 * If the stepper is not active, returns false. Otherwise, The current step
+	 * will be incremented iff this method returns false.
 	 */
 	public boolean step() {
 		return stepAux(false);
 	}
 
 	private boolean stepAux(boolean milestone) {
-		boolean output = false;
-		do {
-			if (isActive()) {
-				if (milestone) {
-					addMilestone(mCurrentStep);
-				}
-				if (mCalculatingTotalSteps) {
-					mCurrentStep++;
-					break;
-				}
+		if (!isActive())
+			return false;
 
-				// If we're jumping forward, see if this is the milestone we
-				// were looking for
-				if (mJumpToNextMilestoneFlag) {
-					if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
-						mJumpToNextMilestoneFlag = false;
-						mTargetStep = mCurrentStep;
-					} else {
-						// Keep target just in front of current, so we
-						// continue searching
-						mTargetStep = Math.min(mTotalSteps, mCurrentStep + 1);
-					}
-				}
+		if (milestone) {
+			addMilestone(mCurrentStep);
+		}
+		if (!mCalculatingTotalSteps) {
 
-				if (mCurrentStep == mTargetStep) {
-					// If the target step equals the total steps, we would have
-					// expected to complete the algorithm without halting, so
-					// the total steps is too small.
-					// Increase the target step and total steps so that we end
-					// up going all the way to the new end.
-					if (!mCompleted && mTargetStep == mTotalSteps) {
-						mTotalSteps++;
-						mTargetStep++;
-					} else {
-						output = true;
-						break;
-					}
+			// If we're jumping forward, see if this is the milestone we
+			// were looking for
+			if (mJumpToNextMilestoneFlag) {
+				if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
+					mJumpToNextMilestoneFlag = false;
+					mTargetStep = mCurrentStep;
+				} else {
+					// Keep target just in front of current, so we
+					// continue searching
+					mTargetStep = Math.min(mTotalSteps, mCurrentStep + 1);
 				}
-				ASSERT(mCurrentStep <= mTargetStep);
-				mCurrentStep++;
 			}
-		} while (false);
 
-		return output;
+			if (mCurrentStep == mTargetStep) {
+				// If the target step equals the total steps, we would have
+				// expected to complete the algorithm without halting, so
+				// the total steps is too small.
+				// Increase the target step and total steps so that we end
+				// up going all the way to the new end.
+				if (!mCompleted && mTargetStep == mTotalSteps) {
+					mTotalSteps++;
+					mTargetStep++;
+				} else {
+					return true;
+				}
+			}
+			ASSERT(mCurrentStep <= mTargetStep);
+		}
+		mCurrentStep++;
+		return false;
 	}
 
 	/**
@@ -162,7 +159,10 @@ public class AlgorithmStepper {
 
 	/**
 	 * Generate an algorithm step. For efficiency, should only be called if
-	 * step() returned true
+	 * step() returned true.
+	 * 
+	 * Sets the frame title to the message, and throw a
+	 * DesiredStepReachedException.
 	 * 
 	 * @param message
 	 *            message to display, which may cause other elements to be
@@ -481,13 +481,17 @@ public class AlgorithmStepper {
 					while (!mActiveStack.isEmpty())
 						popActive();
 
-					pr(t + "\n" + stackTrace(t));
+					String description = t.toString() + "\n" + stackTrace(t);
+					if (!description.equals(mPreviousExceptionDescription)) {
+						pr(description);
+						mPreviousExceptionDescription = description;
+					}
 					if (!(t instanceof GeometryException))
 						throw t;
 
-					if (bigStep()) {
-						show("Caught: " + t);
-					}
+					mTotalSteps = mCurrentStep;
+					mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
+					show("Caught: " + t);
 				}
 			} catch (DesiredStepReachedException e) {
 			} finally {
@@ -638,4 +642,5 @@ public class AlgorithmStepper {
 	private int mTotalSteps;
 	private int mCurrentStep;
 
+	private String mPreviousExceptionDescription;
 }

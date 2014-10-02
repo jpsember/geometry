@@ -451,6 +451,8 @@ public class Delaunay {
 
 		// Choose arbitrary edge from this vertex
 		Edge edge = closestSample.edges();
+		if (edge == null)
+			GeometryException.raise("vertex has no edges: " + closestSample);
 		if (MyMath.sideOfLine(edge.sourceVertex(), edge.destVertex(), point) < 0)
 			edge = edge.dual();
 		Edge initialEdge = edge;

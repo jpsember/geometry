@@ -370,15 +370,9 @@ class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	void calculateAlgorithmTotalSteps() {
-		if (db)
-			pr("calculateAlgorithmTotalSteps, currently "
-					+ mOptions.readTargetStep() + "/"
-					+ mOptions.readTotalSteps());
 		// Construct a stepper for this purpose, instead of this one
 		TotalStepsCounter s = new TotalStepsCounter(this);
 		int totalSteps = s.countSteps();
-		if (db)
-			pr(" storing new total steps " + totalSteps);
 		mOptions.setTotalSteps(totalSteps);
 	}
 
@@ -538,8 +532,6 @@ class ConcreteStepper implements AlgorithmStepper {
 	/**
 	 * Get the object that serves as the synchronization lock to avoid race
 	 * conditions between the UI and OpenGL threads
-	 * 
-	 * @return
 	 */
 	Object getLock() {
 		return sSynchronizationLock;

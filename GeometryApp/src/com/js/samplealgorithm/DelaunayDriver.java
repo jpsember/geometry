@@ -35,6 +35,7 @@ public class DelaunayDriver implements Algorithm {
 		mOptions.addCheckBox("Deletions", "value", true);
 		mOptions.addCheckBox("Delete all");
 		mOptions.addCheckBox("Voronoi cells", "value", true);
+		mOptions.addSlider("Attempts", "min", 1, "max", 5);
 		ComboBoxWidget w = mOptions.addComboBox("Pattern");
 		w.addItem("Random");
 		w.addItem("Circle");
@@ -99,7 +100,23 @@ public class DelaunayDriver implements Algorithm {
 							+ mRandom.nextFloat() * pointBounds.height);
 			}
 
-			mVertices.add(mDelaunay.add(pt));
+			int attempt = 0;
+			while (true) {
+				try {
+					mVertices.add(mDelaunay.add(pt));
+					break;
+				} catch (GeometryException e) {
+					attempt++;
+					pr("Problem adding " + pt + ", attempt #" + attempt);
+					if (s.step())
+						s.show("Problem adding " + pt + ", attempt #" + attempt);
+					if (attempt >= mOptions.getIntValue("Attempts")) {
+						pr("Failed several attempts at insertion");
+						throw e;
+					}
+					MyMath.perturb(mRandom, pt);
+				}
+			}
 
 			if (withDeletions) {
 				// Once in a while, remove a series of points

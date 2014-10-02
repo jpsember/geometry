@@ -59,8 +59,8 @@ public interface AlgorithmStepper {
 	 * Generate an algorithm step. For efficiency, should only be called if
 	 * step() returned true.
 	 * 
-	 * Sets the frame title to the message, and throw a
-	 * DesiredStepReachedException.
+	 * Sets the frame title to the message, and throws an exception to halt the
+	 * algorithm.
 	 * 
 	 * @param message
 	 *            message to display, which may cause other elements to be

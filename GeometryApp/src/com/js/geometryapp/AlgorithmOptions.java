@@ -535,11 +535,8 @@ public class AlgorithmOptions {
 		setValue(AlgorithmOptions.WIDGET_ID_TOTALSTEPS, totalSteps);
 	}
 
-	/**
-	 * Call the active algorithm's run() method
-	 */
-	void runActiveAlgorithm() {
-		mActiveAlgorithm.delegate().run(mStepper);
+	Algorithm getActiveAlgorithm() {
+		return mActiveAlgorithm.delegate();
 	}
 
 	/**

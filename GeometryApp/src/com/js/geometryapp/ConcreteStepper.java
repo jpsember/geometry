@@ -96,36 +96,34 @@ class ConcreteStepper implements AlgorithmStepper {
 		if (milestone) {
 			addMilestone(mCurrentStep);
 		}
-		if (!mCalculatingTotalSteps) {
 
-			// If we're jumping forward, see if this is the milestone we
-			// were looking for
-			if (mJumpToNextMilestoneFlag) {
-				if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
-					mJumpToNextMilestoneFlag = false;
-					mTargetStep = mCurrentStep;
-				} else {
-					// Keep target just in front of current, so we
-					// continue searching
-					mTargetStep = Math.min(mTotalSteps, mCurrentStep + 1);
-				}
+		// If we're jumping forward, see if this is the milestone we
+		// were looking for
+		if (mJumpToNextMilestoneFlag) {
+			if (milestone && mCurrentStep >= mMinimumMilestoneStep) {
+				mJumpToNextMilestoneFlag = false;
+				mTargetStep = mCurrentStep;
+			} else {
+				// Keep target just in front of current, so we
+				// continue searching
+				mTargetStep = Math.min(mTotalSteps, mCurrentStep + 1);
 			}
-
-			if (mCurrentStep == mTargetStep) {
-				// If the target step equals the total steps, we would have
-				// expected to complete the algorithm without halting, so
-				// the total steps is too small.
-				// Increase the target step and total steps so that we end
-				// up going all the way to the new end.
-				if (!mCompleted && mTargetStep == mTotalSteps) {
-					mTotalSteps++;
-					mTargetStep++;
-				} else {
-					return true;
-				}
-			}
-			ASSERT(mCurrentStep <= mTargetStep);
 		}
+
+		if (mCurrentStep == mTargetStep) {
+			// If the target step equals the total steps, we would have
+			// expected to complete the algorithm without halting, so
+			// the total steps is too small.
+			// Increase the target step and total steps so that we end
+			// up going all the way to the new end.
+			if (!mCompleted && mTargetStep == mTotalSteps) {
+				mTotalSteps++;
+				mTargetStep++;
+			} else {
+				return true;
+			}
+		}
+		ASSERT(mCurrentStep <= mTargetStep);
 		mCurrentStep++;
 		return false;
 	}
@@ -137,7 +135,6 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public void show(String message) {
-		ASSERT(!mCalculatingTotalSteps);
 		mFrameTitle = message;
 		throw new DesiredStepReachedException(message);
 	}
@@ -149,7 +146,7 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public boolean openLayer(String key) {
-		if (!(isActive() && !mCalculatingTotalSteps))
+		if (!isActive())
 			return false;
 
 		if (mActiveBackgroundLayer != null)
@@ -181,9 +178,6 @@ class ConcreteStepper implements AlgorithmStepper {
 				element.render();
 				break;
 			}
-
-			// Don't modify any layers if we're just calculating total steps
-			ASSERT(!mCalculatingTotalSteps);
 
 			// If there's an active background layer, add it to that instead
 			Layer targetLayer = mActiveBackgroundLayer;
@@ -332,6 +326,10 @@ class ConcreteStepper implements AlgorithmStepper {
 		return AlgorithmStepperPanel.build(mOptions);
 	}
 
+	AlgorithmOptions getOptions() {
+		return mOptions;
+	}
+
 	AlgorithmOptions constructOptions(Context context) {
 		mOptions = new AlgorithmOptions(context, this);
 		return mOptions;
@@ -365,19 +363,23 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * An exception of this type is thrown by the algorithm stepper when the
 	 * target step is reached
 	 */
-	static class DesiredStepReachedException extends RuntimeException {
+	private static class DesiredStepReachedException extends RuntimeException {
 		public DesiredStepReachedException(String message) {
 			super(message);
 		}
 	}
 
 	void calculateAlgorithmTotalSteps() {
-		if (true) {
-			warning("disabled temporarily");
-			return;
-		}
-		mCalculatingTotalSteps = true;
-		performAlgorithm();
+		if (db)
+			pr("calculateAlgorithmTotalSteps, currently "
+					+ mOptions.readTargetStep() + "/"
+					+ mOptions.readTotalSteps());
+		// Construct a stepper for this purpose, instead of this one
+		TotalStepsCounter s = new TotalStepsCounter(this);
+		int totalSteps = s.countSteps();
+		if (db)
+			pr(" storing new total steps " + totalSteps);
+		mOptions.setTotalSteps(totalSteps);
 	}
 
 	private void performAlgorithm() {
@@ -391,12 +393,10 @@ class ConcreteStepper implements AlgorithmStepper {
 
 				mCurrentStep = 0;
 
-				if (!mCalculatingTotalSteps) {
-					mActiveBackgroundLayer = null;
-					mBackgroundLayers.clear();
-					mForegroundLayer.clear();
-					mFrameTitle = null;
-				}
+				mActiveBackgroundLayer = null;
+				mBackgroundLayers.clear();
+				mForegroundLayer.clear();
+				mFrameTitle = null;
 
 				AlgorithmDisplayElement.resetRenderStateVars();
 
@@ -405,7 +405,7 @@ class ConcreteStepper implements AlgorithmStepper {
 
 				mCompleted = false;
 				try {
-					mOptions.runActiveAlgorithm();
+					mOptions.getActiveAlgorithm().run(this);
 
 					// We completed the algorithm without halting.
 
@@ -413,15 +413,6 @@ class ConcreteStepper implements AlgorithmStepper {
 					// below; set flag so that we know we completed without
 					// halting.
 					mCompleted = true;
-
-					if (mCalculatingTotalSteps) {
-						mTotalSteps = mCurrentStep;
-						mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
-						// Generate final milestone, and increment the step
-						bigStep();
-						// don't change the displayed message; just throw...
-						throw new DesiredStepReachedException("(done calc)");
-					}
 
 					// If the target step was not the maximum, the maximum is
 					// too high.
@@ -436,15 +427,13 @@ class ConcreteStepper implements AlgorithmStepper {
 						die("unexpected!");
 					}
 				} catch (DesiredStepReachedException e) {
-					if (!mCalculatingTotalSteps) {
-						if (!mCompleted) {
-							// We halted without completing. If we halted on
-							// what we
-							// thought was the last step, the total steps is too
-							// low.
-							if (mCurrentStep == mTotalSteps) {
-								mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
-							}
+					if (!mCompleted) {
+						// We halted without completing. If we halted on
+						// what we
+						// thought was the last step, the total steps is too
+						// low.
+						if (mCurrentStep == mTotalSteps) {
+							mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
 						}
 					}
 					throw e;
@@ -473,7 +462,6 @@ class ConcreteStepper implements AlgorithmStepper {
 				mOptions.setTargetStep(mTargetStep);
 			} finally {
 				mJumpToNextMilestoneFlag = false;
-				mCalculatingTotalSteps = false;
 				initializeActiveState(false);
 			}
 		}
@@ -606,8 +594,6 @@ class ConcreteStepper implements AlgorithmStepper {
 	private boolean mJumpToNextMilestoneFlag;
 	// stop at first milestone whose step is at least this
 	private int mMinimumMilestoneStep;
-	// True if performing algorithm just to calculate total steps
-	private boolean mCalculatingTotalSteps;
 	// flag to indicate whether refresh() is occurring
 	private boolean mRefreshing;
 

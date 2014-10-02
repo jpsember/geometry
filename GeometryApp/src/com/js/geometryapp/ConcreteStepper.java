@@ -40,10 +40,12 @@ class ConcreteStepper implements AlgorithmStepper {
 		mglSurfaceView = glSurfaceView;
 	}
 
+	@Override
 	public void addAlgorithm(Algorithm delegate) {
 		mAlgorithms.add(delegate);
 	}
 
+	@Override
 	public Rect algorithmRect() {
 		if (mAlgorithmRect == null) {
 			DisplayMetrics m = MyActivity.displayMetrics();
@@ -56,35 +58,25 @@ class ConcreteStepper implements AlgorithmStepper {
 		return mAlgorithmRect;
 	}
 
-	/**
-	 * Determine if algorithm stepper is active (i.e. hooked up to a control
-	 * panel and controlling the progress of the calling algorithm)
-	 */
+	@Override
 	public boolean isActive() {
 		return mActive;
 	}
 
-	/**
-	 * Save current stepper active state on a stack, and push a new value (which
-	 * is AND'd with previous state)
-	 */
+	@Override
 	public void pushActive(boolean active) {
 		mActiveStack.add(mActive);
 		mActive &= active;
 	}
 
+	@Override
 	public void popActive() {
 		if (mActiveStack.isEmpty())
 			throw new IllegalStateException("active stack is empty");
 		mActive = pop(mActiveStack);
 	}
 
-	/**
-	 * Push active state to value of checkbox widget
-	 * 
-	 * @param widgetId
-	 *            id of checkbox widget to read
-	 */
+	@Override
 	public void pushActive(String widgetId) {
 		boolean value = mActive;
 		if (value)
@@ -92,13 +84,7 @@ class ConcreteStepper implements AlgorithmStepper {
 		pushActive(value);
 	}
 
-	/**
-	 * Determine if we should stop and display this frame of the current
-	 * algorithm; should be followed by a call to show() if this returns true.
-	 * 
-	 * If the stepper is not active, returns false. Otherwise, The current step
-	 * will be incremented iff this method returns false.
-	 */
+	@Override
 	public boolean step() {
 		return stepAux(false);
 	}
@@ -144,24 +130,12 @@ class ConcreteStepper implements AlgorithmStepper {
 		return false;
 	}
 
-	/**
-	 * Perform step(), but with a step that is a milestone
-	 */
+	@Override
 	public boolean bigStep() {
 		return stepAux(true);
 	}
 
-	/**
-	 * Generate an algorithm step. For efficiency, should only be called if
-	 * step() returned true.
-	 * 
-	 * Sets the frame title to the message, and throw a
-	 * DesiredStepReachedException.
-	 * 
-	 * @param message
-	 *            message to display, which may cause other elements to be
-	 *            displayed via side effects
-	 */
+	@Override
 	public void show(String message) {
 		ASSERT(!mCalculatingTotalSteps);
 		mFrameTitle = message;
@@ -173,16 +147,7 @@ class ConcreteStepper implements AlgorithmStepper {
 			throw new IllegalStateException("stepper must be active");
 	}
 
-	/**
-	 * Request to open a background layer. Subsequent plot() commands will be
-	 * redirected to this layer. If this returns true, then must be balanced by
-	 * a call to closeLayer(). Layers are plotted in alphabetical order, so the
-	 * last layer plotted is topmost in the view. Once defined, layers will
-	 * appear in every rendered frame, in addition to step-specific elements
-	 * 
-	 * @param key
-	 *            uniquely distinguishes this layer from others
-	 */
+	@Override
 	public boolean openLayer(String key) {
 		if (!(isActive() && !mCalculatingTotalSteps))
 			return false;
@@ -196,32 +161,20 @@ class ConcreteStepper implements AlgorithmStepper {
 		return true;
 	}
 
-	/**
-	 * Close layer previously opened via openLayer()
-	 */
+	@Override
 	public void closeLayer() {
 		assertActive();
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = null;
 	}
 
-	/**
-	 * Remove a layer, so it will no longer be plotted
-	 * 
-	 * @param key
-	 */
+	@Override
 	public void removeLayer(String key) {
 		assertActive();
 		mBackgroundLayers.remove(key);
 	}
 
-	/**
-	 * Add an element to be displayed with this algorithm frame
-	 * 
-	 * @param element
-	 * @return an empty string, as a convenience so elements can be added as a
-	 *         side effect of constructing show(...) message arguments
-	 */
+	@Override
 	public String plot(AlgorithmDisplayElement element) {
 		do {
 			if (AlgorithmDisplayElement.rendering()) {
@@ -242,81 +195,77 @@ class ConcreteStepper implements AlgorithmStepper {
 		return "";
 	}
 
-	/**
-	 * Plot a point
-	 */
+	@Override
 	public String plot(Point point) {
 		return plot(point, 1);
 	}
 
-	/**
-	 * Highlight a point
-	 */
+	@Override
 	public String highlight(Point point) {
 		return setColor(Color.RED) + plot(point) + setNormal();
 	}
 
-	/**
-	 * Plot a disc with a particular radius (1 = standard point size)
-	 */
+	@Override
 	public String plot(Point point, float radius) {
 		return plot(new PointElement(point, radius));
 	}
 
-	/**
-	 * Highlight a disc
-	 */
+	@Override
 	public String highlight(Point point, float radius) {
 		return plot(new PointElement(point, radius));
 	}
 
+	@Override
 	public String plotRay(Point p1, Point p2) {
 		return plot(new RayElement(p1, p2));
 	}
 
-	/**
-	 * Plot a (directed) edge
-	 */
+	@Override
 	public String plot(Edge edge) {
 		return plotRay(edge.sourceVertex(), edge.destVertex());
 	}
 
+	@Override
 	public String highlightRay(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotRay(p1, p2) + setNormal();
 	}
 
-	/**
-	 * Highlight a (directed) edge
-	 */
+	@Override
 	public String highlight(Edge edge) {
 		return highlightRay(edge.sourceVertex(), edge.destVertex());
 	}
 
+	@Override
 	public String plotLine(Point p1, Point p2) {
 		return plot(new LineElement(p1, p2));
 	}
 
+	@Override
 	public String highlightLine(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotLine(p1, p2) + setNormal();
 	}
 
+	@Override
 	public String plot(Polygon polygon) {
 		return plot(polygon, false);
 	}
 
+	@Override
 	public String plot(Polygon polygon, boolean filled) {
 		return plot(new PolygonElement(polygon,
 				filled ? PolygonElement.Style.FILLED
 						: PolygonElement.Style.BOUNDARY));
 	}
 
+	@Override
 	public String highlight(Polygon polygon, boolean filled) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plot(polygon, filled) + setNormal();
 	}
 
+	@Override
 	public String plotPolyline(Collection<Point> endpoints) {
 		return plot(new PolygonElement(new Polygon(endpoints),
 				PolygonElement.Style.POLYLINE));
@@ -328,23 +277,24 @@ class ConcreteStepper implements AlgorithmStepper {
 				+ plotPolyline(endpoints) + setNormal();
 	}
 
+	@Override
 	public String plotMesh(Mesh meshContext) {
 		return plot(new MeshElement(meshContext));
 	}
 
+	@Override
 	public String setColor(int color) {
 		AlgorithmDisplayElement.setColorState(color);
 		return "";
 	}
 
+	@Override
 	public String setLineWidth(float lineWidth) {
 		AlgorithmDisplayElement.setLineWidthState(lineWidth);
 		return "";
 	}
 
-	/**
-	 * Restore default rendering attributes: color = BLUE, line width = 1
-	 */
+	@Override
 	public String setNormal() {
 		return setColor(Color.BLUE) + setLineWidth(1);
 	}
@@ -352,8 +302,23 @@ class ConcreteStepper implements AlgorithmStepper {
 	/**
 	 * Request a refresh of the algorithm display. Runs to the target step (if
 	 * possible) and displays that frame.
+	 * 
+	 * @param widget
+	 *            for test purposes only; the widget that induced this call
 	 */
-	public void refresh() {
+	void refresh(AbstractWidget widget) {
+		final boolean db = false;
+		if (db)
+			pr("refresh due to " + widget.getId());
+		if (mPerformingAlgorithm) {
+			if (db)
+				pr("...ignoring;\n" + stackTrace(0, 18));
+			return;
+		}
+		refreshAux();
+	}
+
+	private void refreshAux() {
 		synchronized (getLock()) {
 			performAlgorithm();
 			mglSurfaceView.requestRender();
@@ -407,12 +372,17 @@ class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	void calculateAlgorithmTotalSteps() {
+		if (true) {
+			warning("disabled temporarily");
+			return;
+		}
 		mCalculatingTotalSteps = true;
 		performAlgorithm();
 	}
 
 	private void performAlgorithm() {
 		synchronized (getLock()) {
+			ASSERT(!mPerformingAlgorithm);
 			// Avoid re-entrant calls to this method, which can occur if we
 			// change the current step within, which will trigger a refresh().
 			if (mPerformingAlgorithm) {
@@ -623,7 +593,7 @@ class ConcreteStepper implements AlgorithmStepper {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		mOptions.begin(mAlgorithms);
-		refresh();
+		refreshAux();
 	}
 
 	private Object sSynchronizationLock = new Object();

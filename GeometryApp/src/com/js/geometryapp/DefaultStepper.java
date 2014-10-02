@@ -171,8 +171,4 @@ class DefaultStepper implements AlgorithmStepper {
 		return "";
 	}
 
-	@Override
-	public void refresh() {
-	}
-
 }

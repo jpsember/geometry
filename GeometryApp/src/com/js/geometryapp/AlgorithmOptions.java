@@ -423,7 +423,7 @@ public class AlgorithmOptions {
 			// Unless the 'refresh' option exists and is false,
 			// trigger a refresh of the algorithm view.
 			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
-				mStepper.refresh();
+				mStepper.refresh(widget);
 			}
 
 			// If this is a widget that may change the algorithm total steps,

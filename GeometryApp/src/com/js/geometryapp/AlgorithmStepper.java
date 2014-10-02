@@ -160,10 +160,4 @@ public interface AlgorithmStepper {
 	 */
 	public String setNormal();
 
-	/**
-	 * Request a refresh of the algorithm display. Runs to the target step (if
-	 * possible) and displays that frame.
-	 */
-	public void refresh();
-
 }

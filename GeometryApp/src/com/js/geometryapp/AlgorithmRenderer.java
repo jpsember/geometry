@@ -13,11 +13,11 @@ import com.js.geometry.Rect;
 import android.content.Context;
 import android.graphics.Matrix;
 
-public class AlgorithmRenderer extends OurGLRenderer {
+class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_NDC = "algorithm->ndc";
 
-	public AlgorithmRenderer(Context context, AlgorithmStepper stepper) {
+	public AlgorithmRenderer(Context context, ConcreteStepper stepper) {
 		super(context);
 		mStepper = stepper;
 		doNothing();
@@ -115,6 +115,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 	private static float sAlgorithmToDensityPixels;
 
-	private AlgorithmStepper mStepper;
+	private ConcreteStepper mStepper;
 
 }

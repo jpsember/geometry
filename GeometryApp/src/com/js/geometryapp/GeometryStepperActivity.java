@@ -10,7 +10,7 @@ import static com.js.basic.Tools.*;
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	public GeometryStepperActivity() {
-		mStepper = new AlgorithmStepper();
+		mStepper = new ConcreteStepper();
 	}
 
 	@Override
@@ -76,6 +76,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		doNothing();
 	}
 
-	private AlgorithmStepper mStepper;
+	private ConcreteStepper mStepper;
 	private AlgorithmOptions mOptions;
 }

@@ -80,14 +80,14 @@ class AlgorithmStepperPanel {
 		layout.addView(v1, GeometryActivity.layoutParams(true, false));
 		{
 			LinearLayout v2 = linearLayout(true);
-			addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_BWD);
-			addButton(v2, AlgorithmStepper.WIDGET_ID_JUMP_FWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_BWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_FWD);
 			v1.addView(v2);
 		}
 		{
 			LinearLayout v2 = linearLayout(true);
-			addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_BWD);
-			addButton(v2, AlgorithmStepper.WIDGET_ID_STEP_FWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_BWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_FWD);
 			v1.addView(v2);
 		}
 

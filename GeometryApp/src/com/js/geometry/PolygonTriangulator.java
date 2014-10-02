@@ -12,7 +12,6 @@ import android.graphics.Color;
 
 import com.js.basic.Queue;
 import com.js.geometryapp.AlgorithmDisplayElement;
-import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.AlgorithmStepper;
 
 /**
@@ -33,7 +32,7 @@ public class PolygonTriangulator {
 	private PolygonTriangulator(AlgorithmStepper stepper, Mesh mesh,
 			Polygon polygon) {
 		if (stepper == null)
-			stepper = AlgorithmStepper.INACTIVE_STEPPER;
+			stepper = AlgorithmStepper.DEFAULT_STEPPER;
 		s = stepper;
 		mMesh = mesh;
 		mPolygon = polygon;
@@ -136,8 +135,9 @@ public class PolygonTriangulator {
 
 						// Extrapolate a little above and below the
 						// sweep line
-						float vertExtent = 22 * AlgorithmRenderer
-								.algorithmToDensityPixels();
+						float vertExtent = 22; // TODO: do we still need this?
+						// * AlgorithmRenderer
+						// .algorithmToDensityPixels();
 						Point p1 = e.positionOnSweepLine(mSweepLinePosition
 								- vertExtent * .8f, mMesh, true);
 						Point p2 = e.positionOnSweepLine(mSweepLinePosition

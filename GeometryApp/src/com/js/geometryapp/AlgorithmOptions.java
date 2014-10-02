@@ -174,7 +174,7 @@ public class AlgorithmOptions {
 		return field;
 	}
 
-	AlgorithmOptions(Context context, AlgorithmStepper stepper) {
+	AlgorithmOptions(Context context, ConcreteStepper stepper) {
 		mContext = context;
 		mStepper = stepper;
 
@@ -546,7 +546,7 @@ public class AlgorithmOptions {
 		return mContext;
 	}
 
-	private AlgorithmStepper mStepper;
+	private ConcreteStepper mStepper;
 	private ViewGroup mContainingView;
 	// Until this flag is true, no listeners are sent messages about widget
 	// value changes

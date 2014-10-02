@@ -8,7 +8,7 @@ import android.widget.LinearLayout;
 
 import com.js.geometryapp.widget.AbstractWidget;
 
-public class WidgetGroup {
+class WidgetGroup {
 	public WidgetGroup(ViewGroup view) {
 		mView = view;
 		mWidgets = new ArrayList();

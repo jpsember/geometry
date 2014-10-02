@@ -374,9 +374,9 @@ public class AlgorithmOptions {
 
 		// Make a delayed call to persist the values (on the UI thread)
 		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
-			final long FLUSH_DELAY = 5000;
-			mPendingFlushOperation = new QuiescentDelayOperation(FLUSH_DELAY,
-					new Runnable() {
+			final float FLUSH_DELAY = 5.0f;
+			mPendingFlushOperation = new QuiescentDelayOperation("flush",
+					FLUSH_DELAY, new Runnable() {
 						public void run() {
 							persistStepperStateAux();
 						}
@@ -430,13 +430,12 @@ public class AlgorithmOptions {
 			// trigger a recalculation after a delay
 			if (widget.boolAttr(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS,
 					false)) {
-				final long RECALC_DELAY = 5000;
+				final float RECALC_DELAY = 2.0f;
 				if (QuiescentDelayOperation
 						.replaceExisting(mPendingRecalculationOperation)) {
 					mPendingRecalculationOperation = new QuiescentDelayOperation(
-							RECALC_DELAY, new Runnable() {
+							"calc steps", RECALC_DELAY, new Runnable() {
 								public void run() {
-									pr("   ----------------- recalc algorithm steps");
 									mStepper.calculateAlgorithmTotalSteps();
 								}
 							});

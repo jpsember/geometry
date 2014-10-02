@@ -109,6 +109,11 @@ public class AlgorithmStepper {
 				if (milestone) {
 					addMilestone(mCurrentStep);
 				}
+				if (mCalculatingTotalSteps) {
+					mCurrentStep++;
+					break;
+				}
+
 				// If we're jumping forward, see if this is the milestone we
 				// were looking for
 				if (mJumpToNextMilestoneFlag) {
@@ -335,7 +340,8 @@ public class AlgorithmStepper {
 	}
 
 	void calculateAlgorithmTotalSteps() {
-		unimp("calculateAlgorithmTotalSteps");
+		mCalculatingTotalSteps = true;
+		performAlgorithm();
 	}
 
 	private void performAlgorithm() {
@@ -371,6 +377,13 @@ public class AlgorithmStepper {
 					// halting.
 					mCompleted = true;
 
+					if (mCalculatingTotalSteps) {
+						mTotalSteps = mCurrentStep;
+						mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
+						bigStep();
+						show("");
+					}
+
 					// If the target step was not the maximum, the maximum is
 					// too high.
 					if (mCurrentStep < mTotalSteps) {
@@ -384,12 +397,15 @@ public class AlgorithmStepper {
 						die("unexpected!");
 					}
 				} catch (DesiredStepReachedException e) {
-					if (!mCompleted) {
-						// We halted without completing. If we halted on what we
-						// thought was the last step, the total steps is too
-						// low.
-						if (mCurrentStep == mTotalSteps) {
-							mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
+					if (!mCalculatingTotalSteps) {
+						if (!mCompleted) {
+							// We halted without completing. If we halted on
+							// what we
+							// thought was the last step, the total steps is too
+							// low.
+							if (mCurrentStep == mTotalSteps) {
+								mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
+							}
 						}
 					}
 					throw e;
@@ -411,6 +427,7 @@ public class AlgorithmStepper {
 			} catch (DesiredStepReachedException e) {
 			} finally {
 				mJumpToNextMilestoneFlag = false;
+				mCalculatingTotalSteps = false;
 				initializeActiveState(false);
 			}
 
@@ -547,6 +564,8 @@ public class AlgorithmStepper {
 	private boolean mJumpToNextMilestoneFlag;
 	// stop at first milestone whose step is at least this
 	private int mMinimumMilestoneStep;
+	// True if performing algorithm just to calculate total steps
+	private boolean mCalculatingTotalSteps;
 
 	// For efficiency, cached values of target / total steps widgets used only
 	// during performAlgorithm()

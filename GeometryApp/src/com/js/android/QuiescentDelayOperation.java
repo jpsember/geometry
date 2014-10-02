@@ -3,7 +3,14 @@ package com.js.android;
 import android.os.Handler;
 import static com.js.basic.Tools.*;
 
+/**
+ * Manages an operation to be performed on the UI thread after some amount of
+ * inactivity. Allows previously scheduled operations to be delayed further, if
+ * activity occurs in the meantime.
+ */
 public class QuiescentDelayOperation {
+
+	private static final boolean DIAGNOSTIC_PRINTING = false;
 
 	/**
 	 * Cancel an existing pending operation, if one exists
@@ -14,12 +21,18 @@ public class QuiescentDelayOperation {
 	}
 
 	/**
-	 * Determine whether an existing pending operation should be replaced
+	 * Determine whether an existing pending operation should be replaced.
+	 * Should be called when an event needs to occur after x more seconds of
+	 * inactivity. Inactivity is defined as the amount of time between calls to
+	 * this method.
+	 * 
+	 * A previous event can be cancelled if it is scheduled for signicantly less
+	 * than x seconds in the future.
 	 * 
 	 * @param existing
 	 *            existing operation, or null
 	 * @return true if no existing operation exists, or if its delay is not long
-	 *         enough
+	 *         enough; if true, user should construct a new operation
 	 */
 	public static boolean replaceExisting(QuiescentDelayOperation existing) {
 		boolean replace = true;
@@ -35,27 +48,46 @@ public class QuiescentDelayOperation {
 		return replace;
 	}
 
-	public QuiescentDelayOperation(long delayInMS, Runnable operation) {
-		mActivationDelay = delayInMS;
-		mActivationTime = System.currentTimeMillis() + delayInMS;
+	/**
+	 * Constructor
+	 * 
+	 * @param debugName
+	 *            for diagnostic purposes only
+	 * @param delayInSeconds
+	 *            amount of 'quiet' time that must elapse before operation is
+	 *            performed
+	 * @param operation
+	 */
+	public QuiescentDelayOperation(String debugName, float delayInSeconds,
+			Runnable operation) {
+		final boolean db = DIAGNOSTIC_PRINTING;
+
+		mActivationDelay = (long) (delayInSeconds * 1000);
+		mActivationTime = System.currentTimeMillis() + mActivationDelay;
 		mOperation = operation;
+		mDebugName = debugName;
 		Handler handler = new Handler();
 		handler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
-				pr("Time " + f(relativeTime(System.currentTimeMillis()))
-						+ ", activating quiescent operation: "
-						+ nameOf(mOperation));
-				if (mOperation != null)
+				if (mOperation != null) {
+					if (db)
+						pr("Time "
+								+ f(relativeTime(System.currentTimeMillis()))
+								+ ", activating quiescent operation "
+								+ mDebugName + ": " + nameOf(mOperation));
 					mOperation.run();
+				}
 			}
-		}, delayInMS);
-		pr("Just created " + this);
+		}, mActivationDelay);
+		if (db)
+			pr("Just created " + this);
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("QOper");
+		StringBuilder sb = new StringBuilder("QOper ");
+		sb.append(mDebugName);
 		sb.append(" activationTime " + f(relativeTime(mActivationTime)));
 		sb.append(" oper=" + nameOf(mOperation));
 		return sb.toString();
@@ -76,4 +108,5 @@ public class QuiescentDelayOperation {
 	private long mActivationTime;
 	// The operation to perform
 	private Runnable mOperation;
+	private String mDebugName;
 }

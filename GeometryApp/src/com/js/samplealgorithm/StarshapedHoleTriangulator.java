@@ -11,8 +11,6 @@ import com.js.geometry.Point;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
-import static com.js.basic.Tools.*;
-
 
 /**
  * Algorithm that triangulates a star-shaped hole within a mesh

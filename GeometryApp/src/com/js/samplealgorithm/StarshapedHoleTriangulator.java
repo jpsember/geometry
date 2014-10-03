@@ -74,10 +74,6 @@ public class StarshapedHoleTriangulator {
 					Edge edge = mStartEdge;
 					while (true) {
 						s.plotLine(edge.sourceVertex(), edge.destVertex());
-						if (true) { // To test the text elements
-							Vertex v = edge.sourceVertex();
-							s.plot("" + (int) v.x, v);
-						}
 						edge = edge.nextFaceEdge();
 						if (edge == mStartEdge)
 							break;

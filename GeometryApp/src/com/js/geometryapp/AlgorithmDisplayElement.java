@@ -127,7 +127,8 @@ public abstract class AlgorithmDisplayElement {
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads();
 		buildPoints();
-		sFont = new Font((int) (18 * MyActivity.density()));
+		sTitleFont = new Font((int) (18 * MyActivity.density()));
+		sElementFont = new Font((int) (14 * MyActivity.density()));
 		resetRenderStateVars();
 	}
 
@@ -139,17 +140,21 @@ public abstract class AlgorithmDisplayElement {
 				.getTransform(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_DEVICE);
 		p.apply(matrix);
 
-		p.y += sFont.lineHeight();
+		Font font = sElementFont;
 
-		sFont.setColor(sColor);
-		sFont.render(text, p);
+		// Place text centered vertically, to the right of the given point
+		p.y += font.lineHeight() / 2;
+		p.x += font.lineHeight() * .67f;
+
+		font.setColor(sColor);
+		font.render(text, p);
 	}
 
 	static void renderFrameTitle(String sFrameTitle) {
-		Point p = new Point(10, 10 + sFont.lineHeight());
+		Point p = new Point(10, 10 + sTitleFont.lineHeight());
 
-		sFont.setColor(Color.BLACK);
-		sFont.render(sFrameTitle, p);
+		sTitleFont.setColor(Color.BLACK);
+		sTitleFont.render(sFrameTitle, p);
 	}
 
 	private static Matrix buildScaleMatrix(float scale) {
@@ -218,7 +223,8 @@ public abstract class AlgorithmDisplayElement {
 	private static PolygonProgram sPolygonProgram;
 	private static PolygonMesh sArrowheadMesh;
 	private static PolygonMesh sPointMesh;
-	private static Font sFont;
+	private static Font sTitleFont;
+	private static Font sElementFont;
 	private static Polyline sPolyline;
 	private static float sLineWidth;
 	private static int sColor;

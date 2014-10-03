@@ -65,19 +65,20 @@ public class PolygonTriangulator {
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	public void triangulate() {
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_POLYGON_FILLED);
+		if (s.openLayer(BGND_ELEMENT_POLYGON_FILLED)) {
 			s.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 			s.plot(mPolygon, true);
 			s.closeLayer();
+		}
 
-			s.openLayer(BGND_ELEMENT_POLYGON_OUTLINE);
+		if (s.openLayer(BGND_ELEMENT_POLYGON_OUTLINE)) {
 			s.setLineWidth(1);
 			s.setColor(Color.BLUE);
 			s.plot(mPolygon);
 			s.closeLayer();
+		}
 
-			s.openLayer(BGND_ELEMENT_MESH);
+		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
@@ -114,8 +115,7 @@ public class PolygonTriangulator {
 		});
 		mSweepLineVisible = false;
 
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_SWEEPSTATUS);
+		if (s.openLayer(BGND_ELEMENT_SWEEPSTATUS)) {
 			s.plot(new AlgorithmDisplayElement() {
 
 				@Override
@@ -388,8 +388,7 @@ public class PolygonTriangulator {
 
 	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
 		// have stepper display the face while triangulating it
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_MONOTONE_FACE);
+		if (s.openLayer(BGND_ELEMENT_MONOTONE_FACE)) {
 			// Construct CCW-ordered polygon from monotone face's vertices
 			buildVertexList(edgePointingToHighestVertex);
 			Polygon facePolygon = new Polygon();

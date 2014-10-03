@@ -57,8 +57,7 @@ public class DelaunayDriver implements Algorithm {
 		boolean withDeletions = deleteAll
 				|| mOptions.getBooleanValue("Deletions");
 
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_MESH);
+		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
@@ -135,22 +134,23 @@ public class DelaunayDriver implements Algorithm {
 		}
 
 		if (mOptions.getBooleanValue("Voronoi cells")) {
-			s.openLayer(BGND_ELEMENT_VORONOI_CELLS);
-			s.plot(new AlgorithmDisplayElement() {
-				@Override
-				public void render() {
-					s.setLineWidth(2);
-					s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
+			if (s.openLayer(BGND_ELEMENT_VORONOI_CELLS)) {
+				s.plot(new AlgorithmDisplayElement() {
+					@Override
+					public void render() {
+						s.setLineWidth(2);
+						s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 
-					for (int i = 0; i < mDelaunay.nSites(); i++) {
-						Vertex v = mDelaunay.site(i);
-						s.plot(v);
-						Polygon p = mDelaunay.constructVoronoiPolygon(i);
-						s.plot(p, false);
+						for (int i = 0; i < mDelaunay.nSites(); i++) {
+							Vertex v = mDelaunay.site(i);
+							s.plot(v);
+							Polygon p = mDelaunay.constructVoronoiPolygon(i);
+							s.plot(p, false);
+						}
 					}
-				}
-			});
-			s.closeLayer();
+				});
+				s.closeLayer();
+			}
 			if (s.step())
 				s.show("Voronoi cells");
 		}

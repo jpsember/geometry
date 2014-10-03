@@ -62,8 +62,7 @@ public class StarshapedHoleTriangulator {
 	}
 
 	public void run() {
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_HOLE_POLYGON);
+		if (s.openLayer(BGND_ELEMENT_HOLE_POLYGON)) {
 			s.plot(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
@@ -81,14 +80,15 @@ public class StarshapedHoleTriangulator {
 				}
 			});
 			s.closeLayer();
+		}
 
-			s.openLayer(BGND_ELEMENT_MESH);
+		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
-			s.closeLayer();
+			s.closeLayer();}
 
-			s.openLayer(BGND_ELEMENT_KERNEL);
+		if (s.openLayer(BGND_ELEMENT_KERNEL)) {
 			s.setColor(COLOR_DARKGREEN);
 			s.plot(mKernelPoint);
 			s.closeLayer();

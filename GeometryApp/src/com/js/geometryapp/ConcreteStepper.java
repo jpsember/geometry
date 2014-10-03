@@ -139,11 +139,6 @@ class ConcreteStepper implements AlgorithmStepper {
 		throw new DesiredStepReachedException(message);
 	}
 
-	private void assertActive() {
-		if (!isActive())
-			throw new IllegalStateException("stepper must be active");
-	}
-
 	@Override
 	public boolean openLayer(String key) {
 		if (!isActive())
@@ -160,14 +155,16 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public void closeLayer() {
-		assertActive();
+		if (!isActive())
+			throw new IllegalStateException("stepper must be active");
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = null;
 	}
 
 	@Override
 	public void removeLayer(String key) {
-		assertActive();
+		if (!isActive())
+			return;
 		mBackgroundLayers.remove(key);
 	}
 

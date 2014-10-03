@@ -61,8 +61,7 @@ public class Delaunay {
 	 * @return the new Vertex
 	 */
 	public Vertex add(Point point) {
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_QUERY_POINT);
+		if (s.openLayer(BGND_ELEMENT_QUERY_POINT)) {
 			s.highlight(point);
 			s.closeLayer();
 		}
@@ -88,8 +87,7 @@ public class Delaunay {
 	 *            vertex previously returned by add()
 	 */
 	public void remove(Vertex vertex) {
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_QUERY_POINT);
+		if (s.openLayer(BGND_ELEMENT_QUERY_POINT)) {
 			s.highlight(vertex);
 			s.closeLayer();
 		}
@@ -204,8 +202,7 @@ public class Delaunay {
 			if (edge == holeEdge)
 				break;
 		}
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY);
+		if (s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY)) {
 			s.plot(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
@@ -479,15 +476,12 @@ public class Delaunay {
 	private Edge findTriangleContainingPoint(Point queryPoint) {
 		s.pushActive(DETAIL_FIND_TRIANGLE);
 
-		if (s.isActive()) {
-			mSearchHistory = new ArrayList();
-			s.openLayer(BGND_ELEMENT_SEARCH_HISTORY);
+		mSearchHistory.clear();
+		if (s.openLayer(BGND_ELEMENT_SEARCH_HISTORY)) {
 			s.plot(new AlgorithmDisplayElement() {
 
 				@Override
 				public void render() {
-					if (mSearchHistory == null)
-						return;
 					s.setColor(COLOR_DARKGREEN);
 					s.setLineWidth(2);
 					Edge prevEdge = null;
@@ -537,8 +531,7 @@ public class Delaunay {
 		// point; we'll try to follow this line
 		Point bearingStartPoint = MyMath.interpolateBetween(
 				aEdge.sourceVertex(), aEdge.destVertex(), .5f);
-		if (s.isActive()) {
-			s.openLayer(BGND_ELEMENT_BEARING_LINE);
+		if (s.openLayer(BGND_ELEMENT_BEARING_LINE)) {
 			s.setLineWidth(2);
 			s.setColor(Color.LTGRAY);
 			s.plotRay(bearingStartPoint, queryPoint);
@@ -550,9 +543,7 @@ public class Delaunay {
 			if (maxIterations-- == 0)
 				GeometryException.raise("too many iterations");
 
-			if (s.isActive()) {
-				mSearchHistory.add(aEdge);
-			}
+			mSearchHistory.add(aEdge);
 
 			bEdge = aEdge.nextFaceEdge();
 			cEdge = bEdge.nextFaceEdge();
@@ -666,7 +657,8 @@ public class Delaunay {
 	private AlgorithmStepper s;
 	private Random mRandom;
 	private Mesh mMesh;
-	private ArrayList<Edge> mSearchHistory;
 	private ArrayList<Edge> mHoleEdges = new ArrayList();
 	private ArrayList<Vertex> mSamples = new ArrayList();
+	// For display purposes only
+	private ArrayList<Edge> mSearchHistory = new ArrayList();
 }

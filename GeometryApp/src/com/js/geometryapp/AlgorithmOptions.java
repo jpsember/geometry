@@ -340,17 +340,18 @@ public class AlgorithmOptions {
 		if (!mFlushRequired)
 			return;
 
-		// At present, it only saves widgets that appear in a WidgetGroup. This
-		// omits the target step slider, but that's ok, because we have hidden
-		// algorithm-specific versions that serve this purpose.
-		// But we must now make sure those versions are up to date.
-		// Disable recursive flush attempts while updating these (issue #82):
-		mPrepared = false;
-		saveStepsInformation();
-		mPrepared = true;
-
 		String newWidgetValuesScript = null;
 		synchronized (mStepper.getLock()) {
+			// At present, it only saves widgets that appear in a WidgetGroup.
+			// This omits the target step slider, but that's ok, because we have
+			// hidden algorithm-specific versions that serve this purpose.
+			// But we must now make sure those versions are up to date.
+			// Disable recursive flush attempts while updating these (issue
+			// #82):
+			mPrepared = false;
+			saveStepsInformation();
+			mPrepared = true;
+
 			newWidgetValuesScript = saveValues();
 		}
 		if (db) {

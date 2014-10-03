@@ -380,8 +380,8 @@ class ConcreteStepper implements AlgorithmStepper {
 		mRefreshing = true;
 		synchronized (getLock()) {
 			performAlgorithm();
-			mglSurfaceView.requestRender();
 		}
+		mglSurfaceView.requestRender();
 		mRefreshing = false;
 	}
 
@@ -438,96 +438,97 @@ class ConcreteStepper implements AlgorithmStepper {
 	void calculateAlgorithmTotalSteps() {
 		// Construct a stepper for this purpose, instead of this one
 		TotalStepsCounter s = new TotalStepsCounter(this);
-		int totalSteps = s.countSteps();
+		int totalSteps;
+		synchronized (getLock()) {
+			totalSteps = s.countSteps();
+		}
 		mOptions.setTotalSteps(totalSteps);
 	}
 
 	private void performAlgorithm() {
-		synchronized (getLock()) {
+		try {
+			initializeActiveState(true);
+
+			// Cache values from widgets to our temporary registers
+			mTargetStep = mOptions.readTargetStep();
+			mTotalSteps = mOptions.readTotalSteps();
+
+			mCurrentStep = 0;
+
+			mActiveBackgroundLayer = null;
+			mBackgroundLayers.clear();
+			mBackgroundLayerActiveNamesSet.clear();
+			mForegroundLayer.clear();
+			mFrameTitle = null;
+
+			AlgorithmDisplayElement.resetRenderStateVars();
+
+			mMilestones.clear();
+			addMilestone(mCurrentStep);
+
+			mCompleted = false;
 			try {
-				initializeActiveState(true);
+				mOptions.getActiveAlgorithm().run(this);
 
-				// Cache values from widgets to our temporary registers
-				mTargetStep = mOptions.readTargetStep();
-				mTotalSteps = mOptions.readTotalSteps();
+				// We completed the algorithm without halting.
 
-				mCurrentStep = 0;
+				// We're about to throw an exception that will be caught
+				// below; set flag so that we know we completed without
+				// halting.
+				mCompleted = true;
 
-				mActiveBackgroundLayer = null;
-				mBackgroundLayers.clear();
-				mBackgroundLayerActiveNamesSet.clear();
-				mForegroundLayer.clear();
-				mFrameTitle = null;
-
-				AlgorithmDisplayElement.resetRenderStateVars();
-
-				mMilestones.clear();
-				addMilestone(mCurrentStep);
-
-				mCompleted = false;
-				try {
-					mOptions.getActiveAlgorithm().run(this);
-
-					// We completed the algorithm without halting.
-
-					// We're about to throw an exception that will be caught
-					// below; set flag so that we know we completed without
-					// halting.
-					mCompleted = true;
-
-					// If the target step was not the maximum, the maximum is
-					// too high.
-					if (mCurrentStep < mTotalSteps) {
-						mTotalSteps = mCurrentStep;
-						mTargetStep = mTotalSteps;
-					}
-					// Always end an algorithm with a bigStep/show combination
-					if (bigStep()) { // should always return true
-						show("Done");
-					} else {
-						die("unexpected!");
-					}
-				} catch (DesiredStepReachedException e) {
-					if (!mCompleted) {
-						// We halted without completing. If we halted on
-						// what we
-						// thought was the last step, the total steps is too
-						// low.
-						if (mCurrentStep == mTotalSteps) {
-							mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
-						}
-					}
-					throw e;
-				} catch (RuntimeException t) {
-					// Pop active stack until it's empty; we want to make sure
-					// this message gets displayed, even if it occurred during a
-					// sequence for which stepping is disabled
-					while (!mActiveStack.isEmpty())
-						popActive();
-
-					String description = t.toString() + "\n" + stackTrace(t);
-					if (!(t instanceof GeometryException)) {
-						pr(description);
-						throw t;
-					}
-
+				// If the target step was not the maximum, the maximum is
+				// too high.
+				if (mCurrentStep < mTotalSteps) {
 					mTotalSteps = mCurrentStep;
-					mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
-					showGeometryException((GeometryException) t);
+					mTargetStep = mTotalSteps;
+				}
+				// Always end an algorithm with a bigStep/show combination
+				if (bigStep()) { // should always return true
+					show("Done");
+				} else {
+					die("unexpected!");
 				}
 			} catch (DesiredStepReachedException e) {
-				// Write cached values back to widgets
-				mOptions.setTotalSteps(mTotalSteps);
-				mOptions.setTargetStep(mTargetStep);
-			} finally {
-				mJumpToNextMilestoneFlag = false;
-				initializeActiveState(false);
+				if (!mCompleted) {
+					// We halted without completing. If we halted on
+					// what we
+					// thought was the last step, the total steps is too
+					// low.
+					if (mCurrentStep == mTotalSteps) {
+						mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
+					}
+				}
+				throw e;
+			} catch (RuntimeException t) {
+				// Pop active stack until it's empty; we want to make sure
+				// this message gets displayed, even if it occurred during a
+				// sequence for which stepping is disabled
+				while (!mActiveStack.isEmpty())
+					popActive();
+
+				String description = t.toString() + "\n" + stackTrace(t);
+				if (!(t instanceof GeometryException)) {
+					pr(description);
+					throw t;
+				}
+
+				mTotalSteps = mCurrentStep;
+				mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
+				showGeometryException((GeometryException) t);
 			}
+		} catch (DesiredStepReachedException e) {
+			// Write cached values back to widgets
+			mOptions.setTotalSteps(mTotalSteps);
+			mOptions.setTargetStep(mTargetStep);
+		} finally {
+			mJumpToNextMilestoneFlag = false;
+			initializeActiveState(false);
 		}
 	}
 
 	private void showGeometryException(GeometryException t) {
-		// Construct stack trace not including the performAlgorithm() call
+		// Construct stack trace, including items relevant to algorithm
 		String trace = stackTrace(t);
 		String[] entries = trace.split("\\n");
 		int maxEntries = 0;

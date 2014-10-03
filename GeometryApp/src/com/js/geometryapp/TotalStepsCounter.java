@@ -75,17 +75,15 @@ class TotalStepsCounter extends DefaultStepper {
 		mActive = true;
 		mCurrentStep = 0;
 		mActiveStack.clear();
-		synchronized (mOriginalStepper.getLock()) {
-			try {
-				Algorithm algorithm = mOriginalStepper.getOptions()
-						.getActiveAlgorithm();
-				algorithm.run(this);
-				// We completed the algorithm without halting.
-				// Increment the step, since we would normally show a 'done'
-				// milestone at this point
-				mCurrentStep++;
-			} catch (RuntimeException t) {
-			}
+		try {
+			Algorithm algorithm = mOriginalStepper.getOptions()
+					.getActiveAlgorithm();
+			algorithm.run(this);
+			// We completed the algorithm without halting.
+			// Increment the step, since we would normally show a 'done'
+			// milestone at this point
+			mCurrentStep++;
+		} catch (RuntimeException t) {
 		}
 		return mCurrentStep;
 	}

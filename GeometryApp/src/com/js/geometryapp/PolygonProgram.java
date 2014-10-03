@@ -60,6 +60,11 @@ public class PolygonProgram {
 		render(mesh, null, null);
 	}
 
+	private static final int[] sMeshTypeToGL = { GL_TRIANGLES, // TYPE_TRIANGLES
+			GL_TRIANGLE_FAN, // TYPE_FANS
+			GL_TRIANGLE_STRIP, // TYPE_STRIPS
+	};
+
 	/**
 	 * Render the polygon
 	 * 
@@ -95,8 +100,8 @@ public class PolygonProgram {
 		glVertexAttribPointer(mPositionLocation, PolygonMesh.VERTEX_COMPONENTS,
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(mPositionLocation);
-		glDrawArrays(mesh.usesStrip() ? GL_TRIANGLE_STRIP : GL_TRIANGLE_FAN, 0,
-				strip.numVertices());
+
+		glDrawArrays(sMeshTypeToGL[mesh.type()], 0, strip.numVertices());
 	}
 
 	private void prepareAttributes() {

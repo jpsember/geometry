@@ -19,12 +19,16 @@ import static com.js.basic.Tools.*;
  */
 public class PolygonMesh {
 
+	public static final int TYPE_TRIANGLES = 0;
+	public static final int TYPE_FANS = 1;
+	public static final int TYPE_STRIPS = 2;
+
 	// For investigating issue #34, strip efficiency
 	// Dumps vertices to output as XYZ(GAP)ABC...
 	private static final boolean DUMP_STRIP = false;
 
-	// Warps vertices to emphasize strip boundaries
-	private static final boolean CONTRACT_STRIP_VERTICES = false;
+	// Warps vertices to emphasize triangle boundaries
+	private static final boolean EMPHASIZE_INDIVIDUAL_TRIANGLES = false;
 
 	/**
 	 * The number of floats per vertex
@@ -33,23 +37,48 @@ public class PolygonMesh {
 
 	private static final int EDGE_FLAG_INTERIOR = 1 << 0;
 
+	/**
+	 * Compile a TYPE_FANS mesh from a convex polygon
+	 */
 	public static PolygonMesh meshForConvexPolygon(Polygon p) {
-		PolygonMesh m = new PolygonMesh(true);
-		m.setConvexPolygon(p);
-		return m;
-	}
-
-	public static PolygonMesh meshForSimplePolygon(Polygon p) {
-		PolygonMesh m = new PolygonMesh(false);
-		m.setPolygon(p);
+		PolygonMesh m = new PolygonMesh();
+		m.compileConvexPolygonIntoFan(p);
 		return m;
 	}
 
 	/**
-	 * Determine if the compiled triangle set represents a strip or a fan
+	 * Compile a mesh of TYPE_TRIANGLES from a polygon
 	 */
-	public boolean usesStrip() {
-		return !mFanFlag;
+	public static PolygonMesh meshForPolygon(Polygon polygon) {
+		return meshForPolygon(polygon, false);
+	}
+
+	/**
+	 * Compile a mesh from a polygon
+	 * 
+	 * @param polygon
+	 *            polygon
+	 * @param useStrips
+	 *            if true, generates mesh of TYPE_STRIPS; else, TYPE_TRIANGLES
+	 */
+	public static PolygonMesh meshForPolygon(Polygon polygon, boolean useStrips) {
+		if (EMPHASIZE_INDIVIDUAL_TRIANGLES)
+			warning("contracting strip vertices for demonstration purposes");
+		PolygonMesh m = new PolygonMesh();
+		if (useStrips)
+			m.compilePolygonIntoStrips(polygon);
+		else
+			m.compilePolygonIntoTriangles(polygon);
+		return m;
+	}
+
+	/**
+	 * Determine what type of mesh this is
+	 * 
+	 * @return TYPE_xxx
+	 */
+	public int type() {
+		return mType;
 	}
 
 	/**
@@ -67,14 +96,11 @@ public class PolygonMesh {
 		return mException;
 	}
 
-	private PolygonMesh(boolean usesFan) {
-		mFanFlag = usesFan;
-	}
-
 	/**
 	 * Set convex polygon as source
 	 */
-	private void setConvexPolygon(Polygon p) {
+	private void compileConvexPolygonIntoFan(Polygon p) {
+		mType = TYPE_FANS;
 		for (int i = 0; i < p.numVertices(); i++) {
 			mFloatArray.add(p.vertex(i));
 		}
@@ -100,9 +126,27 @@ public class PolygonMesh {
 
 	/**
 	 * Set arbitrary (simple, but possibly nonconvex) polygon as source;
+	 * triangulate it extract individual polygons
+	 */
+	private void compilePolygonIntoTriangles(Polygon polygon) {
+		mType = TYPE_TRIANGLES;
+		try {
+			mMesh = new Mesh();
+			triangulatePolygon(polygon);
+			extractTriangles();
+		} catch (GeometryException e) {
+			warning("caught: " + e);
+			mException = e;
+		}
+		cleanUpConstructionResources();
+	}
+
+	/**
+	 * Set arbitrary (simple, but possibly nonconvex) polygon as source;
 	 * triangulate it and extract polygon strips
 	 */
-	private void setPolygon(Polygon polygon) {
+	private void compilePolygonIntoStrips(Polygon polygon) {
+		mType = TYPE_STRIPS;
 		try {
 			mMesh = new Mesh();
 			triangulatePolygon(polygon);
@@ -120,38 +164,86 @@ public class PolygonMesh {
 	 */
 	private void cleanUpConstructionResources() {
 		mFloatArray = null;
+		mMeshEdges = null;
 		mMesh = null;
 		mInteriorEdgeStack = null;
 	}
 
 	private void triangulatePolygon(Polygon polygon) {
-		PolygonTriangulator t = PolygonTriangulator.triangulator(null,
-				mMesh,
+		PolygonTriangulator t = PolygonTriangulator.triangulator(null, mMesh,
 				polygon);
 		t.triangulate();
 	}
 
-	private void extractStrip() {
-		mTrianglesExtracted = 0;
+	/**
+	 * Move first point slightly towards a second
+	 * 
+	 * @return new version of first point
+	 */
+	private static Point inset(Point a, Point b) {
+		ASSERT(EMPHASIZE_INDIVIDUAL_TRIANGLES);
+		float dist = MyMath.distanceBetween(a, b);
+		float factor = .1f;
+		int pixels = 25;
+		if (dist > pixels) {
+			factor = pixels / dist;
+		}
+		return MyMath.interpolateBetween(a, b, factor);
+	}
 
+	private void extractTriangles() {
+		mMeshEdges = mMesh.constructListOfEdges();
 		findInteriorEdges();
-		if (mInteriorEdgeCount % 3 != 0)
-			GeometryException
-					.raise("unexpected number of interior edges found: "
-							+ mInteriorEdgeCount);
 
-		mTrianglesExpected = mInteriorEdgeCount / 3;
+		for (Edge edge : mMeshEdges) {
+			// If this edge was included in a previous triangle, skip
+			if (edge.visited())
+				continue;
+			// If the face to its left is not inside the polygon, skip
+			if (!markedAsInteriorEdge(edge))
+				continue;
 
-		// Note: I originally did two passes, the first starting only at polygon
-		// edges, to see if this reduced the strip count. It doesn't have much
-		// of an effect.
+			Edge abEdge = edge;
+			Edge bcEdge = abEdge.nextFaceEdge();
+			Edge caEdge = bcEdge.nextFaceEdge();
+			bcEdge.setVisited(true);
+			caEdge.setVisited(true);
 
-		if (CONTRACT_STRIP_VERTICES)
-			warning("contracting strip vertices for demonstration purposes");
+			Point pa = caEdge.destVertex();
+			Point pb = abEdge.destVertex();
+			Point pc = bcEdge.destVertex();
+
+			if (EMPHASIZE_INDIVIDUAL_TRIANGLES) {
+				Point centroid = new Point(pa);
+				centroid.add(pb);
+				centroid.add(pc);
+				centroid.setTo(centroid.x / 3, centroid.y / 3);
+				pa = inset(pa, centroid);
+				pb = inset(pb, centroid);
+				pc = inset(pc, centroid);
+			}
+
+			mFloatArray.add(pa);
+			mFloatArray.add(pb);
+			mFloatArray.add(pc);
+		}
+		int trianglesFound = bufferedVertexCount() / 3;
+		if (trianglesFound != mTrianglesExpected) {
+			warning("expected " + mTrianglesExpected + " but got "
+					+ trianglesFound);
+		}
+
+		compileTriangleSet();
+		cleanUpConstructionResources();
+	}
+
+	private void extractStrip() {
+		mMeshEdges = mMesh.constructListOfEdges();
+		findInteriorEdges();
 
 		if (DUMP_STRIP)
 			prr("Strip: ");
-		for (Edge edge : mMesh.constructListOfEdges()) {
+		for (Edge edge : mMeshEdges) {
 			if (edge.visited())
 				continue;
 			if (!markedAsInteriorEdge(edge))
@@ -253,7 +345,7 @@ public class PolygonMesh {
 				baseEdge = nextBaseEdge;
 			}
 			Point point = baseEdge.destVertex();
-			if (CONTRACT_STRIP_VERTICES) {
+			if (EMPHASIZE_INDIVIDUAL_TRIANGLES) {
 				Point p1 = peekLastPoint(2);
 				Point p2 = peekLastPoint(1);
 				Point mid = MyMath.interpolateBetween(p1, p2, .5f);
@@ -312,13 +404,9 @@ public class PolygonMesh {
 	 * 
 	 */
 	private void findInteriorEdges() {
+		mInteriorEdgeStack = new ArrayList();
 
-		mInteriorEdgeCount = 0;
-		mInteriorEdgeStack.clear();
-
-		mMesh.clearFlags(0, Edge.FLAG_VISITED | EDGE_FLAG_INTERIOR);
-
-		for (Edge edge : mMesh.constructListOfEdges()) {
+		for (Edge edge : mMeshEdges) {
 			if (markedAsInteriorEdge(edge))
 				continue;
 
@@ -350,6 +438,13 @@ public class PolygonMesh {
 				}
 			}
 		}
+
+		if (mInteriorEdgeCount % 3 != 0)
+			GeometryException
+					.raise("unexpected number of interior edges found: "
+							+ mInteriorEdgeCount);
+
+		mTrianglesExpected = mInteriorEdgeCount / 3;
 	}
 
 	private static Edge nextEdgeInTriangle(Edge edge) {
@@ -368,15 +463,16 @@ public class PolygonMesh {
 		return edge.prevEdge().dual();
 	}
 
-	private final boolean mFanFlag;
+	private int mType;
 	private CompiledTriangleSet mTriangleSet;
 	private GeometryException mException;
-	private FloatArray mFloatArray = new FloatArray();
 
-	// These are used only during the triangle strip construction process:
+	// These are used only during the mesh construction process:
+	private FloatArray mFloatArray = new FloatArray();
+	private ArrayList<Edge> mMeshEdges;
 	private int mTrianglesExtracted;
 	private Mesh mMesh;
-	private ArrayList<Edge> mInteriorEdgeStack = new ArrayList();
+	private ArrayList<Edge> mInteriorEdgeStack;
 	private int mInteriorEdgeCount;
 	private int mTrianglesExpected;
 	private Point mLastVertexGenerated;

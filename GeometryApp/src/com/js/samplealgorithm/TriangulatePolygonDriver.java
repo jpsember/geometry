@@ -34,7 +34,9 @@ public class TriangulatePolygonDriver implements Algorithm {
 
 		w.prepare();
 
-		mOptions.addCheckBox("Triangulate monotone face", "value", true);
+		mOptions.addCheckBox(
+				PolygonTriangulator.DETAIL_TRIANGULATE_MONOTONE_FACE, "value",
+				true);
 	}
 
 	@Override

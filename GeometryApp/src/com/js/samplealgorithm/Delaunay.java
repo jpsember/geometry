@@ -22,7 +22,8 @@ import static com.js.basic.Tools.*;
 public class Delaunay {
 
 	public static final String DETAIL_SWAPS = "Swaps";
-	public static final String DETAIL_FIND_TRIANGLE = "Find Triangle";
+	public static final String DETAIL_TRIANGULATE_HOLE = "Triangulate hole";
+	public static final String DETAIL_FIND_TRIANGLE = "Find triangle";
 
 	private static final float HORIZON = 1e7f;
 	// Add prefix to distinguish this algorithm's elements from others
@@ -222,7 +223,7 @@ public class Delaunay {
 			s.show("Triangulating hole");
 		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
 				.buildTriangulator(s, mMesh, kernelPoint, mHoleEdges.get(0));
-		s.pushActive(false);
+		s.pushActive(DETAIL_TRIANGULATE_HOLE);
 		triangulator.run();
 		s.popActive();
 

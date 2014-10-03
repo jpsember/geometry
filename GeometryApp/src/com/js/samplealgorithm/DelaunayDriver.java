@@ -44,6 +44,7 @@ public class DelaunayDriver implements Algorithm {
 
 		mOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
 		mOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
+		mOptions.addCheckBox(Delaunay.DETAIL_TRIANGULATE_HOLE, "value", false);
 	}
 
 	@Override

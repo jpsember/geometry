@@ -11,6 +11,8 @@ import com.js.geometry.Point;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
+import static com.js.basic.Tools.*;
+
 
 /**
  * Algorithm that triangulates a star-shaped hole within a mesh
@@ -84,6 +86,10 @@ public class StarshapedHoleTriangulator {
 
 		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
+			if (true) {
+				warning("emphasizing mesh for issue #70 (note thick mesh persists)");
+				s.setLineWidth(5);
+			}
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
 			s.closeLayer();}
@@ -149,8 +155,6 @@ public class StarshapedHoleTriangulator {
 			s.removeLayer(BGND_ELEMENT_HOLE_POLYGON);
 			// Don't remove the mesh; we want it to remain visible when the
 			// algorithm completes.
-			// Issue #70: if we nest this algorithm within others, the layer
-			// will never get removed
 		}
 	}
 

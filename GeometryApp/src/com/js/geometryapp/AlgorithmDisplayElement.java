@@ -1,5 +1,7 @@
 package com.js.geometryapp;
 
+import java.util.ArrayList;
+
 import android.graphics.Color;
 import android.graphics.Matrix;
 
@@ -150,11 +152,84 @@ public abstract class AlgorithmDisplayElement {
 		font.render(text, p);
 	}
 
-	static void renderFrameTitle(String sFrameTitle) {
-		Point p = new Point(10, 10 + sTitleFont.lineHeight());
+	private static void splitLongLines(String text, int maxLineLength,
+			ArrayList<String> destination) {
 
-		sTitleFont.setColor(Color.BLACK);
-		sTitleFont.render(sFrameTitle, p);
+		// Keep max line length to something reasonable
+		maxLineLength = Math.max(8, maxLineLength);
+
+		// The minimum size of line resulting from splitting on space,
+		// vs splitting at arbitrary location
+		int minSubstringLength = (int) (maxLineLength * .5f);
+
+		// Prefix to add to substring if it followed a split point
+		String splitPrefix = "    ";
+		int i = 0; // the cursor position
+		while (true) {
+			// Extract next substring. Set j to the cursor position for the next
+			// iteration
+			int j = Math.min(text.length(), i + maxLineLength);
+			if (j < text.length()) {
+				j -= splitPrefix.length();
+				// determine if splitting at space is practical
+				int spaceLocation = i + text.substring(i, j).lastIndexOf(' ');
+				if (spaceLocation < i + minSubstringLength)
+					spaceLocation = j;
+
+				j = spaceLocation;
+			}
+			String textPortion = text.substring(i, j);
+			if (i != 0) {
+				textPortion = splitPrefix + textPortion;
+			}
+			destination.add(textPortion);
+
+			// Advance cursor past extracted text portion, and any following
+			// spaces
+			i = j;
+
+			while (i < text.length() && text.charAt(i) == ' ')
+				i++;
+
+			if (i == text.length())
+				break;
+		}
+	}
+
+	/**
+	 * Split a string into lines that will fit within the algorithm view
+	 */
+	private static void splitStringIntoLines(String text, int maxLineWidth,
+			ArrayList<String> destination) {
+		destination.clear();
+		String[] lines = text.split("\\n");
+		for (String s : lines) {
+			splitLongLines(s, maxLineWidth, destination);
+		}
+	}
+
+	static void renderFrameTitle(String sFrameTitle) {
+		ArrayList<String> lines = new ArrayList();
+		Font font = sTitleFont;
+		for (int pass = 0; pass < 2; pass++) {
+			if (pass != 0)
+				font = sElementFont;
+			// Determine maximum length of displayed line
+			// Issue #90: we need font width method
+			int maxLineWidth = (int) (sRenderer.deviceSize().x / (.5f * sTitleFont
+					.lineHeight()));
+
+			splitStringIntoLines(sFrameTitle, maxLineWidth, lines);
+			if (lines.size() <= 4)
+				break;
+		}
+
+		Point p = new Point(10, 10 + font.lineHeight() * lines.size());
+		font.setColor(Color.BLACK);
+		for (String s : lines) {
+			font.render(s, p);
+			p.y -= font.lineHeight();
+		}
 	}
 
 	private static Matrix buildScaleMatrix(float scale) {

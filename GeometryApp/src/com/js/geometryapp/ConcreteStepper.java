@@ -483,10 +483,11 @@ class ConcreteStepper implements AlgorithmStepper {
 			maxEntries++;
 		}
 		StringBuilder sb = new StringBuilder();
+		sb.append("GeometryException; ");
 		sb.append(t.getMessage());
+		sb.append("\n");
 		for (int i = 0; i < maxEntries; i++)
 			sb.append("\n  " + entries[i]);
-		pr("showing:\n" + sb);
 		show(sb.toString());
 	}
 

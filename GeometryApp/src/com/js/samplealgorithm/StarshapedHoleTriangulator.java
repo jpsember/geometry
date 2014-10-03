@@ -86,10 +86,6 @@ public class StarshapedHoleTriangulator {
 
 		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
-			if (true) {
-				warning("emphasizing mesh for issue #70 (note thick mesh persists)");
-				s.setLineWidth(5);
-			}
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
 			s.closeLayer();}

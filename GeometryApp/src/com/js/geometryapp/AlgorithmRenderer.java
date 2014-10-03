@@ -16,6 +16,7 @@ import android.graphics.Matrix;
 class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_NDC = "algorithm->ndc";
+	public static final String TRANSFORM_NAME_ALGORITHM_TO_DEVICE = "algorithm->device";
 
 	public AlgorithmRenderer(Context context, ConcreteStepper stepper) {
 		super(context);
@@ -103,6 +104,10 @@ class AlgorithmRenderer extends OurGLRenderer {
 		mAlgorithmToNDCTransform
 				.postConcat(getTransform(TRANSFORM_NAME_DEVICE_TO_NDC));
 		addTransform(TRANSFORM_NAME_ALGORITHM_TO_NDC, mAlgorithmToNDCTransform);
+
+		// Add a transform to convert algorithm -> device, for rendering text
+		addTransform(TRANSFORM_NAME_ALGORITHM_TO_DEVICE,
+				mAlgorithmToDeviceTransform);
 	}
 
 	/**

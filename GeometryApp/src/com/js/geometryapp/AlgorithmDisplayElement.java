@@ -120,14 +120,29 @@ public abstract class AlgorithmDisplayElement {
 	 */
 	static void setRenderer(AlgorithmRenderer renderer) {
 		OurGLTools.ensureRenderThread();
+		sRenderer = renderer;
 		Polyline.prepareRenderer(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sPolygonProgram = new PolygonProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		buildArrowheads(renderer);
-		buildPoints(renderer);
+		buildArrowheads();
+		buildPoints();
 		sFont = new Font((int) (18 * MyActivity.density()));
 		resetRenderStateVars();
+	}
+
+	static void renderText(Point location, String text) {
+		Point p = new Point(location.x, location.y);
+
+		// Convert location from algorithm space to view space
+		Matrix matrix = sRenderer
+				.getTransform(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_DEVICE);
+		p.apply(matrix);
+
+		p.y += sFont.lineHeight();
+
+		sFont.setColor(sColor);
+		sFont.render(text, p);
 	}
 
 	static void renderFrameTitle(String sFrameTitle) {
@@ -155,7 +170,7 @@ public abstract class AlgorithmDisplayElement {
 		return m;
 	}
 
-	private static void buildArrowheads(AlgorithmRenderer renderer) {
+	private static void buildArrowheads() {
 		sArrowheadLength = AlgorithmRenderer.algorithmToDensityPixels() * 18;
 
 		Polygon p = Polygon.polygonWithScript("0 0 -1 .4 -1 -.4");
@@ -163,7 +178,7 @@ public abstract class AlgorithmDisplayElement {
 		sArrowheadMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
-	private static void buildPoints(AlgorithmRenderer renderer) {
+	private static void buildPoints() {
 		int POINT_VERTICES = 10;
 		Polygon p = Polygon.circleWithOrigin(Point.ZERO,
 				4.0f * AlgorithmRenderer.algorithmToDensityPixels(),
@@ -209,4 +224,5 @@ public abstract class AlgorithmDisplayElement {
 	private static int sColor;
 	private static boolean sRendering;
 	private static int sElementsConstructed;
+	private static AlgorithmRenderer sRenderer;
 }

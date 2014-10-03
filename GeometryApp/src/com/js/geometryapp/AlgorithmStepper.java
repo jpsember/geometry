@@ -149,6 +149,10 @@ public interface AlgorithmStepper {
 
 	public String highlightPolyline(Collection<Point> endpoints);
 
+	public String plot(String text, Point location);
+
+	public String highlight(String text, Point location);
+
 	public String plotMesh(Mesh meshContext);
 
 	public String setColor(int color);

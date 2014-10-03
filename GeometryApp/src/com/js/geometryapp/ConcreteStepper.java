@@ -272,6 +272,16 @@ class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
+	public String plot(String text, Point location) {
+		return plot(new TextElement(text, location));
+	}
+
+	@Override
+	public String highlight(String text, Point location) {
+		return setColor(Color.RED) + plot(text, location) + setNormal();
+	}
+
+	@Override
 	public String plotMesh(Mesh meshContext) {
 		return plot(new MeshElement(meshContext));
 	}

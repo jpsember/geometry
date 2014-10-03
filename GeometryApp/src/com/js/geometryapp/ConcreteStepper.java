@@ -450,9 +450,9 @@ class ConcreteStepper implements AlgorithmStepper {
 		synchronized (getLock()) {
 			acquireLock();
 			totalSteps = s.countSteps();
+			mOptions.setTotalSteps(totalSteps);
 			releaseLock();
 		}
-		mOptions.setTotalSteps(totalSteps);
 	}
 
 	private void performAlgorithm() {

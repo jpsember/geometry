@@ -26,11 +26,10 @@ public class Delaunay {
 	public static final String DETAIL_FIND_TRIANGLE = "Find triangle";
 
 	private static final float HORIZON = 1e7f;
-	// Add prefix to distinguish this algorithm's elements from others
-	private static final String BGND_ELEMENT_QUERY_POINT = "d20";
-	private static final String BGND_ELEMENT_SEARCH_HISTORY = "d12";
-	private static final String BGND_ELEMENT_BEARING_LINE = "d10";
-	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "d15";
+	private static final String BGND_ELEMENT_QUERY_POINT = "20";
+	private static final String BGND_ELEMENT_SEARCH_HISTORY = "12";
+	private static final String BGND_ELEMENT_BEARING_LINE = "10";
+	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "15";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	private static final int EDGEFLAG_HOLEBOUNDARY = (1 << 0);

@@ -73,6 +73,9 @@ class ConcreteStepper implements AlgorithmStepper {
 	public void popActive() {
 		if (mActiveStack.isEmpty())
 			throw new IllegalStateException("active stack is empty");
+		if (mActive) {
+			removeCurrentBackgroundLayers();
+		}
 		mActive = pop(mActiveStack);
 	}
 
@@ -148,9 +151,18 @@ class ConcreteStepper implements AlgorithmStepper {
 			throw new IllegalStateException("layer already open");
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = new Layer(key);
-		mBackgroundLayers.put(key, mActiveBackgroundLayer);
+		mBackgroundLayers.put(getScopedBackgroundLayerKey(key),
+				mActiveBackgroundLayer);
 
 		return true;
+	}
+
+	/**
+	 * Add a prefix to a background layer key that is unique to the current
+	 * active stack depth
+	 */
+	private String getScopedBackgroundLayerKey(String key) {
+		return f(mActiveStack.size(), 2) + "_" + key;
 	}
 
 	@Override
@@ -165,7 +177,21 @@ class ConcreteStepper implements AlgorithmStepper {
 	public void removeLayer(String key) {
 		if (!isActive())
 			return;
-		mBackgroundLayers.remove(key);
+		mBackgroundLayers.remove(getScopedBackgroundLayerKey(key));
+	}
+
+	/**
+	 * Remove any remaining background layers associated with the current active
+	 * stack depth
+	 */
+	private void removeCurrentBackgroundLayers() {
+		String currentPrefix = getScopedBackgroundLayerKey("");
+		// Make a copy to avoid a ConcurrentModificationException
+		for (String key : new ArrayList<String>(mBackgroundLayers.keySet())) {
+			if (key.startsWith(currentPrefix)) {
+				mBackgroundLayers.remove(key);
+			}
+		}
 	}
 
 	@Override

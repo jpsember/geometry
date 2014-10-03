@@ -44,9 +44,9 @@ public class StarshapedHoleTriangulator {
 		mStartEdge = edgeOnHole;
 	}
 
-	private static final String BGND_ELEMENT_HOLE_POLYGON = "s10";
-	private static final String BGND_ELEMENT_MESH = "s00";
-	private static final String BGND_ELEMENT_KERNEL = "s05";
+	private static final String BGND_ELEMENT_HOLE_POLYGON = "10";
+	private static final String BGND_ELEMENT_MESH = "00";
+	private static final String BGND_ELEMENT_KERNEL = "05";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);

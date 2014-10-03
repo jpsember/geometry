@@ -458,7 +458,7 @@ class ConcreteStepper implements AlgorithmStepper {
 
 					mTotalSteps = mCurrentStep;
 					mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
-					show("Caught: " + t);
+					showGeometryException((GeometryException) t);
 				}
 			} catch (DesiredStepReachedException e) {
 				// Write cached values back to widgets
@@ -469,6 +469,25 @@ class ConcreteStepper implements AlgorithmStepper {
 				initializeActiveState(false);
 			}
 		}
+	}
+
+	private void showGeometryException(GeometryException t) {
+		// Construct stack trace not including the performAlgorithm() call
+		String trace = stackTrace(t);
+		String[] entries = trace.split("\\n");
+		int maxEntries = 0;
+		while (maxEntries < entries.length) {
+			if (entries[maxEntries].startsWith("ConcreteStepper")) {
+				break;
+			}
+			maxEntries++;
+		}
+		StringBuilder sb = new StringBuilder();
+		sb.append(t.getMessage());
+		for (int i = 0; i < maxEntries; i++)
+			sb.append("\n  " + entries[i]);
+		pr("showing:\n" + sb);
+		show(sb.toString());
 	}
 
 	private void adjustTargetMilestone(int delta) {

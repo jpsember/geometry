@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -150,8 +152,10 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * "42" --> null
 	 */
 	private static String extractNameFromLayerKey(String key) {
-		int cursor = 1 + key.indexOf(':');
-		String name = key.substring(cursor).trim();
+		int colonPosition = key.indexOf(':');
+		if (colonPosition < 0)
+			return null;
+		String name = key.substring(1 + colonPosition).trim();
 		if (name.length() == 0)
 			return null;
 		return name;
@@ -170,10 +174,8 @@ class ConcreteStepper implements AlgorithmStepper {
 		// following the first colon (:) in the layer's key
 		String layerName = extractNameFromLayerKey(key);
 		if (layerName != null) {
-			for (String existingKey : mBackgroundLayers.keySet()) {
-				if (layerName.equals(extractNameFromLayerKey(existingKey))) {
-					return false;
-				}
+			if (mBackgroundLayerActiveNamesSet.contains(layerName)) {
+				return false;
 			}
 		}
 
@@ -181,7 +183,9 @@ class ConcreteStepper implements AlgorithmStepper {
 		mActiveBackgroundLayer = new Layer(key);
 		mBackgroundLayers.put(getScopedBackgroundLayerKey(key),
 				mActiveBackgroundLayer);
-
+		if (layerName != null) {
+			mBackgroundLayerActiveNamesSet.add(layerName);
+		}
 		return true;
 	}
 
@@ -205,7 +209,15 @@ class ConcreteStepper implements AlgorithmStepper {
 	public void removeLayer(String key) {
 		if (!isActive())
 			return;
-		mBackgroundLayers.remove(getScopedBackgroundLayerKey(key));
+		removeLayerAux(getScopedBackgroundLayerKey(key));
+	}
+
+	private void removeLayerAux(String key) {
+		String layerName = extractNameFromLayerKey(key);
+		if (layerName != null) {
+			mBackgroundLayerActiveNamesSet.remove(layerName);
+		}
+		mBackgroundLayers.remove(key);
 	}
 
 	/**
@@ -214,12 +226,14 @@ class ConcreteStepper implements AlgorithmStepper {
 	 */
 	private void removeCurrentBackgroundLayers() {
 		String currentPrefix = getScopedBackgroundLayerKey("");
-		// Make a copy to avoid a ConcurrentModificationException
-		for (String key : new ArrayList<String>(mBackgroundLayers.keySet())) {
+		ArrayList<String> layersToRemove = new ArrayList();
+		for (String key : mBackgroundLayers.keySet()) {
 			if (key.startsWith(currentPrefix)) {
-				mBackgroundLayers.remove(key);
+				layersToRemove.add(key);
 			}
 		}
+		for (String key : layersToRemove)
+			removeLayerAux(key);
 	}
 
 	@Override
@@ -450,6 +464,7 @@ class ConcreteStepper implements AlgorithmStepper {
 
 				mActiveBackgroundLayer = null;
 				mBackgroundLayers.clear();
+				mBackgroundLayerActiveNamesSet.clear();
 				mForegroundLayer.clear();
 				mFrameTitle = null;
 
@@ -652,6 +667,8 @@ class ConcreteStepper implements AlgorithmStepper {
 	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();
+	// Map of layer names -> existing layer sharing that name
+	private Set<String> mBackgroundLayerActiveNamesSet = new HashSet();
 	private String mFrameTitle;
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private boolean mActive;

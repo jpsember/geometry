@@ -372,20 +372,11 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * Request a refresh of the algorithm display. Runs to the target step (if
 	 * possible) and displays that frame.
 	 * 
-	 * @param widget
-	 *            for test purposes only; the widget that induced this call, or
-	 *            null
 	 */
-	void refresh(AbstractWidget widget) {
-		if (db)
-			pr("refresh due to " + widget);
-
+	void refresh() {
 		// If we're currently doing a refresh, do nothing
-		if (mRefreshing) {
-			if (db)
-				pr("...already doing refresh, ignoring;\n" + stackTrace(0, 18));
+		if (mRefreshing)
 			return;
-		}
 		mRefreshing = true;
 		synchronized (getLock()) {
 			performAlgorithm();
@@ -659,7 +650,7 @@ class ConcreteStepper implements AlgorithmStepper {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
 		mOptions.begin(mAlgorithms);
-		refresh(null);
+		refresh();
 	}
 
 	private Object sSynchronizationLock = new Object();

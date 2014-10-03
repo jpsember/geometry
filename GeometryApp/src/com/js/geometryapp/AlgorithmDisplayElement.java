@@ -9,6 +9,7 @@ import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import static com.js.basic.Tools.*;
 
 public abstract class AlgorithmDisplayElement {
 
@@ -129,8 +130,17 @@ public abstract class AlgorithmDisplayElement {
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads();
 		buildPoints();
-		sTitleFont = new Font((int) (18 * MyActivity.density()));
-		sElementFont = new Font((int) (14 * MyActivity.density()));
+
+		int titleFontSize = 18;
+		int elementFontSize = 18;
+		if (false) {
+			warning("using unusually large fonts");
+			titleFontSize = 35;
+			elementFontSize = 30;
+		}
+		sTitleFont = new Font((int) (titleFontSize * MyActivity.density()));
+		sElementFont = new Font((int) (elementFontSize * MyActivity.density()));
+
 		resetRenderStateVars();
 	}
 
@@ -146,7 +156,7 @@ public abstract class AlgorithmDisplayElement {
 
 		// Place text centered vertically, to the right of the given point
 		p.y += font.lineHeight() / 2;
-		p.x += font.lineHeight() * .67f;
+		p.x += font.characterWidth();
 
 		font.setColor(sColor);
 		font.render(text, p);
@@ -155,27 +165,31 @@ public abstract class AlgorithmDisplayElement {
 	private static void splitLongLines(String text, int maxLineLength,
 			ArrayList<String> destination) {
 
+		// Prefix to add to substring if it followed a split point
+		String splitPrefix = "    ";
+
 		// Keep max line length to something reasonable
-		maxLineLength = Math.max(8, maxLineLength);
+		maxLineLength = Math.max(2 + splitPrefix.length(), maxLineLength);
 
 		// The minimum size of line resulting from splitting on space,
 		// vs splitting at arbitrary location
 		int minSubstringLength = (int) (maxLineLength * .5f);
 
-		// Prefix to add to substring if it followed a split point
-		String splitPrefix = "    ";
 		int i = 0; // the cursor position
-		while (true) {
+		while (i != text.length()) {
+			int maxThisLineLength = maxLineLength;
+			if (i != 0)
+				maxThisLineLength -= splitPrefix.length();
+
 			// Extract next substring. Set j to the cursor position for the next
 			// iteration
-			int j = Math.min(text.length(), i + maxLineLength);
+			int j = Math.min(text.length(), i + maxThisLineLength);
 			if (j < text.length()) {
-				j -= splitPrefix.length();
 				// determine if splitting at space is practical
 				int spaceLocation = i + text.substring(i, j).lastIndexOf(' ');
-				if (spaceLocation < i + minSubstringLength)
+				if (spaceLocation < i + minSubstringLength) {
 					spaceLocation = j;
-
+				}
 				j = spaceLocation;
 			}
 			String textPortion = text.substring(i, j);
@@ -190,10 +204,10 @@ public abstract class AlgorithmDisplayElement {
 
 			while (i < text.length() && text.charAt(i) == ' ')
 				i++;
-
-			if (i == text.length())
-				break;
 		}
+		// If input was empty, always add single empty string
+		if (i == 0)
+			destination.add("");
 	}
 
 	/**
@@ -209,26 +223,28 @@ public abstract class AlgorithmDisplayElement {
 	}
 
 	static void renderFrameTitle(String sFrameTitle) {
+		int titleIndentPixels = 10;
+
 		ArrayList<String> lines = new ArrayList();
 		Font font = sTitleFont;
 		for (int pass = 0; pass < 2; pass++) {
 			if (pass != 0)
 				font = sElementFont;
 			// Determine maximum length of displayed line
-			// Issue #90: we need font width method
-			int maxLineWidth = (int) (sRenderer.deviceSize().x / (.5f * sTitleFont
-					.lineHeight()));
-
+			int maxLineWidth = (int) ((sRenderer.deviceSize().x - 2 * titleIndentPixels) / font
+					.characterWidth());
 			splitStringIntoLines(sFrameTitle, maxLineWidth, lines);
+			// Don't do a second pass if at most four lines generated
 			if (lines.size() <= 4)
 				break;
 		}
 
-		Point p = new Point(10, 10 + font.lineHeight() * lines.size());
+		Point textLocation = new Point(titleIndentPixels, 10 + font.lineHeight()
+				* lines.size());
 		font.setColor(Color.BLACK);
 		for (String s : lines) {
-			font.render(s, p);
-			p.y -= font.lineHeight();
+			font.render(s, textLocation);
+			textLocation.y -= font.lineHeight();
 		}
 	}
 

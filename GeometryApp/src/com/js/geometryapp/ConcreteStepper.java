@@ -449,12 +449,10 @@ class ConcreteStepper implements AlgorithmStepper {
 						popActive();
 
 					String description = t.toString() + "\n" + stackTrace(t);
-					if (!description.equals(mPreviousExceptionDescription)) {
+					if (!(t instanceof GeometryException)) {
 						pr(description);
-						mPreviousExceptionDescription = description;
-					}
-					if (!(t instanceof GeometryException))
 						throw t;
+					}
 
 					mTotalSteps = mCurrentStep;
 					mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
@@ -624,7 +622,5 @@ class ConcreteStepper implements AlgorithmStepper {
 	private int mTargetStep;
 	private int mTotalSteps;
 	private int mCurrentStep;
-
-	private String mPreviousExceptionDescription;
 
 }

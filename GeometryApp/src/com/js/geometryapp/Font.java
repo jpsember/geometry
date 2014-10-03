@@ -153,6 +153,15 @@ public class Font {
 		return mLineHeight;
 	}
 
+	/**
+	 * Get the width of a character in this font. This will only be an
+	 * approximation if the font is not monotone-spaced (which at present is
+	 * true).
+	 */
+	public float characterWidth() {
+		return mAdvanceWidthF;
+	}
+
 	private SpriteContext mSpriteContext;
 	private IPoint mCursor;
 	private GLTexture mTexture;

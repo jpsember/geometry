@@ -330,9 +330,9 @@ public class PolygonMesh {
 						.raise("too many triangles generated for strips");
 
 			if (!stripParity()) {
-				Edge nextBaseEdge = nextEdgeInTriangle(baseEdge);
+				Edge nextBaseEdge = baseEdge.nextFaceEdge();
 				nextBaseEdge.setVisited(true);
-				Edge edge3 = prevEdgeInTriangle(baseEdge);
+				Edge edge3 = baseEdge.prevFaceEdge();
 				edge3.setVisited(true);
 				ccwBaseEdge = nextBaseEdge;
 				baseEdge = nextBaseEdge;
@@ -420,8 +420,8 @@ public class PolygonMesh {
 
 				for (int pass = 0; pass < 2; pass++) {
 
-					Edge edge2 = (pass == 0) ? nextEdgeInTriangle(edge)
-							: prevEdgeInTriangle(edge);
+					Edge edge2 = (pass == 0) ? edge.nextFaceEdge() : edge
+							.prevFaceEdge();
 					if (markedAsInteriorEdge(edge2))
 						continue;
 
@@ -445,14 +445,6 @@ public class PolygonMesh {
 							+ mInteriorEdgeCount);
 
 		mTrianglesExpected = mInteriorEdgeCount / 3;
-	}
-
-	private static Edge nextEdgeInTriangle(Edge edge) {
-		return edge.dual().prevEdge();
-	}
-
-	private static Edge prevEdgeInTriangle(Edge edge) {
-		return edge.nextEdge().dual();
 	}
 
 	private static Edge nextEdgeInCWTriangle(Edge edge) {

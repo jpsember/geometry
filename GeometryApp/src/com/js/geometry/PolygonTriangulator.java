@@ -59,7 +59,7 @@ public class PolygonTriangulator {
 	private static final String BGND_ELEMENT_POLYGON_OUTLINE = "11";
 	private static final String BGND_ELEMENT_MONOTONE_FACE = "15";
 	private static final String BGND_ELEMENT_SWEEPSTATUS = "20";
-	private static final String BGND_ELEMENT_MESH = "00";
+	private static final String BGND_ELEMENT_MESH = "00:mesh";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);

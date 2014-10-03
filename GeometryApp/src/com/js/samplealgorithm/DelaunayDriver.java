@@ -16,8 +16,8 @@ import static com.js.basic.Tools.*;
 
 public class DelaunayDriver implements Algorithm {
 
-	private static final String BGND_ELEMENT_MESH = "00";
-	private static final String BGND_ELEMENT_VORONOI_CELLS = "01";
+	private static final String BGND_ELEMENT_MESH = "50:mesh";
+	private static final String BGND_ELEMENT_VORONOI_CELLS = "60";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 

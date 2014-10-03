@@ -142,6 +142,21 @@ class ConcreteStepper implements AlgorithmStepper {
 		throw new DesiredStepReachedException(message);
 	}
 
+	/**
+	 * Extract name of layer from key, if it exists. Examples:
+	 * 
+	 * "42 :   foo  " --> "foo"
+	 * 
+	 * "42" --> null
+	 */
+	private static String extractNameFromLayerKey(String key) {
+		int cursor = 1 + key.indexOf(':');
+		String name = key.substring(cursor).trim();
+		if (name.length() == 0)
+			return null;
+		return name;
+	}
+
 	@Override
 	public boolean openLayer(String key) {
 		if (!isActive())
@@ -149,6 +164,19 @@ class ConcreteStepper implements AlgorithmStepper {
 
 		if (mActiveBackgroundLayer != null)
 			throw new IllegalStateException("layer already open");
+
+		// Issue #70: If this layer has a name that matches that of any existing
+		// layer, don't open it. The name is defined as (trimmed) characters
+		// following the first colon (:) in the layer's key
+		String layerName = extractNameFromLayerKey(key);
+		if (layerName != null) {
+			for (String existingKey : mBackgroundLayers.keySet()) {
+				if (layerName.equals(extractNameFromLayerKey(existingKey))) {
+					return false;
+				}
+			}
+		}
+
 		AlgorithmDisplayElement.resetRenderStateVars();
 		mActiveBackgroundLayer = new Layer(key);
 		mBackgroundLayers.put(getScopedBackgroundLayerKey(key),

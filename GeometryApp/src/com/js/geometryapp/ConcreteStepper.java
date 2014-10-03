@@ -28,6 +28,12 @@ import com.js.geometryapp.widget.AbstractWidget;
 
 class ConcreteStepper implements AlgorithmStepper {
 
+	/**
+	 * This debug-only flag, if true, performs additional tests to verify that
+	 * the UI and OpenGL threads are cooperating.
+	 */
+	private static final boolean VERIFY_LOCK = true;
+
 	static final String WIDGET_ID_JUMP_BWD = "<<";
 	static final String WIDGET_ID_JUMP_FWD = ">>";
 	static final String WIDGET_ID_STEP_BWD = "<";
@@ -379,7 +385,9 @@ class ConcreteStepper implements AlgorithmStepper {
 			return;
 		mRefreshing = true;
 		synchronized (getLock()) {
+			acquireLock();
 			performAlgorithm();
+			releaseLock();
 		}
 		mglSurfaceView.requestRender();
 		mRefreshing = false;
@@ -440,7 +448,9 @@ class ConcreteStepper implements AlgorithmStepper {
 		TotalStepsCounter s = new TotalStepsCounter(this);
 		int totalSteps;
 		synchronized (getLock()) {
+			acquireLock();
 			totalSteps = s.countSteps();
+			releaseLock();
 		}
 		mOptions.setTotalSteps(totalSteps);
 	}
@@ -617,10 +627,68 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	/**
 	 * Get the object that serves as the synchronization lock to avoid race
-	 * conditions between the UI and OpenGL threads
+	 * conditions between the UI and OpenGL threads. This method should only be
+	 * invoked as part of the following structure:
+	 * 
+	 * <pre>
+	 * 
+	 * synchronized(getLock()) { 
+	 *     acquireLock();
+	 *       ...
+	 *       ...
+	 *     releaseLock();
+	 * }
+	 * 
+	 * </pre>
+	 * 
+	 * The calls to acquireLock() and releaseLock() do nothing if VERIFY_LOCK is
+	 * false.
+	 * 
 	 */
 	Object getLock() {
-		return sSynchronizationLock;
+		return aSynchronizationLock;
+	}
+
+	/**
+	 * 
+	 */
+	void acquireLock() {
+		if (VERIFY_LOCK) {
+			if (aLockCounter != 0
+					&& Thread.currentThread() != aLockActiveThread) {
+				lockError();
+			}
+			aLockCounter++;
+			aLockActiveThread = Thread.currentThread();
+			aLockAquireInfo = stackTrace(1, 3);
+		}
+	}
+
+	void releaseLock() {
+		if (VERIFY_LOCK) {
+			haveLock();
+			aLockCounter--;
+			if (aLockCounter == 0) {
+				aLockActiveThread = null;
+				aLockAquireInfo = null;
+			}
+		}
+	}
+
+	private void lockError() {
+		if (VERIFY_LOCK) {
+			die("unexpected lock thread " + nameOf(Thread.currentThread())
+					+ " vs " + nameOf(aLockActiveThread) + "; acquired:\n"
+					+ aLockAquireInfo);
+		}
+	}
+
+	void haveLock() {
+		if (VERIFY_LOCK) {
+			if (Thread.currentThread() != aLockActiveThread) {
+				lockError();
+			}
+		}
 	}
 
 	private static class Layer {
@@ -650,11 +718,21 @@ class ConcreteStepper implements AlgorithmStepper {
 	void begin() {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
-		mOptions.begin(mAlgorithms);
+		// This synchronization is probably not necessary, but to satisfy the
+		// VERIFY_LOCK calls we need it.
+		synchronized (getLock()) {
+			acquireLock();
+			mOptions.begin(mAlgorithms);
+			releaseLock();
+		}
 		refresh();
 	}
 
-	private Object sSynchronizationLock = new Object();
+	private Object aSynchronizationLock = new Object();
+	private int aLockCounter;
+	private Thread aLockActiveThread;
+	private String aLockAquireInfo;
+
 	private AlgorithmOptions mOptions;
 	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");

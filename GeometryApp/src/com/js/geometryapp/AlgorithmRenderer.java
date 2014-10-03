@@ -31,7 +31,9 @@ class AlgorithmRenderer extends OurGLRenderer {
 	@Override
 	public final void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
 			super.onSurfaceCreated(gl, config);
+			mStepper.releaseLock();
 		}
 	}
 
@@ -42,11 +44,13 @@ class AlgorithmRenderer extends OurGLRenderer {
 	@Override
 	public final void onSurfaceChanged(GL10 gl, int w, int h) {
 		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
 			super.onSurfaceChanged(gl, w, h);
 			// Let the algorithm stepper elements prepare using this renderer
 			AlgorithmDisplayElement.setRenderer(this);
 			// Call user method, now that synchronized
 			onSurfaceChanged();
+			mStepper.releaseLock();
 		}
 	}
 
@@ -57,6 +61,7 @@ class AlgorithmRenderer extends OurGLRenderer {
 	@Override
 	public final void onDrawFrame(GL10 gl) {
 		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
 			AlgorithmDisplayElement.setRendering(true);
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
@@ -64,6 +69,7 @@ class AlgorithmRenderer extends OurGLRenderer {
 			// Call user method, now that synchronized
 			onDrawFrame();
 			AlgorithmDisplayElement.setRendering(false);
+			mStepper.releaseLock();
 		}
 	}
 

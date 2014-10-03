@@ -167,6 +167,7 @@ public class AlgorithmOptions {
 	 * Find widget by name
 	 */
 	public <T extends AbstractWidget> T getWidget(String widgetName) {
+		mStepper.haveLock();
 		T field = (T) mWidgetsMap.get(widgetName);
 		if (field == null)
 			throw new IllegalArgumentException("no widget found with name "
@@ -342,6 +343,7 @@ public class AlgorithmOptions {
 
 		String newWidgetValuesScript = null;
 		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
 			// At present, it only saves widgets that appear in a WidgetGroup.
 			// This omits the target step slider, but that's ok, because we have
 			// hidden algorithm-specific versions that serve this purpose.
@@ -353,6 +355,7 @@ public class AlgorithmOptions {
 			mPrepared = true;
 
 			newWidgetValuesScript = saveValues();
+			mStepper.releaseLock();
 		}
 		if (db) {
 			pr("\nSaving JSON:\n" + newWidgetValuesScript + "\n"
@@ -416,6 +419,7 @@ public class AlgorithmOptions {
 			return;
 
 		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
 			for (Listener listener : listeners) {
 				listener.valueChanged(widget);
 			}
@@ -441,6 +445,7 @@ public class AlgorithmOptions {
 							});
 				}
 			}
+			mStepper.releaseLock();
 		}
 		persistStepperState(true);
 	}

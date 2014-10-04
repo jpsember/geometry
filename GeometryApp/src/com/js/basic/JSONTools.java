@@ -7,13 +7,16 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import static com.js.basic.Tools.*;
 
 public class JSONTools {
 
 	public static class JSONError extends RuntimeException {
 		public JSONError(JSONException e) {
 			super(e);
+		}
+
+		public static void raise(JSONException e) {
+			throw new JSONError(e);
 		}
 	}
 
@@ -39,26 +42,49 @@ public class JSONTools {
 	}
 
 	/**
-	 * Parse a JSONObject from a string, return as map
+	 * Parse a json object, return as map
 	 * 
-	 * @param script
+	 * @param source
+	 *            either a JSONObject, or a String which is assumed to be a JSON
+	 *            string
 	 * @return map of String -> Object
 	 * @throws JSONError
 	 */
-	public static Map<String, Object> parseObject(String script) {
+	public static Map<String, Object> parseObject(Object source) {
+
 		try {
-			JSONObject object = (JSONObject) new JSONTokener(script)
-					.nextValue();
+			JSONObject object;
+			if (source instanceof JSONObject) {
+				object = (JSONObject) source;
+			} else {
+				object = (JSONObject) new JSONTokener((String) source)
+						.nextValue();
+			}
+			return parseJSONObject(object);
+		} catch (JSONException e) {
+			throw new JSONError(e);
+		}
+	}
+
+	/**
+	 * Convert a JSONObject to a Map
+	 * 
+	 * @return map of String -> Object
+	 * @throws JSONError
+	 */
+	private static Map<String, Object> parseJSONObject(JSONObject jsonObject) {
+		try {
 			Map<String, Object> map = new HashMap();
 
-			Iterator<String> iter = object.keys();
+			Iterator<String> iter = jsonObject.keys();
 			while (iter.hasNext()) {
 				String key = iter.next();
-				map.put(key, object.get(key));
+				map.put(key, jsonObject.get(key));
 			}
 			return map;
 		} catch (JSONException e) {
 			throw new JSONError(e);
 		}
 	}
+
 }

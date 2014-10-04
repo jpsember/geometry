@@ -1,5 +1,7 @@
 package com.js.geometryapp;
 
+import com.js.android.UITools;
+
 import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
@@ -38,9 +40,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		LinearLayout mainView = new LinearLayout(this);
 		{
 			mainView.setOrientation(LinearLayout.VERTICAL);
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
+			LinearLayout.LayoutParams p = UITools.layoutParams(false);
 			p.weight = 1;
 			mainView.addView(glView, p);
 		}

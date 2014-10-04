@@ -3,9 +3,8 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
-import android.widget.LinearLayout;
 
+import com.js.android.UITools;
 import com.js.geometryapp.widget.AbstractWidget;
 
 class WidgetGroup {
@@ -24,9 +23,7 @@ class WidgetGroup {
 
 	public void add(AbstractWidget widget) {
 		if (!widget.boolAttr(AbstractWidget.OPTION_HIDDEN, false)) {
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
-			mView.addView(widget.getView(), p);
+			mView.addView(widget.getView(), UITools.layoutParams(false));
 		}
 		mWidgets.add(widget);
 	}

@@ -2,6 +2,8 @@ package com.js.android;
 
 import android.graphics.Color;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
 import com.js.geometry.MyMath;
@@ -37,6 +39,18 @@ public final class UITools {
 	public static void applyDebugColors(View view) {
 		if (SET_DEBUG_COLORS)
 			view.setBackgroundColor(debugColor());
+	}
+
+	public static LinearLayout.LayoutParams layoutParams(
+			boolean forHorizontalLayout) {
+		LinearLayout.LayoutParams params;
+		if (forHorizontalLayout)
+			params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+					LayoutParams.MATCH_PARENT);
+		else
+			params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+					LayoutParams.WRAP_CONTENT);
+		return params;
 	}
 
 	private static int sDebugColorIndex;

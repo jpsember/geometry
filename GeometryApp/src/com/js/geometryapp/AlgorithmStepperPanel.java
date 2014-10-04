@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.android.UITools;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.SliderWidget;
@@ -94,10 +95,9 @@ class AlgorithmStepperPanel {
 	 */
 	private static LinearLayout.LayoutParams buildLayoutParams(
 			boolean fillRemaining) {
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.WRAP_CONTENT,
-				LinearLayout.LayoutParams.MATCH_PARENT);
-		p.weight = fillRemaining ? 1 : 0;
+		LinearLayout.LayoutParams p = UITools.layoutParams(true);
+		if (fillRemaining)
+			p.weight = 1;
 		return p;
 	}
 

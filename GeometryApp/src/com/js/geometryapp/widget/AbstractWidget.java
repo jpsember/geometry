@@ -121,9 +121,7 @@ public abstract class AbstractWidget {
 		mWidgetValue = "";
 
 		LinearLayout widgetContainer = new LinearLayout(options.getContext());
-		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.WRAP_CONTENT);
-		widgetContainer.setLayoutParams(params);
+		widgetContainer.setLayoutParams(UITools.layoutParams(false));
 		UITools.applyDebugColors(widgetContainer);
 
 		this.mPrimaryView = widgetContainer;
@@ -250,13 +248,12 @@ public abstract class AbstractWidget {
 
 		LinearLayout container = new LinearLayout(context());
 
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				MyActivity.inchesToPixels(.8f), LayoutParams.WRAP_CONTENT);
+		LinearLayout.LayoutParams p = UITools.layoutParams(false);
+		p.width = MyActivity.inchesToPixels(.8f);
 		p.gravity = Gravity.BOTTOM;
 		container.setLayoutParams(p);
 
-		p = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-				LayoutParams.WRAP_CONTENT);
+		p = UITools.layoutParams(false);
 		p.weight = 1;
 		container.addView(new FrameLayout(context()), p);
 

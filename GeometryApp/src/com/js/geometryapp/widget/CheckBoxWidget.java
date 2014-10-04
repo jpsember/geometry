@@ -3,10 +3,10 @@ package com.js.geometryapp.widget;
 import java.util.Map;
 
 import com.js.android.MyActivity;
+import com.js.android.UITools;
 import com.js.geometryapp.AlgorithmOptions;
 
 import android.view.Gravity;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
@@ -37,8 +37,7 @@ public class CheckBoxWidget extends AbstractWidget {
 			label = new TextView(context());
 			label.setText(getLabel(false));
 			label.setPadding(MyActivity.inchesToPixels(.08f), 0, 0, 0);
-			LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(
-					LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+			LinearLayout.LayoutParams labelParams = UITools.layoutParams(false);
 			labelParams.gravity = Gravity.BOTTOM;
 			label.setLayoutParams(labelParams);
 		}

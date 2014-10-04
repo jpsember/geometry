@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import static android.opengl.GLES20.*;
 
@@ -58,7 +58,7 @@ public class GLProgram {
 	 * @param matrixLocation
 	 *            location of matrix within program
 	 */
-	protected void prepareMatrix(Matrix optionalTransform, int matrixLocation) {
+	public void prepareMatrix(Matrix optionalTransform, int matrixLocation) {
 
 		// Only do this if the previously prepared matrix is no longer valid, or
 		// if we need to include an object-specific transformation

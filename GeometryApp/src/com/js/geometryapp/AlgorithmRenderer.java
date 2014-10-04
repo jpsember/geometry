@@ -9,6 +9,7 @@ import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
+import com.js.opengl.OurGLRenderer;
 
 import android.content.Context;
 import android.graphics.Matrix;

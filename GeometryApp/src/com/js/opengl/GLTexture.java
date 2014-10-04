@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;

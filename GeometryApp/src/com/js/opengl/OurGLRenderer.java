@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		mContext = context;
 	}
 
-	protected Context context() {
+	public Context context() {
 		return mContext;
 	}
 
@@ -119,7 +119,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		return mDeviceSize;
 	}
 
-  // TODO: what do we think of these 'final' attributes?
+	// TODO: what do we think of these 'final' attributes?
 	private final Context mContext;
 	private final Map<String, Matrix> mTransformMap = new HashMap();
 	private final Point mDeviceSize = new Point();

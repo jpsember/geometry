@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,6 +10,7 @@ import android.graphics.Typeface;
 import com.js.geometry.IPoint;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
+
 import static com.js.basic.Tools.*;
 
 public class Font {

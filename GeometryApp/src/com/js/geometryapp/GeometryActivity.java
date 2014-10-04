@@ -3,6 +3,8 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
+import com.js.opengl.OurGLRenderer;
+import com.js.opengl.OurGLSurfaceView;
 
 import android.app.ActivityManager;
 import android.content.Context;

@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import com.js.android.UITools;
+import com.js.opengl.OurGLSurfaceView;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

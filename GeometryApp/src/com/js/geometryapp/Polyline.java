@@ -10,6 +10,10 @@ import com.js.android.MyActivity;
 import com.js.geometry.FloatArray;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.opengl.GLProgram;
+import com.js.opengl.GLShader;
+import com.js.opengl.GLTools;
+import com.js.opengl.OurGLRenderer;
 
 import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_LINE_LOOP;

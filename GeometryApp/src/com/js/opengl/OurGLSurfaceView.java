@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;

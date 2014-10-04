@@ -11,12 +11,12 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
-import com.js.geometryapp.GLSpriteProgram;
-import com.js.geometryapp.GLTexture;
 import com.js.geometryapp.GeometryActivity;
-import com.js.geometryapp.OurGLRenderer;
-import com.js.geometryapp.OurGLSurfaceView;
-import com.js.geometryapp.SpriteContext;
+import com.js.opengl.GLSpriteProgram;
+import com.js.opengl.GLTexture;
+import com.js.opengl.OurGLRenderer;
+import com.js.opengl.OurGLSurfaceView;
+import com.js.opengl.SpriteContext;
 
 public class SampleAnimationActivity extends GeometryActivity {
 

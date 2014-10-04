@@ -1,8 +1,8 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import android.content.Context;
 import static android.opengl.GLES20.*;
-import static com.js.android.Tools.readTextFileResource;
+import static com.js.android.Tools.*;
 
 import static com.js.basic.Tools.*;
 

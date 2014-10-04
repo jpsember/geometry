@@ -7,6 +7,10 @@ import android.graphics.Matrix;
 import com.js.geometry.Point;
 import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
+import com.js.opengl.GLProgram;
+import com.js.opengl.GLShader;
+import com.js.opengl.GLTools;
+import com.js.opengl.OurGLRenderer;
 
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;

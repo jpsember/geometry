@@ -226,7 +226,13 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Compile widget values to JSON string
+	 * Compile widget values to string representing a JSON object. The JSON
+	 * object keys are group names, which are either algorithm names or the
+	 * special PRIMARY_GROUP_KEY representing the primary widget group.
+	 * 
+	 * The JSON object values are themselves JSON objects, whose keys are widget
+	 * ids, and values are widget values (strings).
+	 * 
 	 */
 	private String saveValues() {
 		Map<String, Map> groupValues = new HashMap();
@@ -255,37 +261,36 @@ public class AlgorithmOptions {
 
 		final boolean db = DIAGNOSE_PERSISTENCE;
 
+		// Provide an empty JSON object as the default
 		String script = AppPreferences.getString(PERSIST_KEY_WIDGET_VALUES,
-				null);
+				"{}");
 		if (db)
 			pr("\nRestoring JSON:\n" + script + "\n" + "Widgets:\n"
 					+ d(mWidgetsMap) + "\n");
 
-		if (script != null) {
-			Map<String, Object> object = JSONTools.parseObject(script);
-			for (String algName : object.keySet()) {
-				if (algName.equals(PRIMARY_GROUP_KEY)) {
-					activateSecondaryWidgetGroup(null);
-				} else {
-					AlgorithmRecord rec = findAlgorithm(algName);
-					if (rec == null) {
-						warning("can't find algorithm '" + algName + "'");
-						continue;
-					}
-					activateSecondaryWidgetGroup(rec);
+		Map<String, Object> object = JSONTools.parseObject(script);
+		for (String algName : object.keySet()) {
+			if (algName.equals(PRIMARY_GROUP_KEY)) {
+				activateSecondaryWidgetGroup(null);
+			} else {
+				AlgorithmRecord rec = findAlgorithm(algName);
+				if (rec == null) {
+					warning("can't find algorithm '" + algName + "'");
+					continue;
 				}
+				activateSecondaryWidgetGroup(rec);
+			}
 
-				Map<String, Object> widgetValues = JSONTools.parseObject(object
-						.get(algName));
-				for (String key : widgetValues.keySet()) {
-					String value = (String) widgetValues.get(key);
-					AbstractWidget w = mWidgetsMap.get(key);
-					if (w == null) {
-						warning("can't find widget named '" + key + "'");
-						continue;
-					}
-					w.setValue(value);
+			Map<String, Object> widgetValues = JSONTools.parseObject(object
+					.get(algName));
+			for (String key : widgetValues.keySet()) {
+				String value = (String) widgetValues.get(key);
+				AbstractWidget w = mWidgetsMap.get(key);
+				if (w == null) {
+					warning("can't find widget named '" + key + "'");
+					continue;
 				}
+				w.setValue(value);
 			}
 		}
 		mPrepared = true;

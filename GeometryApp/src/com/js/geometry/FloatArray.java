@@ -1,24 +1,43 @@
-package com.js.geometryapp;
+package com.js.geometry;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
 
-import com.js.geometry.Point;
+import com.js.geometryapp.OurGLTools;
 
+/**
+ * A dynamic array of floats
+ */
 public class FloatArray {
 
+	/**
+	 * Clear the array
+	 */
 	public void clear() {
 		mSize = 0;
 	}
 
+	/**
+	 * Get the size of the array
+	 */
+	public int size() {
+		return mSize;
+	}
+
+	/**
+	 * Add a value
+	 */
 	public void add(float f) {
 		growTo(mSize + 1);
 		mArray[mSize] = f;
 		mSize += 1;
 	}
 
+	/**
+	 * Add a Point as two consecutive floats
+	 */
 	public void add(Point point) {
 		growTo(mSize + 2);
 		mArray[mSize] = point.x;
@@ -39,10 +58,9 @@ public class FloatArray {
 		return Arrays.copyOf(mArray, mSize);
 	}
 
-	public int size() {
-		return mSize;
-	}
-
+	/**
+	 * Get a FloatBuffer containing this array's elements
+	 */
 	public FloatBuffer asFloatBuffer() {
 		FloatBuffer mBuffer;
 		mBuffer = ByteBuffer.allocateDirect(mSize * OurGLTools.BYTES_PER_FLOAT)
@@ -51,11 +69,26 @@ public class FloatArray {
 		return mBuffer;
 	}
 
+	/**
+	 * Add values from a float[]
+	 * 
+	 * @param array
+	 *            source array
+	 * @param offset
+	 *            index of first element to add
+	 * @param count
+	 *            number of elements to add
+	 */
 	public void add(float[] array, int offset, int count) {
 		for (int j = 0; j < count; j++)
 			add(array[offset + j]);
 	}
 
+	/**
+	 * Get element
+	 * 
+	 * @param index
+	 */
 	public float get(int index) {
 		if (index >= mSize)
 			throw new ArrayIndexOutOfBoundsException();

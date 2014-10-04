@@ -3,6 +3,7 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 
 import com.js.geometry.Edge;
+import com.js.geometry.FloatArray;
 import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;

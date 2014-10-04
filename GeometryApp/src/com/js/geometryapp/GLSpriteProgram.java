@@ -2,6 +2,7 @@ package com.js.geometryapp;
 
 import java.nio.FloatBuffer;
 
+import com.js.geometry.FloatArray;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 

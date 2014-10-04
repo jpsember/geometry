@@ -7,6 +7,7 @@ import java.nio.FloatBuffer;
 import android.graphics.Color;
 
 import com.js.android.MyActivity;
+import com.js.geometry.FloatArray;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 

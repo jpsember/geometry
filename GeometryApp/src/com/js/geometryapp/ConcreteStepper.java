@@ -32,7 +32,7 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * This debug-only flag, if true, performs additional tests to verify that
 	 * the UI and OpenGL threads are cooperating.
 	 */
-	private static final boolean VERIFY_LOCK = (true && DEBUG_ONLY_FEATURES);
+	private static final boolean VERIFY_LOCK = (false && DEBUG_ONLY_FEATURES);
 
 	static final String WIDGET_ID_JUMP_BWD = "<<";
 	static final String WIDGET_ID_JUMP_FWD = ">>";
@@ -718,9 +718,12 @@ class ConcreteStepper implements AlgorithmStepper {
 	void begin() {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
+
 		// This synchronization is probably not necessary, but to satisfy the
 		// VERIFY_LOCK calls we need it.
 		synchronized (getLock()) {
+			if (VERIFY_LOCK)
+				warning("VERIFY_LOCK flag is true");
 			acquireLock();
 			mOptions.begin(mAlgorithms);
 			releaseLock();

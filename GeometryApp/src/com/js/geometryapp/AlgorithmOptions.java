@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
 import com.js.android.QuiescentDelayOperation;
+import com.js.android.UITools;
 import com.js.basic.JSONTools;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
@@ -447,7 +448,7 @@ public class AlgorithmOptions {
 	private ViewGroup constructSubView() {
 		LinearLayout view = new LinearLayout(mContext);
 		view.setOrientation(LinearLayout.VERTICAL);
-		OurGLTools.applyDebugColors(view);
+		UITools.applyDebugColors(view);
 		return view;
 	}
 

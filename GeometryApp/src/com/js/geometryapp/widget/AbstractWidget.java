@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.js.android.MyActivity;
+import com.js.android.UITools;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.OurGLTools;
 
 import android.content.Context;
 import android.view.Gravity;
@@ -124,7 +124,7 @@ public abstract class AbstractWidget {
 		LayoutParams params = new LayoutParams(LayoutParams.MATCH_PARENT,
 				LayoutParams.WRAP_CONTENT);
 		widgetContainer.setLayoutParams(params);
-		OurGLTools.applyDebugColors(widgetContainer);
+		UITools.applyDebugColors(widgetContainer);
 
 		this.mPrimaryView = widgetContainer;
 	}

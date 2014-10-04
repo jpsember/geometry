@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import com.js.basic.Tools;
-
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 

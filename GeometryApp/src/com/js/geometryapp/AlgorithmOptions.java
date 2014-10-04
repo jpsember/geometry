@@ -3,7 +3,11 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import android.content.Context;
 import android.view.ViewGroup;
@@ -18,8 +22,6 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 import com.js.geometryapp.widget.SliderWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.TextWidget;
-import com.js.json.JSONEncoder;
-import com.js.json.JSONParser;
 
 import static com.js.basic.Tools.*;
 
@@ -237,7 +239,10 @@ public class AlgorithmOptions {
 		for (AlgorithmRecord a : mAlgorithms) {
 			groupValues.put(a.name(), getWidgetValueMap(a.widgets()));
 		}
-		return JSONEncoder.toJSON(groupValues);
+		String jsonString;
+		JSONObject obj = new JSONObject(groupValues);
+		jsonString = obj.toString();
+		return jsonString;
 	}
 
 	private Map getWidgetValueMap(WidgetGroup group) {
@@ -262,32 +267,41 @@ public class AlgorithmOptions {
 			pr("\nRestoring JSON:\n" + script + "\n" + "Widgets:\n"
 					+ d(mWidgetsMap) + "\n");
 
-		if (script != null) {
-			JSONParser parser = new JSONParser(script);
-			Map<String, Map> values = (Map) parser.next();
-			for (String algName : values.keySet()) {
-				if (algName.equals(PRIMARY_GROUP_KEY)) {
-					activateSecondaryWidgetGroup(null);
-				} else {
-					AlgorithmRecord rec = findAlgorithm(algName);
-					if (rec == null) {
-						warning("can't find algorithm '" + algName + "'");
-						continue;
+		try {
+			if (script != null) {
+				JSONObject object = (JSONObject) new JSONTokener(script)
+						.nextValue();
+				Iterator<String> iter = object.keys();
+				while (iter.hasNext()) {
+					String algName = iter.next();
+					if (algName.equals(PRIMARY_GROUP_KEY)) {
+						activateSecondaryWidgetGroup(null);
+					} else {
+						AlgorithmRecord rec = findAlgorithm(algName);
+						if (rec == null) {
+							warning("can't find algorithm '" + algName + "'");
+							continue;
+						}
+						activateSecondaryWidgetGroup(rec);
 					}
-					activateSecondaryWidgetGroup(rec);
-				}
-				Map<String, String> widgetValues = values.get(algName);
-				for (String key : widgetValues.keySet()) {
-					String value = widgetValues.get(key);
-					AbstractWidget w = mWidgetsMap.get(key);
-					if (w == null) {
-						warning("can't find widget named '" + key + "'");
-						continue;
+
+					JSONObject widgetValues = object.getJSONObject(algName);
+
+					Iterator<String> wIter = widgetValues.keys();
+					while (wIter.hasNext()) {
+						String key = wIter.next();
+						String value = widgetValues.getString(key);
+						AbstractWidget w = mWidgetsMap.get(key);
+						if (w == null) {
+							warning("can't find widget named '" + key + "'");
+							continue;
+						}
+						w.setValue(value);
 					}
-					// TODO: catch exceptions that may get thrown here
-					w.setValue(value);
 				}
 			}
+		} catch (org.json.JSONException e) {
+			warning("caught " + e);
 		}
 		mPrepared = true;
 		int algNumber = 0;

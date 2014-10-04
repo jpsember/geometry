@@ -35,9 +35,7 @@ public class AlgorithmOptions {
 
 	private static final String WIDGET_ID_ALGORITHM = "_algorithm_";
 
-	private static final String PERSIST_KEY_WIDGET_VALUES = "_widget_values";
-
-	private static final boolean DIAGNOSE_PERSISTENCE = false;
+	private static final String PERSIST_KEY_OPTIONS = "_widget_values";
 
 	/**
 	 * Prepare the options views
@@ -259,14 +257,8 @@ public class AlgorithmOptions {
 
 	private void restoreStepperState() {
 
-		final boolean db = DIAGNOSE_PERSISTENCE;
-
 		// Provide an empty JSON object as the default
-		String script = AppPreferences.getString(PERSIST_KEY_WIDGET_VALUES,
-				"{}");
-		if (db)
-			pr("\nRestoring JSON:\n" + script + "\n" + "Widgets:\n"
-					+ d(mWidgetsMap) + "\n");
+		String script = AppPreferences.getString(PERSIST_KEY_OPTIONS, "{}");
 
 		Map<String, Object> object = JSONTools.parseObject(script);
 		for (String algName : object.keySet()) {
@@ -341,7 +333,6 @@ public class AlgorithmOptions {
 	}
 
 	private void persistStepperStateAux() {
-		final boolean db = DIAGNOSE_PERSISTENCE;
 		if (!mFlushRequired)
 			return;
 
@@ -361,13 +352,8 @@ public class AlgorithmOptions {
 			newWidgetValuesScript = saveValues();
 			mStepper.releaseLock();
 		}
-		if (db) {
-			pr("\nSaving JSON:\n" + newWidgetValuesScript + "\n"
-					+ "Widget map:\n" + d(mWidgetsMap) + "\n");
-		}
 
-		AppPreferences.putString(PERSIST_KEY_WIDGET_VALUES,
-				newWidgetValuesScript);
+		AppPreferences.putString(PERSIST_KEY_OPTIONS, newWidgetValuesScript);
 
 		mFlushRequired = false;
 	}

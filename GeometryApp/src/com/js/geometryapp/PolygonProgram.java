@@ -4,7 +4,6 @@ import java.nio.FloatBuffer;
 
 import android.graphics.Matrix;
 
-import com.js.geometry.CompiledTriangleSet;
 import com.js.geometry.Point;
 import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
@@ -94,8 +93,7 @@ public class PolygonProgram {
 			mColorValid = true;
 		}
 
-		CompiledTriangleSet strip = mesh.triangleSet();
-		FloatBuffer fb = strip.floatBuffer();
+		FloatBuffer fb = mesh.getVertexBuffer();
 		fb.position(0);
 		int stride = PolygonMesh.VERTEX_COMPONENTS * OurGLTools.BYTES_PER_FLOAT;
 
@@ -103,7 +101,7 @@ public class PolygonProgram {
 				GL_FLOAT, false, stride, fb);
 		glEnableVertexAttribArray(mPositionLocation);
 
-		glDrawArrays(sMeshTypeToGL[mesh.type()], 0, strip.numVertices());
+		glDrawArrays(sMeshTypeToGL[mesh.type()], 0, mesh.getVertexCount());
 	}
 
 	private void prepareAttributes() {

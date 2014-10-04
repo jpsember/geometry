@@ -1,7 +1,7 @@
 package com.js.geometry;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
-
 
 import static com.js.basic.Tools.*;
 
@@ -75,10 +75,17 @@ public class PolygonMesh {
 	}
 
 	/**
-	 * Get the compiled triangle set
+	 * Get the compiled vertices
 	 */
-	public CompiledTriangleSet triangleSet() {
+	public FloatBuffer getVertexBuffer() {
 		return mTriangleSet;
+	}
+
+	/**
+	 * Get the number of compiled vertices
+	 */
+	public int getVertexCount() {
+		return mTriangleSet.capacity() / 2;
 	}
 
 	/**
@@ -113,8 +120,7 @@ public class PolygonMesh {
 	 * the compiled triangle set to our list, then clears the float array
 	 */
 	private void compileTriangleSet() {
-		mTriangleSet = new CompiledTriangleSet(mFloatArray.asFloatBuffer(),
-				bufferedVertexCount());
+		mTriangleSet = mFloatArray.asFloatBuffer();
 	}
 
 	/**
@@ -449,7 +455,7 @@ public class PolygonMesh {
 	}
 
 	private int mType;
-	private CompiledTriangleSet mTriangleSet;
+	private FloatBuffer mTriangleSet;
 	private GeometryException mException;
 
 	// These are used only during the mesh construction process:

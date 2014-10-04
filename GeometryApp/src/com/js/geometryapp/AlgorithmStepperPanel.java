@@ -6,7 +6,6 @@ import com.js.geometryapp.widget.SliderWidget;
 
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
@@ -31,18 +30,11 @@ class AlgorithmStepperPanel {
 		mOptions = options;
 	}
 
-	private LinearLayout linearLayout(boolean horizontal) {
-		LinearLayout v = new LinearLayout(mOptions.getContext());
-		v.setOrientation(horizontal ? LinearLayout.HORIZONTAL
-				: LinearLayout.VERTICAL);
-		return v;
-	}
-
 	private void addButton(ViewGroup parent, String label) {
 		ButtonWidget w = mOptions.addButton(label,
 				AbstractWidget.OPTION_DETACHED, true,
 				AbstractWidget.OPTION_REFRESH_ALGORITHM, false);
-		parent.addView(w.getView(), GeometryActivity.layoutParams(true, false));
+		parent.addView(w.getView(), buildLayoutParams(true));
 	}
 
 	private View view() {
@@ -55,11 +47,9 @@ class AlgorithmStepperPanel {
 		final SliderWidget targetStepSlider = mOptions.addSlider(
 				AlgorithmOptions.WIDGET_ID_TARGETSTEP, //
 				AbstractWidget.OPTION_DETACHED, true, //
-				AbstractWidget.OPTION_HAS_LABEL, false, //
-				AbstractWidget.OPTION_LAYOUT_HEIGHT, LayoutParams.MATCH_PARENT);
-
-		layout.addView(targetStepSlider.getView(),
-				GeometryActivity.layoutParams(true, true));
+				AbstractWidget.OPTION_HAS_LABEL, false //
+				);
+		layout.addView(targetStepSlider.getView(), buildLayoutParams(true));
 
 		// Add another detached widget to store the total steps
 		AbstractWidget totalStepsSlider = mOptions.addSlider(
@@ -77,7 +67,7 @@ class AlgorithmStepperPanel {
 		});
 
 		LinearLayout v1 = linearLayout(false);
-		layout.addView(v1, GeometryActivity.layoutParams(true, false));
+		layout.addView(v1, buildLayoutParams(false));
 		{
 			LinearLayout v2 = linearLayout(true);
 			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_BWD);
@@ -93,6 +83,35 @@ class AlgorithmStepperPanel {
 
 		mView = layout;
 		return mView;
+	}
+
+	/**
+	 * Build a LayoutParams for a horizontal component (wraps content
+	 * horizontally, matches parent vertically)
+	 * 
+	 * @param fillRemaining
+	 *            true if it's to fill the remaining horizontal space
+	 */
+	private static LinearLayout.LayoutParams buildLayoutParams(
+			boolean fillRemaining) {
+		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.WRAP_CONTENT,
+				LinearLayout.LayoutParams.MATCH_PARENT);
+		p.weight = fillRemaining ? 1 : 0;
+		return p;
+	}
+
+	/**
+	 * Construct a LinearLayout
+	 * 
+	 * @param horizontal
+	 *            true if its orientation is to be horizontal
+	 */
+	private LinearLayout linearLayout(boolean horizontal) {
+		LinearLayout v = new LinearLayout(mOptions.getContext());
+		v.setOrientation(horizontal ? LinearLayout.HORIZONTAL
+				: LinearLayout.VERTICAL);
+		return v;
 	}
 
 	private View mView;

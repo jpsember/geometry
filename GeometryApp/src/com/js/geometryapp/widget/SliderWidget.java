@@ -5,11 +5,11 @@ import java.util.Map;
 import com.js.geometry.MyMath;
 import com.js.geometryapp.AlgorithmOptions;
 
+import android.view.Gravity;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
-import static com.js.basic.Tools.*;
 
 public class SliderWidget extends AbstractWidget {
 
@@ -43,6 +43,7 @@ public class SliderWidget extends AbstractWidget {
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
 				LayoutParams.MATCH_PARENT, intAttr(OPTION_LAYOUT_HEIGHT,
 						LayoutParams.WRAP_CONTENT));
+		p.gravity = Gravity.CENTER;
 		getView().addView(mSeekBar, p);
 	}
 
@@ -68,16 +69,6 @@ public class SliderWidget extends AbstractWidget {
 		int max = maxValue();
 		int userIntValue = MyMath.clamp(sliderValue, min, max);
 		int progress = userIntValue - min;
-
-		if (false) {
-			warning("examining max progress");
-			int maxProg = mSeekBar.getMax();
-			if (progress > maxProg) {
-				pr(getId() + ": attempt to set progress to " + progress
-						+ " (internal value " + internalValue
-						+ ") when max is " + maxProg);
-			}
-		}
 
 		mSeekBar.setProgress(progress);
 	}

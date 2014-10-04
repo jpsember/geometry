@@ -11,7 +11,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class GeometryActivity extends MyActivity {
@@ -71,27 +70,6 @@ public class GeometryActivity extends MyActivity {
 	protected GLSurfaceView buildOpenGLView() {
 		GLSurfaceView v = new OurGLSurfaceView(this, new OurGLRenderer(this));
 		return v;
-	}
-
-	public static LinearLayout.LayoutParams layoutParams(boolean horizontal,
-			boolean fillRemaining) {
-		boolean withMargins = false;
-		LinearLayout.LayoutParams p;
-		if (horizontal) {
-			p = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.WRAP_CONTENT,
-					LinearLayout.LayoutParams.MATCH_PARENT);
-			if (withMargins)
-				p.setMargins(20, 4, 20, 4);
-		} else {
-			p = new LinearLayout.LayoutParams(
-					LinearLayout.LayoutParams.MATCH_PARENT,
-					LinearLayout.LayoutParams.WRAP_CONTENT);
-			if (withMargins)
-				p.setMargins(4, 20, 4, 20);
-		}
-		p.weight = fillRemaining ? 1 : 0;
-		return p;
 	}
 
 	protected GLSurfaceView getGLSurfaceView() {

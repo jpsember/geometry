@@ -35,7 +35,7 @@ public class SpriteContext {
 	 */
 	public void setTintColor(int color) {
 		ASSERT(mTintMode);
-		OurGLTools.convertColorToOpenGL(color, mTintColor);
+		GLTools.convertColorToOpenGL(color, mTintColor);
 	}
 
 	public void renderSprite(GLTexture mTexture, FloatBuffer vertexData,
@@ -105,25 +105,25 @@ public class SpriteContext {
 	}
 
 	private void prepareProgram() {
-		mProgramObjectId = OurGLTools.createProgram();
+		mProgramObjectId = GLTools.createProgram();
 		glAttachShader(mProgramObjectId, mVertexShader.getId());
 		glAttachShader(mProgramObjectId, mFragmentShader.getId());
-		OurGLTools.linkProgram(mProgramObjectId);
-		OurGLTools.validateProgram(mProgramObjectId);
+		GLTools.linkProgram(mProgramObjectId);
+		GLTools.validateProgram(mProgramObjectId);
 		prepareAttributes();
 	}
 
 	private void prepareAttributes() {
-		OurGLTools.setProgram(mProgramObjectId);
-		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
-		mSpritePositionLocation = OurGLTools
+		GLTools.setProgram(mProgramObjectId);
+		mPositionLocation = GLTools.getProgramLocation("a_Position");
+		mSpritePositionLocation = GLTools
 				.getProgramLocation("u_SpritePosition");
-		mTextureCoordinateLocation = OurGLTools
+		mTextureCoordinateLocation = GLTools
 				.getProgramLocation("a_TexCoordinate");
-		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
+		mMatrixLocation = GLTools.getProgramLocation("u_Matrix");
 
 		if (mTintMode) {
-			mColorLocation = OurGLTools.getProgramLocation("u_InputColor");
+			mColorLocation = GLTools.getProgramLocation("u_InputColor");
 		}
 	}
 

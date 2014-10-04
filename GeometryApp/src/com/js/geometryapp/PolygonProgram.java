@@ -42,7 +42,7 @@ public class PolygonProgram {
 	 * Set color of subsequent render operations with this program
 	 */
 	public void setColor(int color) {
-		OurGLTools.convertColorToOpenGL(color, mColor);
+		GLTools.convertColorToOpenGL(color, mColor);
 		mColorValid = false;
 	}
 
@@ -105,11 +105,11 @@ public class PolygonProgram {
 	}
 
 	private void prepareAttributes() {
-		OurGLTools.setProgram(mProgram.getId());
-		mPositionLocation = OurGLTools.getProgramLocation("a_Position");
-		mColorLocation = OurGLTools.getProgramLocation("u_InputColor");
-		mMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
-		mTranslationLocation = OurGLTools.getProgramLocation("u_Translation");
+		GLTools.setProgram(mProgram.getId());
+		mPositionLocation = GLTools.getProgramLocation("a_Position");
+		mColorLocation = GLTools.getProgramLocation("u_InputColor");
+		mMatrixLocation = GLTools.getProgramLocation("u_Matrix");
+		mTranslationLocation = GLTools.getProgramLocation("u_Translation");
 	}
 
 	private GLProgram mProgram;

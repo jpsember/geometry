@@ -14,11 +14,11 @@ public class GLProgram {
 			GLShader fragmentShader) {
 		setTransformName(OurGLRenderer.TRANSFORM_NAME_DEVICE_TO_NDC);
 		mRenderer = renderer;
-		mProgramObjectId = OurGLTools.createProgram();
+		mProgramObjectId = GLTools.createProgram();
 		glAttachShader(mProgramObjectId, vertexShader.getId());
 		glAttachShader(mProgramObjectId, fragmentShader.getId());
-		OurGLTools.linkProgram(mProgramObjectId);
-		OurGLTools.validateProgram(mProgramObjectId);
+		GLTools.linkProgram(mProgramObjectId);
+		GLTools.validateProgram(mProgramObjectId);
 	}
 
 	public int getId() {

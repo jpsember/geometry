@@ -21,7 +21,7 @@ public class GLShader {
 		if (getId() == 0)
 			die("unable to create shader object: " + this);
 		glShaderSource(getId(), mSource);
-		OurGLTools.compileShader(getId());
+		GLTools.compileShader(getId());
 	}
 
 	private void dispose() {

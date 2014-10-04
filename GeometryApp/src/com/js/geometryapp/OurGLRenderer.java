@@ -28,7 +28,7 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 
 	@Override
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-		OurGLTools.defineOpenGLThread();
+		GLTools.defineOpenGLThread();
 		mSurfaceId += 1;
 		SpriteContext.prepare(this);
 	}
@@ -106,12 +106,12 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		// addition to projection matrices,
 		// OpenGL programs and shaders are also no longer valid.. or are they
 		// only no longer valid when a surface is created as opposed to changed?
-		OurGLTools.ensureRenderThread();
+		GLTools.ensureRenderThread();
 		return mMatrixId;
 	}
 
 	public int surfaceId() {
-		OurGLTools.ensureRenderThread();
+		GLTools.ensureRenderThread();
 		return mSurfaceId;
 	}
 

@@ -124,7 +124,7 @@ public abstract class AlgorithmDisplayElement {
 	 * onSurfaceCreated(...)
 	 */
 	static void setRenderer(AlgorithmRenderer renderer) {
-		OurGLTools.ensureRenderThread();
+		GLTools.ensureRenderThread();
 		sRenderer = renderer;
 		Polyline.prepareRenderer(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);

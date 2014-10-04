@@ -88,17 +88,17 @@ public class Polyline {
 	}
 
 	private static void prepareAttributes() {
-		OurGLTools.setProgram(sProgram.getId());
-		sPositionLocation = OurGLTools.getProgramLocation("a_Position");
-		sColorLocation = OurGLTools.getProgramLocation("u_InputColor");
-		sMatrixLocation = OurGLTools.getProgramLocation("u_Matrix");
+		GLTools.setProgram(sProgram.getId());
+		sPositionLocation = GLTools.getProgramLocation("a_Position");
+		sColorLocation = GLTools.getProgramLocation("u_InputColor");
+		sMatrixLocation = GLTools.getProgramLocation("u_Matrix");
 	}
 
 	public void render() {
 		glUseProgram(sProgram.getId());
 		sProgram.prepareMatrix(null, sMatrixLocation);
 
-		OurGLTools.convertColorToOpenGL(mColor, sColor);
+		GLTools.convertColorToOpenGL(mColor, sColor);
 
 		glUniform4fv(sColorLocation, 1, sColor, 0);
 

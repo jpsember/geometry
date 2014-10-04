@@ -6,7 +6,7 @@ import static com.js.basic.Tools.*;
 import android.graphics.Color;
 import android.opengl.GLUtils;
 
-public final class OurGLTools {
+public final class GLTools {
 
 	/**
 	 * Store current thread as the OpenGL rendering thread, for later calls to

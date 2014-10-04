@@ -18,7 +18,7 @@ import android.opengl.GLUtils;
 public class GLTexture {
 
 	public GLTexture(Bitmap bitmap) {
-		OurGLTools.ensureRenderThread();
+		GLTools.ensureRenderThread();
 		initWithBitmap(bitmap);
 	}
 
@@ -38,7 +38,7 @@ public class GLTexture {
 	 * @param resourceId
 	 */
 	public GLTexture(Context context, int resourceId) {
-		OurGLTools.ensureRenderThread();
+		GLTools.ensureRenderThread();
 
 		doNothing();
 
@@ -83,7 +83,7 @@ public class GLTexture {
 		// from our bitmap
 		GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, mBitmap, 0);
 
-		OurGLTools.verifyNoError();
+		GLTools.verifyNoError();
 	}
 
 	public int width() {

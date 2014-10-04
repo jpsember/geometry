@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.geometry;
 
 import java.nio.FloatBuffer;
 

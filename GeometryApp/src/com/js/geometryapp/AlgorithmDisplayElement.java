@@ -9,6 +9,8 @@ import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.PolygonMesh;
+
 import static com.js.basic.Tools.*;
 
 public abstract class AlgorithmDisplayElement {

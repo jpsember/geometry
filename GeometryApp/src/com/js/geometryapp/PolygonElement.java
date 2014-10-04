@@ -1,6 +1,8 @@
 package com.js.geometryapp;
 
 import com.js.geometry.Polygon;
+import com.js.geometry.PolygonMesh;
+
 import static com.js.basic.Tools.*;
 
 class PolygonElement extends AlgorithmDisplayElement {

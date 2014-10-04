@@ -4,7 +4,9 @@ import java.nio.FloatBuffer;
 
 import android.graphics.Matrix;
 
+import com.js.geometry.CompiledTriangleSet;
 import com.js.geometry.Point;
+import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
 
 import static android.opengl.GLES20.*;

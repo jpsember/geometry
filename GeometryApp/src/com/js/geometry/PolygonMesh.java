@@ -1,15 +1,7 @@
-package com.js.geometryapp;
+package com.js.geometry;
 
 import java.util.ArrayList;
 
-import com.js.geometry.Edge;
-import com.js.geometry.FloatArray;
-import com.js.geometry.Mesh;
-import com.js.geometry.GeometryException;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
-import com.js.geometry.Polygon;
-import com.js.geometry.PolygonTriangulator;
 
 import static com.js.basic.Tools.*;
 

@@ -132,7 +132,7 @@ public abstract class AlgorithmDisplayElement {
 		buildPoints();
 
 		int titleFontSize = 18;
-		int elementFontSize = 18;
+		int elementFontSize = 14;
 		if (false) {
 			warning("using unusually large fonts");
 			titleFontSize = 35;

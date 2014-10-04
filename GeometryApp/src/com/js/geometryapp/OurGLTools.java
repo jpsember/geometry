@@ -13,11 +13,6 @@ public final class OurGLTools {
 
 	public static final int BYTES_PER_FLOAT = 4;
 
-	/**
-	 * Generate code that should be 'debug only', i.e., preproduction?
-	 */
-	public static final boolean DEBUG_ONLY_FEATURES = true;
-
 	public static final boolean SET_DEBUG_COLORS = (false && DEBUG_ONLY_FEATURES);
 
 	/**

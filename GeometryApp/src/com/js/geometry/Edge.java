@@ -36,7 +36,6 @@ public final class Edge {
 	}
 
 	public Vertex sourceVertex() {
-		ASSERT(this.mDual != null);
 		return this.mDual.mDestVertex;
 	}
 

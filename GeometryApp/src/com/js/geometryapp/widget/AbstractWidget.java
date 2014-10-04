@@ -161,8 +161,6 @@ public abstract class AbstractWidget {
 	 *            the new internal string representation of the value
 	 */
 	public final void setValue(String internalValue) {
-		assertUIThread();
-
 		if (internalValue == null)
 			throw new IllegalArgumentException("value must not be null");
 

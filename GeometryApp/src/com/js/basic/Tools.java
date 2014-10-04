@@ -20,6 +20,11 @@ import com.js.geometry.MyMath;
 public final class Tools {
 
 	/**
+	 * Generate code that should be 'debug only', i.e., preproduction?
+	 */
+	public static final boolean DEBUG_ONLY_FEATURES = true;
+
+	/**
 	 * A do-nothing method that can be called to avoid 'unused import' warnings
 	 * related to this class
 	 */
@@ -134,8 +139,10 @@ public final class Tools {
 	 *            die with this message if flag is false
 	 */
 	public static void ASSERT(boolean flag, String message) {
-		if (!flag)
-			die("ASSERTION FAILED (" + message + ")");
+		if (DEBUG_ONLY_FEATURES) {
+			if (!flag)
+				die("ASSERTION FAILED (" + message + ")");
+		}
 	}
 
 	/**
@@ -145,8 +152,10 @@ public final class Tools {
 	 *            flag to test
 	 */
 	public static void ASSERT(boolean flag) {
-		if (!flag) {
-			die("ASSERTION FAILED");
+		if (DEBUG_ONLY_FEATURES) {
+			if (!flag) {
+				die("ASSERTION FAILED");
+			}
 		}
 	}
 

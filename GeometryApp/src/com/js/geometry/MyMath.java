@@ -58,7 +58,8 @@ public final class MyMath {
 	}
 
 	public static int myMod(int value, int divisor) {
-		ASSERT(divisor > 0);
+		if (divisor <= 0)
+			throw new IllegalArgumentException();
 		int k = value % divisor;
 		if (value < 0) {
 			if (k != 0)
@@ -68,7 +69,8 @@ public final class MyMath {
 	}
 
 	public static float myMod(float value, float divisor) {
-		ASSERT(divisor > 0);
+		if (divisor <= 0)
+			throw new IllegalArgumentException();
 		float scaledValue = value / divisor;
 		scaledValue -= Math.floor(scaledValue);
 		return scaledValue * divisor;

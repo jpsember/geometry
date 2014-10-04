@@ -181,11 +181,11 @@ public class PolygonTriangulator {
 	private Edge polygonEdgeLeavingVertex(Vertex vertex) {
 		Edge edge = vertex.edges();
 		while (true) {
-
 			if (edge.isPolygon())
 				return edge;
 			edge = edge.nextEdge();
-			ASSERT(edge != vertex.edges());
+			if (edge == vertex.edges())
+				throw new IllegalStateException();
 		}
 	}
 
@@ -193,7 +193,8 @@ public class PolygonTriangulator {
 		Edge edge = polygonEdgeLeavingVertex(vertex);
 		output[1] = edge;
 		Edge edgeB = edge.nextEdge().dual();
-		ASSERT(edgeB.destVertex() == vertex);
+		if (edgeB.destVertex() != vertex)
+			throw new IllegalStateException();
 		output[0] = edgeB;
 	}
 

@@ -21,14 +21,18 @@ public final class Tools {
 	}
 
 	public static void assertUIThread() {
-		if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
-			die("not running within UI thread");
+		if (DEBUG_ONLY_FEATURES) {
+			if (Looper.getMainLooper().getThread() != Thread.currentThread()) {
+				die("not running within UI thread");
+			}
 		}
 	}
 
 	public static void assertNotUIThread() {
-		if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
-			die("unexpectedly running within UI thread");
+		if (DEBUG_ONLY_FEATURES) {
+			if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
+				die("unexpectedly running within UI thread");
+			}
 		}
 	}
 

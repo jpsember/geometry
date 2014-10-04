@@ -236,7 +236,6 @@ public class Polygon {
 		Polygon p = polygonWithScript(startScript);
 
 		int extraVerts = p.numVertices() - 2;
-		Tools.ASSERT(p.numVertices() >= 3);
 
 		while (depth > 0) {
 			depth--;

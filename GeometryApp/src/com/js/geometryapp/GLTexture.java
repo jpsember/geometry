@@ -23,9 +23,6 @@ public class GLTexture {
 	}
 
 	private void initWithBitmap(Bitmap bitmap) {
-
-		ASSERT(bitmap != null);
-
 		mWidth = bitmap.getWidth();
 		mHeight = bitmap.getHeight();
 

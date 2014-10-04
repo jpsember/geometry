@@ -32,7 +32,7 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * This debug-only flag, if true, performs additional tests to verify that
 	 * the UI and OpenGL threads are cooperating.
 	 */
-	private static final boolean VERIFY_LOCK = true;
+	private static final boolean VERIFY_LOCK = (true && DEBUG_ONLY_FEATURES);
 
 	static final String WIDGET_ID_JUMP_BWD = "<<";
 	static final String WIDGET_ID_JUMP_FWD = ">>";

@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -238,10 +236,7 @@ public class AlgorithmOptions {
 		for (AlgorithmRecord a : mAlgorithms) {
 			groupValues.put(a.name(), getWidgetValueMap(a.widgets()));
 		}
-		String jsonString;
-		JSONObject obj = new JSONObject(groupValues);
-		jsonString = obj.toString();
-		return jsonString;
+		return JSONTools.encode(groupValues);
 	}
 
 	private Map getWidgetValueMap(WidgetGroup group) {

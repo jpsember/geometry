@@ -87,4 +87,12 @@ public class JSONTools {
 		}
 	}
 
+	/**
+	 * Encode a map into a JSON string
+	 */
+	public static String encode(Map map) {
+		JSONObject obj = new JSONObject(map);
+		return obj.toString();
+	}
+
 }

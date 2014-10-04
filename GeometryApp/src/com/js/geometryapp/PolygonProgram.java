@@ -95,7 +95,7 @@ public class PolygonProgram {
 
 		FloatBuffer fb = mesh.getVertexBuffer();
 		fb.position(0);
-		int stride = PolygonMesh.VERTEX_COMPONENTS * OurGLTools.BYTES_PER_FLOAT;
+		int stride = PolygonMesh.VERTEX_COMPONENTS * BYTES_PER_FLOAT;
 
 		glVertexAttribPointer(mPositionLocation, PolygonMesh.VERTEX_COMPONENTS,
 				GL_FLOAT, false, stride, fb);

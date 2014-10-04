@@ -29,7 +29,6 @@ public class Polyline {
 	public Polyline() {
 		mColor = Color.BLUE;
 		setLineWidth(1.0f);
-		doNothing();
 	}
 
 	/**
@@ -66,7 +65,7 @@ public class Polyline {
 	private FloatBuffer asFloatBuffer() {
 		if (mBuffer == null) {
 			mBuffer = ByteBuffer
-					.allocateDirect(mArray.size() * OurGLTools.BYTES_PER_FLOAT)
+					.allocateDirect(mArray.size() * BYTES_PER_FLOAT)
 					.order(ByteOrder.nativeOrder()).asFloatBuffer();
 			mBuffer.put(mArray.array(false), 0, mArray.size());
 		}
@@ -105,7 +104,7 @@ public class Polyline {
 
 		FloatBuffer fb = asFloatBuffer();
 		fb.position(0);
-		int stride = (POSITION_COMPONENT_COUNT) * OurGLTools.BYTES_PER_FLOAT;
+		int stride = (POSITION_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
 		glVertexAttribPointer(sPositionLocation, POSITION_COMPONENT_COUNT,
 				GL_FLOAT, false, stride, fb);

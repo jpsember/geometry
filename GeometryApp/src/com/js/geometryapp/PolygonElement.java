@@ -14,7 +14,6 @@ class PolygonElement extends AlgorithmDisplayElement {
 	public PolygonElement(Polygon polygon, Style style) {
 		mPolygon = new Polygon(polygon);
 		mStyle = style;
-		doNothing();
 	}
 
 	@Override

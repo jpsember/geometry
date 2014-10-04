@@ -4,8 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.util.Arrays;
-
-import com.js.geometryapp.OurGLTools;
+import static com.js.basic.Tools.*;
 
 /**
  * A dynamic array of floats
@@ -63,7 +62,7 @@ public class FloatArray {
 	 */
 	public FloatBuffer asFloatBuffer() {
 		FloatBuffer mBuffer;
-		mBuffer = ByteBuffer.allocateDirect(mSize * OurGLTools.BYTES_PER_FLOAT)
+		mBuffer = ByteBuffer.allocateDirect(mSize * BYTES_PER_FLOAT)
 				.order(ByteOrder.nativeOrder()).asFloatBuffer();
 		mBuffer.put(mArray, 0, mSize);
 		return mBuffer;

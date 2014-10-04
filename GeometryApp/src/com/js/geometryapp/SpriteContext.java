@@ -54,7 +54,7 @@ public class SpriteContext {
 		mTexture.select();
 
 		vertexData.position(0);
-		int stride = TOTAL_COMPONENTS * OurGLTools.BYTES_PER_FLOAT;
+		int stride = TOTAL_COMPONENTS * BYTES_PER_FLOAT;
 
 		glVertexAttribPointer(mPositionLocation, POSITION_COMPONENT_COUNT,
 				GL_FLOAT, false, stride, vertexData);

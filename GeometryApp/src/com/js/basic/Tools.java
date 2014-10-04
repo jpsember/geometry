@@ -24,6 +24,8 @@ public final class Tools {
 	 */
 	public static final boolean DEBUG_ONLY_FEATURES = true;
 
+	public static final int BYTES_PER_FLOAT = Float.SIZE / Byte.SIZE;
+
 	/**
 	 * A do-nothing method that can be called to avoid 'unused import' warnings
 	 * related to this class

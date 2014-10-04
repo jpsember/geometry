@@ -18,7 +18,6 @@ public class Font {
 	private static final int PRINTABLE_TOTAL = '~' + 1 - PRINTABLE_START;
 
 	public Font(int size) {
-		doNothing();
 		generateBitmap(size);
 	}
 

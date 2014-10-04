@@ -11,7 +11,7 @@ import java.util.Map;
  * threadsafe.
  * 
  */
-public class UniqueIdentifier {
+class UniqueIdentifier {
 
 	/**
 	 * Given an object, return a unique human-readable string derived from its

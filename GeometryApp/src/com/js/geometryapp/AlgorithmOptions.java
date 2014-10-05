@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -234,7 +236,7 @@ public class AlgorithmOptions {
 	 * 
 	 */
 	private String saveValues() {
-		Map<String, Map> groupValues = new HashMap();
+		Map<String, JSONObject> groupValues = new HashMap();
 		groupValues.put(PRIMARY_GROUP_KEY,
 				getWidgetValueMap(mPrimaryWidgetGroup));
 
@@ -244,14 +246,14 @@ public class AlgorithmOptions {
 		return JSONTools.encode(groupValues);
 	}
 
-	private Map getWidgetValueMap(WidgetGroup group) {
+	private JSONObject getWidgetValueMap(WidgetGroup group) {
 		Map<String, String> values = new HashMap();
 		for (AbstractWidget w : group.widgets()) {
 			if (!w.boolAttr("hasvalue", true))
 				continue;
 			values.put(w.getId(), w.getValue());
 		}
-		return values;
+		return new JSONObject(values);
 	}
 
 	private static final String PRIMARY_GROUP_KEY = "_primarygroup_";

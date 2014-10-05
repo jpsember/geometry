@@ -7,6 +7,8 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import static com.js.basic.Tools.*;
+
 
 public class JSONTools {
 
@@ -62,6 +64,7 @@ public class JSONTools {
 			}
 			return parseJSONObject(object);
 		} catch (JSONException e) {
+			warning("failed to parse: "+source);
 			throw new JSONError(e);
 		}
 	}

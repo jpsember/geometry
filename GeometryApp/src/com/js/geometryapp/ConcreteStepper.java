@@ -18,7 +18,6 @@ import android.view.View;
 
 import com.js.android.MyActivity;
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -414,8 +413,13 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * the frame's title
 	 */
 	void render() {
-		renderBackgroundElements();
-		mForegroundLayer.render();
+		try {
+			renderBackgroundElements();
+			mForegroundLayer.render();
+		} catch (Throwable t) {
+			mFrameTitle = constructExceptionString(t, "ConcreteStepper.render");
+		}
+
 		if (mFrameTitle != null) {
 			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
 		}
@@ -516,16 +520,10 @@ class ConcreteStepper implements AlgorithmStepper {
 				// sequence for which stepping is disabled
 				while (!mActiveStack.isEmpty())
 					popActive();
-
-				String description = t.toString() + "\n" + stackTrace(t);
-				if (!(t instanceof GeometryException)) {
-					pr(description);
-					throw t;
-				}
-
 				mTotalSteps = mCurrentStep;
 				mTargetStep = MyMath.clamp(mTargetStep, 0, mTotalSteps);
-				showGeometryException((GeometryException) t);
+				show(constructExceptionString(t,
+						"ConcreteStepper.performAlgorithm"));
 			}
 		} catch (DesiredStepReachedException e) {
 			// Write cached values back to widgets
@@ -537,24 +535,33 @@ class ConcreteStepper implements AlgorithmStepper {
 		}
 	}
 
-	private void showGeometryException(GeometryException t) {
-		// Construct stack trace, including items relevant to algorithm
-		String trace = stackTrace(t);
-		String[] entries = trace.split("\\n");
-		int maxEntries = 0;
-		while (maxEntries < entries.length) {
-			if (entries[maxEntries].startsWith("ConcreteStepper")) {
+	/**
+	 * Extract a stack trace from a throwable as a string
+	 * 
+	 * @param throwable
+	 *            throwable
+	 * @param haltPrefix
+	 *            if a stack trace entry has this prefix, omits it and all
+	 *            subsequent entries
+	 */
+	private String constructExceptionString(Throwable throwable,
+			String haltPrefix) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(throwable.getClass().getSimpleName());
+		sb.append("; ");
+		String message = throwable.getMessage();
+		if (message != null)
+			sb.append(message);
+
+		String trace = stackTrace(throwable);
+		for (String entry : trace.split("\\n")) {
+			if (entry.startsWith(haltPrefix)) {
 				break;
 			}
-			maxEntries++;
+			sb.append('\n');
+			sb.append(entry);
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("GeometryException; ");
-		sb.append(t.getMessage());
-		sb.append("\n");
-		for (int i = 0; i < maxEntries; i++)
-			sb.append("\n  " + entries[i]);
-		show(sb.toString());
+		return sb.toString();
 	}
 
 	private void adjustTargetMilestone(int delta) {

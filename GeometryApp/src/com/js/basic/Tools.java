@@ -110,7 +110,7 @@ public final class Tools {
 
 		StackTraceElement[] elist = t.getStackTrace();
 
-		int s0 = 1 + skipCount;
+		int s0 = skipCount;
 		int s1 = s0 + displayCount;
 
 		for (int i = s0; i < s1; i++) {

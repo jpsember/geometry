@@ -62,8 +62,6 @@ public class StarshapedHoleTriangulator {
 			s.plot(new AlgorithmDisplayElement() {
 				@Override
 				public void render() {
-					if (mStartEdge == null)
-						return;
 					s.setColor(COLOR_DARKGREEN);
 					Edge edge = mStartEdge;
 					while (true) {

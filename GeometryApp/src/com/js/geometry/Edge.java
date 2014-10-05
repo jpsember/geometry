@@ -4,13 +4,14 @@ import static com.js.basic.Tools.*;
 
 public final class Edge {
 
+
 	public static final int FLAG_VISITED = 1 << 31;
 	public static final int FLAG_DELETED = 1 << 30;
 
 	/**
 	 * The dual to a polygon edge won't have this flag set
 	 */
-	public static final int FLAG_POLYGON = 1 << 30;
+	public static final int FLAG_POLYGON = 1 << 29;
 
 	@Override
 	public String toString() {

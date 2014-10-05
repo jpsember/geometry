@@ -98,10 +98,10 @@ public class StarshapedHoleTriangulator {
 
 			mTotalSteps++;
 
-			Edge nextEdge = mStartEdge.nextFaceEdge();
+			Edge advanceEdge = mStartEdge.nextFaceEdge();
 			Vertex v0 = mStartEdge.sourceVertex();
 			Vertex v1 = mStartEdge.destVertex();
-			Vertex v2 = nextEdge.destVertex();
+			Vertex v2 = advanceEdge.destVertex();
 
 			if (s.step())
 				s.show("Current edge" + s.highlight(mStartEdge));
@@ -109,8 +109,8 @@ public class StarshapedHoleTriangulator {
 			if (MyMath.sideOfLine(v0, v1, v2) < 0) {
 				if (s.step())
 					s.show("Vertex is reflex" + s.highlight(mStartEdge)
-							+ s.highlight(nextEdge) + s.highlight(v1));
-				mStartEdge = nextEdge;
+							+ s.highlight(advanceEdge) + s.highlight(v1));
+				mStartEdge = advanceEdge;
 				continue;
 			}
 
@@ -118,16 +118,16 @@ public class StarshapedHoleTriangulator {
 				if (s.step())
 					s.show("Kernel to right of candidate"
 							+ s.highlightLine(v0, v2));
-				mStartEdge = nextEdge;
+				mStartEdge = advanceEdge;
 				continue;
 			}
 
-			mStartEdge = mMesh.addEdge(v0, v2);
-			mNewEdges.add(mStartEdge);
+			mStartEdge = mStartEdge.prevFaceEdge();
+			Edge newEdge = mMesh.addEdge(v0, v2);
+			mNewEdges.add(newEdge);
 
 			if (s.step())
-				s.show("Adding edge" + s.highlight(mStartEdge));
-
+				s.show("Adding edge" + s.highlight(newEdge));
 			mHoleSize--;
 		}
 

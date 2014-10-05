@@ -21,7 +21,6 @@ public final class Edge {
 
 		Vertex sourceVert = mDual.mDestVertex;
 		Vertex destVert = this.mDestVertex;
-		sb.append("e ");
 		sb.append(sourceVert.dumpUnlabelled());
 		sb.append(" ");
 		sb.append(destVert.dumpUnlabelled());

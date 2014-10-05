@@ -34,9 +34,9 @@ public class FloatArray {
 		mSize += 1;
 	}
 
-  /**
-   * Replace an existing value
-   */
+	/**
+	 * Replace an existing value
+	 */
 	public void set(int index, float f) {
 		if (index >= mSize)
 			throw new IndexOutOfBoundsException();
@@ -108,6 +108,16 @@ public class FloatArray {
 			required = Math.max(required, capacity() * 2);
 			mArray = Arrays.copyOf(mArray, required);
 		}
+	}
+
+	public void reverse() {
+		for (int i = 0; i < mSize / 2; i++) {
+			int j = mSize - 1 - i;
+			float tmp = mArray[j];
+			mArray[j] = mArray[i];
+			mArray[i] = tmp;
+		}
+
 	}
 
 	private int capacity() {

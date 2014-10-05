@@ -32,6 +32,7 @@ public class StarshapedDriver implements Algorithm {
 		mOptions.addSlider("Spikes", "min", 2, "max", 20, "value", 9);
 		mOptions.addSlider("Length", "min", 2, "max", 150, "value", 95);
 		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
+		mOptions.addCheckBox("Reversed");
 	}
 
 	@Override
@@ -69,6 +70,9 @@ public class StarshapedDriver implements Algorithm {
 			for (int i = 0; i < a.size(); i++)
 				a.set(i, a.get(i) / max);
 		}
+
+		if (mOptions.getBooleanValue("Reversed"))
+			a.reverse();
 
 		// Duplicate this sequence once per spike
 		{

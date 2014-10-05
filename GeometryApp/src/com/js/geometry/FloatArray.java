@@ -34,6 +34,15 @@ public class FloatArray {
 		mSize += 1;
 	}
 
+  /**
+   * Replace an existing value
+   */
+	public void set(int index, float f) {
+		if (index >= mSize)
+			throw new IndexOutOfBoundsException();
+		mArray[index] = f;
+	}
+
 	/**
 	 * Add a Point as two consecutive floats
 	 */

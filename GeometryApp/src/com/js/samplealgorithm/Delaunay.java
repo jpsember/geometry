@@ -220,8 +220,8 @@ public class Delaunay {
 	private void triangulateHole(Point kernelPoint) {
 		if (s.step())
 			s.show("Triangulating hole");
-		StarshapedHoleTriangulator triangulator = StarshapedHoleTriangulator
-				.buildTriangulator(s, mMesh, kernelPoint, mHoleEdges.get(0));
+		StarshapedHoleTriangulator triangulator = new StarshapedHoleTriangulator(
+				s, mMesh, kernelPoint, mHoleEdges.get(0));
 		s.pushActive(DETAIL_TRIANGULATE_HOLE);
 		triangulator.run();
 		s.popActive();

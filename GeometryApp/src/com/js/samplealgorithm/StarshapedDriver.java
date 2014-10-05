@@ -26,9 +26,12 @@ public class StarshapedDriver implements Algorithm {
 		mOptions = options;
 		mOptions.addSlider("Seed", "min", 0, "max", 300);
 		mOptions.addSlider("Points", "min", 3, "max", 250, "value", 18);
-		mOptions.addCheckBox("experiment");
-		mOptions.addSlider("spikes", "min", 2, "max", 50);
-		mOptions.addSlider("girth", "min", 3, "max", 80, "value", 50);
+		mOptions.addStaticText("");
+		mOptions.addCheckBox("Experiment");
+		mOptions.addStaticText("Generate a polygon that causes a poor running time");
+		mOptions.addSlider("Spikes", "min", 2, "max", 20, "value", 9);
+		mOptions.addSlider("Length", "min", 2, "max", 150, "value", 95);
+		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
 	}
 
 	@Override
@@ -39,34 +42,33 @@ public class StarshapedDriver implements Algorithm {
 
 		int baseVertex = buildPolygon();
 		Edge edge = mMesh.polygonEdgeFromVertex(mMesh.vertex(baseVertex));
-		StarshapedHoleTriangulator t = StarshapedHoleTriangulator
-				.buildTriangulator(mStepper, mMesh, mKernelPoint, edge);
+		StarshapedHoleTriangulator t = new StarshapedHoleTriangulator(mStepper,
+				mMesh, mKernelPoint, edge);
 		t.run();
 	}
 
 	private Polygon buildExperimentalPolygon(int nPoints) {
-		int nSpikes = mOptions.getIntValue("spikes");
-		float girth = mOptions.getIntValue("girth") * (.5f / 100);
-
-		float spikeWidthRatio = .5f;
-		nPoints = Math.max(4, nPoints);
-		int pointsPerSpike = (int) ((nPoints * spikeWidthRatio) / nSpikes);
-
-		// Build a radial map of a spike
 		FloatArray a = new FloatArray();
 
-		int arcPoints = Math.max(pointsPerSpike - 2, 2);
-		for (int j = 0; j < arcPoints; j++) {
-			float x = (j / (float) (arcPoints - 1));
-			float x0 = 2 * (.5f - x);
-			float y = (float) Math.sqrt(1 - x0 * x0);
-			float height = 1 - .5f * (y * (1 - 2 * girth));
-			a.add(height);
+		int steps = mOptions.getIntValue("Length");
+		int steps2 = (steps * mOptions.getIntValue("Cutoff")) / 100;
+		float r1 = .3f;
+		float r2 = 1;
+		for (int i = 0; i <= steps2; i++) {
+			float q = i / (float) steps;
+			a.add(r1 + (q * q * q * (r2 - r1)));
 		}
-		// Add base segments
-		for (int i = 0; i < Math.max(2,
-				(int) (pointsPerSpike / spikeWidthRatio)); i++)
-			a.add(girth);
+
+		int nSpikes = mOptions.getIntValue("Spikes");
+
+		// Scale so max radius is 1.0
+		{
+			float max = 0;
+			for (int i = 0; i < a.size(); i++)
+				max = Math.max(max, a.get(i));
+			for (int i = 0; i < a.size(); i++)
+				a.set(i, a.get(i) / max);
+		}
 
 		// Duplicate this sequence once per spike
 		{
@@ -76,13 +78,6 @@ public class StarshapedDriver implements Algorithm {
 			a = b;
 		}
 
-		// Shift floats forward
-		{
-			FloatArray b = new FloatArray();
-			for (int i = 0; i < a.size(); i++)
-				b.add(a.get((i + (arcPoints / 2)) % a.size()));
-			a = b;
-		}
 		return Polygon.starshapedPolygon(mStepper.algorithmRect(),
 				a.array(true));
 	}
@@ -93,7 +88,7 @@ public class StarshapedDriver implements Algorithm {
 		mKernelPoint = bounds.midPoint();
 		Polygon p;
 
-		if (mOptions.getBooleanValue("experiment")) {
+		if (mOptions.getBooleanValue("Experiment")) {
 			p = buildExperimentalPolygon(nPoints);
 		} else {
 			p = Polygon.starshapedPolygon(bounds, nPoints, mRandom);

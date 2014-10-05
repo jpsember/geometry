@@ -11,6 +11,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
+import static com.js.basic.Tools.*;
 
 /**
  * Algorithm that triangulates a star-shaped hole within a mesh
@@ -18,8 +19,10 @@ import com.js.geometryapp.AlgorithmStepper;
 public class StarshapedHoleTriangulator {
 
 	/**
-	 * Factory constructor
+	 * Constructor
 	 * 
+	 * @param stepper
+	 *            AlgorithmStepper
 	 * @param mesh
 	 *            mesh containing hole to be triangulated
 	 * @param kernelPoint
@@ -27,14 +30,7 @@ public class StarshapedHoleTriangulator {
 	 * @param edgeOnHole
 	 *            edge lying on CCW boundary of hole
 	 */
-	public static StarshapedHoleTriangulator buildTriangulator(
-			AlgorithmStepper stepper, Mesh mesh, Point kernelPoint,
-			Edge edgeOnHole) {
-		return new StarshapedHoleTriangulator(stepper, mesh, kernelPoint,
-				edgeOnHole);
-	}
-
-	private StarshapedHoleTriangulator(AlgorithmStepper stepper, Mesh mesh,
+	public StarshapedHoleTriangulator(AlgorithmStepper stepper, Mesh mesh,
 			Point kernelPoint, Edge edgeOnHole) {
 		s = stepper;
 		mMesh = mesh;
@@ -69,7 +65,6 @@ public class StarshapedHoleTriangulator {
 					if (mStartEdge == null)
 						return;
 					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(1);
 					Edge edge = mStartEdge;
 					while (true) {
 						s.plotLine(edge.sourceVertex(), edge.destVertex());
@@ -83,10 +78,10 @@ public class StarshapedHoleTriangulator {
 		}
 
 		if (s.openLayer(BGND_ELEMENT_MESH)) {
-			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
 			s.plotMesh(mMesh);
-			s.closeLayer();}
+			s.closeLayer();
+		}
 
 		if (s.openLayer(BGND_ELEMENT_KERNEL)) {
 			s.setColor(COLOR_DARKGREEN);
@@ -94,19 +89,16 @@ public class StarshapedHoleTriangulator {
 			s.closeLayer();
 		}
 		calcHoleSize();
+		mInitialHoleSize = mHoleSize;
+		mTotalSteps = 0;
 		if (s.bigStep())
-			s.show("Initial hole");
+			s.show("Initial hole (" + mInitialHoleSize + " vertices)");
 
 		mNewEdges = new ArrayList();
 
-		int stepsWithoutProgress = 0;
 		while (mHoleSize > 3) {
-			stepsWithoutProgress++;
-			if (stepsWithoutProgress > mHoleSize) {
-				if (s.bigStep())
-					s.show("No progress made");
-				break;
-			}
+
+			mTotalSteps++;
 
 			Edge nextEdge = mStartEdge.nextFaceEdge();
 			Vertex v0 = mStartEdge.sourceVertex();
@@ -137,19 +129,14 @@ public class StarshapedHoleTriangulator {
 
 			if (s.step())
 				s.show("Adding edge" + s.highlight(mStartEdge));
-			mHoleSize -= 1;
-			stepsWithoutProgress = 0;
+
+			mHoleSize--;
 		}
 
 		if (s.bigStep())
-			s.show("Hole now three edges, done");
-
-		if (s.isActive()) {
-			s.removeLayer(BGND_ELEMENT_KERNEL);
-			s.removeLayer(BGND_ELEMENT_HOLE_POLYGON);
-			// Don't remove the mesh; we want it to remain visible when the
-			// algorithm completes.
-		}
+			s.show("Hole now three edges, done; "
+					+ f(mTotalSteps / (float) mInitialHoleSize)
+					+ " steps/vertex");
 	}
 
 	/**
@@ -159,6 +146,8 @@ public class StarshapedHoleTriangulator {
 		return mNewEdges;
 	}
 
+	private int mInitialHoleSize;
+	private int mTotalSteps;
 	private AlgorithmStepper s;
 	private Mesh mMesh;
 	private Point mKernelPoint;

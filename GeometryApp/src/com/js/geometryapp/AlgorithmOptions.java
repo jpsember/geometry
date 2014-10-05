@@ -332,7 +332,7 @@ public class AlgorithmOptions {
 		// the listener that normally does this was disabled while restoring the
 		// stepper state
 		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(readTotalSteps());
+		s.setMaxValue(readTotalSteps() - 1);
 	}
 
 	private void persistStepperStateAux() {
@@ -427,7 +427,7 @@ public class AlgorithmOptions {
 			// trigger a recalculation after a delay
 			if (widget.boolAttr(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS,
 					false)) {
-				final float RECALC_DELAY = 2.0f;
+				final float RECALC_DELAY = .5f;
 				if (QuiescentDelayOperation
 						.replaceExisting(mPendingRecalculationOperation)) {
 					mPendingRecalculationOperation = new QuiescentDelayOperation(

@@ -80,9 +80,10 @@ class TotalStepsCounter extends DefaultStepper {
 					.getActiveAlgorithm();
 			algorithm.run(this);
 			// We completed the algorithm without halting.
-			// Increment the step, since we would normally show a 'done'
-			// milestone at this point
-			mCurrentStep++;
+			// If still at step 0, add a step so we always have a nonzero
+			// algorithm length.
+			if (mCurrentStep == 0)
+				mCurrentStep++;
 		} catch (RuntimeException t) {
 		}
 		return mCurrentStep;

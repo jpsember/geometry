@@ -413,15 +413,27 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * the frame's title
 	 */
 	void render() {
+		String renderMessage = null;
 		try {
 			renderBackgroundElements();
 			mForegroundLayer.render();
 		} catch (Throwable t) {
-			mFrameTitle = constructExceptionString(t, "ConcreteStepper.render");
+			// Issue #99: don't obscure an existing message, which may be a
+			// GeometryException
+			renderMessage = "Problem while rendering...\n"
+					+ constructExceptionString(t, "ConcreteStepper.render");
 		}
 
-		if (mFrameTitle != null) {
-			AlgorithmDisplayElement.renderFrameTitle(mFrameTitle);
+		// Combine mFrameTitle and renderMessage to produce displayed title
+		String title = mFrameTitle;
+		if (renderMessage != null) {
+			if (title != null)
+				title = title + "\n\n" + renderMessage;
+			else
+				title = renderMessage;
+		}
+		if (title != null) {
+			AlgorithmDisplayElement.renderFrameTitle(title);
 		}
 	}
 

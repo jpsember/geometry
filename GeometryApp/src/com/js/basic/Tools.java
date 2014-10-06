@@ -1,14 +1,10 @@
 package com.js.basic;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +14,16 @@ import android.graphics.Matrix;
 import com.js.geometry.MyMath;
 
 public final class Tools {
+
+	public static class DieException extends RuntimeException {
+		public DieException(String detailMessage, Throwable throwable) {
+			super(detailMessage, throwable);
+		}
+
+		public DieException(String detailMessage) {
+			super(detailMessage);
+		}
+	}
 
 	/**
 	 * Generate code that should be 'debug only', i.e., preproduction?
@@ -35,47 +41,44 @@ public final class Tools {
 
 	/**
 	 * Default value for 'db' conditional compilation, in case not provided
-	 * within a particular method
+	 * within a particular method. It is always false, so the following idiom
+	 * within a method will not generate code:
+	 * 
+	 * <pre>
+	 * void foo() {
+	 * 	if (db)
+	 * 		pr(&quot;This will not print anything&quot;);
+	 * }
+	 * </pre>
+	 * 
+	 * By contrast, this will print to the console:
+	 * 
+	 * <pre>
+	 * void foo() {
+	 * 	final boolean db = true;
+	 * 	if (db)
+	 * 		pr(&quot;This will print&quot;);
+	 * }
+	 * </pre>
+	 * 
 	 */
 	public static final boolean db = false;
 
 	/**
 	 * Have current thread sleep for some number of milliseconds
 	 * 
-	 * @param ms
+	 * @param timeInMilliseconds
 	 */
-	public static void sleepFor(int ms) {
+	public static void sleepFor(int timeInMilliseconds) {
 		try {
-			Thread.sleep(ms);
+			Thread.sleep(timeInMilliseconds);
 		} catch (InterruptedException e) {
-			report(e, "sleep interrupted");
+			pr("sleep interrupted: " + e);
 		}
-	}
-
-	/**
-	 * Construct a string describing a stack trace
-	 * 
-	 * @param skipCount
-	 *            # stack frames to skip (actually skips 1 + skipCount, to skip
-	 *            the call to this method)
-	 * @param displayCount
-	 *            maximum # stack frames to display
-	 * @return String; iff displayCount > 1, cr's inserted after every item
-	 */
-	public static String stackTrace(int skipCount, int displayCount) {
-		return stackTrace(1 + skipCount, displayCount, null);
 	}
 
 	public static String stackTrace() {
 		return stackTrace(1, 1, null);
-	}
-
-	public static String hey(Object object) {
-		return "\n" + nameOf(object) + " (" + stackTrace(1, 1, null) + ") ";
-	}
-
-	public static String hey() {
-		return "\n" + stackTrace(1, 1, null) + ": ";
 	}
 
 	/**
@@ -93,18 +96,18 @@ public final class Tools {
 	 * Construct string describing stack trace
 	 * 
 	 * @param skipCount
-	 *            # stack frames to skip (actually skips 1 + skipCount, to skip
-	 *            the call to this method)
+	 *            number of stack frames to skip
 	 * @param displayCount
 	 *            maximum # stack frames to display
-	 * @param tThrowable
-	 *            containing stack trace
+	 * @param t
+	 *            Throwable containing stack trace, or null to generate one
 	 * @return String; iff displayCount > 1, cr's inserted after every item
 	 */
-	private static String stackTrace(int skipCount, int displayCount,
-			Throwable t) {
-		if (t == null)
+	public static String stackTrace(int skipCount, int displayCount, Throwable t) {
+		if (t == null) {
 			t = new Throwable();
+			skipCount++;
+		}
 		StringBuilder sb = new StringBuilder();
 		// sb.append(" {Thread" + nameOf(Thread.currentThread(), false) + "} ");
 
@@ -133,7 +136,8 @@ public final class Tools {
 	}
 
 	/**
-	 * Simple assertion mechanism, dies if flag is false
+	 * Simple assertion mechanism, throws a DieException if flag is false; does
+	 * nothing if DEBUG_ONLY_FEATURES is false
 	 * 
 	 * @param flag
 	 *            flag to test
@@ -148,10 +152,8 @@ public final class Tools {
 	}
 
 	/**
-	 * Simple assertion mechanism, throws RuntimeException if flag is false
-	 * 
-	 * @param flag
-	 *            flag to test
+	 * Same as {@link #ASSERT(boolean,String) ASSERT(boolean,String)}, but with
+	 * generic message
 	 */
 	public static void ASSERT(boolean flag) {
 		if (DEBUG_ONLY_FEATURES) {
@@ -162,64 +164,59 @@ public final class Tools {
 	}
 
 	/**
-	 * Throw a RuntimeException
+	 * Throw a DieException
 	 */
 	public static void die() {
 		die(null, null);
 	}
 
 	/**
-	 * Throw a RuntimeException with a particular message
+	 * Same as {@link #die() die}, but with a particular message
 	 */
 	public static void die(String message) {
 		die(message, null);
 	}
 
 	/**
-	 * Throw a RuntimeException containing a particular throwable
-	 * 
-	 * @param t
+	 * Same as {@link #die() die}, but with a Throwable
 	 */
 	public static void die(Throwable t) {
 		die(null, t);
 	}
 
-	public static void die(String message, Throwable t) {
-		if (message == null)
-			message = "(no reason given)";
-		message = "Dying; " + message;
-		if (t == null)
-			throw new RuntimeException(message);
-		throw new RuntimeException(message, t);
+	/**
+	 * Same as {@link #die() die()}, but with optional message and Throwable
+	 */
+	public static void die(String detailMessage, Throwable throwable) {
+		if (detailMessage == null)
+			detailMessage = "(no reason given)";
+		detailMessage = "Dying; " + detailMessage;
+		if (throwable == null)
+			throw new DieException(detailMessage);
+		throw new DieException(detailMessage, throwable);
 	}
 
 	/**
-	 * Print message that code is unimplemented at current line; prints only the
-	 * first time through
+	 * Print message that code is unimplemented at current line; prints a
+	 * specific string only once. Thread safe.
 	 */
 	public static void unimp() {
 		reportOnce("TODO", null, 1);
 	}
 
 	/**
-	 * Print message that code is unimplemented at current line; prints only the
-	 * first time through
+	 * Same as {@link #unimp() unimp}, but with optional additional message
 	 * 
 	 * @param msg
-	 *            additional message to display
+	 *            additional message, or null
 	 */
 	public static void unimp(String msg) {
 		reportOnce("TODO", msg, 1);
 	}
 
-	private static final Set warningStrings = new HashSet();
-
-	public static boolean oneTimeOnly(String flag) {
-		return warningStrings.add(flag);
-	}
-
-	private static void reportOnce(String type, String s, int skipCount) {
-		String st = stackTrace(1 + skipCount, 1);
+	private static void reportOnce(String type, String optionalMessage,
+			int stackFrameSkipCount) {
+		String st = stackTrace(1 + stackFrameSkipCount, 1, null);
 		st = sanitizeStackTrace(st);
 		StringBuilder sb = new StringBuilder();
 		sb.append("*** ");
@@ -227,52 +224,47 @@ public final class Tools {
 			type = "WARNING";
 		}
 		sb.append(type);
-		if (s != null && s.length() > 0) {
+		if (optionalMessage != null && optionalMessage.length() > 0) {
 			sb.append(": ");
-			sb.append(s);
+			sb.append(optionalMessage);
 		}
 		sb.append(" (");
 		sb.append(st);
 		sb.append(")");
 		String message = sb.toString();
 
-		if (warningStrings.add(message)) {
+		boolean wasAdded = false;
+		synchronized (sWarningStrings) {
+			wasAdded = sWarningStrings.add(message);
+		}
+		if (wasAdded) {
 			pr(message);
 		}
 	}
 
 	/**
-	 * Print warning message (first time only)
+	 * Print message that code is unimplemented at current line; prints a
+	 * specific string only once. Thread safe.
 	 * 
-	 * @param s
-	 *            message to display
+	 * @param warningMessage
+	 *            message to display with warning
 	 */
-	public static void warning(String s) {
-		warning(s, 1);
+	public static void warning(String warningMessage) {
+		warning(warningMessage, 1);
 	}
 
 	/**
-	 * Print warning message (first time only)
+	 * Same as {@link #warning() warning}, but with skip count indicating how
+	 * far back in stack to look for the caller entry to display
 	 * 
-	 * @param s
+	 * @param warningMessage
 	 *            message to display
-	 * @param skipCount
-	 *            number of calls on call stack to skip when looking for line
-	 *            number to display
+	 * @param stackFrameSkipCount
+	 *            number of calls on call stack to skip when looking for caller
+	 *            entry
 	 */
-	public static void warning(String s, int skipCount) {
-		reportOnce(null, s, 1 + skipCount);
-	}
-
-	/**
-	 * Convert a boolean to "T" or "F"
-	 * 
-	 * @param b
-	 *            boolean value
-	 * @return
-	 */
-	public static String f(boolean b) {
-		return b ? "T" : "F";
+	public static void warning(String warningMessage, int stackFrameSkipCount) {
+		reportOnce(null, warningMessage, 1 + stackFrameSkipCount);
 	}
 
 	/**
@@ -330,7 +322,7 @@ public final class Tools {
 	 * @return array [value(Integer), remainder(String)] where value is (\d+),
 	 *         and remainder is (.*)
 	 */
-	private static Object[] parseOptionsString(String s) {
+	public static Object[] parseOptionsString(String s) {
 		Object[] output = { null, null };
 
 		int cursor = 0;
@@ -574,25 +566,30 @@ public final class Tools {
 	private static final String SPACES = "                             ";
 
 	/**
-	 * Get a string consisting of n spaces
+	 * Get a string consisting of zero or more spaces
 	 */
-	public static CharSequence sp(int n) {
-		n = Math.max(n, 0);
-		if (n < SPACES.length())
-			return SPACES.substring(0, n);
-		StringBuilder sb = new StringBuilder(n);
-		while (sb.length() < n) {
-			int chunk = Math.min(n - sb.length(), SPACES.length());
+	public static CharSequence spaces(int numberOfSpaces) {
+		numberOfSpaces = Math.max(numberOfSpaces, 0);
+		if (numberOfSpaces < SPACES.length())
+			return SPACES.substring(0, numberOfSpaces);
+		StringBuilder sb = new StringBuilder(numberOfSpaces);
+		while (sb.length() < numberOfSpaces) {
+			int chunk = Math.min(numberOfSpaces - sb.length(), SPACES.length());
 			sb.append(SPACES.substring(0, chunk));
 		}
 		return sb;
 	}
 
-	private static final boolean isAndroid = System.getProperties()
-			.getProperty("java.vendor", "other").equals("The Android Project");
-
 	public static boolean isAndroid() {
-		return isAndroid;
+		if (!sAndroidKnown) {
+			synchronized (Tools.class) {
+				sIsAndroid = System.getProperties()
+						.getProperty("java.vendor", "other")
+						.equals("The Android Project");
+				sAndroidKnown = true;
+			}
+		}
+		return sIsAndroid;
 	}
 
 	/**
@@ -764,7 +761,7 @@ public final class Tools {
 	 *            point, nothing is added to it
 	 */
 	public static StringBuilder tab(StringBuilder sb, int len) {
-		sb.append(sp(len - sb.length()));
+		sb.append(spaces(len - sb.length()));
 		return sb;
 	}
 
@@ -821,10 +818,20 @@ public final class Tools {
 		return sb;
 	}
 
+	/**
+	 * Print an object to System.out, with a newline
+	 * 
+	 * @param obj
+	 */
 	public static void pr(Object obj) {
 		System.out.println(obj);
 	}
 
+	/**
+	 * Print an object to System.out, without a newline
+	 * 
+	 * @param obj
+	 */
 	public static void prr(Object obj) {
 		System.out.print(obj);
 	}
@@ -897,169 +904,12 @@ public final class Tools {
 	}
 
 	/**
-	 * If a Throwable is non-null, display it along with a stack trace to
-	 * System.out
-	 * 
-	 * @param t
-	 *            throwable
-	 * @param msg
-	 *            optional message to display
-	 */
-	public static void report(Throwable t, String msg) {
-		if (t != null) {
-			pr("*** Problem; " + t + " (" + msg + ")");
-			t.printStackTrace();
-		}
-	}
-
-	/**
-	 * Execute a system command
-	 * 
-	 * @param command
-	 * @return array of two strings; [0]=stdout, [1]=stderr; empty strings are
-	 *         replaced with null; stderr will always be null, since an
-	 *         exeception is thrown if the command fails
-	 */
-	public static String[] systemCommand(String command) {
-		String[] ret = null;
-		try {
-			ret = systemCommand(command, true);
-		} catch (IOException e) {
-			die(e);
-		}
-		return ret;
-	}
-
-	/**
-	 * Execute a system command
-	 * 
-	 * @param command
-	 * @param failIfError
-	 *            if true, and an error occurs, throws an exception
-	 * @return array of two strings; [0]=stdout, [1]=stderr; empty strings are
-	 *         replaced with null
-	 */
-	public static String[] systemCommand(String command, boolean failIfError)
-			throws IOException {
-		String[] out = { null, null };
-		Process p = Runtime.getRuntime().exec(command);
-		BufferedReader stdInput = new BufferedReader(new InputStreamReader(
-				p.getInputStream()));
-		BufferedReader stdError = new BufferedReader(new InputStreamReader(
-				p.getErrorStream()));
-		StringBuilder sb = new StringBuilder();
-		String s;
-		while ((s = stdInput.readLine()) != null) {
-			sb.append(s);
-			sb.append("\n");
-		}
-		out[0] = sb.toString();
-		sb = new StringBuilder();
-		while ((s = stdError.readLine()) != null) {
-			sb.append(s);
-			sb.append("\n");
-		}
-		out[1] = sb.toString();
-		for (int i = 0; i < out.length; i++) {
-			if (out[i].length() == 0)
-				out[i] = null;
-		}
-		if (failIfError && out[1] != null)
-			die("Failed executing system command '" + command + "';\nstdout:\n"
-					+ out[0] + "\nstderr:\n" + out[1]);
-		return out;
-	}
-
-	public static String hexDump(byte[] byteArray) {
-		return hexDump(byteArray, 0, byteArray.length);
-	}
-
-	public static String hexDump(byte[] byteArray, int offset, int length) {
-		return hexDump(byteArray, offset, length, "16gza");
-	}
-
-	/**
-	 * Construct a hex dump of an array of bytes
-	 * 
-	 * @param byteArray
-	 * @param offset
-	 * @param length
-	 * @param options
-	 *            "D+[F]*" where D is decimal digit, representing the number of
-	 *            bytes in each row, and F is zero or more of: hide (z)eros;
-	 *            display in (g)roups of four; display (A)bsolute offset;
-	 *            include (a)scii representation to right
-	 * 
-	 * @return
-	 */
-	public static String hexDump(byte[] byteArray, int offset, int length,
-			String options) {
-		int groupSize = (1 << 2); // Must be power of 2
-
-		Object[] fmt = parseOptionsString(options);
-		int rowSize = (Integer) fmt[0];
-		options = (String) fmt[1];
-		boolean hideZeroes = options.contains("z");
-		boolean groups = options.contains("g");
-		boolean absoluteIndex = options.contains("A");
-		boolean withASCII = options.contains("a");
-
-		StringBuilder sb = new StringBuilder();
-		int i = 0;
-		while (i < length) {
-			int rSize = rowSize;
-			if (rSize + i > length)
-				rSize = length - i;
-			int address = absoluteIndex ? i + offset : i;
-			toHex(sb, address, 4, true, false, false);
-			sb.append(": ");
-			if (groups)
-				sb.append("| ");
-			for (int j = 0; j < rowSize; j++) {
-				if (j < rSize) {
-					byte val = byteArray[offset + i + j];
-					if (hideZeroes && val == 0) {
-						sb.append("  ");
-					} else {
-						toHex(sb, val, 2, false, false, false);
-					}
-				} else {
-					sb.append("  ");
-				}
-				sb.append(' ');
-				if (groups) {
-					if ((j & (groupSize - 1)) == groupSize - 1)
-						sb.append("| ");
-				}
-			}
-			if (withASCII) {
-				sb.append(' ');
-				for (int j = 0; j < rSize; j++) {
-					byte v = byteArray[offset + i + j];
-					if (v < 0x20 || v >= 0x80)
-						v = '.';
-					sb.append((char) v);
-					if (groups && ((j & (groupSize - 1)) == groupSize - 1)) {
-						sb.append(' ');
-					}
-				}
-			}
-			sb.append('\n');
-			i += rSize;
-		}
-		return sb.toString();
-	}
-
-	private static boolean sanitizeLineNumbers;
-	private static Pattern lineNumbersPattern;
-
-	/**
 	 * Optionally replace literal line numbers that appear in warnings (and
 	 * 'unimp' messages) with constant placeholders ('xxx') so that old
 	 * snapshots remain valid even if the line numbers have changed.
 	 */
 	public static void setSanitizeLineNumbers(boolean f) {
-		sanitizeLineNumbers = f;
+		sSanitizeLineNumbersFlag = f;
 	}
 
 	/**
@@ -1071,65 +921,61 @@ public final class Tools {
 	 * @return possibly modified stack trace
 	 */
 	private static String sanitizeStackTrace(String s) {
-		if (sanitizeLineNumbers) {
-			if (lineNumbersPattern == null)
-				lineNumbersPattern = Pattern.compile(":(\\d+)($|\\n)");
-			Matcher m = lineNumbersPattern.matcher(s);
+		if (sSanitizeLineNumbersFlag) {
+			if (sLineNumbersPattern == null)
+				sLineNumbersPattern = Pattern.compile(":(\\d+)($|\\n)");
+			Matcher m = sLineNumbersPattern.matcher(s);
 			s = m.replaceAll("_XXX");
 		}
 		return s;
 	}
 
 	/**
-	 * This main() method is provided for running quick tests
-	 */
-	public static void main(String[] args) {
-		warning("Tools.main executing.");
-	}
-
-	public static Random rnd = new Random(1965);
-
-	/**
-	 * Seed the random number generator
-	 * 
-	 * @param seed
-	 *            seed to use; if 0, uses system clock value
-	 */
-	public static void seedRandom(long seed) {
-		if (seed == 0)
-			seed = System.currentTimeMillis();
-		rnd = new Random(seed);
-	}
-
-	/**
-	 * Construct a new timer
+	 * Generate a time stamp to the console, indicating how much time has
+	 * elapsed since the last such time stamp was requested
 	 */
 	public static void timeStamp() {
 		timeStamp(null, 1);
 	}
 
+	/**
+	 * Same as {@link #timeStamp() timeStamp}, but with optional message
+	 * 
+	 * @param message
+	 *            object to derive message from (via toString()), or null
+	 */
 	public static void timeStamp(Object message) {
 		timeStamp(message, 1);
 	}
 
-	private static long previousTime;
-	private static long baseTime;
-
-	private static void timeStamp(Object message, int skip) {
+	/**
+	 * Same as {@link #timeStamp(Object) timeStamp}, but with stack frame skip
+	 * count
+	 * 
+	 * @param message
+	 *            object to derive message from (via toString()), or null
+	 * @param stackFrameSkipCount
+	 *            depth of desired entry with stack frame
+	 */
+	private static void timeStamp(Object message, int stackFrameSkipCount) {
 		long newTime = System.currentTimeMillis();
-		String location = stackTrace(2 + skip, 1);
-		if (previousTime == 0) {
-			baseTime = newTime;
-			previousTime = newTime;
+		String location = stackTrace(1 + stackFrameSkipCount, 1, null);
+		long delta;
+		synchronized (Tools.class) {
+			if (sTimeStampPreviousTime == 0) {
+				sTimeStampBaseTime = newTime;
+				sTimeStampPreviousTime = newTime;
+			}
+			delta = newTime - sTimeStampPreviousTime;
+			sTimeStampPreviousTime = newTime;
 		}
-		long delta = newTime - previousTime;
-		previousTime = newTime;
 		StringBuilder sb = new StringBuilder();
 		if (delta >= 0.1) {
 			sb.append(String.format("%5.2f ", delta / 1000.0f));
 		} else
-			sb.append(sp(6));
-		sb.append(String.format("%6.2f  ", (newTime - baseTime) / 1000.0f));
+			sb.append(spaces(6));
+		sb.append(String.format("%6.2f  ",
+				(newTime - sTimeStampBaseTime) / 1000.0f));
 		int len = sb.length();
 		sb.append(location);
 		tab(sb, len + 50);
@@ -1172,36 +1018,31 @@ public final class Tools {
 		return element;
 	}
 
-	private static boolean testingKnown;
-	private static boolean testing;
-
-	public static boolean testing() {
-		if (!testingKnown) {
-			try {
-				Class.forName("com.js.testUtils.MyTest");
-				testing = true;
-			} catch (Throwable e) {
-			}
-			testingKnown = true;
-		}
-		return testing;
-	}
-
 	/**
-	 * Find index of string within an array of strings
-	 * 
-	 * @param array
-	 *            array of strings
-	 * @param target
-	 *            string to look for
-	 * @return index of string; throws IllegalArgumentException if not found
+	 * Determine if program is running unit tests. Thread safe.
 	 */
-	public static int indexOfString(String[] array, String target) {
-		for (int i = 0; i < array.length; i++) {
-			if (array[i].equals(target))
-				return i;
+	public static boolean testing() {
+		if (!sTestingKnown) {
+			synchronized (Tools.class) {
+				try {
+					Class.forName("com.js.testUtils.MyTest");
+					sTesting = true;
+				} catch (Throwable e) {
+				}
+			}
+			sTestingKnown = true;
 		}
-		throw new IllegalArgumentException("string '" + target + "' not found");
+		return sTesting;
 	}
+
+	private static boolean sSanitizeLineNumbersFlag;
+	private static Pattern sLineNumbersPattern;
+	private static long sTimeStampPreviousTime;
+	private static long sTimeStampBaseTime;
+	private static final Set sWarningStrings = new HashSet();
+	private static boolean sTestingKnown;
+	private static boolean sTesting;
+	private static boolean sAndroidKnown;
+	private static boolean sIsAndroid;
 
 }

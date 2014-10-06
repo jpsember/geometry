@@ -680,7 +680,7 @@ class ConcreteStepper implements AlgorithmStepper {
 			}
 			aLockCounter++;
 			aLockActiveThread = Thread.currentThread();
-			aLockAquireInfo = stackTrace(1, 3);
+			aLockAquireInfo = stackTrace(1, 3, null);
 		}
 	}
 

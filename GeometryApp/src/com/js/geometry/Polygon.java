@@ -519,7 +519,7 @@ public class Polygon {
 		for (Point pt : mVertices) {
 			if (displayed == 6) {
 				displayed = 0;
-				sb.append("\n" + sp(prefix.length()));
+				sb.append("\n" + spaces(prefix.length()));
 			}
 			sb.append("    ");
 			sb.append(f((int) pt.x, 4));

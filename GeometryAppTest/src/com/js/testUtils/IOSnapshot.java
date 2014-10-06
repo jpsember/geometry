@@ -237,7 +237,7 @@ public class IOSnapshot {
 	 * @return name of method, without the 'test' prefix
 	 */
 	private String determineTestName() {
-		String st = stackTrace(2, 5);
+		String st = stackTrace(2, 5, null);
 
 		// Look for first occurrence of '.testXXX:'
 		Pattern p = Pattern.compile("\\.test(\\w+):");

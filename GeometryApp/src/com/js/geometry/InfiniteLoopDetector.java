@@ -34,7 +34,7 @@ public class InfiniteLoopDetector {
 			if (sIterationCount >= sMaxIterations) {
 				throw new Exception("Infinite loop detected ("
 						+ sIterationCount + "): " + sLoopDescription + "\n"
-						+ stackTrace(1, 1));
+						+ stackTrace(1, 1, null));
 			}
 		}
 	}

@@ -28,9 +28,9 @@ public final class IPoint {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(f(x));
+		sb.append(d(x));
 		sb.append(' ');
-		sb.append(f(y));
+		sb.append(d(y));
 		return sb.toString();
 	}
 

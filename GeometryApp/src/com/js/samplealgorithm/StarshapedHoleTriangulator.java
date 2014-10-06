@@ -133,7 +133,7 @@ public class StarshapedHoleTriangulator {
 
 		if (s.bigStep())
 			s.show("Hole now three edges, done; "
-					+ f(mTotalSteps / (float) mInitialHoleSize)
+					+ d(mTotalSteps / (float) mInitialHoleSize)
 					+ " steps/vertex");
 	}
 

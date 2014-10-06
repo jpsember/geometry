@@ -522,9 +522,9 @@ public class Polygon {
 				sb.append("\n" + spaces(prefix.length()));
 			}
 			sb.append("    ");
-			sb.append(f((int) pt.x, 4));
+			sb.append(d((int) pt.x, 4));
 			sb.append(' ');
-			sb.append(f((int) pt.y, 4));
+			sb.append(d((int) pt.y, 4));
 			displayed++;
 		}
 		return sb.toString();

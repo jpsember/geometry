@@ -55,25 +55,25 @@ public class Point {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(f(x));
+		sb.append(d(x));
 		sb.append(' ');
-		sb.append(f(y));
+		sb.append(d(y));
 		return sb.toString();
 	}
 
 	public String toStringAsInts() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(f((int) x, 4));
+		sb.append(d((int) x, 4));
 		sb.append(' ');
-		sb.append(f((int) y, 4));
+		sb.append(d((int) y, 4));
 		return sb.toString();
 	}
 
 	public String dumpUnlabelled() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(f(x));
+		sb.append(d(x));
 		sb.append(' ');
-		sb.append(f(y));
+		sb.append(d(y));
 		sb.append(' ');
 		return sb.toString();
 	}

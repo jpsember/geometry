@@ -199,7 +199,7 @@ class ConcreteStepper implements AlgorithmStepper {
 	 * active stack depth
 	 */
 	private String getScopedBackgroundLayerKey(String key) {
-		return f(mActiveStack.size(), 2) + "_" + key;
+		return d(mActiveStack.size(), 2) + "_" + key;
 	}
 
 	@Override

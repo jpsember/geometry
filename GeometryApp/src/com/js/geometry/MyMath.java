@@ -314,7 +314,7 @@ public final class MyMath {
 			for (int col = 0; col < columns; col++) {
 				int index = rowMajorOrder ? row * columns + col : col * rows
 						+ row;
-				sb.append(f(values[index], 3, 5));
+				sb.append(d(values[index], 3, 5));
 				sb.append(' ');
 			}
 			sb.append("]\n");

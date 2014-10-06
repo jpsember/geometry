@@ -268,16 +268,16 @@ public final class Tools {
 	}
 
 	/**
-	 * Convert (unsigned) integer to string representing its binary equivalent
+	 * Convert integer to a string representing its binary equivalent
 	 * 
-	 * @param word
+	 * @param intValue
+	 *            integer to display
 	 * @param format
 	 *            "D+F*" where D is decimal digit (number of significant bits),
 	 *            and F is zero or more of { skip leading (z)eros; display
 	 *            (d)ots instead of zeros }
-	 * @return String
 	 */
-	public static String fBits(int word, String format) {
+	public static String dBits(int intValue, String format) {
 
 		StringBuilder sb = new StringBuilder();
 
@@ -289,7 +289,7 @@ public final class Tools {
 		char zeroChar = useDots ? '.' : '0';
 
 		for (int j = nBits - 1; j >= 0; j--) {
-			boolean nonzero = ((word & (1 << j)) != 0);
+			boolean nonzero = ((intValue & (1 << j)) != 0);
 			if (j == 0 || nonzero)
 				filteringLeadingZeros = false;
 
@@ -303,75 +303,325 @@ public final class Tools {
 	}
 
 	/**
-	 * Convert (unsigned) integer to string representing its binary equivalent,
-	 * using default options
+	 * Same as {@link #dBits(int,String) dBits(int,String)}, but with default
+	 * format
 	 * 
-	 * @param word
+	 * @param intValue
 	 *            integer to display
-	 * @return
 	 */
-	public static String fBits(int word) {
-		return fBits(word, "8zd");
+	public static String dBits(int intValue) {
+		return dBits(intValue, "8zd");
 	}
 
 	/**
 	 * Parse an options expression which has the format "(\d+)(.*)"
 	 * 
-	 * @param s
+	 * @param options
 	 *            string
 	 * @return array [value(Integer), remainder(String)] where value is (\d+),
 	 *         and remainder is (.*)
 	 */
-	public static Object[] parseOptionsString(String s) {
+	public static Object[] parseOptionsString(String options) {
 		Object[] output = { null, null };
 
 		int cursor = 0;
-		while (cursor < s.length()) {
-			char c = s.charAt(cursor);
+		while (cursor < options.length()) {
+			char c = options.charAt(cursor);
 			if (c < '0' || c > '9')
 				break;
 			cursor++;
 		}
-		String digitsString = s.substring(0, cursor);
+		String digitsString = options.substring(0, cursor);
 		int nDigits = Integer.parseInt(digitsString);
 		output[0] = nDigits;
-		output[1] = s.substring(cursor);
+		output[1] = options.substring(cursor);
 		return output;
 	}
 
-	public static String d(Throwable t) {
-		return t.getMessage() + "\n" + stackTrace(0, 15, t);
+	/**
+	 * Describe a throwable, including its message and much of its stack trace
+	 * 
+	 * @param throwable
+	 */
+	public static String d(Throwable throwable) {
+		return throwable.getMessage() + "\n" + stackTrace(0, 15, throwable);
 	}
 
+	/**
+	 * Describe a Boolean as either "T" or "F"
+	 * 
+	 * @param b
+	 */
 	public static String d(Boolean b) {
 		return b.booleanValue() ? "T" : "F";
 	}
 
-	public static String d(float[] f) {
+	/**
+	 * Describe an integer by formatting it to a string
+	 * 
+	 * @param v
+	 *            value
+	 * @param width
+	 *            max number of digits to display
+	 * @param spaceLeadZeros
+	 *            if true, right-justifies string
+	 * @return String, with format siiii where s = sign (' ' or '-'), if
+	 *         overflow, returns s********* of same size
+	 */
+	public static String d(int v, int width, boolean spaceLeadZeros) {
+
+		// get string representation of absolute value
+		String s = Integer.toString(Math.abs(v));
+
+		// get number of spaces to pad
+		int pad = width - s.length();
+
+		StringBuilder sb = new StringBuilder();
+
+		// if it won't fit, print stars
+		if (pad < 0) {
+			sb.append(v < 0 ? '-' : ' ');
+			while (sb.length() < width + 1)
+				sb.append('*');
+		} else {
+			// print padding spaces before or after number
+			if (spaceLeadZeros) {
+				while (pad-- > 0)
+					sb.append(' ');
+			}
+			sb.append(v < 0 ? '-' : ' ');
+			sb.append(s);
+			// print trailing padding, if any required
+			while (pad-- > 0)
+				sb.append(' ');
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * Describe a double by formatting it to a string, without scientific
+	 * notation
+	 * 
+	 * @param v
+	 *            value
+	 * @param iDig
+	 *            number of integer digits to display
+	 * @param fDig
+	 *            number of fractional digits to display
+	 * @return String, with format siiii.fff where s = sign (' ' or '-'), . is
+	 *         present only if fDig > 0 if overflow, returns s********* of same
+	 *         size
+	 */
+	public static String d(double v, int iDig, int fDig) {
+
+		StringBuilder sb = new StringBuilder();
+
+		boolean neg = false;
+		if (v < 0) {
+			neg = true;
+			v = -v;
+		}
+
+		int[] dig = new int[iDig + fDig];
+
+		boolean overflow = false;
+
+		// Determine which digits will be displayed.
+		// Round last digit and propagate leftward.
+		{
+			double n = Math.pow(10, iDig);
+			if (v >= n) {
+				overflow = true;
+			} else {
+				double v2 = v;
+				for (int i = 0; i < iDig + fDig; i++) {
+					n /= 10.0;
+					double d = Math.floor(v2 / n);
+					dig[i] = (int) d;
+					v2 -= d * n;
+				}
+				double d2 = Math.floor(v2 * 10 / n);
+				if (d2 >= 5) {
+					for (int k = dig.length - 1;; k--) {
+						if (k < 0) {
+							overflow = true;
+							break;
+						}
+						if (++dig[k] == 10) {
+							dig[k] = 0;
+						} else
+							break;
+					}
+				}
+			}
+		}
+
+		if (overflow) {
+			int nDig = iDig + fDig + 1;
+			if (fDig != 0)
+				nDig++;
+			for (int k = 0; k < nDig; k++)
+				sb.append("*");
+		} else {
+
+			sb.append(' ');
+			int signPos = 0;
+			boolean leadZero = false;
+			for (int i = 0; i < iDig + fDig; i++) {
+				int digit = dig[i];
+				if (!leadZero) {
+					if (digit != 0 || i == iDig || (i == iDig - 1 && fDig == 0)) {
+						leadZero = true;
+						signPos = sb.length() - 1;
+					}
+				}
+				if (i == iDig) {
+					sb.append('.');
+				}
+
+				if (digit == 0 && !leadZero) {
+					sb.append(' ');
+				} else {
+					sb.append((char) ('0' + digit));
+				}
+			}
+			if (neg)
+				sb.setCharAt(signPos, '-');
+		}
+		return sb.toString();
+	}
+
+	public static String d(double f) {
+		return d(f, 5, 3);
+	}
+
+	public static String d(int f) {
+		return d(f, 6, true);
+	}
+
+	public static String d(int val, int width) {
+		return d(val, width, true);
+	}
+
+	/**
+	 * Describe an integer as a hex value
+	 * 
+	 * @param intValue
+	 */
+	public static CharSequence dh(int intValue) {
+		return dh(intValue, "8$zg");
+	}
+
+	/**
+	 * Convert an integer to its hex string representation
+	 * 
+	 * @param n
+	 * @param format
+	 *            "D+[F]*" where D is decimal digit, representing number of hex
+	 *            digits to display, and F is zero or more of: skip lead
+	 *            (z)eros; insert underscores to display digits in (g)roups of
+	 *            four; prefix with ($)
+	 * @return string
+	 */
+	public static StringBuilder dh(int n, String format) {
+		Object[] fmt = parseOptionsString(format);
+		int nDig = (Integer) fmt[0];
+		String flags = (String) fmt[1];
+		return toHex(null, n, nDig, flags.contains("z"), flags.contains("g"),
+				flags.contains("$"));
+	}
+
+	/**
+	 * Format a string to be at least a certain size
+	 * 
+	 * @param s
+	 *            string to format
+	 * @param length
+	 *            minimum size to pad to; negative to insert leading spaces
+	 * @return blank-padded string
+	 */
+	public static String d(String s, int length) {
+		return d(s, length, null).toString();
+	}
+
+	/**
+	 * Format a string to be at least a certain size
+	 * 
+	 * @param string
+	 *            string to format
+	 * @param length
+	 *            minimum size to padd to; negative to insert leading spaces
+	 * @param sb
+	 *            StringBuilder to receive formatted string, or null to
+	 *            construct one
+	 * @return StringBuilder that received the string
+	 */
+	public static StringBuilder d(String string, int length, StringBuilder sb) {
+		if (sb == null)
+			sb = new StringBuilder();
+		int origLen = sb.length();
+		if (length >= 0) {
+			sb.append(string);
+			if (length > string.length())
+				tab(sb, length + origLen);
+		} else {
+			length = -length;
+			if (string.length() < length)
+				tab(sb, length - string.length());
+			sb.append(string);
+		}
+		return sb;
+	}
+
+	/**
+	 * Describe a float array
+	 * 
+	 * @param floatArray
+	 *            float array
+	 */
+	public static String d(float[] floatArray) {
 		StringBuilder sb = new StringBuilder("[");
-		for (int i = 0; i < f.length; i++) {
-			sb.append(f(f[i]));
+		for (int i = 0; i < floatArray.length; i++) {
+			sb.append(d(floatArray[i]));
 		}
 		sb.append(']');
 		return sb.toString();
 	}
 
-	public static String dumpAngle(float radians) {
-		double scaled = radians / (2 * Math.PI);
-		scaled -= Math.floor(scaled);
-		String str = f((int) (scaled * 360), 3);
-		return "D:" + str.substring(1);
-	}
-
-	public static String d(int[] f) {
+	/**
+	 * Describe a double array
+	 * 
+	 * @param doubleArray
+	 *            double array
+	 */
+	public static String d(double[] doubleArray) {
 		StringBuilder sb = new StringBuilder("[");
-		for (int i = 0; i < f.length; i++) {
-			sb.append(f(f[i]));
+		for (int i = 0; i < doubleArray.length; i++) {
+			sb.append(d(doubleArray[i]));
 		}
 		sb.append(']');
 		return sb.toString();
 	}
 
+	/**
+	 * Describe an int array
+	 * 
+	 * @param intArray
+	 */
+	public static String d(int[] intArray) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i = 0; i < intArray.length; i++) {
+			sb.append(d(intArray[i]));
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	/**
+	 * Describe an object (which may be null)
+	 * 
+	 * @param obj
+	 */
 	public static String d(Object obj) {
 		String s = null;
 		if (obj != null)
@@ -379,36 +629,24 @@ public final class Tools {
 		return d(s);
 	}
 
-	public static String describe(Object obj) {
-		if (obj == null)
-			return "<null>";
-		return d(obj.toString(), "80et") + " (" + nameOf(obj) + ")";
-	}
-
-	public static String nameOf(Object obj) {
-		return nameOf(obj, true);
-	}
-
-	public static String nameOf(Object obj, boolean includeClassName) {
-		if (obj == null)
-			return "<null>";
-		String identifier = UniqueIdentifier.nameFor(obj);
-		if (!includeClassName)
-			return identifier;
-		return obj.getClass().getSimpleName() + ":" + identifier;
-	}
-
-	public static String d(Map m) {
-		if (m == null)
+	/**
+	 * Describe a Map
+	 * 
+	 * @param map
+	 *            Map, or null
+	 * @return description of map
+	 */
+	public static String d(Map map) {
+		if (map == null)
 			return "null";
 		StringBuilder sb = new StringBuilder("Map[\n");
-		Iterator it = m.keySet().iterator();
+		Iterator it = map.keySet().iterator();
 		while (it.hasNext()) {
 			Object k = it.next();
 			sb.append(" ....Key '");
-			sb.append(f(k.toString(), 50));
+			sb.append(d(k.toString(), 50));
 			sb.append("' -> ");
-			Object v = m.get(k);
+			Object v = map.get(k);
 			String s = "";
 			if (v != null) {
 				s = chomp(v.toString());
@@ -513,6 +751,39 @@ public final class Tools {
 	}
 
 	/**
+	 * Describe an object, which may be null, by converting it to a string and
+	 * appending its symbolic name
+	 * 
+	 * @param obj
+	 * @return String description of object
+	 */
+	public static String describe(Object obj) {
+		if (obj == null)
+			return "<null>";
+		return d(obj.toString(), "80et") + " (" + nameOf(obj) + ")";
+	}
+
+	public static String nameOf(Object obj) {
+		return nameOf(obj, true);
+	}
+
+	/**
+	 * Get the symbolic name of an object, optionally including its class name
+	 * 
+	 * @param obj
+	 * @param includeClassName
+	 * @return String name of object
+	 */
+	public static String nameOf(Object obj, boolean includeClassName) {
+		if (obj == null)
+			return "<null>";
+		String identifier = UniqueIdentifier.nameFor(obj);
+		if (!includeClassName)
+			return identifier;
+		return obj.getClass().getSimpleName() + ":" + identifier;
+	}
+
+	/**
 	 * Convert a character to a printable string by inserting Java escape
 	 * sequences as necessary
 	 * 
@@ -593,164 +864,6 @@ public final class Tools {
 	}
 
 	/**
-	 * Format an int into a string
-	 * 
-	 * @param v
-	 *            value
-	 * @param width
-	 *            max number of digits to display
-	 * @param spaceLeadZeros
-	 *            if true, right-justifies string
-	 * @return String, with format siiii where s = sign (' ' or '-'), if
-	 *         overflow, returns s********* of same size
-	 */
-	public static String f(int v, int width, boolean spaceLeadZeros) {
-
-		// get string representation of absolute value
-		String s = Integer.toString(Math.abs(v));
-
-		// get number of spaces to pad
-		int pad = width - s.length();
-
-		StringBuilder sb = new StringBuilder();
-
-		// if it won't fit, print stars
-		if (pad < 0) {
-			sb.append(v < 0 ? '-' : ' ');
-			while (sb.length() < width + 1)
-				sb.append('*');
-		} else {
-			// print padding spaces before or after number
-			if (spaceLeadZeros) {
-				while (pad-- > 0)
-					sb.append(' ');
-			}
-			sb.append(v < 0 ? '-' : ' ');
-			sb.append(s);
-			// print trailing padding, if any required
-			while (pad-- > 0)
-				sb.append(' ');
-		}
-		return sb.toString();
-	}
-
-	/**
-	 * Format a double into a string, without scientific notation
-	 * 
-	 * @param v
-	 *            value
-	 * @param iDig
-	 *            number of integer digits to display
-	 * @param fDig
-	 *            number of fractional digits to display
-	 * @return String, with format siiii.fff where s = sign (' ' or '-'), . is
-	 *         present only if fDig > 0 if overflow, returns s********* of same
-	 *         size
-	 */
-	public static String f(double v, int iDig, int fDig) {
-
-		StringBuilder sb = new StringBuilder();
-
-		boolean neg = false;
-		if (v < 0) {
-			neg = true;
-			v = -v;
-		}
-
-		int[] dig = new int[iDig + fDig];
-
-		boolean overflow = false;
-
-		// Determine which digits will be displayed.
-		// Round last digit and propagate leftward.
-		{
-			double n = Math.pow(10, iDig);
-			if (v >= n) {
-				overflow = true;
-			} else {
-				double v2 = v;
-				for (int i = 0; i < iDig + fDig; i++) {
-					n /= 10.0;
-					double d = Math.floor(v2 / n);
-					dig[i] = (int) d;
-					v2 -= d * n;
-				}
-				double d2 = Math.floor(v2 * 10 / n);
-				if (d2 >= 5) {
-					for (int k = dig.length - 1;; k--) {
-						if (k < 0) {
-							overflow = true;
-							break;
-						}
-						if (++dig[k] == 10) {
-							dig[k] = 0;
-						} else
-							break;
-					}
-				}
-			}
-		}
-
-		if (overflow) {
-			int nDig = iDig + fDig + 1;
-			if (fDig != 0)
-				nDig++;
-			for (int k = 0; k < nDig; k++)
-				sb.append("*");
-		} else {
-
-			sb.append(' ');
-			int signPos = 0;
-			boolean leadZero = false;
-			for (int i = 0; i < iDig + fDig; i++) {
-				int digit = dig[i];
-				if (!leadZero) {
-					if (digit != 0 || i == iDig || (i == iDig - 1 && fDig == 0)) {
-						leadZero = true;
-						signPos = sb.length() - 1;
-					}
-				}
-				if (i == iDig) {
-					sb.append('.');
-				}
-
-				if (digit == 0 && !leadZero) {
-					sb.append(' ');
-				} else {
-					sb.append((char) ('0' + digit));
-				}
-			}
-			if (neg)
-				sb.setCharAt(signPos, '-');
-		}
-		return sb.toString();
-	}
-
-	public static String f(double f) {
-		return f(f, 5, 3);
-	}
-
-	public static String f(int f) {
-		return f(f, 6, true);
-	}
-
-	public static String f(int[] ia) {
-		StringBuilder sb = new StringBuilder();
-		sb.append('[');
-		for (int i = 0; i < ia.length; i++) {
-			if (i > 0)
-				sb.append(' ');
-			sb.append(ia[i]);
-		}
-		sb.append("]");
-		return sb.toString();
-	}
-
-	public static String f(int val, int width) {
-		return f(val, width, true);
-	}
-
-	/**
 	 * Add spaces to a StringBuilder until its length is at some value. Sort of
 	 * a 'tab' feature, useful for aligning output.
 	 * 
@@ -762,59 +875,6 @@ public final class Tools {
 	 */
 	public static StringBuilder tab(StringBuilder sb, int len) {
 		sb.append(spaces(len - sb.length()));
-		return sb;
-	}
-
-	public static CharSequence fh(int n) {
-		return fh(n, "8$zg");
-	}
-
-	/**
-	 * Convert an unsigned integer to its hex string representation
-	 * 
-	 * @param n
-	 * @param format
-	 *            "D+[F]*" where D is decimal digit, representing number of hex
-	 *            digits to display, and F is zero or more of: skip lead
-	 *            (z)eros; insert underscores to display digits in (g)roups of
-	 *            four; prefix with ($)
-	 * @return string
-	 */
-	public static StringBuilder fh(int n, String format) {
-		Object[] fmt = parseOptionsString(format);
-		int nDig = (Integer) fmt[0];
-		String flags = (String) fmt[1];
-		return toHex(null, n, nDig, flags.contains("z"), flags.contains("g"),
-				flags.contains("$"));
-	}
-
-	/**
-	 * Format a string to be at least a certain size
-	 * 
-	 * @param s
-	 *            string to format
-	 * @param length
-	 *            minimum size to pad to; negative to insert leading spaces
-	 * @return blank-padded string
-	 */
-	public static String f(String s, int length) {
-		return f(s, length, null).toString();
-	}
-
-	public static StringBuilder f(String s, int length, StringBuilder sb) {
-		if (sb == null)
-			sb = new StringBuilder();
-		int origLen = sb.length();
-		if (length >= 0) {
-			sb.append(s);
-			if (length > s.length())
-				tab(sb, length + origLen);
-		} else {
-			length = -length;
-			if (s.length() < length)
-				tab(sb, length - s.length());
-			sb.append(s);
-		}
 		return sb;
 	}
 

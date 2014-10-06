@@ -73,7 +73,7 @@ public class QuiescentDelayOperation {
 				if (mOperation != null) {
 					if (db)
 						pr("Time "
-								+ f(relativeTime(System.currentTimeMillis()))
+								+ d(relativeTime(System.currentTimeMillis()))
 								+ ", activating quiescent operation "
 								+ mDebugName + ": " + nameOf(mOperation));
 					mOperation.run();
@@ -88,7 +88,7 @@ public class QuiescentDelayOperation {
 	public String toString() {
 		StringBuilder sb = new StringBuilder("QOper ");
 		sb.append(mDebugName);
-		sb.append(" activationTime " + f(relativeTime(mActivationTime)));
+		sb.append(" activationTime " + d(relativeTime(mActivationTime)));
 		sb.append(" oper=" + nameOf(mOperation));
 		return sb.toString();
 	}

@@ -82,17 +82,17 @@ public class QueueTest extends MyTestCase {
 		IOSnapshot.open();
 		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
-			prr(f(i, 3) + ": ");
+			prr(d(i, 3) + ": ");
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
 						int v = q.pop();
-						pr("popped " + f(v, 3) + "; " + q);
+						pr("popped " + d(v, 3) + "; " + q);
 						continue;
 					}
 				}
 				q.push(i);
-				pr("pushed " + f(i, 3) + "; " + q);
+				pr("pushed " + d(i, 3) + "; " + q);
 
 			} else {
 				if (q.isEmpty()) {
@@ -100,7 +100,7 @@ public class QueueTest extends MyTestCase {
 					break;
 				}
 				int v = q.pop();
-				pr("popped " + f(v, 3) + "; " + q);
+				pr("popped " + d(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();
@@ -111,18 +111,18 @@ public class QueueTest extends MyTestCase {
 		IOSnapshot.open();
 		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
-			prr(f(i, 3) + ": ");
+			prr(d(i, 3) + ": ");
 
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
 						int v = q.pop(false);
-						pr("popped " + f(v, 3) + "; " + q);
+						pr("popped " + d(v, 3) + "; " + q);
 						continue;
 					}
 				}
 				q.push(i);
-				pr("pushed " + f(i, 3) + "; " + q);
+				pr("pushed " + d(i, 3) + "; " + q);
 
 			} else {
 				if (q.isEmpty()) {
@@ -130,7 +130,7 @@ public class QueueTest extends MyTestCase {
 					break;
 				}
 				int v = q.pop();
-				pr("popped " + f(v, 3) + "; " + q);
+				pr("popped " + d(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();
@@ -141,18 +141,18 @@ public class QueueTest extends MyTestCase {
 		IOSnapshot.open();
 		Queue<Integer> q = new Queue();
 		for (int i = 0; i < nIter; i++) {
-			prr(f(i, 3) + ": ");
+			prr(d(i, 3) + ": ");
 
 			if (i < nIter / 2) {
 				if (random().nextInt(80) > 60) {
 					if (!q.isEmpty()) {
 						int v = q.pop(false);
-						pr("popped " + f(v, 3) + "; " + q);
+						pr("popped " + d(v, 3) + "; " + q);
 						continue;
 					}
 				}
 				q.push(i, true);
-				pr("pushed " + f(i, 3) + "; " + q);
+				pr("pushed " + d(i, 3) + "; " + q);
 
 			} else {
 				if (q.isEmpty()) {
@@ -160,7 +160,7 @@ public class QueueTest extends MyTestCase {
 					break;
 				}
 				int v = q.pop(false);
-				pr("popped " + f(v, 3) + "; " + q);
+				pr("popped " + d(v, 3) + "; " + q);
 			}
 		}
 		IOSnapshot.close();

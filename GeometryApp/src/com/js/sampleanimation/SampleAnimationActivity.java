@@ -1,4 +1,4 @@
-package com.js.animationapp;
+package com.js.sampleanimation;
 
 import static com.js.basic.Tools.*;
 

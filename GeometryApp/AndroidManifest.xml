@@ -27,7 +27,7 @@
         </activity>
 
         <activity
-            android:name="com.js.animationapp.SampleAnimationActivity"
+            android:name="sampleanimation.SampleAnimationActivity"
             android:label="Animation"
             android:icon="@drawable/ic_animation"
             android:taskAffinity="com.js.samplealgorithm.SampleAnimationActivity" >

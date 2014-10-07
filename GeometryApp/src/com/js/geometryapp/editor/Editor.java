@@ -8,6 +8,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import static com.js.basic.Tools.*;
 
 /**
  * Class that encapsulates editing geometric objects. It includes a view, which
@@ -85,6 +86,11 @@ public class Editor {
 		mEditorView = frameLayout;
 	}
 
+	public void render() {
+		unimp("rendering " + mObjects);
+	}
+
 	private View mContentView;
 	private View mEditorView;
+	private EdObjectArray mObjects = new EdObjectArray();
 }

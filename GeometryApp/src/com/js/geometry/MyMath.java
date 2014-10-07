@@ -146,10 +146,16 @@ public final class MyMath {
 		return new Point(x, y);
 	}
 
+	/**
+	 * @deprecated change type to float
+	 */
 	public static double pseudoAngleOfSegment(Point s1, Point s2) {
 		return pseudoPolarAngle(s2.x - s1.x, s2.y - s1.y);
 	}
 
+	/**
+	 * @deprecated change type to float
+	 */
 	public static double normalizePseudoAngle(double a) {
 		double b = a;
 		if (b < -PSEUDO_ANGLE_RANGE_12) {
@@ -205,6 +211,123 @@ public final class MyMath {
 		float pt_x = pt.x - s1.x;
 		float pt_y = pt.y - s1.y;
 		return -sy * pt_x + sx * pt_y;
+	}
+
+	/**
+	 * Determine distance of a point from a line
+	 * 
+	 * @param pt
+	 *            FPoint2
+	 * @param e0
+	 *            one point on line
+	 * @param e1
+	 *            second point on line
+	 * @param closestPt
+	 *            if not null, closest point on line is stored here
+	 * @return distance
+	 */
+	public static float ptDistanceToLine(Point pt, Point e0, Point e1,
+			Point closestPt) {
+
+		/*
+		 * Let A = pt - l0 B = l1 - l0
+		 * 
+		 * then
+		 * 
+		 * |A x B| = |A||B| sin t
+		 * 
+		 * and the distance is |AxB| / |B|
+		 * 
+		 * 
+		 * The closest point is
+		 * 
+		 * l0 + (|A| cos t) / |B|
+		 */
+		float bLength = distanceBetween(e0, e1);
+		float dist;
+		if (bLength == 0) {
+			dist = distanceBetween(pt, e0);
+			if (closestPt != null)
+				closestPt.setTo(e0);
+		} else {
+			float ax = pt.x - e0.x;
+			float ay = pt.y - e0.y;
+			float bx = e1.x - e0.x;
+			float by = e1.y - e0.y;
+
+			float crossProd = bx * ay - by * ax;
+
+			dist = Math.abs(crossProd / bLength);
+
+			if (closestPt != null) {
+				float scalarProd = ax * bx + ay * by;
+				float t = scalarProd / (bLength * bLength);
+				closestPt.setTo(e0.x + t * bx, e0.y + t * by);
+			}
+		}
+		return dist;
+	}
+
+	/**
+	 * Calculate the parameter for a point on a line
+	 * 
+	 * @param pt
+	 *            FPoint2, assumed to be on line
+	 * @param s0
+	 *            start point of line segment (t = 0.0)
+	 * @param s1
+	 *            end point of line segment (t = 1.0)
+	 * @return t value associated with pt
+	 */
+	public static float positionOnSegment(Point pt, Point s0, Point s1) {
+
+		float sx = s1.x - s0.x;
+		float sy = s1.y - s0.y;
+
+		float t = 0;
+
+		float dotProd = (pt.x - s0.x) * sx + (pt.y - s0.y) * sy;
+		if (dotProd != 0)
+			t = dotProd / (sx * sx + sy * sy);
+
+		return t;
+	}
+
+	/**
+	 * Determine distance of point from segment
+	 * 
+	 * @param pt
+	 *            FPoint2
+	 * @param l0
+	 *            FPoint2
+	 * @param l1
+	 *            FPoint2
+	 * @param ptOnSeg
+	 *            if not null, closest point on segment to point is stored here
+	 * @return float
+	 */
+	public static float ptDistanceToSegment(Point pt, Point l0, Point l1,
+			Point ptOnSeg) {
+
+		float dist = 0;
+		// calculate parameter for position on segment
+		float t = positionOnSegment(pt, l0, l1);
+
+		Point cpt = null;
+		if (t < 0) {
+			cpt = l0;
+			dist = distanceBetween(pt, cpt);
+			if (ptOnSeg != null)
+				ptOnSeg.setTo(cpt);
+		} else if (t > 1) {
+			cpt = l1;
+			dist = distanceBetween(pt, cpt);
+			if (ptOnSeg != null)
+				ptOnSeg.setTo(cpt);
+		} else {
+			dist = ptDistanceToLine(pt, l0, l1, ptOnSeg);
+		}
+		return dist;
 	}
 
 	/**

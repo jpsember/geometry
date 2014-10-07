@@ -9,6 +9,7 @@ import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
+import com.js.geometryapp.editor.Editor;
 import com.js.opengl.OurGLRenderer;
 
 import android.content.Context;
@@ -23,6 +24,10 @@ class AlgorithmRenderer extends OurGLRenderer {
 		super(context);
 		mStepper = stepper;
 		doNothing();
+	}
+
+	public void setEditor(Editor editor) {
+		mEditor = editor;
 	}
 
 	/**
@@ -66,6 +71,7 @@ class AlgorithmRenderer extends OurGLRenderer {
 			AlgorithmDisplayElement.setRendering(true);
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			mEditor.render();
 			mStepper.render();
 			// Call user method, now that synchronized
 			onDrawFrame();
@@ -128,5 +134,5 @@ class AlgorithmRenderer extends OurGLRenderer {
 	private static float sAlgorithmToDensityPixels;
 
 	private ConcreteStepper mStepper;
-
+	private Editor mEditor;
 }

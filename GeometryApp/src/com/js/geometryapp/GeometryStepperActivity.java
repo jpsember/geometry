@@ -49,6 +49,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			// Wrap the GLSurfaceView within another container, so we can
 			// overlay it with an editing toolbar
 			mEditor = new Editor(glView);
+			mRenderer.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
 		}
 		mOptions = mStepper.constructOptions(this);
@@ -63,7 +64,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected final GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = new OurGLSurfaceView(this, buildRenderer(this));
+		mRenderer = buildRenderer(this);
+		GLSurfaceView v = new OurGLSurfaceView(this, mRenderer);
 		v.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		return v;
 	}
@@ -85,5 +87,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	private ConcreteStepper mStepper;
 	private AlgorithmOptions mOptions;
+	private AlgorithmRenderer mRenderer;
 	private Editor mEditor;
 }

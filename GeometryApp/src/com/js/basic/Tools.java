@@ -1078,6 +1078,14 @@ public final class Tools {
 		return element;
 	}
 
+	public static void swap(List list, int aIndex, int bIndex) {
+		if (aIndex == bIndex)
+			return;
+		Object temp = list.get(aIndex);
+		list.set(aIndex, list.get(bIndex));
+		list.set(bIndex, temp);
+	}
+
 	/**
 	 * Determine if program is running unit tests. Thread safe.
 	 */

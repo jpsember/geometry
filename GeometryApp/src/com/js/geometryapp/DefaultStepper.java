@@ -58,6 +58,10 @@ class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
+	public void setDoneMessage(String message) {
+	}
+
+	@Override
 	public boolean openLayer(String key) {
 		return false;
 	}

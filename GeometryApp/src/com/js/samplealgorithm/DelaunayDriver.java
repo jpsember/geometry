@@ -132,9 +132,8 @@ public class DelaunayDriver implements Algorithm {
 		if (deleteAll) {
 			while (!mVertices.isEmpty())
 				removeArbitraryVertex();
-		}
-
-		if (mOptions.getBooleanValue("Voronoi cells")) {
+			s.setDoneMessage("Removed all vertices");
+		} else if (mOptions.getBooleanValue("Voronoi cells")) {
 			if (s.openLayer(BGND_ELEMENT_VORONOI_CELLS)) {
 				s.plot(new AlgorithmDisplayElement() {
 					@Override
@@ -152,8 +151,7 @@ public class DelaunayDriver implements Algorithm {
 				});
 				s.closeLayer();
 			}
-			if (s.step())
-				s.show("Voronoi cells");
+			s.setDoneMessage("Voronoi cells");
 		}
 	}
 

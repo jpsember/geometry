@@ -150,6 +150,13 @@ class ConcreteStepper implements AlgorithmStepper {
 		throw new DesiredStepReachedException(message);
 	}
 
+	@Override
+	public void setDoneMessage(String message) {
+		if (!isActive())
+			return;
+		mDoneMessage = message;
+	}
+
 	/**
 	 * Extract name of layer from key, if it exists. Examples:
 	 * 
@@ -493,6 +500,7 @@ class ConcreteStepper implements AlgorithmStepper {
 			mBackgroundLayerActiveNamesSet.clear();
 			mForegroundLayer.clear();
 			mFrameTitle = null;
+			mDoneMessage = "Done";
 
 			AlgorithmDisplayElement.resetRenderStateVars();
 
@@ -516,7 +524,7 @@ class ConcreteStepper implements AlgorithmStepper {
 				}
 				// Always end an algorithm with a step/show combination
 				if (bigStep()) { // should always return true
-					show("Done");
+					show(mDoneMessage);
 				} else {
 					die("unexpected!");
 				}
@@ -765,6 +773,7 @@ class ConcreteStepper implements AlgorithmStepper {
 	// Map of layer names -> existing layer sharing that name
 	private Set<String> mBackgroundLayerActiveNamesSet = new HashSet();
 	private String mFrameTitle;
+	private String mDoneMessage;
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();

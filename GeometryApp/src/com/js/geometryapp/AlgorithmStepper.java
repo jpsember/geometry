@@ -69,6 +69,18 @@ public interface AlgorithmStepper {
 	public void show(String message);
 
 	/**
+	 * Specify a message to display when the algorithm completes, in lieu of a
+	 * generic one. Has no effect if stepper is not active
+	 * 
+	 * @param message
+	 *            message to display; note that unlike calls to show(), this
+	 *            will not cause any elements displayed via side effects (in
+	 *            other words, don't concatenate 'plot' method calls to this
+	 *            one)
+	 */
+	public void setDoneMessage(String message);
+
+	/**
 	 * Request to open a background layer. Subsequent plot() commands will be
 	 * redirected to this layer. If this returns true, then must be balanced by
 	 * a call to closeLayer(). Layers are plotted in alphabetical order, so the

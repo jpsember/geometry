@@ -121,6 +121,7 @@ class ConcreteStepper implements AlgorithmStepper {
 		}
 
 		if (mCurrentStep == mTargetStep) {
+
 			// If the target step equals the total steps, we would have
 			// expected to complete the algorithm without halting, so
 			// the total steps is too small.
@@ -469,10 +470,10 @@ class ConcreteStepper implements AlgorithmStepper {
 			// If the current target step is equal to its maximum, change it to
 			// stick to the new maximum
 			boolean atMax = (mOptions.readTargetStep() == mOptions
-					.readTotalSteps() - 1);
+					.readTotalSteps());
 			mOptions.setTotalSteps(totalSteps);
 			if (atMax)
-				mOptions.setTargetStep(totalSteps - 1);
+				mOptions.setTargetStep(totalSteps);
 			releaseLock();
 		}
 	}
@@ -503,26 +504,30 @@ class ConcreteStepper implements AlgorithmStepper {
 				mOptions.getActiveAlgorithm().run(this);
 
 				// We completed the algorithm without halting.
-				// If we're still at step 0, the user didn't have any steps;
-				// generate one with an appropriate message.
-				if (mCurrentStep == 0) {
-					mTotalSteps = mCurrentStep + 1;
-					mTargetStep = mCurrentStep;
-					mCompleted = false;
-					if (bigStep())
-						show("(no steps defined!)");
-				}
-
-				// The algorithm has fewer steps than we thought; set the
-				// current step as the maximum, and set flag to run method again
-				// with new limit.
-				mTotalSteps = mCurrentStep;
-				mTargetStep = mTotalSteps - 1;
-				// Set flag so that we know we completed without halting.
+				// We're about to throw an exception that will be caught below;
+				// set flag so that we know we completed without halting.
 				mCompleted = true;
-				throw new DesiredStepReachedException(
-						"(Algorithm has fewer steps)");
+
+				// If the target step was not the maximum, the maximum is too
+				// high.
+				if (mCurrentStep < mTotalSteps) {
+					mTotalSteps = mCurrentStep;
+					mTargetStep = mTotalSteps;
+				}
+				// Always end an algorithm with a step/show combination
+				if (bigStep()) { // should always return true
+					show("Done");
+				} else {
+					die("unexpected!");
+				}
 			} catch (DesiredStepReachedException e) {
+				if (!mCompleted) {
+					// We halted without completing. If we halted on what we
+					// thought was the last step, the total steps is too low.
+					if (mCurrentStep == mTotalSteps) {
+						mTotalSteps = (int) (Math.max(mTotalSteps, 50) * 1.3f);
+					}
+				}
 				throw e;
 			} catch (RuntimeException t) {
 				// Pop active stack until it's empty; we want to make sure
@@ -530,7 +535,7 @@ class ConcreteStepper implements AlgorithmStepper {
 				// sequence for which stepping is disabled
 				while (!mActiveStack.isEmpty())
 					popActive();
-				mTotalSteps = mCurrentStep + 1;
+				mTotalSteps = mCurrentStep;
 				mTargetStep = mCurrentStep;
 				show(constructExceptionString(t,
 						"ConcreteStepper.performAlgorithm"));
@@ -542,9 +547,6 @@ class ConcreteStepper implements AlgorithmStepper {
 		} finally {
 			mJumpToNextMilestoneFlag = false;
 			initializeActiveState(false);
-		}
-		if (mCompleted) {
-			performAlgorithm();
 		}
 	}
 
@@ -590,7 +592,7 @@ class ConcreteStepper implements AlgorithmStepper {
 			// flag which indicates we want to continue stepping forward until
 			// we reach a milestone
 			int totalSteps = mOptions.readTotalSteps();
-			seekStep = Math.min(totalSteps - 1, targetStep + 1);
+			seekStep = Math.min(totalSteps, targetStep + 1);
 			// We must be careful to only set the 'jump to next' flag if we're
 			// actually going to perform any stepping, otherwise it won't get
 			// cleared
@@ -634,7 +636,7 @@ class ConcreteStepper implements AlgorithmStepper {
 						int seekStep = mOptions.readTargetStep()
 								+ (j == 0 ? -1 : 1);
 						seekStep = MyMath.clamp(seekStep, 0,
-								mOptions.readTotalSteps() - 1);
+								mOptions.readTotalSteps());
 						mOptions.setTargetStep(seekStep);
 					}
 				}

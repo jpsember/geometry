@@ -63,7 +63,7 @@ class AlgorithmStepperPanel {
 		totalStepsSlider.addListener(new AbstractWidget.Listener() {
 			@Override
 			public void valueChanged(AbstractWidget widget) {
-				targetStepSlider.setMaxValue(widget.getIntValue() - 1);
+				targetStepSlider.setMaxValue(widget.getIntValue());
 			}
 		});
 

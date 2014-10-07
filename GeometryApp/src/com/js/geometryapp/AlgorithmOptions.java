@@ -332,7 +332,7 @@ public class AlgorithmOptions {
 		// the listener that normally does this was disabled while restoring the
 		// stepper state
 		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(readTotalSteps() - 1);
+		s.setMaxValue(readTotalSteps());
 	}
 
 	private void persistStepperStateAux() {

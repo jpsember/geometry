@@ -2,7 +2,7 @@ package com.js.geometryapp;
 
 import com.js.android.UITools;
 import com.js.geometryapp.editor.Editor;
-import com.js.opengl.OurGLSurfaceView;
+import com.js.geometryapp.editor.EditorGLSurfaceView;
 
 import android.content.Context;
 import android.opengl.GLSurfaceView;
@@ -50,6 +50,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			// overlay it with an editing toolbar
 			mEditor = new Editor(glView);
 			mRenderer.setEditor(mEditor);
+			mSurfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
 		}
 		mOptions = mStepper.constructOptions(this);
@@ -65,9 +66,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected final GLSurfaceView buildOpenGLView() {
 		mRenderer = buildRenderer(this);
-		GLSurfaceView v = new OurGLSurfaceView(this, mRenderer);
-		v.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		return v;
+		mSurfaceView = new EditorGLSurfaceView(this, mRenderer);
+		mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+		return mSurfaceView;
 	}
 
 	/**
@@ -88,5 +89,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	private ConcreteStepper mStepper;
 	private AlgorithmOptions mOptions;
 	private AlgorithmRenderer mRenderer;
+	private EditorGLSurfaceView mSurfaceView;
 	private Editor mEditor;
 }

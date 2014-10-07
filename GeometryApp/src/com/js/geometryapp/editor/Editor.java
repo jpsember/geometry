@@ -1,5 +1,7 @@
 package com.js.geometryapp.editor;
 
+import com.js.geometry.Point;
+
 import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
@@ -15,7 +17,7 @@ import static com.js.basic.Tools.*;
  * contains both a content view to display the objects being edited, as well as
  * floating toolbars.
  */
-public class Editor {
+public class Editor implements EditEventListener {
 
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
@@ -87,10 +89,24 @@ public class Editor {
 	}
 
 	public void render() {
-		unimp("rendering " + mObjects);
+		// unimp("rendering " + mObjects);
+	}
+
+	static {
+		doNothing();
+	}
+
+	// EditEventListener interface
+	@Override
+	public int processEvent(int eventCode, Point location) {
+		if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE)
+			pr("\n\n");
+		pr("Editor event: " + eventCode + " " + location);
+		return 0;
 	}
 
 	private View mContentView;
 	private View mEditorView;
-	private EdObjectArray mObjects = new EdObjectArray();
+	/* private */EdObjectArray mObjects = new EdObjectArray();
+
 }

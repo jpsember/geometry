@@ -10,7 +10,7 @@ import static com.js.basic.Tools.*;
  */
 public class QuiescentDelayOperation {
 
-	private static final boolean DIAGNOSTIC_PRINTING = false;
+	private static final boolean DIAGNOSTIC_PRINTING = false && DEBUG_ONLY_FEATURES;
 
 	/**
 	 * Cancel an existing pending operation, if one exists
@@ -66,8 +66,7 @@ public class QuiescentDelayOperation {
 		mActivationTime = System.currentTimeMillis() + mActivationDelay;
 		mOperation = operation;
 		mDebugName = debugName;
-		Handler handler = new Handler();
-		handler.postDelayed(new Runnable() {
+		sHandler.postDelayed(new Runnable() {
 			@Override
 			public void run() {
 				if (mOperation != null) {
@@ -94,13 +93,17 @@ public class QuiescentDelayOperation {
 	}
 
 	private static long sBaseTime;
-	static {
-		sBaseTime = System.currentTimeMillis();
-	}
 
 	private static int relativeTime(long time) {
-		return (int) (time - sBaseTime);
+		if (DIAGNOSTIC_PRINTING) {
+			if (sBaseTime == 0)
+				sBaseTime = System.currentTimeMillis();
+			return (int) (time - sBaseTime);
+		}
+		throw new UnsupportedOperationException();
 	}
+
+	private static Handler sHandler = new Handler();
 
 	// Delay in ms before operation is to occur
 	private long mActivationDelay;

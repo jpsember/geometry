@@ -42,7 +42,7 @@ public class Editor implements EditEventListener {
 		return mContentView.getContext();
 	}
 
-	private View buildSampleButton(String label) {
+	private Button buildSampleButton(String label) {
 		Button b = new Button(context());
 		b.setText(label);
 		b.setLayoutParams(new LinearLayout.LayoutParams(
@@ -69,7 +69,15 @@ public class Editor implements EditEventListener {
 			// Give the toolview a transparent gray background
 			toolbar.setBackgroundColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 
-			toolbar.addView(buildSampleButton("New"));
+			Button segmentButton = buildSampleButton("Seg");
+			segmentButton.setOnClickListener(new Button.OnClickListener() {
+				@Override
+				public void onClick(View v) {
+					Editor.this.setOperation(EdSegment
+							.buildAddNewOperation(Editor.this));
+				}
+			});
+			toolbar.addView(segmentButton);
 			toolbar.addView(buildSampleButton("Save"));
 			toolbar.addView(buildSampleButton("Undo"));
 
@@ -88,23 +96,36 @@ public class Editor implements EditEventListener {
 		mEditorView = frameLayout;
 	}
 
-	public void render() {
-		// unimp("rendering " + mObjects);
+	private void setOperation(EditEventListener operation) {
+		if (mCurrentOperation != null) {
+			mCurrentOperation.processEvent(EVENT_STOP, null);
+		}
+		mCurrentOperation = operation;
+		if (mCurrentOperation != null) {
+			mCurrentOperation.processEvent(EVENT_ADD_NEW, null);
+		}
+
 	}
 
-	static {
-		doNothing();
+	public void render() {
 	}
 
 	// EditEventListener interface
 	@Override
 	public int processEvent(int eventCode, Point location) {
-		if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE)
-			pr("\n\n");
-		pr("Editor event: " + eventCode + " " + location);
-		return 0;
+		// If there's a current operation, let it handle it
+		if (mCurrentOperation != null) {
+			eventCode = mCurrentOperation.processEvent(eventCode, location);
+		}
+		if (db) {
+			if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE)
+				pr("\n\n");
+			pr("Editor event: " + eventCode + " loc:" + location);
+		}
+		return eventCode;
 	}
 
+	private EditEventListener mCurrentOperation;
 	private View mContentView;
 	private View mEditorView;
 	/* private */EdObjectArray mObjects = new EdObjectArray();

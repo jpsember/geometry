@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import static com.js.basic.Tools.*;
 
 public class EdSegment extends EdObject {
 
@@ -249,5 +250,20 @@ public class EdSegment extends EdObject {
 	// wl.setLine(getPoint(0), getPoint(1));
 	// g.draw(wl);
 	// }
+
+	/**
+	 * Construct an event handler for adding a new segment
+	 */
+	public static EditEventListener buildAddNewOperation(final Editor editor) {
+		return new EditEventListener() {
+			@Override
+			public int processEvent(int eventCode, Point location) {
+				pr("EdSegment addNewOperation, event " + eventCode + " loc:"
+						+ location);
+				// TODO Auto-generated method stub
+				return 0;
+			}
+		};
+	}
 
 }

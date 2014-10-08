@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
@@ -232,16 +233,18 @@ public class AlgorithmOptions {
 	 * The JSON object values are themselves JSON objects, whose keys are widget
 	 * ids, and values are widget values (strings).
 	 * 
+	 * @throws JSONException
+	 * 
 	 */
-	private String saveValues() {
-		Map<String, JSONObject> groupValues = new HashMap();
+	private String saveValues() throws JSONException {
+		JSONObject groupValues = new JSONObject();
 		groupValues.put(PRIMARY_GROUP_KEY,
 				getWidgetValueMap(mPrimaryWidgetGroup));
 
 		for (AlgorithmRecord a : mAlgorithms) {
 			groupValues.put(a.name(), getWidgetValueMap(a.widgets()));
 		}
-		return JSONTools.encode(groupValues);
+		return groupValues.toString();
 	}
 
 	private JSONObject getWidgetValueMap(WidgetGroup group) {
@@ -258,34 +261,40 @@ public class AlgorithmOptions {
 
 	private void restoreStepperState() {
 
-		// Provide an empty JSON object as the default
-		String script = AppPreferences.getString(
-				GeometryStepperActivity.PERSIST_KEY_OPTIONS, "{}");
+		try {
+			// Provide an empty JSON object as the default
+			String script = AppPreferences.getString(
+					GeometryStepperActivity.PERSIST_KEY_OPTIONS, "{}");
+			pr("parsing " + script);
 
-		Map<String, Object> object = JSONTools.parseObject(script);
-		for (String algName : object.keySet()) {
-			if (algName.equals(PRIMARY_GROUP_KEY)) {
-				activateSecondaryWidgetGroup(null);
-			} else {
-				AlgorithmRecord rec = findAlgorithm(algName);
-				if (rec == null) {
-					warning("can't find algorithm '" + algName + "'");
-					continue;
-				}
-				activateSecondaryWidgetGroup(rec);
-			}
+			JSONObject map = JSONTools.parseMap(script);
 
-			Map<String, Object> widgetValues = JSONTools.parseObject(object
-					.get(algName));
-			for (String key : widgetValues.keySet()) {
-				String value = (String) widgetValues.get(key);
-				AbstractWidget w = mWidgetsMap.get(key);
-				if (w == null) {
-					warning("can't find widget named '" + key + "'");
-					continue;
+			pr("parsed as map: " + map);
+			for (String algName : JSONTools.keys(map)) {
+				if (algName.equals(PRIMARY_GROUP_KEY)) {
+					activateSecondaryWidgetGroup(null);
+				} else {
+					AlgorithmRecord rec = findAlgorithm(algName);
+					if (rec == null) {
+						warning("can't find algorithm '" + algName + "'");
+						continue;
+					}
+					activateSecondaryWidgetGroup(rec);
 				}
-				w.setValue(value);
+
+				JSONObject widgetValues = map.getJSONObject(algName);
+				for (String key : JSONTools.keys(widgetValues)) {
+					String value = widgetValues.getString(key);
+					AbstractWidget w = mWidgetsMap.get(key);
+					if (w == null) {
+						warning("can't find widget named '" + key + "'");
+						continue;
+					}
+					w.setValue(value);
+				}
 			}
+		} catch (JSONException e) {
+			warning("caught: " + e);
 		}
 		mPrepared = true;
 		int algNumber = 0;
@@ -351,7 +360,11 @@ public class AlgorithmOptions {
 			saveStepsInformation();
 			mPrepared = true;
 
-			newWidgetValuesScript = saveValues();
+			try {
+				newWidgetValuesScript = saveValues();
+			} catch (JSONException e) {
+				die(e);
+			}
 			mStepper.releaseLock();
 		}
 

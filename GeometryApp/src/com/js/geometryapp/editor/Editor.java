@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.js.android.AppPreferences;
 import com.js.android.QuiescentDelayOperation;
@@ -180,32 +182,41 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void persistEditorStateAux() {
-		String jsonState = compileObjectsToJSON();
-		if (!jsonState.equals(mLastSavedState)) {
-			AppPreferences.putString(
-					GeometryStepperActivity.PERSIST_KEY_EDITOR, jsonState);
-			mLastSavedState = jsonState;
+		try {
+			String jsonState = compileObjectsToJSON();
+			if (!jsonState.equals(mLastSavedState)) {
+				AppPreferences.putString(
+						GeometryStepperActivity.PERSIST_KEY_EDITOR, jsonState);
+				mLastSavedState = jsonState;
+			}
+		} catch (JSONException e) {
+			warning("caught: " + e);
 		}
 	}
 
 	public void restoreFromJSON(String script) {
 		if (script == null)
 			script = "{}";
-		Map<String, Object> map = JSONTools.parseObject(script);
-		ArrayList array = (ArrayList) JSONTools.parseValue(map.get("objects"));
-		mObjects.clear();
-		for (Object obj : array) {
-			Map<String, Object> objMap = (Map<String, Object>) JSONTools
-					.parseValue(obj);
-			String tag = (String) objMap.get("type");
-			EdObjectFactory factory = mObjectTypes.get(tag);
-			if (factory == null) {
-				warning("no factory found for: " + tag);
-				continue;
+
+		try {
+			JSONObject map = JSONTools.parseMap(script);
+			JSONArray array = map.getJSONArray("objects");
+			mObjects.clear();
+			for (int i = 0; i < array.length(); i++) {
+				JSONObject objMap = array.getJSONObject(i);
+				String tag = objMap.getString("type");
+				EdObjectFactory factory = mObjectTypes.get(tag);
+				if (factory == null) {
+					warning("no factory found for: " + tag);
+					continue;
+				}
+				EdObject edObject = factory.parse(objMap);
+				mObjects.add(edObject);
 			}
-			EdObject edObject = factory.parse(objMap);
-			mObjects.add(edObject);
+		} catch (JSONException e) {
+			warning("caught " + e);
 		}
+
 	}
 
 	public void persistEditorState(boolean withDelay) {
@@ -235,10 +246,10 @@ public class Editor implements EditorEventListener {
 		return new JSONArray(values);
 	}
 
-	private String compileObjectsToJSON() {
-		Map<String, JSONArray> editorMap = new HashMap();
+	private String compileObjectsToJSON() throws JSONException {
+		JSONObject editorMap = new JSONObject();
 		editorMap.put("objects", getEdObjectsArrayJSON(objects()));
-		return JSONTools.encode(editorMap);
+		return editorMap.toString();
 	}
 
 	private void addObjectType(EdObjectFactory factory) {

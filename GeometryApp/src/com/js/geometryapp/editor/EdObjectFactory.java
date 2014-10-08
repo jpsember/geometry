@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.js.basic.JSONTools;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
@@ -86,14 +89,11 @@ public abstract class EdObjectFactory {
 	public abstract EdObject construct();
 
 	/**
-	 * Parse EdObject from a map of JSON values
+	 * Parse EdObject from a JSON object
 	 * 
-	 * @param map
-	 *            a map of <String, Object> where each object is a JSON value
-	 *            (JSONObject, JSONArray, or other)
-	 * 
+	 * @throws JSONException
 	 */
-	public EdObject parse(Map<String, Object> map) {
+	public EdObject parse(JSONObject map) throws JSONException {
 		EdObject obj = construct();
 		parsePoints(obj, map);
 		return obj;
@@ -116,15 +116,16 @@ public abstract class EdObjectFactory {
 		return map;
 	}
 
-	public void parsePoints(EdObject destinationObject, Map jsonMap) {
-		ArrayList coordinates = (ArrayList) JSONTools.parseValue(jsonMap
-				.get("points"));
-		if (coordinates.size() % 2 != 0)
-			JSONTools.JSONError.raise("unexpected number of coordinates");
+	public void parsePoints(EdObject destinationObject, JSONObject map)
+			throws JSONException {
+		JSONArray coordinates = map.getJSONArray("points");
+		if (coordinates.length() % 2 != 0)
+			throw new IllegalArgumentException(
+					"unexpected number of coordinates");
 		int i = 0;
-		while (i < coordinates.size()) {
-			float x = ((Number) coordinates.get(i)).floatValue();
-			float y = ((Number) coordinates.get(i + 1)).floatValue();
+		while (i < coordinates.length()) {
+			float x = coordinates.getLong(i);
+			float y = coordinates.getLong(i + 1);
 			destinationObject.addPoint(new Point(x, y));
 			i += 2;
 		}

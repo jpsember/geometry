@@ -1,14 +1,15 @@
 package com.js.basic;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import static com.js.basic.Tools.*;
-
 
 public class JSONTools {
 
@@ -17,8 +18,16 @@ public class JSONTools {
 			super(e);
 		}
 
+		public JSONError(String detailMessage) {
+			super(detailMessage);
+		}
+
 		public static void raise(JSONException e) {
 			throw new JSONError(e);
+		}
+
+		public static void raise(String detailMessage) {
+			throw new JSONError(detailMessage);
 		}
 	}
 
@@ -44,6 +53,32 @@ public class JSONTools {
 	}
 
 	/**
+	 * Parse a JSON value
+	 * 
+	 * @param source
+	 *            a JSONObject, JSONArray, or string representing some other
+	 *            JSON value
+	 * @return an appropriate value: Map, ArrayList, Boolean, etc
+	 */
+	public static Object parseValue(Object source) {
+		try {
+			JSONObject object;
+			if (source instanceof JSONObject) {
+				return parseJSONObject((JSONObject) source);
+			} else if (source instanceof JSONArray) {
+				return parseJSONArray((JSONArray) source);
+			} else {
+				object = (JSONObject) new JSONTokener((String) source)
+						.nextValue();
+				return parseJSONObject(object);
+			}
+		} catch (JSONException e) {
+			warning("failed to parse: " + source);
+			throw new JSONError(e);
+		}
+	}
+
+	/**
 	 * Parse a json object, return as map
 	 * 
 	 * @param source
@@ -64,7 +99,7 @@ public class JSONTools {
 			}
 			return parseJSONObject(object);
 		} catch (JSONException e) {
-			warning("failed to parse: "+source);
+			warning("failed to parse: " + source);
 			throw new JSONError(e);
 		}
 	}
@@ -82,9 +117,28 @@ public class JSONTools {
 			Iterator<String> iter = jsonObject.keys();
 			while (iter.hasNext()) {
 				String key = iter.next();
-				map.put(key, jsonObject.get(key));
+				Object object = jsonObject.get(key);
+				map.put(key, object);
 			}
 			return map;
+		} catch (JSONException e) {
+			throw new JSONError(e);
+		}
+	}
+
+	/**
+	 * Convert a JSONArray to an ArrayList
+	 * 
+	 * @param source
+	 * @return
+	 */
+	private static ArrayList parseJSONArray(JSONArray source) {
+		try {
+			ArrayList array = new ArrayList();
+			for (int i = 0; i < source.length(); i++) {
+				array.add(source.get(i));
+			}
+			return array;
 		} catch (JSONException e) {
 			throw new JSONError(e);
 		}

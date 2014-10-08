@@ -1,9 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -59,44 +55,10 @@ public class EdSegment extends EdObject {
 		return sb.toString();
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory() {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
 		public EdObject construct() {
 			return new EdSegment();
 		}
-
-		public String getTag() {
-			return "seg";
-		}
-
-		public EdObject parse(Map map, int flags) {
-			EdSegment seg = new EdSegment();
-			seg.setFlags(flags);
-			ArrayList<Float> f = (ArrayList<Float>) map.get("points");
-			for (int i = 0; i < 2; i++) {
-				Point pt = new Point(f.get(i * 2), f.get(i * 2 + 1));
-				seg.addPoint(pt);
-			}
-			return seg;
-		}
-
-		public Map write(EdObject obj) {
-			Map<String, Object> map = new HashMap();
-			map.put("type", getTag());
-			EdSegment d = (EdSegment) obj;
-			ArrayList<Float> f = new ArrayList();
-			for (int i = 0; i < 2; i++) {
-				Point pt = d.getPoint(i);
-				f.add(pt.x);
-				f.add(pt.y);
-			}
-			map.put("points", f);
-			return map;
-		}
-
-		public String getMenuLabel() {
-			return "Add segment";
-		}
-
 	};
 
 	/**
@@ -178,4 +140,3 @@ public class EdSegment extends EdObject {
 		private boolean mAddingNew;
 	}
 }
-

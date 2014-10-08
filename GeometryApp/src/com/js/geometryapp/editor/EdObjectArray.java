@@ -31,6 +31,10 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.isEmpty();
 	}
 
+	public void clear() {
+		mList.clear();
+	}
+
 	public Iterator<EdObject> iterator() {
 		return mList.iterator();
 	}

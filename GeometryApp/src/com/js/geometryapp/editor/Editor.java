@@ -1,7 +1,17 @@
 package com.js.geometryapp.editor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.json.JSONArray;
+
+import com.js.android.AppPreferences;
+import com.js.android.QuiescentDelayOperation;
+import com.js.basic.JSONTools;
 import com.js.geometry.Point;
 import com.js.geometryapp.ConcreteStepper;
+import com.js.geometryapp.GeometryStepperActivity;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -36,6 +46,7 @@ public class Editor implements EditorEventListener {
 		mContentView = contentView;
 		mStepper = stepper;
 		mDefaultListener = new DefaultEventListener(this);
+		prepareObjectTypes();
 	}
 
 	public View getView() {
@@ -152,6 +163,8 @@ public class Editor implements EditorEventListener {
 
 		// Always request a refresh of the editor view
 		mStepper.refresh();
+		// Set delay to save changes
+		persistEditorState(true);
 
 		return eventCode;
 	}
@@ -166,6 +179,78 @@ public class Editor implements EditorEventListener {
 		return mObjects;
 	}
 
+	private void persistEditorStateAux() {
+		String jsonState = compileObjectsToJSON();
+		if (!jsonState.equals(mLastSavedState)) {
+			AppPreferences.putString(
+					GeometryStepperActivity.PERSIST_KEY_EDITOR, jsonState);
+			mLastSavedState = jsonState;
+		}
+	}
+
+	public void restoreFromJSON(String script) {
+		if (script == null)
+			script = "{}";
+		Map<String, Object> map = JSONTools.parseObject(script);
+		ArrayList array = (ArrayList) JSONTools.parseValue(map.get("objects"));
+		mObjects.clear();
+		for (Object obj : array) {
+			Map<String, Object> objMap = (Map<String, Object>) JSONTools
+					.parseValue(obj);
+			String tag = (String) objMap.get("type");
+			EdObjectFactory factory = mObjectTypes.get(tag);
+			if (factory == null) {
+				warning("no factory found for: " + tag);
+				continue;
+			}
+			EdObject edObject = factory.parse(objMap);
+			mObjects.add(edObject);
+		}
+	}
+
+	public void persistEditorState(boolean withDelay) {
+		if (!withDelay) {
+			persistEditorStateAux();
+			return;
+		}
+
+		// Make a delayed call to persist the values (on the UI thread)
+		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
+			final float FLUSH_DELAY = 5.0f;
+			mPendingFlushOperation = new QuiescentDelayOperation(
+					"flush editor", FLUSH_DELAY, new Runnable() {
+						public void run() {
+							persistEditorStateAux();
+						}
+					});
+		}
+	}
+
+	private JSONArray getEdObjectsArrayJSON(EdObjectArray objects) {
+		ArrayList values = new ArrayList();
+		for (EdObject obj : objects) {
+			Map m = obj.getFactory().write(obj);
+			values.add(m);
+		}
+		return new JSONArray(values);
+	}
+
+	private String compileObjectsToJSON() {
+		Map<String, JSONArray> editorMap = new HashMap();
+		editorMap.put("objects", getEdObjectsArrayJSON(objects()));
+		return JSONTools.encode(editorMap);
+	}
+
+	private void addObjectType(EdObjectFactory factory) {
+		mObjectTypes.put(factory.getTag(), factory);
+	}
+
+	private void prepareObjectTypes() {
+		mObjectTypes = new HashMap();
+		addObjectType(EdSegment.FACTORY);
+	}
+
+	private Map<String, EdObjectFactory> mObjectTypes;
 	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;
 	private EditorEventListener mLastAddObjectOperation;
@@ -173,5 +258,7 @@ public class Editor implements EditorEventListener {
 	private View mEditorView;
 	private ConcreteStepper mStepper;
 	private EdObjectArray mObjects = new EdObjectArray();
+	private QuiescentDelayOperation mPendingFlushOperation;
+	private String mLastSavedState;
 
 }

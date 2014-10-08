@@ -1,11 +1,18 @@
 package com.js.geometryapp.editor;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
+import com.js.basic.JSONTools;
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
 public abstract class EdObjectFactory {
+
+	public EdObjectFactory(String tag) {
+		mTag = tag;
+	}
 
 	/**
 	 * Utility function for writing object to file: Add FPoint2 to
@@ -65,17 +72,10 @@ public abstract class EdObjectFactory {
 	/**
 	 * Get name of this object. This is an identifier that is written to text
 	 * files to identify this object.
-	 * 
-	 * @return String
 	 */
-	public abstract String getTag();
-
-	/**
-	 * Get editor menu text for adding items of this type
-	 * 
-	 * @return text to put in menu label, or null if user can't add these types.
-	 */
-	public abstract String getMenuLabel();
+	public String getTag() {
+		return mTag;
+	}
 
 	/**
 	 * Construct an EditObj of this type. Used when user wants to add a new
@@ -86,14 +86,49 @@ public abstract class EdObjectFactory {
 	public abstract EdObject construct();
 
 	/**
-	 * Parse EditObj from a map
+	 * Parse EdObject from a map of JSON values
 	 * 
-	 * @return EditObj
+	 * @param map
+	 *            a map of <String, Object> where each object is a JSON value
+	 *            (JSONObject, JSONArray, or other)
+	 * 
 	 */
-	public abstract EdObject parse(Map map, int flags);
+	public EdObject parse(Map<String, Object> map) {
+		EdObject obj = construct();
+		parsePoints(obj, map);
+		return obj;
+	}
 
 	/**
-	 * Construct Map from EdObject
+	 * Construct Map from EdObject. Default implementation construct a partial
+	 * map contiaining only "type" and "points" key/value pairs
 	 */
-	public abstract Map write(EdObject obj);
+	public Map write(EdObject obj) {
+		Map map = new HashMap();
+		map.put("type", getTag());
+		ArrayList<Float> f = new ArrayList();
+		for (int i = 0; i < 2; i++) {
+			Point pt = obj.getPoint(i);
+			f.add(pt.x);
+			f.add(pt.y);
+		}
+		map.put("points", f);
+		return map;
+	}
+
+	public void parsePoints(EdObject destinationObject, Map jsonMap) {
+		ArrayList coordinates = (ArrayList) JSONTools.parseValue(jsonMap
+				.get("points"));
+		if (coordinates.size() % 2 != 0)
+			JSONTools.JSONError.raise("unexpected number of coordinates");
+		int i = 0;
+		while (i < coordinates.size()) {
+			float x = ((Number) coordinates.get(i)).floatValue();
+			float y = ((Number) coordinates.get(i + 1)).floatValue();
+			destinationObject.addPoint(new Point(x, y));
+			i += 2;
+		}
+	}
+
+	private String mTag;
 }

@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.android.AppPreferences;
 import com.js.android.UITools;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorGLSurfaceView;
@@ -12,6 +13,9 @@ import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
+
+	public static final String PERSIST_KEY_OPTIONS = "_widget_values";
+	public static final String PERSIST_KEY_EDITOR = "_editor";
 
 	public GeometryStepperActivity() {
 		mStepper = new ConcreteStepper();
@@ -29,6 +33,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected void onPause() {
 		mOptions.persistStepperState(false);
+		mEditor.persistEditorState(false);
 		super.onPause();
 	}
 
@@ -52,6 +57,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			mRenderer.setEditor(mEditor);
 			mSurfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
+
+			// Restore previous items
+			String script = AppPreferences.getString(
+					GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
+			mEditor.restoreFromJSON(script);
 		}
 		mOptions = mStepper.constructOptions(this);
 

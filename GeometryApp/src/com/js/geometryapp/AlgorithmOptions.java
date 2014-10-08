@@ -38,8 +38,6 @@ public class AlgorithmOptions {
 
 	private static final String WIDGET_ID_ALGORITHM = "_algorithm_";
 
-	private static final String PERSIST_KEY_OPTIONS = "_widget_values";
-
 	/**
 	 * Prepare the options views
 	 * 
@@ -261,7 +259,8 @@ public class AlgorithmOptions {
 	private void restoreStepperState() {
 
 		// Provide an empty JSON object as the default
-		String script = AppPreferences.getString(PERSIST_KEY_OPTIONS, "{}");
+		String script = AppPreferences.getString(
+				GeometryStepperActivity.PERSIST_KEY_OPTIONS, "{}");
 
 		Map<String, Object> object = JSONTools.parseObject(script);
 		for (String algName : object.keySet()) {
@@ -356,7 +355,8 @@ public class AlgorithmOptions {
 			mStepper.releaseLock();
 		}
 
-		AppPreferences.putString(PERSIST_KEY_OPTIONS, newWidgetValuesScript);
+		AppPreferences.putString(GeometryStepperActivity.PERSIST_KEY_OPTIONS,
+				newWidgetValuesScript);
 
 		mFlushRequired = false;
 	}

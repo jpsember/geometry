@@ -48,6 +48,29 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	/**
+	 * Construct subset containing those objects that are selected
+	 */
+	public EdObjectArray getSelected() {
+		EdObjectArray subset = new EdObjectArray();
+		for (EdObject object : mList) {
+			if (object.isSelected())
+				subset.add(object);
+		}
+		return subset;
+	}
+
+	/**
+	 * Construct copy of array, using clones of its elements
+	 */
+	public EdObjectArray deepCopy() {
+		EdObjectArray arrayCopy = new EdObjectArray();
+		for (EdObject originalObject : mList) {
+			arrayCopy.add((EdObject) originalObject.clone());
+		}
+		return arrayCopy;
+	}
+
+	/**
 	 * Add an object to the end of the list
 	 * 
 	 * @param object

@@ -176,6 +176,13 @@ public final class MyMath {
 		return new Point(a.x + b.x, a.y + b.y);
 	}
 
+	/**
+	 * Subtract second point from first
+	 * 
+	 * @param a
+	 * @param b
+	 * @return a - b
+	 */
 	public static Point subtract(Point a, Point b) {
 		return new Point(a.x - b.x, a.y - b.y);
 	}

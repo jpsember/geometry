@@ -18,10 +18,13 @@ public class DefaultEventListener implements EditorEventListener {
 		reset();
 	}
 
-	private EdObjectArray getPickSet(Point location) {
+	private EdObjectArray getPickSet(Point location, boolean selectedObjectsOnly) {
 		float pickDistance = MyActivity.inchesToPixels(.22f);
 		EdObjectArray s = new EdObjectArray();
-		for (EdObject src : mEditor.objects()) {
+		EdObjectArray srcObjects = mEditor.objects();
+		if (selectedObjectsOnly)
+			srcObjects = srcObjects.getSelected();
+		for (EdObject src : srcObjects) {
 			float dist = src.distFrom(location);
 			if (dist > pickDistance)
 				continue;
@@ -51,7 +54,7 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doClick(Point location) {
-		EdObjectArray pickSet = getPickSet(location);
+		EdObjectArray pickSet = getPickSet(location, false);
 		unselectObjects(pickSet);
 		if (pickSet.isEmpty())
 			return;
@@ -67,18 +70,49 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doStartDrag(Point location) {
+		// If initial press contains selected object, move all selected objects;
+		// else,
+		// do selection rectangle
+		EdObjectArray pickSet = getPickSet(location, true);
+		if (pickSet.isEmpty()) {
+			mDraggingRect = true;
+		} else {
+			// Get all selected objects
+			mMoveObjects = mEditor.objects().getSelected();
+			unselectObjects(mMoveObjects);
+
+			// Make a copy of the objects to be moved, to remember their
+			// original positions
+			mMoveObjectsOriginals = mMoveObjects.deepCopy();
+			mPreviousMoveLocation = mInitialDownLocation;
+		}
 	}
 
 	private void doContinueDrag(Point location) {
-		mDragCorner = location;
+		if (mDraggingRect) {
+			mDragCorner = location;
+		} else {
+			Point delta = MyMath.subtract(location, mPreviousMoveLocation);
+			if (delta.magnitude() == 0)
+				return;
+			for (int i = 0; i < mMoveObjects.size(); i++) {
+				EdObject obj = mMoveObjects.get(i);
+				EdObject orig = mMoveObjectsOriginals.get(i);
+				obj.moveBy(orig, delta);
+				warning("keep objects immutable; slots is more important");
+			}
+		}
 	}
 
 	private void doFinishDrag() {
-		Rect dragRect = getDragRect();
-		if (dragRect == null)
-			return;
-		for (EdObject edObject : mEditor.objects()) {
-			edObject.setSelected(dragRect.contains(edObject.getBounds()));
+		if (mDraggingRect) {
+			Rect dragRect = getDragRect();
+			if (dragRect == null)
+				return;
+			for (EdObject edObject : mEditor.objects()) {
+				edObject.setSelected(dragRect.contains(edObject.getBounds()));
+			}
+		} else {
 		}
 	}
 
@@ -88,8 +122,12 @@ public class DefaultEventListener implements EditorEventListener {
 	 */
 	private void reset() {
 		mDragging = false;
+		mDraggingRect = false;
 		mDragCorner = null;
 		mInitialDownLocation = null;
+		mMoveObjects = null;
+		mMoveObjectsOriginals = null;
+		mPreviousMoveLocation = null;
 	}
 
 	static {
@@ -197,4 +235,8 @@ public class DefaultEventListener implements EditorEventListener {
 	private Point mInitialDownLocation;
 	private Point mDragCorner;
 	private boolean mDragging;
+	private boolean mDraggingRect;
+	private EdObjectArray mMoveObjects;
+	private EdObjectArray mMoveObjectsOriginals;
+	private Point mPreviousMoveLocation;
 }

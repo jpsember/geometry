@@ -142,8 +142,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 			EdObject obj = source.get(i);
 			if (objType != null && obj.getFactory() != objType)
 				continue;
-			if (skipInactive && !obj.isActive())
-				continue;
 			if (selectedOnly && !obj.isSelected())
 				continue;
 			if (!obj.complete()) {

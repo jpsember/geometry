@@ -14,11 +14,13 @@ import com.js.opengl.OurGLRenderer;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.view.View;
 
-class AlgorithmRenderer extends OurGLRenderer {
+public class AlgorithmRenderer extends OurGLRenderer {
 
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_NDC = "algorithm->ndc";
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_DEVICE = "algorithm->device";
+	public static final String TRANSFORM_NAME_DEVICE_TO_ALGORITHM = "device->algorithm";
 
 	public AlgorithmRenderer(Context context, ConcreteStepper stepper) {
 		super(context);
@@ -71,7 +73,11 @@ class AlgorithmRenderer extends OurGLRenderer {
 			AlgorithmDisplayElement.setRendering(true);
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+
+			AlgorithmDisplayElement.setRendering(true);
 			mEditor.render();
+			AlgorithmDisplayElement.setRendering(false);
+
 			mStepper.render();
 			// Call user method, now that synchronized
 			onDrawFrame();
@@ -121,6 +127,40 @@ class AlgorithmRenderer extends OurGLRenderer {
 		// Add a transform to convert algorithm -> device, for rendering text
 		addTransform(TRANSFORM_NAME_ALGORITHM_TO_DEVICE,
 				mAlgorithmToDeviceTransform);
+
+		// Construct inverse of the previous transform, for editor operations
+		Matrix mDeviceToAlgorithmTransform = new Matrix();
+		boolean inverted = mAlgorithmToDeviceTransform
+				.invert(mDeviceToAlgorithmTransform);
+		if (!inverted)
+			die("failed to invert matrix");
+
+		// See OurGLRenderer.constructTransforms() for a discussion of the
+		// coordinate spaces.
+
+		// I can't find a 'transformation' field in the View class, so let's
+		// assume the views have unit scale and origin in top left.
+		// Construct a matrix that converts this space to bottom left, and
+		// concatenate to get the device->algorithm transform
+
+		View editorView = mEditor.getView();
+		float height = editorView.getHeight();
+		v[0] = 1;
+		v[1] = 0;
+		v[2] = 0;
+		v[3] = 0;
+		v[4] = -1;
+		v[5] = height;
+		v[6] = 0;
+		v[7] = 0;
+		v[8] = 1;
+
+		Matrix viewToDeviceMatrix = new Matrix();
+		viewToDeviceMatrix.setValues(v);
+		mDeviceToAlgorithmTransform.preConcat(viewToDeviceMatrix);
+
+		addTransform(TRANSFORM_NAME_DEVICE_TO_ALGORITHM,
+				mDeviceToAlgorithmTransform);
 	}
 
 	/**

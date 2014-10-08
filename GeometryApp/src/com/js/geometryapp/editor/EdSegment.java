@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometryapp.AlgorithmStepper;
+
 import static com.js.basic.Tools.*;
 
 public class EdSegment extends EdObject {
@@ -16,6 +18,12 @@ public class EdSegment extends EdObject {
 	public EdSegment(float[] p1) {
 		for (int i = 0; i < p1.length; i += 2)
 			setPoint(i / 2, new Point(p1[i + 0], p1[i + 1]));
+	}
+
+	@Override
+	public void render(AlgorithmStepper s) {
+		s.plotLine(getPoint(0), getPoint(1));
+		super.render(s);
 	}
 
 	public EdSegment(Point p1, Point p2) {
@@ -39,6 +47,16 @@ public class EdSegment extends EdObject {
 
 	public EdObjectFactory getFactory() {
 		return FACTORY;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder(nameOf(this));
+		sb.append(" [");
+		for (int i = 0; i < nPoints(); i++)
+			sb.append(getPoint(i));
+		sb.append("]");
+		return sb.toString();
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory() {
@@ -81,189 +99,83 @@ public class EdSegment extends EdObject {
 
 	};
 
-	// public void render(Color color, int stroke, int markType) {
-	// V.pushColor(color, isActive() ? Color.BLUE : Color.GRAY);
-	// // V.pushColor(color, SEGMENT_COLOR);
-	// V.pushStroke(stroke);
-	//
-	// Point prev = null;
-	// for (int i = 0; i < nPoints(); i++) {
-	// Point pt = getPoint(i);
-	// if (prev != null)
-	// V.drawLine(prev, pt);
-	// if (markType >= 0)
-	// V.mark(pt, markType);
-	// prev = pt;
-	// }
-	// V.pop();
-	// if (complete()) {
-	// Point p0 = getPoint(0);
-	// Point p1 = getPoint(1);
-	// float theta = MyMath.polarAngle(p0, p1);
-	// if (Editor.withLabels(true)) {
-	// V.pushScale(.6);
-	// Point offset = MyMath.ptOnCircle(zero, theta,
-	// V.getScale() * 1.5);
-	// V.draw("0", Point.add(p0, offset, null), TX_FRAME | TX_BGND);
-	// V.draw("1", Point.add(p1, offset, null), TX_FRAME | TX_BGND);
-	// V.pop();
-	// }
-	// if (Editor.withLabels(false)) {
-	// Point cp = Point.midPoint(p0, p1);
-	// plotLabel(MyMath.ptOnCircle(cp, theta - Math.PI / 2,
-	// V.getScale()));
-	// }
-	// }
-	// V.pop();
-	// }
-
-	// /**
-	// * Construct and show a segment from a pair of endpoints
-	// *
-	// * @param x0
-	// * @param y0
-	// * @param x1
-	// * @param y1
-	// * @param c
-	// * color to display with, or null for default
-	// * @param stroke
-	// * if >= 0, stroke to use; else, default
-	// * @return empty string
-	// */
-	// public static String show(float x0, float y0, float x1, float y1,
-	// Color c, int stroke) {
-	// return show(x0, y0, x1, y1, c, stroke, 0);
-	// }
-	//
-	// private static String show(float x0, float y0, float x1, float y1,
-	// Color c, int stroke, int arrowFlags) {
-	// return T.show(new MiscLine(x0, y0, x1, y1, c, stroke, arrowFlags));
-	// }
-	//
-	// public static String showDirected(Point p0, Point p1, Color c,
-	// int stroke) {
-	// if (p0 == null || p1 == null)
-	// return "";
-	// return show(p0.x, p0.y, p1.x, p1.y, c, stroke, (1 << 0));
-	// }
-	//
-	// public static String showDirected(Point p0, Point p1) {
-	// return showDirected(p0, p1, null, -1);
-	// }
-	//
-	// public static String show(Point p0, Point p1, Color c, int stroke) {
-	// return show(p0.x, p0.y, p1.x, p1.y, c, stroke);
-	// }
-	//
-	// public static String show(Point p0, Point p1, Color c) {
-	// return show(p0.x, p0.y, p1.x, p1.y, c, -1);
-	// }
-	//
-	// public static String show(Point p0, Point p1) {
-	// return show(p0, p1, Color.red, -1);
-	// }
-
-	// private static class MiscLine implements Renderable {
-	// public MiscLine(float x0, float y0, float x1, float y1, Color c,
-	// int stroke, int arrowFlags) {
-	// this.pt0 = new Point(x0, y0);
-	// this.pt1 = new Point(x1, y1);
-	// if (c == null)
-	// c = Color.red;
-	// if (stroke < 0)
-	// stroke = V.STRK_NORMAL;
-	//
-	// this.c = c;
-	// this.stroke = stroke;
-	// this.arrowFlags = arrowFlags;
-	// }
-	//
-	// private int arrowFlags;
-	// private Point pt0, pt1;
-	// private Color c;
-	// private int stroke;
-	//
-	// public void render(Color c, int stroke, int markType) {
-	// if (stroke < 0)
-	// stroke = this.stroke;
-	// V.pushStroke(stroke);
-	// if (c == null)
-	// c = this.c;
-	// V.pushColor(c);
-	// V.drawLine(pt0, pt1);
-	// for (int i = 0; i < 2; i++) {
-	// Point pt = i == 1 ? pt0 : pt1;
-	// Point pt2 = (i == 1) ? pt1 : pt0;
-	//
-	// if ((arrowFlags & (1 << i)) != 0) {
-	// plotArrowHead(pt, MyMath.polarAngle(pt2, pt));
-	// } else {
-	// if (markType >= 0) {
-	// V.mark(pt, markType);
-	// }
-	// }
-	// //
-	// //
-	// // if (markType >= 0) {
-	// // V.mark(pt0, markType);
-	// // V.mark(pt1, markType);
-	// }
-	// V.popColor();
-	// V.popStroke();
-	// }
-	// };
-
-	// public static void plotDirectedLine(Point p0, Point p1) {
-	// plotDirectedLine(p0, p1, false, true);
-	// }
-	//
-	// public static void plotDirectedLine(Point p0, Point p1, boolean p0Head,
-	// boolean p1Head) {
-	// V.drawLine(p0, p1);
-	// float len = p0.distance(p1);
-	// // draw arrowheads
-	// if (len > 0) {
-	// float theta = MyMath.polarAngle(p0, p1);
-	//
-	// for (int h = 0; h < 2; h++) {
-	// Point ep = h == 0 ? p0 : p1;
-	// if ((h == 0 ? p0Head : p1Head)) {
-	// plotArrowHead(ep, theta);
-	// }
-	// }
-	// }
-	// }
-	//
-	// public static void plotArrowHead(Point pt, float theta) {
-	// final float AH_LEN = 1.2;
-	// final float AH_ANG = Math.PI * .85;
-	// float th = theta;
-	//
-	// Point a0 = MyMath.ptOnCircle(pt, th + AH_ANG, AH_LEN);
-	// V.drawLine(pt, a0);
-	// Point a1 = MyMath.ptOnCircle(pt, th - AH_ANG, AH_LEN);
-	// V.drawLine(pt, a1);
-	// }
-	//
-	// public void renderTo(Graphics2D g) {
-	// Line2D.float wl = new Line2D.float();
-	// wl.setLine(getPoint(0), getPoint(1));
-	// g.draw(wl);
-	// }
-
 	/**
-	 * Construct an event handler for adding a new segment
+	 * Construct an event handler for editor operations with these objects
 	 */
-	public static EditEventListener buildAddNewOperation(final Editor editor) {
-		return new EditEventListener() {
-			@Override
-			public int processEvent(int eventCode, Point location) {
-				pr("EdSegment addNewOperation, event " + eventCode + " loc:"
-						+ location);
-				// TODO Auto-generated method stub
-				return 0;
-			}
-		};
+	public static EditEventListener buildEditorOperation(Editor editor) {
+		return new EditorOperation(editor);
 	}
 
+	private static class EditorOperation implements EditEventListener {
+		public EditorOperation(Editor editor) {
+			mEditor = editor;
+		}
+
+		@Override
+		public int processEvent(int eventCode, Point location) {
+			if (db)
+				pr("EdSegment addNewOperation, event " + eventCode + " loc:"
+						+ location);
+
+			// By default, we'll be handling the event
+			int returnCode = EVENT_NONE;
+
+			switch (eventCode) {
+			default:
+				// we don't know how to handle this event, so pass it
+				// through
+				returnCode = eventCode;
+				break;
+
+			case EVENT_DOWN:
+				if (db)
+					pr("EVENT_DOWN, addNewPending " + mAddNewPending);
+				if (mAddNewPending) {
+					mAddingNew = true;
+					mAddNewPending = false;
+					EdSegment seg = new EdSegment(location, location);
+					seg.setSelected(true);
+					mEditIndex = mEditor.objects().add(seg);
+					if (db)
+						pr(" just added " + seg);
+				}
+				break;
+
+			case EVENT_DRAG: {
+				ASSERT(mEditIndex >= 0);
+				EdSegment seg = (EdSegment) mEditor.objects().get(mEditIndex);
+				// Create a new copy of the segment, with modified endpoint
+				EdSegment seg2 = (EdSegment) seg.clone();
+				seg2.setPoint(1, location);
+				mEditor.objects().set(mEditIndex, seg2);
+			}
+				break;
+
+			case EVENT_UP:
+				if (mAddingNew) {
+					mAddingNew = false;
+					mEditor.clearOperation(this);
+				}
+				break;
+
+			case EVENT_STOP:
+				mAddNewPending = false;
+				mAddingNew = false;
+				mEditIndex = -1;
+				break;
+
+			case EVENT_ADD_NEW:
+				mAddNewPending = true;
+				break;
+			}
+			return returnCode;
+		}
+
+		private boolean mAddNewPending;
+		private Editor mEditor;
+		// Index of object being edited
+		private int mEditIndex = -1;
+		private boolean mAddingNew;
+	}
 }
+

@@ -25,7 +25,7 @@ import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.widget.AbstractWidget;
 
-class ConcreteStepper implements AlgorithmStepper {
+public class ConcreteStepper implements AlgorithmStepper {
 
 	/**
 	 * This debug-only flag, if true, performs additional tests to verify that
@@ -284,7 +284,8 @@ class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String highlight(Point point, float radius) {
-		return plot(new PointElement(point, radius));
+		return setColor(Color.RED) + plot(new PointElement(point, radius))
+				+ setNormal();
 	}
 
 	@Override
@@ -384,9 +385,8 @@ class ConcreteStepper implements AlgorithmStepper {
 	/**
 	 * Request a refresh of the algorithm display. Runs to the target step (if
 	 * possible) and displays that frame.
-	 * 
 	 */
-	void refresh() {
+	public void refresh() {
 		// If we're currently doing a refresh, do nothing
 		if (mRefreshing)
 			return;

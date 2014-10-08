@@ -1,6 +1,7 @@
 package com.js.geometryapp.editor;
 
 import com.js.geometry.Point;
+import com.js.geometryapp.ConcreteStepper;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -11,6 +12,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
+import static com.js.android.Tools.*;
 
 /**
  * Class that encapsulates editing geometric objects. It includes a view, which
@@ -27,9 +29,12 @@ public class Editor implements EditEventListener {
 	 * 
 	 * @param contentView
 	 *            view displaying objects being edited; probably a GLSurfaceView
+	 * @param stepper
+	 *            ConcreteStepper for rendering editor objects
 	 */
-	public Editor(View contentView) {
+	public Editor(View contentView, ConcreteStepper stepper) {
 		mContentView = contentView;
+		mStepper = stepper;
 	}
 
 	public View getView() {
@@ -73,8 +78,8 @@ public class Editor implements EditEventListener {
 			segmentButton.setOnClickListener(new Button.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					Editor.this.setOperation(EdSegment
-							.buildAddNewOperation(Editor.this));
+					Editor.this.startAddObjectOperation(EdSegment
+							.buildEditorOperation(Editor.this));
 				}
 			});
 			toolbar.addView(segmentButton);
@@ -96,38 +101,86 @@ public class Editor implements EditEventListener {
 		mEditorView = frameLayout;
 	}
 
+	/**
+	 * Clear current operation if it matches a particular one
+	 */
+	public void clearOperation(EditEventListener operation) {
+		if (mCurrentOperation == operation) {
+			setOperation(null);
+		}
+	}
+
+	private void startAddObjectOperation(EditEventListener operation) {
+		objects().unselectAll();
+		setOperation(operation);
+		operation.processEvent(EVENT_ADD_NEW, null);
+		mLastAddObjectOperation = operation;
+		if (false) // figure out a way to determine an appropriate toast message
+			toast(context(), "Add segment!");
+	}
+
 	private void setOperation(EditEventListener operation) {
 		if (mCurrentOperation != null) {
 			mCurrentOperation.processEvent(EVENT_STOP, null);
 		}
 		mCurrentOperation = operation;
-		if (mCurrentOperation != null) {
-			mCurrentOperation.processEvent(EVENT_ADD_NEW, null);
-		}
-
 	}
 
 	public void render() {
+		for (int i = 0; i < mObjects.size(); i++) {
+			EdObject obj = mObjects.get(i);
+			obj.render(mStepper);
+		}
 	}
 
 	// EditEventListener interface
 	@Override
 	public int processEvent(int eventCode, Point location) {
+		if (db)
+			pr("Editor processEvent " + eventCode + " loc:" + location);
+
 		// If there's a current operation, let it handle it
 		if (mCurrentOperation != null) {
 			eventCode = mCurrentOperation.processEvent(eventCode, location);
+			if (db)
+				pr(" handled by current operation...");
 		}
+
+		// If it was handled by the current operation, its code will now be
+		// EVENT_NONE; if not, try to handle it now
 		if (db) {
-			if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE)
-				pr("\n\n");
-			pr("Editor event: " + eventCode + " loc:" + location);
+			if (eventCode != EVENT_NONE)
+				pr(" editor handling event " + eventCode);
 		}
+
+		switch (eventCode) {
+
+		// A double tap will add another object of the last type added
+		case EVENT_DOWN_MULTIPLE:
+			if (db)
+				pr("DOWN_MULTIPLE, lastAddObject="
+						+ nameOf(mLastAddObjectOperation));
+			if (mLastAddObjectOperation != null) {
+				startAddObjectOperation(mLastAddObjectOperation);
+			}
+			break;
+		}
+
+		// Always request a refresh of the editor view
+		mStepper.refresh();
+
 		return eventCode;
 	}
 
+	public EdObjectArray objects() {
+		return mObjects;
+	}
+
 	private EditEventListener mCurrentOperation;
+	private EditEventListener mLastAddObjectOperation;
 	private View mContentView;
 	private View mEditorView;
-	/* private */EdObjectArray mObjects = new EdObjectArray();
+	private ConcreteStepper mStepper;
+	private EdObjectArray mObjects = new EdObjectArray();
 
 }

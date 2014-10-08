@@ -26,12 +26,28 @@ public class EdObjectArray {
 		}
 	}
 
+	public void set(int index, EdObject object) {
+		mList.set(index, object);
+	}
+
 	public int size() {
 		return mList.size();
 	}
 
 	public EdObject get(int index) {
 		return mList.get(index);
+	}
+
+	/**
+	 * Add an object to the end of the list
+	 * 
+	 * @param object
+	 * @return the index of the object
+	 */
+	public int add(EdObject object) {
+		int index = mList.size();
+		mList.add(object);
+		return index;
 	}
 
 	/**
@@ -53,6 +69,12 @@ public class EdObjectArray {
 				obj.setSelected(true);
 
 			mList.add(itemSlots.get(j), obj);
+		}
+	}
+
+	public void unselectAll() {
+		for (EdObject obj : mList) {
+			obj.setSelected(false);
 		}
 	}
 
@@ -123,5 +145,6 @@ public class EdObjectArray {
 		}
 	}
 
-	private ArrayList<EdObject> mList = new ArrayList();;
+	private ArrayList<EdObject> mList = new ArrayList();
+
 }

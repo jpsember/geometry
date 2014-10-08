@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
+import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.basic.Tools.*;
 
@@ -18,10 +19,12 @@ public abstract class EdObject implements Cloneable {
 	 */
 	public void copyPointsFrom(EdObject src) {
 		ASSERT(src != this);
-		pts.clear();
-
+		// Both source and destination objects may have the same point array, so
+		// construct a new one
+		ArrayList<Point> newPts = new ArrayList();
 		for (int i = 0; i < src.nPoints(); i++)
-			pts.add(new Point(src.getPoint(i)));
+			newPts.add(new Point(src.getPoint(i)));
+		pts = newPts;
 	}
 
 	// /**
@@ -513,17 +516,16 @@ public abstract class EdObject implements Cloneable {
 		return flags;
 	}
 
-	// /**
-	// * Render object within editor. Override this to change highlighting
-	// * behaviour for points.
-	// */
-	// public void render() {
-	// render(null, -1, -1);
-	// if (isSelected()) {
-	// for (int i = 0; i < nPoints(); i++)
-	// hlSmall(i);
-	// }
-	// }
+	/**
+	 * Render object within editor. Override this to change highlighting
+	 * behaviour for points.
+	 */
+	public void render(AlgorithmStepper s) {
+		if (isSelected()) {
+			for (int i = 0; i < nPoints(); i++)
+				s.highlight(getPoint(i));
+		}
+	}
 
 	private static final int FLAG_SELECTED = (1 << 31);
 	private static final int FLAG_INACTIVE = (1 << 30);

@@ -74,6 +74,24 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 	 * TRANSFORM_NAME_DEVICE_TO_NDC which converts from device space to
 	 * normalized device coordinates (see
 	 * https://github.com/jpsember/geometry/issues/22)
+	 * 
+	 * Here's a summary of the coordinate spaces:
+	 * 
+	 * <pre>
+	 * 
+	 *  algorithm space : this maps a fixed virtual coordinate system 
+	 *      (e.g. 1000 x 1200) to the device, no matter its size or 
+	 *      orientation (origin at bottom left)
+	 * 
+	 *  device space : origin at bottom left, this corresponds to pixels
+	 * 
+	 *  normalized device coordinates : the coordinate system that OpenGL 
+	 *     uses
+	 * 
+	 *  view space : the coordinate system of an Android View; like device
+	 *     space, but has its origin in the top left
+	 * 
+	 * </pre>
 	 */
 	protected void constructTransforms() {
 		mTransformMap.clear();

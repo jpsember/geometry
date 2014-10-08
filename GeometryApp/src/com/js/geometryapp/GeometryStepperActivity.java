@@ -48,7 +48,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 			// Wrap the GLSurfaceView within another container, so we can
 			// overlay it with an editing toolbar
-			mEditor = new Editor(glView);
+			mEditor = new Editor(glView, mStepper);
 			mRenderer.setEditor(mEditor);
 			mSurfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);

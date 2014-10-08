@@ -1,16 +1,15 @@
 package com.js.geometryapp.editor;
 
-import static com.js.basic.Tools.ASSERT;
-import static com.js.basic.Tools.DEBUG_ONLY_FEATURES;
-import static com.js.basic.Tools.d;
-import static com.js.basic.Tools.pr;
 import android.content.Context;
+import android.graphics.Matrix;
 import android.opengl.GLSurfaceView;
 import android.os.Handler;
 import android.view.MotionEvent;
 
 import com.js.geometry.Point;
+import com.js.geometryapp.AlgorithmRenderer;
 import com.js.opengl.OurGLSurfaceView;
+import static com.js.basic.Tools.*;
 
 public class EditorGLSurfaceView extends OurGLSurfaceView {
 
@@ -42,7 +41,17 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 	public boolean onTouchEvent(MotionEvent e) {
 		final boolean db = TOUCH_DIAGNOSTICS;
 
-		mCurrentTouchLocation = new Point(e.getX(), e.getY());
+		Point viewPoint = new Point(e.getX(), e.getY());
+
+		// Transform point from device to algorithm coordinates
+		{
+			AlgorithmRenderer renderer = (AlgorithmRenderer) renderer();
+			Matrix deviceToAlgorithMatrix = renderer
+					.getTransform(AlgorithmRenderer.TRANSFORM_NAME_DEVICE_TO_ALGORITHM);
+			viewPoint.apply(deviceToAlgorithMatrix);
+		}
+
+		mCurrentTouchLocation = viewPoint;
 		int action = e.getActionMasked();
 
 		if (db) {

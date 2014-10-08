@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 
 import static com.js.basic.Tools.*;
 
@@ -54,24 +55,40 @@ public class EdObjectArray implements Iterable<EdObject> {
 	/**
 	 * Construct subset containing those objects that are selected
 	 */
-	public EdObjectArray getSelected() {
-		EdObjectArray subset = new EdObjectArray();
-		for (EdObject object : mList) {
-			if (object.isSelected())
-				subset.add(object);
+	public List<Integer> getSelectedSlots() {
+		List<Integer> slots = new ArrayList();
+		for (int i = 0; i < mList.size(); i++) {
+			if (mList.get(i).isSelected())
+				slots.add(i);
 		}
-		return subset;
+		return slots;
+	}
+
+	/**
+	 * Construct copy of array, using clones of its elements
+	 * 
+	 * @param slots
+	 *            if not null, slot numbers to include
+	 */
+	public EdObjectArray deepCopy(List<Integer> slots) {
+		EdObjectArray arrayCopy = new EdObjectArray();
+		if (slots == null) {
+			for (EdObject originalObject : mList) {
+				arrayCopy.add((EdObject) originalObject.clone());
+			}
+		} else {
+			for (int slot : slots) {
+				arrayCopy.add((EdObject) mList.get(slot).clone());
+			}
+		}
+		return arrayCopy;
 	}
 
 	/**
 	 * Construct copy of array, using clones of its elements
 	 */
 	public EdObjectArray deepCopy() {
-		EdObjectArray arrayCopy = new EdObjectArray();
-		for (EdObject originalObject : mList) {
-			arrayCopy.add((EdObject) originalObject.clone());
-		}
-		return arrayCopy;
+		return deepCopy(null);
 	}
 
 	/**

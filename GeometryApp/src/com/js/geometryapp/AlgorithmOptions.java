@@ -265,11 +265,9 @@ public class AlgorithmOptions {
 			// Provide an empty JSON object as the default
 			String script = AppPreferences.getString(
 					GeometryStepperActivity.PERSIST_KEY_OPTIONS, "{}");
-			pr("parsing " + script);
 
 			JSONObject map = JSONTools.parseMap(script);
 
-			pr("parsed as map: " + map);
 			for (String algName : JSONTools.keys(map)) {
 				if (algName.equals(PRIMARY_GROUP_KEY)) {
 					activateSecondaryWidgetGroup(null);

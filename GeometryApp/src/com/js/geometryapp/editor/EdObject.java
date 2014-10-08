@@ -219,7 +219,6 @@ public abstract class EdObject implements Cloneable {
 	 *            a copy of the original object
 	 * @param delta
 	 *            amount to move by
-	 * @deprecated
 	 */
 	public void moveBy(EdObject orig, Point delta) {
 		for (int i = 0;; i++) {

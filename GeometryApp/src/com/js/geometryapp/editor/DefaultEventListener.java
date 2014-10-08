@@ -2,6 +2,9 @@ package com.js.geometryapp.editor;
 
 import static com.js.basic.Tools.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.graphics.Color;
 
 import com.js.android.MyActivity;
@@ -18,19 +21,21 @@ public class DefaultEventListener implements EditorEventListener {
 		reset();
 	}
 
-	private EdObjectArray getPickSet(Point location, boolean selectedObjectsOnly) {
+	private List<Integer> getPickSet(Point location, boolean selectedObjectsOnly) {
 		float pickDistance = MyActivity.inchesToPixels(.22f);
-		EdObjectArray s = new EdObjectArray();
+		List<Integer> slots = new ArrayList();
 		EdObjectArray srcObjects = mEditor.objects();
-		if (selectedObjectsOnly)
-			srcObjects = srcObjects.getSelected();
-		for (EdObject src : srcObjects) {
+		for (int slot = 0; slot < srcObjects.size(); slot++) {
+			EdObject src = srcObjects.get(slot);
+			if (selectedObjectsOnly && !src.isSelected())
+				continue;
+
 			float dist = src.distFrom(location);
 			if (dist > pickDistance)
 				continue;
-			s.add(src);
+			slots.add(slot);
 		}
-		return s;
+		return slots;
 	}
 
 	/**
@@ -41,49 +46,51 @@ public class DefaultEventListener implements EditorEventListener {
 	 *            if not null, subset of objects whose selected state should not
 	 *            change; must be in back to front order
 	 */
-	private void unselectObjects(EdObjectArray omit) {
+	private void unselectObjects(List<Integer> omit) {
 		int omitCursor = 0;
-		for (EdObject src : mEditor.objects()) {
+		EdObjectArray list = mEditor.objects();
+		for (int i = 0; i < list.size(); i++) {
 			if (omit != null && omitCursor < omit.size()
-					&& src == omit.get(omitCursor)) {
+					&& i == omit.get(omitCursor)) {
 				omitCursor++;
 				continue;
 			}
-			src.setSelected(false);
+			list.get(i).setSelected(false);
 		}
 	}
 
 	private void doClick(Point location) {
-		EdObjectArray pickSet = getPickSet(location, false);
+		List<Integer> pickSet = getPickSet(location, false);
 		unselectObjects(pickSet);
 		if (pickSet.isEmpty())
 			return;
 		// Find selected item with highest index
 		int highestIndex = pickSet.size();
 		for (int i = 0; i < pickSet.size(); i++) {
-			if (pickSet.get(i).isSelected())
+			if (mEditor.objects().get(pickSet.get(i)).isSelected())
 				highestIndex = i;
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
 		unselectObjects(null);
-		pickSet.get(nextSelectedIndex).setSelected(true);
+		mEditor.objects().get(pickSet.get(nextSelectedIndex)).setSelected(true);
 	}
 
 	private void doStartDrag(Point location) {
 		// If initial press contains selected object, move all selected objects;
 		// else,
 		// do selection rectangle
-		EdObjectArray pickSet = getPickSet(location, true);
+		List<Integer> pickSet = getPickSet(location, true);
 		if (pickSet.isEmpty()) {
 			mDraggingRect = true;
 		} else {
 			// Get all selected objects
-			mMoveObjects = mEditor.objects().getSelected();
-			unselectObjects(mMoveObjects);
+			mMoveObjectsSlots = mEditor.objects().getSelectedSlots();
+			unselectObjects(mMoveObjectsSlots);
 
 			// Make a copy of the objects to be moved, to remember their
 			// original positions
-			mMoveObjectsOriginals = mMoveObjects.deepCopy();
+			mMoveObjectsOriginals = mEditor.objects().deepCopy(
+					mMoveObjectsSlots);
 			mPreviousMoveLocation = mInitialDownLocation;
 		}
 	}
@@ -95,8 +102,9 @@ public class DefaultEventListener implements EditorEventListener {
 			Point delta = MyMath.subtract(location, mPreviousMoveLocation);
 			if (delta.magnitude() == 0)
 				return;
-			for (int i = 0; i < mMoveObjects.size(); i++) {
-				EdObject obj = mMoveObjects.get(i);
+			for (int i = 0; i < mMoveObjectsSlots.size(); i++) {
+				int slot = mMoveObjectsSlots.get(i);
+				EdObject obj = mEditor.objects().get(slot);
 				EdObject orig = mMoveObjectsOriginals.get(i);
 				obj.moveBy(orig, delta);
 				warning("keep objects immutable; slots is more important");
@@ -125,9 +133,6 @@ public class DefaultEventListener implements EditorEventListener {
 		mDraggingRect = false;
 		mDragCorner = null;
 		mInitialDownLocation = null;
-		mMoveObjects = null;
-		mMoveObjectsOriginals = null;
-		mPreviousMoveLocation = null;
 	}
 
 	static {
@@ -236,7 +241,7 @@ public class DefaultEventListener implements EditorEventListener {
 	private Point mDragCorner;
 	private boolean mDragging;
 	private boolean mDraggingRect;
-	private EdObjectArray mMoveObjects;
+	private List<Integer> mMoveObjectsSlots;
 	private EdObjectArray mMoveObjectsOriginals;
 	private Point mPreviousMoveLocation;
 }

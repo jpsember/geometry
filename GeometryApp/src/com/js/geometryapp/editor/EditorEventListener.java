@@ -2,7 +2,7 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.Point;
 
-public interface EditEventListener {
+public interface EditorEventListener {
 
 	public static final int EVENT_NONE = 0;
 

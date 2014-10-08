@@ -19,7 +19,7 @@ import static com.js.android.Tools.*;
  * contains both a content view to display the objects being edited, as well as
  * floating toolbars.
  */
-public class Editor implements EditEventListener {
+public class Editor implements EditorEventListener {
 
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
@@ -35,6 +35,7 @@ public class Editor implements EditEventListener {
 	public Editor(View contentView, ConcreteStepper stepper) {
 		mContentView = contentView;
 		mStepper = stepper;
+		mDefaultListener = new DefaultEventListener(this);
 	}
 
 	public View getView() {
@@ -104,13 +105,13 @@ public class Editor implements EditEventListener {
 	/**
 	 * Clear current operation if it matches a particular one
 	 */
-	public void clearOperation(EditEventListener operation) {
+	public void clearOperation(EditorEventListener operation) {
 		if (mCurrentOperation == operation) {
 			setOperation(null);
 		}
 	}
 
-	private void startAddObjectOperation(EditEventListener operation) {
+	private void startAddObjectOperation(EditorEventListener operation) {
 		objects().unselectAll();
 		setOperation(operation);
 		operation.processEvent(EVENT_ADD_NEW, null);
@@ -119,7 +120,7 @@ public class Editor implements EditEventListener {
 			toast(context(), "Add segment!");
 	}
 
-	private void setOperation(EditEventListener operation) {
+	private void setOperation(EditorEventListener operation) {
 		if (mCurrentOperation != null) {
 			mCurrentOperation.processEvent(EVENT_STOP, null);
 		}
@@ -131,6 +132,7 @@ public class Editor implements EditEventListener {
 			EdObject obj = mObjects.get(i);
 			obj.render(mStepper);
 		}
+		mDefaultListener.render(mStepper);
 	}
 
 	// EditEventListener interface
@@ -146,25 +148,7 @@ public class Editor implements EditEventListener {
 				pr(" handled by current operation...");
 		}
 
-		// If it was handled by the current operation, its code will now be
-		// EVENT_NONE; if not, try to handle it now
-		if (db) {
-			if (eventCode != EVENT_NONE)
-				pr(" editor handling event " + eventCode);
-		}
-
-		switch (eventCode) {
-
-		// A double tap will add another object of the last type added
-		case EVENT_DOWN_MULTIPLE:
-			if (db)
-				pr("DOWN_MULTIPLE, lastAddObject="
-						+ nameOf(mLastAddObjectOperation));
-			if (mLastAddObjectOperation != null) {
-				startAddObjectOperation(mLastAddObjectOperation);
-			}
-			break;
-		}
+		eventCode = mDefaultListener.processEvent(eventCode, location);
 
 		// Always request a refresh of the editor view
 		mStepper.refresh();
@@ -172,12 +156,19 @@ public class Editor implements EditEventListener {
 		return eventCode;
 	}
 
+	void startAddAnotherOperation() {
+		if (mLastAddObjectOperation != null) {
+			startAddObjectOperation(mLastAddObjectOperation);
+		}
+	}
+
 	public EdObjectArray objects() {
 		return mObjects;
 	}
 
-	private EditEventListener mCurrentOperation;
-	private EditEventListener mLastAddObjectOperation;
+	private DefaultEventListener mDefaultListener;
+	private EditorEventListener mCurrentOperation;
+	private EditorEventListener mLastAddObjectOperation;
 	private View mContentView;
 	private View mEditorView;
 	private ConcreteStepper mStepper;

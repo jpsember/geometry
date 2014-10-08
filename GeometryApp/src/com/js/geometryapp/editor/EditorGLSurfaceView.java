@@ -84,7 +84,7 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 						// If we're still in the WAIT state, switch to TOUCH
 						if (mTouchState == STATE_WAIT) {
 							setTouchState(STATE_TOUCH);
-							sendEvent(EditEventListener.EVENT_DOWN,
+							sendEvent(EditorEventListener.EVENT_DOWN,
 									mInitialTouchLocation);
 						}
 					}
@@ -98,17 +98,17 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 			switch (action) {
 			case MotionEvent.ACTION_MOVE:
 				setTouchState(STATE_TOUCH);
-				sendEvent(EditEventListener.EVENT_DOWN);
-				sendEvent(EditEventListener.EVENT_DRAG);
+				sendEvent(EditorEventListener.EVENT_DOWN);
+				sendEvent(EditorEventListener.EVENT_DRAG);
 				break;
 			case MotionEvent.ACTION_POINTER_DOWN:
 				setTouchState(STATE_MULTITOUCH);
-				sendEvent(EditEventListener.EVENT_DOWN_MULTIPLE);
+				sendEvent(EditorEventListener.EVENT_DOWN_MULTIPLE);
 				break;
 			case MotionEvent.ACTION_UP:
 				setTouchState(STATE_TOUCH);
-				sendEvent(EditEventListener.EVENT_DOWN);
-				sendEvent(EditEventListener.EVENT_UP);
+				sendEvent(EditorEventListener.EVENT_DOWN);
+				sendEvent(EditorEventListener.EVENT_UP);
 				setTouchState(STATE_START);
 				break;
 			}
@@ -118,10 +118,10 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 		case STATE_TOUCH: {
 			switch (action) {
 			case MotionEvent.ACTION_MOVE:
-				sendEvent(EditEventListener.EVENT_DRAG);
+				sendEvent(EditorEventListener.EVENT_DRAG);
 				break;
 			case MotionEvent.ACTION_UP:
-				sendEvent(EditEventListener.EVENT_UP);
+				sendEvent(EditorEventListener.EVENT_UP);
 				setTouchState(STATE_START);
 				performClick();
 				break;
@@ -131,10 +131,10 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 		case STATE_MULTITOUCH: {
 			switch (action) {
 			case MotionEvent.ACTION_MOVE:
-				sendEvent(EditEventListener.EVENT_DRAG_MULTIPLE);
+				sendEvent(EditorEventListener.EVENT_DRAG_MULTIPLE);
 				break;
 			case MotionEvent.ACTION_UP:
-				sendEvent(EditEventListener.EVENT_UP_MULTIPLE);
+				sendEvent(EditorEventListener.EVENT_UP_MULTIPLE);
 				setTouchState(STATE_START);
 				performClick();
 				break;

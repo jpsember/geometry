@@ -102,11 +102,11 @@ public class EdSegment extends EdObject {
 	/**
 	 * Construct an event handler for editor operations with these objects
 	 */
-	public static EditEventListener buildEditorOperation(Editor editor) {
+	public static EditorEventListener buildEditorOperation(Editor editor) {
 		return new EditorOperation(editor);
 	}
 
-	private static class EditorOperation implements EditEventListener {
+	private static class EditorOperation implements EditorEventListener {
 		public EditorOperation(Editor editor) {
 			mEditor = editor;
 		}

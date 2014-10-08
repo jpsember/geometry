@@ -3,13 +3,14 @@ package com.js.geometryapp.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 
 import static com.js.basic.Tools.*;
 
 /**
  * An array of EdObjects, including utility methods
  */
-public class EdObjectArray {
+public class EdObjectArray implements Iterable<EdObject> {
 
 	/**
 	 * Delete specific items
@@ -24,6 +25,14 @@ public class EdObjectArray {
 			int j = itemSlots.get(i);
 			mList.remove(j);
 		}
+	}
+
+	public boolean isEmpty() {
+		return mList.isEmpty();
+	}
+
+	public Iterator<EdObject> iterator() {
+		return mList.iterator();
 	}
 
 	public void set(int index, EdObject object) {

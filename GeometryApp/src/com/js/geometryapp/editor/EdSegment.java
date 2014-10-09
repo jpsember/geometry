@@ -1,6 +1,5 @@
 package com.js.geometryapp.editor;
 
-import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -66,16 +65,41 @@ public class EdSegment extends EdObject {
 		}
 
 		@Override
-		public EditorEventListener buildEditorOperation(Editor editor, int slot) {
-			return new EditorOperation(editor, slot);
+		public EditorEventListener buildEditorOperation(Editor editor,
+				int slot, int vertexNumber) {
+			return new EditorOperation(editor, slot, vertexNumber);
 		}
 	};
 
 	private static class EditorOperation implements EditorEventListener {
-		public EditorOperation(Editor editor, int slot) {
+		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			ASSERT(slot >= 0);
 			mEditor = editor;
 			mEditSlot = slot;
+			mEditPointIndex = vertexNumber;
+		}
+
+		/**
+		 * Initialize the edit operation, if it hasn't already been
+		 * 
+		 * This is necessary because we may start the operation without an
+		 * EVENT_DOWN_x
+		 */
+		private void initializeOperation(Point location) {
+			if (mOriginal != null)
+				return;
+
+			EdSegment seg = mEditor.objects().get(mEditSlot);
+			mOriginal = mEditor.objects().getList(mEditSlot);
+
+			if (seg.nPoints() == 0) {
+				seg.addPoint(location);
+				seg.addPoint(location);
+			}
+
+			if (mEditPointIndex < 0) {
+				mEditPointIndex = seg.nPoints() - 1;
+			}
 		}
 
 		@Override
@@ -85,6 +109,9 @@ public class EdSegment extends EdObject {
 			if (db)
 				pr("EdSegment processEvent "
 						+ Editor.editorEventName(eventCode));
+
+			if (location != null)
+				initializeOperation(location);
 
 			// By default, we'll be handling the event
 			int returnCode = EVENT_NONE;
@@ -96,29 +123,7 @@ public class EdSegment extends EdObject {
 				returnCode = eventCode;
 				break;
 
-			case EVENT_DOWN: {
-				EdSegment seg = mEditor.objects().get(mEditSlot);
-				mOriginal = mEditor.objects().getList(mEditSlot);
-				if (db)
-					pr(" editSlot " + mEditSlot + " seg" + seg);
-
-				if (seg.nPoints() == 0) {
-					seg.addPoint(location);
-					seg.addPoint(location);
-				}
-
-				// Find endpoint at touch location. If found, continue operation
-				// to edit that endpoint
-				warning("figure out less adhoc inchestopixels method");
-				mEditPointIndex = seg.closestPoint(location,
-						MyActivity.inchesToPixels(.1f));
-				if (db)
-					pr(" edit point index " + mEditPointIndex);
-
-				// If no point found, stop the operation
-				if (mEditPointIndex < 0)
-					returnCode = EVENT_STOP;
-			}
+			case EVENT_DOWN:
 				break;
 
 			case EVENT_DRAG: {

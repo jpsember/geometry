@@ -7,10 +7,8 @@ import java.util.List;
 
 import android.graphics.Color;
 
-import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmStepper;
 
@@ -21,7 +19,6 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private List<Integer> getPickSet(Point location, boolean selectedObjectsOnly) {
-		float pickDistance = MyActivity.inchesToPixels(.22f);
 		List<Integer> slots = new ArrayList();
 		EdObjectArray srcObjects = mEditor.objects();
 		for (int slot = 0; slot < srcObjects.size(); slot++) {
@@ -30,7 +27,7 @@ public class DefaultEventListener implements EditorEventListener {
 				continue;
 
 			float dist = src.distFrom(location);
-			if (dist > pickDistance)
+			if (dist > mEditor.pickRadius())
 				continue;
 			slots.add(slot);
 		}
@@ -81,7 +78,28 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 	}
 
+	private int mSelectedVertex;
+
+	private int findSelectedObjectVertex(List<Integer> pickSet, Point location) {
+		for (int i = pickSet.size() - 1; i >= 0; i--) {
+			int slot = pickSet.get(i);
+			EdObject object = mEditor.objects().get(slot);
+			if (!object.isSelected())
+				continue;
+			// Find object vertex at location
+			int objVertex = object.closestPoint(location, mEditor.pickRadius());
+			if (objVertex < 0)
+				continue;
+			mSelectedVertex = objVertex;
+			return slot;
+		}
+		return -1;
+	}
+
 	private void doClick(Point location) {
+		// If clicked on a vertex of a selected object, edit that object's
+		// vertex.
+		// Else, cycle through the pick set under that location
 		List<Integer> pickSet = getPickSet(location, false);
 		unselectObjects(pickSet);
 		if (pickSet.isEmpty())
@@ -98,6 +116,8 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doStartDrag(Point location) {
+		// If location is at vertex of a selected object, edit that object's
+		// vertex; else,
 		// If initial press pickset contains any selected objects, move all
 		// selected objects;
 		// else, if initial press pickset contains any objects, select and move
@@ -105,6 +125,14 @@ public class DefaultEventListener implements EditorEventListener {
 		// else, do selection rectangle
 		List<Integer> pickSet = getPickSet(location, false);
 		List<Integer> hlPickSet = getSelectedObjects(pickSet);
+
+		int editPointSlot = findSelectedObjectVertex(hlPickSet, location);
+		if (editPointSlot >= 0) {
+			unselectObjects(null);
+			mEditor.objects().get(editPointSlot).setSelected(true);
+			mEditor.startEditVertexOperation(editPointSlot, mSelectedVertex);
+			return;
+		}
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
 			int slot = last(pickSet);
@@ -151,7 +179,8 @@ public class DefaultEventListener implements EditorEventListener {
 			if (dragRect == null)
 				return;
 			for (EdObject edObject : mEditor.objects()) {
-				edObject.setSelected(dragRect.contains(edObject.getBounds()));
+				edObject.setSelected(dragRect.contains(edObject
+						.getBounds(mEditor)));
 			}
 		} else if (mMoveObjectsOriginals != null) {
 			// Create command and undo
@@ -201,6 +230,8 @@ public class DefaultEventListener implements EditorEventListener {
 			if (!mDragStarted) {
 				mDragStarted = true;
 				doStartDrag(mInitialDownLocation);
+				if (mEditor.currentOperation() != this)
+					break;
 			}
 			doContinueDrag(location);
 			break;
@@ -231,11 +262,8 @@ public class DefaultEventListener implements EditorEventListener {
 	public void render(AlgorithmStepper s) {
 		Rect r = getDragRect();
 		if (r != null) {
-			Polygon p = new Polygon();
-			for (int i = 0; i < 4; i++)
-				p.add(r.corner(i));
 			s.setColor(Color.argb(0x80, 0xff, 0x40, 0x40));
-			s.plot(p, false);
+			EditorTools.plotRect(s, r);
 		}
 	}
 

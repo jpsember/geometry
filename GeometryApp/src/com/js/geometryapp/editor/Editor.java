@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.js.android.AppPreferences;
+import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.basic.JSONTools;
 import com.js.geometry.Point;
@@ -38,8 +39,9 @@ public class Editor implements EditorEventListener {
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
 	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
-	private static final boolean DONT_RESTORE_OBJECTS = true && DEBUG_ONLY_FEATURES;
+	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 
 	/**
@@ -53,6 +55,7 @@ public class Editor implements EditorEventListener {
 	public Editor(View contentView, ConcreteStepper stepper) {
 		mContentView = contentView;
 		mStepper = stepper;
+		mPickRadius = MyActivity.inchesToPixels(.28f);
 		prepareObjectTypes();
 	}
 
@@ -74,6 +77,10 @@ public class Editor implements EditorEventListener {
 	public void render() {
 		for (int i = 0; i < mObjects.size(); i++) {
 			EdObject obj = mObjects.get(i);
+			if (DB_RENDER_OBJ_BOUNDS) {
+				mStepper.setColor(Color.GRAY);
+				EditorTools.plotRect(mStepper, obj.getBounds(this));
+			}
 			obj.render(mStepper);
 		}
 		if (mCurrentOperation != null)
@@ -204,6 +211,17 @@ public class Editor implements EditorEventListener {
 		if (mLastAddObjectOperation != null) {
 			startAddObjectOperation(mLastAddObjectOperation);
 		}
+	}
+
+	void startEditVertexOperation(int slot, int vertexNumber) {
+		EdObject obj = mObjects.get(slot);
+		EditorEventListener operation = obj.getFactory().buildEditorOperation(
+				this, slot, vertexNumber);
+		setOperation(operation);
+	}
+
+	EditorEventListener currentOperation() {
+		return mCurrentOperation;
 	}
 
 	/**
@@ -371,7 +389,7 @@ public class Editor implements EditorEventListener {
 		pushCommand(c);
 
 		// Start operation for editing this one
-		setOperation(objectType.buildEditorOperation(this, slot));
+		setOperation(objectType.buildEditorOperation(this, slot, -1));
 	}
 
 	void doUndo() {
@@ -523,6 +541,10 @@ public class Editor implements EditorEventListener {
 		return sEditorEventNames[name];
 	}
 
+	public float pickRadius() {
+		return mPickRadius;
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
@@ -537,4 +559,5 @@ public class Editor implements EditorEventListener {
 	private List<Command> mCommandHistory = new ArrayList();
 	private int mCommandHistoryCursor;
 	private Button mUndoButton, mRedoButton;
+	private float mPickRadius;
 }

@@ -62,9 +62,13 @@ public abstract class EdObject implements Cloneable {
 	 * 
 	 * @return FRect
 	 */
-	public Rect getBounds() {
+	public Rect getBounds(Editor editor) {
 		if (mBounds == null) {
 			mBounds = Rect.rectContainingPoints(mPoints);
+			if (isSelected()) {
+				float r = editor.pickRadius();
+				mBounds.inset(-r, -r);
+			}
 		}
 		return mBounds;
 	}
@@ -244,6 +248,8 @@ public abstract class EdObject implements Cloneable {
 	 *            new flags
 	 */
 	public void setFlags(int f) {
+		if (((f ^ mFlags) & FLAG_SELECTED) != 0)
+			mBounds = null;
 		this.mFlags = f;
 	}
 

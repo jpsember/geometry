@@ -23,9 +23,15 @@ public abstract class EdObjectFactory {
 
 	/**
 	 * Construct an event handler for editor operations with these objects
+	 * 
+	 * @param editor
+	 * @param slot
+	 *            slot number of object to be edited
+	 * @param vertex
+	 *            index of vertex within object to be edited, or -1
 	 */
 	public abstract EditorEventListener buildEditorOperation(Editor editor,
-			int slot);
+			int slot, int vertex);
 
 	/**
 	 * Get name of this object. This is an identifier that is written to text

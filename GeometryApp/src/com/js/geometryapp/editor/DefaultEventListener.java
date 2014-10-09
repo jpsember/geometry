@@ -243,7 +243,6 @@ public class DefaultEventListener implements EditorEventListener {
 		// A double tap will add another object of the last type added
 		case EVENT_DOWN_MULTIPLE:
 			reset();
-			mInitialDownLocation = location;
 			mEditor.startAddAnotherOperation();
 			break;
 

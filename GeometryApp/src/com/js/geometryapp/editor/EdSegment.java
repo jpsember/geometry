@@ -106,7 +106,7 @@ public class EdSegment extends EdObject {
 				break;
 
 			case EVENT_UP:
-				mEditor.clearOperation(this);
+				mEditor.clearOperation();
 				break;
 
 			}

@@ -121,12 +121,10 @@ public class Editor implements EditorEventListener {
 	}
 
 	/**
-	 * Clear current operation if it matches a particular one
+	 * Clear current operation
 	 */
-	public void clearOperation(EditorEventListener operation) {
-		if (mCurrentOperation == operation) {
-			setOperation(null);
-		}
+	void clearOperation() {
+		setOperation(null);
 	}
 
 	private void startAddObjectOperation(EdObjectFactory objectType) {
@@ -193,7 +191,7 @@ public class Editor implements EditorEventListener {
 		}
 	}
 
-	public EdObjectArray objects() {
+	EdObjectArray objects() {
 		return mObjects;
 	}
 

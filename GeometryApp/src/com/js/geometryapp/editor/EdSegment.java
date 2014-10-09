@@ -89,6 +89,8 @@ public class EdSegment extends EdObject {
 
 			case EVENT_DOWN: {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
+				mOriginal = mEditor.objects().getList(mEditSlot);
+
 				if (seg.nPoints() == 0) {
 					seg.addPoint(location);
 					seg.addPoint(location);
@@ -102,11 +104,17 @@ public class EdSegment extends EdObject {
 				EdSegment seg2 = (EdSegment) seg.clone();
 				seg2.setPoint(1, location);
 				mEditor.objects().set(mEditSlot, seg2);
+				mModified = true;
 			}
 				break;
 
 			case EVENT_UP:
 				mEditor.clearOperation();
+				if (mModified) {
+					mEditor.pushCommand(Command.constructForEditedObjects(
+							mEditor.objects(), mOriginal));
+					warning("combine this command with previous somehow");
+				}
 				break;
 
 			}
@@ -116,5 +124,7 @@ public class EdSegment extends EdObject {
 		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
+		private boolean mModified;
+		private EdObjectArray mOriginal;
 	}
 }

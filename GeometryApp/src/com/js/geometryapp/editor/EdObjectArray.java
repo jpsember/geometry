@@ -26,6 +26,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void set(int index, EdObject object) {
+
 		mList.set(index, object);
 	}
 
@@ -98,7 +99,34 @@ public class EdObjectArray implements Iterable<EdObject> {
 		for (int slot : slots) {
 			subsequence.add(get(slot));
 		}
+		subsequence.mSlots = slots;
 		return subsequence;
+	}
+
+	/**
+	 * Construct a list of a single element
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public EdObjectArray getList(int index) {
+		List<Integer> slots = new ArrayList();
+		slots.add(index);
+		return get(slots);
+	}
+
+	public void remove(List<Integer> slots) {
+		ArrayList<EdObject> newList = new ArrayList();
+		int j = 0;
+		for (int i = 0; i < mList.size(); i++) {
+			if (j < slots.size() && i == slots.get(j)) {
+				j++;
+				continue;
+			}
+			newList.add(mList.get(i));
+		}
+		mList = newList;
+		mSlots = null;
 	}
 
 	/**
@@ -131,9 +159,14 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void unselectAll() {
-		for (EdObject obj : mList) {
-			obj.setSelected(false);
-		}
+		select(new ArrayList());
+	}
+
+	@Deprecated
+	public void select(int slot) {
+		List<Integer> list = new ArrayList();
+		list.add(slot);
+		select(list);
 	}
 
 	public void setSlots(List<Integer> slots) {
@@ -147,8 +180,22 @@ public class EdObjectArray implements Iterable<EdObject> {
 	public void replace(List<Integer> slots, EdObjectArray replacementObjects) {
 		ASSERT(slots.size() == replacementObjects.size());
 		for (int i = 0; i < slots.size(); i++) {
-			set(slots.get(i), replacementObjects.get(i));
+			int slot = slots.get(i);
+			EdObject object = replacementObjects.get(i);
+			if (slot == size())
+				add(object);
+			else
+				set(slot, object);
 		}
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder("EdObjectArray");
+		if (mSlots != null)
+			sb.append(" slots" + d(mSlots));
+		sb.append(" items:" + d(mList));
+		return sb.toString();
 	}
 
 	private ArrayList<EdObject> mList = new ArrayList();

@@ -1,6 +1,7 @@
 package com.js.geometryapp.editor;
 
 import java.util.List;
+import static com.js.basic.Tools.*;
 
 /**
  * Encapsulates an edit operation, to allow for undo/redo functionality
@@ -43,7 +44,41 @@ public abstract class Command {
 				originalObjects.getSlots(), originalObjects);
 	}
 
+	/**
+	 * Construct a Command for objects that have been added
+	 * 
+	 * @param editorObjects
+	 *            the editor's objects
+	 * @param slots
+	 *            slots of objects that were added
+	 */
+	public static Command constructForAddedObjects(EdObjectArray editorObjects,
+			List<Integer> slots) {
+		return new CommandForAddedObjects(editorObjects.get(slots), slots);
+	}
+
+	/**
+	 * Construct a Command for objects that have been removed
+	 * 
+	 * @param removedObjects
+	 *            objects that were removed
+	 * @param slots
+	 *            their slots
+	 */
+	public static Command constructForRemovedObjects(
+			EdObjectArray removedObjects, List<Integer> slots) {
+		return new CommandForRemovedObjects(removedObjects, slots);
+	}
+
 	private static class CommandForModifiedObjects extends Command {
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("Command: modified objects ");
+			sb.append(d(mSlots));
+			return sb.toString();
+		}
+
 		public CommandForModifiedObjects(EdObjectArray editorObjects,
 				List<Integer> slots, EdObjectArray originalObjects) {
 			mNew = editorObjects.get(slots);
@@ -82,4 +117,82 @@ public abstract class Command {
 		private EdObjectArray mNew;
 		private Command mReverse;
 	}
+
+	private static class CommandForAddedObjects extends Command {
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("Command: added objects ");
+			sb.append(d(mSlots));
+			return sb.toString();
+		}
+
+		public CommandForAddedObjects(EdObjectArray addedObjects,
+				List<Integer> slots) {
+			mNew = addedObjects;
+			mSlots = slots;
+		}
+
+		@Override
+		public Command getReverse() {
+			if (mReverse == null) {
+				mReverse = constructForRemovedObjects(mNew, mSlots);
+			}
+			return mReverse;
+		}
+
+		@Override
+		public void perform(Editor editor) {
+			pr("replacing objects, slots " + d(mSlots) + " mNew " + d(mNew));
+			editor.objects().replace(mSlots, mNew);
+			editor.objects().select(mSlots);
+		}
+
+		@Override
+		public boolean valid() {
+			return true;
+		}
+
+		private List<Integer> mSlots;
+		private EdObjectArray mNew;
+		private Command mReverse;
+	}
+
+	private static class CommandForRemovedObjects extends Command {
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder("Command: removed objects ");
+			sb.append(d(mSlots));
+			return sb.toString();
+		}
+
+		public CommandForRemovedObjects(EdObjectArray removedObjects,
+				List<Integer> slots) {
+			mRemoved = removedObjects;
+			mSlots = slots;
+		}
+
+		@Override
+		public Command getReverse() {
+			if (mReverse == null) {
+				mReverse = new CommandForAddedObjects(mRemoved, mSlots);
+			}
+			return mReverse;
+		}
+
+		@Override
+		public void perform(Editor editor) {
+			editor.objects().remove(mSlots);
+			editor.objects().unselectAll();
+		}
+
+		@Override
+		public boolean valid() {
+			return true;
+		}
+
+		private List<Integer> mSlots;
+		private EdObjectArray mRemoved;
+		private Command mReverse;
+	}
+
 }

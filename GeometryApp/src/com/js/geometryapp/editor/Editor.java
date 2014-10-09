@@ -37,6 +37,9 @@ public class Editor implements EditorEventListener {
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
 	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
+	private static final boolean DONT_RESTORE_OBJECTS = true && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
+	private static final int MAX_UNDO_STACK_SIZE = 5;
 
 	/**
 	 * Constructor
@@ -113,15 +116,22 @@ public class Editor implements EditorEventListener {
 		mStepper.refresh();
 		// Set delay to save changes
 		persistEditorState(true);
+		updateButtonEnableStates();
+	}
+
+	private void updateButtonEnableStates() { 
+		mUndoButton.setEnabled(mCommandCursor > 0);
+		mRedoButton.setEnabled(mCommandCursor < mCommands.size());
 	}
 
 	/**
 	 * Restore the editor state, including the EdObjects, from a JSON string
 	 */
 	public void restoreFromJSON(String script) {
+		if (DONT_RESTORE_OBJECTS)
+			script = null;
 		if (script == null)
-			script = "{}";
-
+			return;
 		try {
 			JSONObject map = JSONTools.parseMap(script);
 			JSONArray array = map.getJSONArray("objects");
@@ -251,6 +261,7 @@ public class Editor implements EditorEventListener {
 					}
 				});
 				toolbar.addView(button);
+				mUndoButton = button;
 			}
 			{
 				Button button = buildSampleButton("Redo");
@@ -262,6 +273,7 @@ public class Editor implements EditorEventListener {
 					}
 				});
 				toolbar.addView(button);
+				mRedoButton = button;
 			}
 
 			p = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
@@ -277,6 +289,7 @@ public class Editor implements EditorEventListener {
 			frameLayout.addView(toolbar, p);
 		}
 		mEditorView = frameLayout;
+		updateButtonEnableStates();
 	}
 
 	private void startAddObjectOperation(EdObjectFactory objectType) {
@@ -334,32 +347,40 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void addNewObject(EdObjectFactory objectType) {
-		mObjects.unselectAll();
 		EdObject object = objectType.construct();
-		object.setSelected(true);
 		int slot = mObjects.add(object);
+		List<Integer> slots = new ArrayList();
+		slots.add(slot);
+		mObjects.select(slots);
+		pushCommand(Command.constructForAddedObjects(mObjects, slots));
 
 		// Start operation for editing this one
 		setOperation(objectType.buildEditorOperation(this, slot));
 	}
 
 	void doUndo() {
+		final boolean db = DB_UNDO;
 		if (mCommandCursor == 0) {
 			warning("attempt to undo, nothing available");
 			return;
 		}
 		mCommandCursor--;
 		Command command = mCommands.get(mCommandCursor);
+		if (db)
+			pr("Undoing " + command);
 		command.getReverse().perform(this);
 		refresh();
 	}
 
 	void doRedo() {
+		final boolean db = DB_UNDO;
 		if (mCommandCursor == mCommands.size()) {
 			warning("attempt to redo, nothing left");
 			return;
 		}
 		Command command = mCommands.get(mCommandCursor);
+		if (db)
+			pr("Redoing " + command);
 		command.perform(this);
 		mCommandCursor++;
 		refresh();
@@ -396,6 +417,13 @@ public class Editor implements EditorEventListener {
 			mCommands.clear();
 			mCommandCursor = 0;
 		}
+
+		if (mCommandCursor > MAX_UNDO_STACK_SIZE) {
+			int del = mCommandCursor - MAX_UNDO_STACK_SIZE;
+			mCommandCursor -= del;
+			mCommands.subList(0, del).clear();
+		}
+
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
@@ -412,4 +440,5 @@ public class Editor implements EditorEventListener {
 	private String mLastSavedState;
 	private List<Command> mCommands = new ArrayList();
 	private int mCommandCursor;
+	private Button mUndoButton, mRedoButton;
 }

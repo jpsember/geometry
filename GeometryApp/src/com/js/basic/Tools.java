@@ -678,7 +678,7 @@ public final class Tools {
 	}
 
 	public static String d(Collection c) {
-		return d(c, true);
+		return d(c, c.size() > 6);
 	}
 
 	public static String d(char c) {

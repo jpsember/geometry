@@ -157,7 +157,7 @@ public class DefaultEventListener implements EditorEventListener {
 		} else if (mMoveObjectsOriginals != null) {
 			// Create command and undo
 			Command cmd = Command.constructForEditedObjects(mEditor.objects(),
-					mMoveObjectsOriginals);
+					mMoveObjectsOriginals, "move");
 			mEditor.pushCommand(cmd);
 		}
 	}

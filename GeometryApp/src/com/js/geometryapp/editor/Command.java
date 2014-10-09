@@ -39,6 +39,19 @@ public abstract class Command {
 	}
 
 	/**
+	 * Merge this command with another that follows it, if possible. This
+	 * addresses issue #114: for instance, multiple 'move' commands involving
+	 * the same set of objects should be merged into one
+	 * 
+	 * @param follower
+	 *            command that follows this one
+	 * @return merged command, or null if no merge was possible
+	 */
+	public Command attemptMergeWith(Command follower) {
+		return null;
+	}
+
+	/**
 	 * Construct a Command that generically saves and restores a subset of
 	 * objects that have been edited
 	 * 
@@ -47,13 +60,18 @@ public abstract class Command {
 	 * @param originalObjects
 	 *            the subset of edited objects, before they were edited; must
 	 *            include the slots
+	 * @param mergeKey
+	 *            if not null, a string that identifies whether this command can
+	 *            be merged with its neighbors; if the keys match, and their
+	 *            slots match, then merging will be performed
 	 */
 	public static Command constructForEditedObjects(
-			EdObjectArray editorObjects, EdObjectArray originalObjects) {
+			EdObjectArray editorObjects, EdObjectArray originalObjects,
+			String mergeKey) {
 		if (originalObjects.getSlots() == null)
 			throw new IllegalArgumentException("no slots available");
 		return new CommandForModifiedObjects(editorObjects,
-				originalObjects.getSlots(), originalObjects);
+				originalObjects.getSlots(), originalObjects, mergeKey);
 	}
 
 	/**
@@ -86,19 +104,49 @@ public abstract class Command {
 
 		@Override
 		public String toString() {
+			if (!DEBUG_ONLY_FEATURES)
+				return null;
 			StringBuilder sb = new StringBuilder("Command: modified objects ");
 			sb.append(d(mSlots));
+			if (mMergeKey != null)
+				sb.append(" mergeKey:" + mMergeKey);
 			return sb.toString();
 		}
 
 		public CommandForModifiedObjects(EdObjectArray editorObjects,
-				List<Integer> slots, EdObjectArray originalObjects) {
+				List<Integer> slots, EdObjectArray originalObjects,
+				String mergeKey) {
 			mNew = editorObjects.get(slots);
 			mSlots = slots;
 			mOriginals = originalObjects;
+			mMergeKey = mergeKey;
 		}
 
 		private CommandForModifiedObjects() {
+		}
+
+		@Override
+		public Command attemptMergeWith(Command follower) {
+			CommandForModifiedObjects merged = null;
+			do {
+				if (mMergeKey == null)
+					break;
+				if (!(follower instanceof CommandForModifiedObjects))
+					break;
+				CommandForModifiedObjects f = (CommandForModifiedObjects) follower;
+				if (!mMergeKey.equals(f.mMergeKey))
+					break;
+				if (!mSlots.equals(f.mSlots))
+					break;
+
+				// Merging is possible, so construct merged command
+				merged = new CommandForModifiedObjects();
+				merged.mOriginals = this.mOriginals;
+				merged.mNew = f.mNew;
+				merged.mSlots = this.mSlots;
+				merged.mMergeKey = this.mMergeKey;
+			} while (false);
+			return merged;
 		}
 
 		@Override
@@ -128,11 +176,14 @@ public abstract class Command {
 		private EdObjectArray mOriginals;
 		private EdObjectArray mNew;
 		private Command mReverse;
+		private String mMergeKey;
 	}
 
 	private static class CommandForAddedObjects extends Command {
 		@Override
 		public String toString() {
+			if (!DEBUG_ONLY_FEATURES)
+				return null;
 			StringBuilder sb = new StringBuilder("Command: added objects ");
 			sb.append(d(mSlots));
 			return sb.toString();
@@ -171,6 +222,8 @@ public abstract class Command {
 	private static class CommandForRemovedObjects extends Command {
 		@Override
 		public String toString() {
+			if (!DEBUG_ONLY_FEATURES)
+				return null;
 			StringBuilder sb = new StringBuilder("Command: removed objects ");
 			sb.append(d(mSlots));
 			return sb.toString();

@@ -416,18 +416,6 @@ public class Editor implements EditorEventListener {
 		refresh();
 	}
 
-	/**
-	 * Perform a command, and add to the undo stack
-	 */
-	void performCommand(Command command) {
-		final boolean db = DB_UNDO;
-		if (db)
-			pr("performCommand: " + nameOf(command));
-		pushCommand(command);
-		if (command.valid())
-			command.perform(this);
-	}
-
 	private String getHistory() {
 		if (DEBUG_ONLY_FEATURES) {
 			return " (History size:" + mCommandHistory.size() + " cursor:"
@@ -453,6 +441,22 @@ public class Editor implements EditorEventListener {
 			Command popped = pop(mCommandHistory);
 			if (db)
 				pr(" popped command " + popped + getHistory());
+		}
+
+		// Merge this command with its predecessor if possible
+		while (true) {
+			if (mCommandHistoryCursor == 0)
+				break;
+			Command prev = mCommandHistory.get(mCommandHistoryCursor - 1);
+			Command merged = prev.attemptMergeWith(command);
+			if (merged == null)
+				break;
+			if (db)
+				pr("Merging: " + prev + "\n with: " + command + "\n yields: "
+						+ merged);
+			pop(mCommandHistory);
+			mCommandHistoryCursor--;
+			command = merged;
 		}
 
 		mCommandHistory.add(command);

@@ -49,6 +49,8 @@ public class EdSegment extends EdObject {
 
 	@Override
 	public String toString() {
+		if (!DEBUG_ONLY_FEATURES)
+			return null;
 		StringBuilder sb = new StringBuilder(nameOf(this));
 		sb.append(" [");
 		for (int i = 0; i < nPoints(); i++)
@@ -112,7 +114,7 @@ public class EdSegment extends EdObject {
 				mEditor.clearOperation();
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginal));
+							mEditor.objects(), mOriginal, "segendpoint"));
 				}
 				break;
 

@@ -153,30 +153,12 @@ public class DefaultEventListener implements EditorEventListener {
 			for (EdObject edObject : mEditor.objects()) {
 				edObject.setSelected(dragRect.contains(edObject.getBounds()));
 			}
-			mDraggingRect = false;
 		} else if (mMoveObjectsOriginals != null) {
 			// Create command and undo
 			Command cmd = Command.constructForEditedObjects(mEditor.objects(),
 					mMoveObjectsOriginals, "move");
 			mEditor.pushCommand(cmd);
 		}
-	}
-
-	/**
-	 * Clear any stateful variables to values they had before any event sequence
-	 * was initiated
-	 */
-	private void reset() {
-		mNeedResetFlag = false;
-		mDragging = false;
-		mDraggingRect = false;
-		mDragCorner = null;
-		mInitialDownLocation = null;
-		mMoveObjectsOriginals = null;
-	}
-
-	static {
-		doNothing();
 	}
 
 	/**
@@ -212,64 +194,40 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EVENT_DOWN:
-			reset();
 			mInitialDownLocation = location;
 			break;
 
 		case EVENT_DRAG:
-			verifyResetState();
-			// If this event is part of a sequence not initiated by us, ignore
-			if (mInitialDownLocation == null) {
-				warning("issue #112: EVENT_DRAG, no initial down location");
-				break;
-			}
-			if (!mDragging) {
-				mDragging = true;
+			if (!mDragStarted) {
+				mDragStarted = true;
 				doStartDrag(mInitialDownLocation);
 			}
 			doContinueDrag(location);
 			break;
 
 		case EVENT_UP:
-			verifyResetState();
-			// If this event is part of a sequence not initiated by us, ignore
-			if (mInitialDownLocation == null) {
-				warning("issue #112: EVENT_UP, no initial down location");
-				break;
-			}
-			if (!mDragging) {
+			if (!mDragStarted) {
 				doClick(mInitialDownLocation);
 			} else {
 				doFinishDrag();
 			}
-			mNeedResetFlag = true;
+			returnCode = EVENT_STOP;
 			break;
 
 		// A double tap will add another object of the last type added
 		case EVENT_DOWN_MULTIPLE:
-			reset();
 			mEditor.startAddAnotherOperation();
 			break;
 
 		case EVENT_UP_MULTIPLE:
-			verifyResetState();
-			mNeedResetFlag = true;
+			returnCode = EVENT_STOP;
 			break;
 		}
 
 		return returnCode;
 	}
 
-	private void verifyResetState() {
-		if (mNeedResetFlag) {
-			die("reset() ought to have been called!");
-		}
-	}
-
-	/**
-	 * Perform any auxilliary rendering; specifically, the selection rectangle,
-	 * if it's active
-	 */
+	@Override
 	public void render(AlgorithmStepper s) {
 		Rect r = getDragRect();
 		if (r != null) {
@@ -296,9 +254,8 @@ public class DefaultEventListener implements EditorEventListener {
 	private Editor mEditor;
 	private Point mInitialDownLocation;
 	private Point mDragCorner;
-	private boolean mDragging;
+	private boolean mDragStarted;
 	private boolean mDraggingRect;
 	private EdObjectArray mMoveObjectsOriginals;
 	private Point mPreviousMoveLocation;
-	private boolean mNeedResetFlag;
 }

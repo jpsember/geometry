@@ -81,7 +81,7 @@ public class EdSegment extends EdObject {
 		@Override
 		public int processEvent(int eventCode, Point location) {
 
-			final boolean db = true && DEBUG_ONLY_FEATURES;
+			final boolean db = false && DEBUG_ONLY_FEATURES;
 			if (db)
 				pr("EdSegment processEvent "
 						+ Editor.editorEventName(eventCode));
@@ -99,7 +99,8 @@ public class EdSegment extends EdObject {
 			case EVENT_DOWN: {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				mOriginal = mEditor.objects().getList(mEditSlot);
-				pr(" editSlot " + mEditSlot + " seg" + seg);
+				if (db)
+					pr(" editSlot " + mEditSlot + " seg" + seg);
 
 				if (seg.nPoints() == 0) {
 					seg.addPoint(location);
@@ -111,38 +112,48 @@ public class EdSegment extends EdObject {
 				warning("figure out less adhoc inchestopixels method");
 				mEditPointIndex = seg.closestPoint(location,
 						MyActivity.inchesToPixels(.1f));
-				pr(" edit point index " + mEditPointIndex);
+				if (db)
+					pr(" edit point index " + mEditPointIndex);
+
+				// If no point found, stop the operation
+				if (mEditPointIndex < 0)
+					returnCode = EVENT_STOP;
 			}
 				break;
 
 			case EVENT_DRAG: {
-				if (mEditPointIndex < 0)
-					break;
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = (EdSegment) seg.clone();
 				seg2.setPoint(mEditPointIndex, location);
-				pr(" changed endpoint; " + seg2);
+				if (db)
+					pr(" changed endpoint; " + seg2);
 				mEditor.objects().set(mEditSlot, seg2);
 				mModified = true;
 			}
 				break;
 
 			case EVENT_UP:
-				pr(" modified " + mModified);
+				if (db)
+					pr(" modified " + mModified);
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForEditedObjects(
 							mEditor.objects(), mOriginal, "segendpoint"));
 				}
-				// Cancel the operation
-				mEditor.clearOperation();
+				// stop the operation on UP events
+				returnCode = EVENT_STOP;
 				break;
 
 			case EVENT_UP_MULTIPLE:
-				mEditor.clearOperation();
+				// stop the operation on UP events
+				returnCode = EVENT_STOP;
 				break;
 			}
 			return returnCode;
+		}
+
+		@Override
+		public void render(AlgorithmStepper s) {
 		}
 
 		private Editor mEditor;

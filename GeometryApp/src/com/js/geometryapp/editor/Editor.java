@@ -13,6 +13,7 @@ import com.js.android.AppPreferences;
 import com.js.android.QuiescentDelayOperation;
 import com.js.basic.JSONTools;
 import com.js.geometry.Point;
+import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 
@@ -52,7 +53,6 @@ public class Editor implements EditorEventListener {
 	public Editor(View contentView, ConcreteStepper stepper) {
 		mContentView = contentView;
 		mStepper = stepper;
-		mDefaultListener = new DefaultEventListener(this);
 		prepareObjectTypes();
 	}
 
@@ -76,7 +76,8 @@ public class Editor implements EditorEventListener {
 			EdObject obj = mObjects.get(i);
 			obj.render(mStepper);
 		}
-		mDefaultListener.render(mStepper);
+		if (mCurrentOperation != null)
+			mCurrentOperation.render(mStepper);
 	}
 
 	/**
@@ -99,17 +100,30 @@ public class Editor implements EditorEventListener {
 			}
 		}
 
-		// If there's a current operation, let it handle it
-		if (mCurrentOperation != null) {
-			eventCode = mCurrentOperation.processEvent(eventCode, location);
+		// If there's no current operation, and we have a DOWN event, start a
+		// default event listener
+		if (mCurrentOperation == null) {
+			if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE) {
+				setOperation(new DefaultEventListener(this));
+			}
 		}
 
-		eventCode = mDefaultListener.processEvent(eventCode, location);
+		if (mCurrentOperation != null) {
+			eventCode = mCurrentOperation.processEvent(eventCode, location);
+			if (eventCode == EVENT_STOP) {
+				clearOperation();
+			}
+		}
 
 		// Always request a refresh of the editor view
 		refresh();
 
 		return eventCode;
+	}
+
+	@Override
+	public void render(AlgorithmStepper s) {
+		throw new UnsupportedOperationException();
 	}
 
 	private void refresh() {
@@ -202,7 +216,7 @@ public class Editor implements EditorEventListener {
 	/**
 	 * Clear current operation
 	 */
-	void clearOperation() {
+	private void clearOperation() {
 		setOperation(null);
 	}
 
@@ -294,7 +308,7 @@ public class Editor implements EditorEventListener {
 
 	private void startAddObjectOperation(EdObjectFactory objectType) {
 		objects().unselectAll();
-		setOperation(null);
+		clearOperation();
 		mPendingAddObjectOperation = objectType;
 		mLastAddObjectOperation = objectType;
 		if (false) // figure out a way to determine an appropriate toast message
@@ -510,7 +524,6 @@ public class Editor implements EditorEventListener {
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
-	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
 	// If not null, intercept DOWN events to add object

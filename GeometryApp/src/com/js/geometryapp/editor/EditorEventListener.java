@@ -1,6 +1,7 @@
 package com.js.geometryapp.editor;
 
 import com.js.geometry.Point;
+import com.js.geometryapp.AlgorithmStepper;
 
 public interface EditorEventListener {
 
@@ -20,4 +21,7 @@ public interface EditorEventListener {
 	public static final int EVENT_STOP = 7;
 
 	public int processEvent(int eventCode, Point location);
+
+	// Perform any rendering specific to this operation
+	public void render(AlgorithmStepper s);
 }

@@ -1,5 +1,6 @@
 package com.js.geometryapp.editor;
 
+import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -72,12 +73,18 @@ public class EdSegment extends EdObject {
 
 	private static class EditorOperation implements EditorEventListener {
 		public EditorOperation(Editor editor, int slot) {
+			ASSERT(slot >= 0);
 			mEditor = editor;
 			mEditSlot = slot;
 		}
 
 		@Override
 		public int processEvent(int eventCode, Point location) {
+
+			final boolean db = true && DEBUG_ONLY_FEATURES;
+			if (db)
+				pr("EdSegment processEvent "
+						+ Editor.editorEventName(eventCode));
 
 			// By default, we'll be handling the event
 			int returnCode = EVENT_NONE;
@@ -92,32 +99,48 @@ public class EdSegment extends EdObject {
 			case EVENT_DOWN: {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				mOriginal = mEditor.objects().getList(mEditSlot);
+				pr(" editSlot " + mEditSlot + " seg" + seg);
 
 				if (seg.nPoints() == 0) {
 					seg.addPoint(location);
 					seg.addPoint(location);
 				}
+
+				// Find endpoint at touch location. If found, continue operation
+				// to edit that endpoint
+				warning("figure out less adhoc inchestopixels method");
+				mEditPointIndex = seg.closestPoint(location,
+						MyActivity.inchesToPixels(.1f));
+				pr(" edit point index " + mEditPointIndex);
 			}
 				break;
 
 			case EVENT_DRAG: {
+				if (mEditPointIndex < 0)
+					break;
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = (EdSegment) seg.clone();
-				seg2.setPoint(1, location);
+				seg2.setPoint(mEditPointIndex, location);
+				pr(" changed endpoint; " + seg2);
 				mEditor.objects().set(mEditSlot, seg2);
 				mModified = true;
 			}
 				break;
 
 			case EVENT_UP:
-				mEditor.clearOperation();
+				pr(" modified " + mModified);
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForEditedObjects(
 							mEditor.objects(), mOriginal, "segendpoint"));
 				}
+				// Cancel the operation
+				mEditor.clearOperation();
 				break;
 
+			case EVENT_UP_MULTIPLE:
+				mEditor.clearOperation();
+				break;
 			}
 			return returnCode;
 		}
@@ -125,6 +148,8 @@ public class EdSegment extends EdObject {
 		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
+		// Index of point being edited
+		private int mEditPointIndex;
 		private boolean mModified;
 		private EdObjectArray mOriginal;
 	}

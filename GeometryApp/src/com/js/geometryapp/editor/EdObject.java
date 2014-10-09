@@ -183,20 +183,36 @@ public abstract class EdObject implements Cloneable {
 	public abstract EdObjectFactory getFactory();
 
 	/**
-	 * Determine distance of an object's point from a point
+	 * Determine distance between a point and one of this object's points
 	 * 
+	 * @param point
 	 * @param ptIndex
-	 *            index of object's point
-	 * @param pt
-	 *            point to compare that point to
-	 * @return distance, or < 0 if no point ptIndex exists
+	 *            index of point within this object
 	 */
-	public double distFrom(int ptIndex, Point pt) {
-		float ret = -1;
-		Point pt2 = getPoint(ptIndex);
-		if (pt2 != null)
-			ret = MyMath.distanceBetween(pt, pt2);
-		return ret;
+	public float distanceFromPoint(Point point, int ptIndex) {
+		return MyMath.distanceBetween(point, getPoint(ptIndex));
+	}
+
+	/**
+	 * Determine closest object point to a point
+	 * 
+	 * @param point
+	 * @param maxDistance
+	 *            maximum distance to accept (distance must be strictly less
+	 *            than this)
+	 * @return index of closest point, or -1
+	 */
+	public int closestPoint(Point point, float maxDistance) {
+		float bestDistance = maxDistance;
+		int closestIndex = -1;
+		for (int i = 0; i < nPoints(); i++) {
+			float dist = distanceFromPoint(point, i);
+			if (dist < bestDistance) {
+				bestDistance = dist;
+				closestIndex = i;
+			}
+		}
+		return closestIndex;
 	}
 
 	/**

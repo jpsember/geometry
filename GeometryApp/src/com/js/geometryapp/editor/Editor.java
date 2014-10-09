@@ -498,6 +498,17 @@ public class Editor implements EditorEventListener {
 
 	}
 
+	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG", "UP",
+			"DOWN_M", "DRAG_M", "UP_M", "STOP", };
+
+	public static String editorEventName(int name) {
+		if (!DEBUG_ONLY_FEATURES)
+			return null;
+		if (name < 0 || name >= sEditorEventNames.length)
+			return "??#" + name + "??";
+		return sEditorEventNames[name];
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;

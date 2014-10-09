@@ -12,6 +12,18 @@ public abstract class EdObject implements Cloneable {
 
 	private static final int FLAG_SELECTED = (1 << 31);
 
+	@Override
+	public String toString() {
+		if (!DEBUG_ONLY_FEATURES)
+			return null;
+		StringBuilder sb = new StringBuilder(nameOf(this));
+		sb.append(" [");
+		for (int i = 0; i < nPoints(); i++)
+			sb.append(getPoint(i));
+		sb.append("]");
+		return sb.toString();
+	}
+
 	/**
 	 * Replace object's points with those of another object
 	 */

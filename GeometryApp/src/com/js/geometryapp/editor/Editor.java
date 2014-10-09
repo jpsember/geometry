@@ -165,7 +165,7 @@ public class Editor implements EditorEventListener {
 					}
 				}
 				JSONObject objMap = array.getJSONObject(i);
-				String tag = objMap.getString("type");
+				String tag = objMap.getString(EdObjectFactory.JSON_KEY_TYPE);
 				EdObjectFactory factory = mObjectTypes.get(tag);
 				if (factory == null) {
 					warning("no factory found for: " + tag);
@@ -282,6 +282,7 @@ public class Editor implements EditorEventListener {
 			// Give the toolview a transparent gray background
 			toolbar.setBackgroundColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 
+			toolbar.addView(addObjectTypeButton("Pt", EdPoint.FACTORY));
 			toolbar.addView(addObjectTypeButton("Seg", EdSegment.FACTORY));
 			{
 				Button button = buildSampleButton("Undo");
@@ -375,6 +376,7 @@ public class Editor implements EditorEventListener {
 
 	private void prepareObjectTypes() {
 		mObjectTypes = new HashMap();
+		addObjectType(EdPoint.FACTORY);
 		addObjectType(EdSegment.FACTORY);
 	}
 

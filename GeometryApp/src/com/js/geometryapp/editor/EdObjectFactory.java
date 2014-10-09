@@ -12,6 +12,9 @@ import com.js.geometry.Point;
 
 public abstract class EdObjectFactory {
 
+	static final String JSON_KEY_TYPE = "t";
+	static final String JSON_KEY_VERTICES = "p";
+
 	@Override
 	public String toString() {
 		return "EdObjectFactory '" + getTag() + "'";
@@ -62,24 +65,24 @@ public abstract class EdObjectFactory {
 
 	/**
 	 * Construct Map from EdObject. Default implementation construct a partial
-	 * map contiaining only "type" and "points" key/value pairs
+	 * map contiaining only JSON_KEY_TYPE and JSON_KEY_VERTICES key/value pairs
 	 */
 	public Map write(EdObject obj) {
 		Map map = new HashMap();
-		map.put("type", getTag());
+		map.put(JSON_KEY_TYPE, getTag());
 		ArrayList<Float> f = new ArrayList();
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < obj.nPoints(); i++) {
 			Point pt = obj.getPoint(i);
 			f.add(pt.x);
 			f.add(pt.y);
 		}
-		map.put("points", f);
+		map.put(JSON_KEY_VERTICES, f);
 		return map;
 	}
 
 	public void parsePoints(EdObject destinationObject, JSONObject map)
 			throws JSONException {
-		JSONArray coordinates = map.getJSONArray("points");
+		JSONArray coordinates = map.getJSONArray(JSON_KEY_VERTICES);
 		if (coordinates.length() % 2 != 0)
 			throw new IllegalArgumentException(
 					"unexpected number of coordinates");

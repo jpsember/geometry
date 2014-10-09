@@ -209,14 +209,6 @@ public class DefaultEventListener implements EditorEventListener {
 		case EVENT_DOWN:
 			reset();
 			mInitialDownLocation = location;
-			if (mPendingAddObjectType != null) {
-				EditorEventListener listener = mEditor
-						.addNewObject(mPendingAddObjectType);
-				mPendingAddObjectType = null;
-				// Have the now activated object-specific handler process the
-				// DOWN event
-				listener.processEvent(eventCode, location);
-			}
 			break;
 
 		case EVENT_DRAG:
@@ -251,11 +243,6 @@ public class DefaultEventListener implements EditorEventListener {
 		// A double tap will add another object of the last type added
 		case EVENT_DOWN_MULTIPLE:
 			reset();
-			if (mPendingAddObjectType != null) {
-				pr("...cancelling pending add object");
-				mPendingAddObjectType = null;
-				break;
-			}
 			mInitialDownLocation = location;
 			mEditor.startAddAnotherOperation();
 			break;
@@ -302,13 +289,6 @@ public class DefaultEventListener implements EditorEventListener {
 		return null;
 	}
 
-	/**
-	 * Set pending 'add object' operation
-	 */
-	public void setAddObjectOper(EdObjectFactory objectType) {
-		mPendingAddObjectType = objectType;
-	}
-
 	private Editor mEditor;
 	private Point mInitialDownLocation;
 	private Point mDragCorner;
@@ -316,6 +296,5 @@ public class DefaultEventListener implements EditorEventListener {
 	private boolean mDraggingRect;
 	private EdObjectArray mMoveObjectsOriginals;
 	private Point mPreviousMoveLocation;
-	private EdObjectFactory mPendingAddObjectType;
 	private boolean mNeedResetFlag;
 }

@@ -132,14 +132,14 @@ public class Editor implements EditorEventListener {
 	private void startAddObjectOperation(EdObjectFactory objectType) {
 		objects().unselectAll();
 		setOperation(null);
+		mPendingAddObjectOperation = objectType;
 		mLastAddObjectOperation = objectType;
-		mDefaultListener.setAddObjectOper(objectType);
 		if (false) // figure out a way to determine an appropriate toast message
 			toast(context(), "Add segment!");
 	}
 
 	private void setOperation(EditorEventListener operation) {
-		mDefaultListener.setAddObjectOper(null);
+		mPendingAddObjectOperation = null;
 		if (mCurrentOperation != null) {
 			mCurrentOperation.processEvent(EVENT_STOP, null);
 		}
@@ -157,6 +157,20 @@ public class Editor implements EditorEventListener {
 	// EditEventListener interface
 	@Override
 	public int processEvent(int eventCode, Point location) {
+
+		if (mPendingAddObjectOperation != null) {
+			switch (eventCode) {
+			case EVENT_DOWN:
+				addNewObject(mPendingAddObjectOperation);
+				// Have the now activated object-specific handler process the
+				// DOWN event
+				mPendingAddObjectOperation = null;
+				break;
+			case EVENT_DOWN_MULTIPLE:
+				mPendingAddObjectOperation = null;
+				break;
+			}
+		}
 
 		// If there's a current operation, let it handle it
 		if (mCurrentOperation != null) {
@@ -269,7 +283,7 @@ public class Editor implements EditorEventListener {
 		addObjectType(EdSegment.FACTORY);
 	}
 
-	public EditorEventListener addNewObject(EdObjectFactory objectType) {
+	private void addNewObject(EdObjectFactory objectType) {
 		mObjects.unselectAll();
 		EdObject object = objectType.construct();
 		object.setSelected(true);
@@ -277,13 +291,14 @@ public class Editor implements EditorEventListener {
 
 		// Start operation for editing this one
 		setOperation(objectType.buildEditorOperation(this, slot));
-		return mCurrentOperation;
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
+	// If not null, intercept DOWN events to add object
+	private EdObjectFactory mPendingAddObjectOperation;
 	private View mContentView;
 	private View mEditorView;
 	private ConcreteStepper mStepper;

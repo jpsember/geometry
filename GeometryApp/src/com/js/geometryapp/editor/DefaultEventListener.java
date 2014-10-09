@@ -39,6 +39,22 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	/**
+	 * Get subsequence of items that are selected
+	 * 
+	 * @param slotList
+	 *            list of item slots
+	 */
+	private List<Integer> getSelectedObjects(List<Integer> slotList) {
+		List<Integer> selectedSlots = new ArrayList();
+		for (int slot : slotList) {
+			EdObject obj = mEditor.objects().get(slot);
+			if (obj.isSelected())
+				selectedSlots.add(slot);
+		}
+		return selectedSlots;
+	}
+
+	/**
 	 * Unselect any currently selected objects within editor, optionally
 	 * omitting a subset
 	 * 
@@ -59,6 +75,13 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 	}
 
+	private void selectObjects(List<Integer> slots) {
+		EdObjectArray list = mEditor.objects();
+		for (int slot : slots) {
+			list.get(slot).setSelected(true);
+		}
+	}
+
 	private void doClick(Point location) {
 		List<Integer> pickSet = getPickSet(location, false);
 		unselectObjects(pickSet);
@@ -76,22 +99,32 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doStartDrag(Point location) {
-		// If initial press contains selected object, move all selected objects;
-		// else,
-		// do selection rectangle
-		List<Integer> pickSet = getPickSet(location, true);
-		if (pickSet.isEmpty()) {
-			mDraggingRect = true;
-		} else {
-			// Get all selected objects
-			mMoveObjectsSlots = mEditor.objects().getSelectedSlots();
-			unselectObjects(mMoveObjectsSlots);
+		// If initial press pickset contains any selected objects, move all
+		// selected objects;
+		// else, if initial press pickset contains any objects, select and move
+		// topmost;
+		// else, do selection rectangle
+		List<Integer> pickSet = getPickSet(location, false);
+		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
-			// Make a copy of the objects to be moved, to remember their
-			// original positions
-			mMoveObjectsOriginals = mEditor.objects().deepCopy(
-					mMoveObjectsSlots);
+		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
+			int slot = last(pickSet);
+			hlPickSet.add(slot);
+			unselectObjects(null);
+			selectObjects(hlPickSet);
+			// fall through to next...
+		}
+		if (!hlPickSet.isEmpty()) {
+			// Get all selected objects, and store in a list since we
+			// will want access to their original positions; then replace the
+			// objects with copies that will be moved
+			mMoveObjectsOriginals = mEditor.objects().getSelected();
+			unselectObjects(mMoveObjectsOriginals.getSlots());
+			mEditor.objects().replaceWithCopies(
+					mMoveObjectsOriginals.getSlots());
 			mPreviousMoveLocation = mInitialDownLocation;
+		} else {
+			mDraggingRect = true;
 		}
 	}
 
@@ -102,12 +135,12 @@ public class DefaultEventListener implements EditorEventListener {
 			Point delta = MyMath.subtract(location, mPreviousMoveLocation);
 			if (delta.magnitude() == 0)
 				return;
-			for (int i = 0; i < mMoveObjectsSlots.size(); i++) {
-				int slot = mMoveObjectsSlots.get(i);
+
+			for (int i = 0; i < mMoveObjectsOriginals.size(); i++) {
+				int slot = mMoveObjectsOriginals.getSlot(i);
 				EdObject obj = mEditor.objects().get(slot);
 				EdObject orig = mMoveObjectsOriginals.get(i);
 				obj.moveBy(orig, delta);
-				warning("keep objects immutable; slots is more important");
 			}
 		}
 	}
@@ -241,7 +274,6 @@ public class DefaultEventListener implements EditorEventListener {
 	private Point mDragCorner;
 	private boolean mDragging;
 	private boolean mDraggingRect;
-	private List<Integer> mMoveObjectsSlots;
 	private EdObjectArray mMoveObjectsOriginals;
 	private Point mPreviousMoveLocation;
 }

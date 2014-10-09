@@ -2,6 +2,7 @@ package com.js.geometryapp.editor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -318,6 +319,46 @@ public class Editor implements EditorEventListener {
 		setOperation(objectType.buildEditorOperation(this, slot));
 	}
 
+	void doUndo() {
+		if (mCommandCursor == 0) {
+			warning("attempt to undo, nothing available");
+			return;
+		}
+		mCommandCursor--;
+		Command command = mCommands.get(mCommandCursor);
+		command.getReverse().perform();
+	}
+
+	void doRedo() {
+		if (mCommandCursor == mCommands.size()) {
+			warning("attempt to redo, nothing left");
+			return;
+		}
+		Command command = mCommands.get(mCommandCursor);
+		command.perform();
+		mCommandCursor++;
+	}
+
+	void performCommand(Command command) {
+		if (!command.valid()) {
+			warning("attempt to perform invalid command: " + command);
+			return;
+		}
+		// Throw out any older 'redoable' commands that will now be stale
+		while (mCommands.size() > mCommandCursor)
+			pop(mCommands);
+
+		mCommands.add(command);
+		command.perform();
+
+		// If this command is not reversible, throw out all commands, including
+		// this one
+		if (command.getReverse() == null) {
+			mCommands.clear();
+			mCommandCursor = 0;
+		}
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;
@@ -330,5 +371,6 @@ public class Editor implements EditorEventListener {
 	private EdObjectArray mObjects = new EdObjectArray();
 	private QuiescentDelayOperation mPendingFlushOperation;
 	private String mLastSavedState;
-
+	private List<Command> mCommands = new ArrayList();
+	private int mCommandCursor;
 }

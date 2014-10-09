@@ -237,8 +237,28 @@ public class Editor implements EditorEventListener {
 			toolbar.setBackgroundColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 
 			toolbar.addView(addObjectTypeButton("Seg", EdSegment.FACTORY));
-			toolbar.addView(buildSampleButton("Save"));
-			toolbar.addView(buildSampleButton("Undo"));
+			{
+				Button button = buildSampleButton("Undo");
+				button.setOnClickListener(new Button.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Editor editor = Editor.this;
+						editor.doUndo();
+					}
+				});
+				toolbar.addView(button);
+			}
+			{
+				Button button = buildSampleButton("Redo");
+				button.setOnClickListener(new Button.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						Editor editor = Editor.this;
+						editor.doRedo();
+					}
+				});
+				toolbar.addView(button);
+			}
 
 			p = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
 					LayoutParams.WRAP_CONTENT);

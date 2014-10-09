@@ -35,6 +35,7 @@ public class Editor implements EditorEventListener {
 
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
+	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
 
 	/**
 	 * Constructor
@@ -51,10 +52,143 @@ public class Editor implements EditorEventListener {
 		prepareObjectTypes();
 	}
 
+	/**
+	 * Get the view displaying the editor; construct if necessary. This contains
+	 * the contentView
+	 */
 	public View getView() {
 		if (mEditorView == null)
 			constructView();
 		return mEditorView;
+	}
+
+	/**
+	 * Render editor-related elements to the contentView; this includes all the
+	 * EdObjects, and any highlighting related to an active operation (e.g. a
+	 * selection rectangle)
+	 */
+	public void render() {
+		for (int i = 0; i < mObjects.size(); i++) {
+			EdObject obj = mObjects.get(i);
+			obj.render(mStepper);
+		}
+		mDefaultListener.render(mStepper);
+	}
+
+	/**
+	 * EditEventListener interface
+	 */
+	@Override
+	public int processEvent(int eventCode, Point location) {
+
+		if (mPendingAddObjectOperation != null) {
+			switch (eventCode) {
+			case EVENT_DOWN:
+				addNewObject(mPendingAddObjectOperation);
+				// Have the now activated object-specific handler process the
+				// DOWN event
+				mPendingAddObjectOperation = null;
+				break;
+			case EVENT_DOWN_MULTIPLE:
+				mPendingAddObjectOperation = null;
+				break;
+			}
+		}
+
+		// If there's a current operation, let it handle it
+		if (mCurrentOperation != null) {
+			eventCode = mCurrentOperation.processEvent(eventCode, location);
+		}
+
+		eventCode = mDefaultListener.processEvent(eventCode, location);
+
+		// Always request a refresh of the editor view
+		mStepper.refresh();
+		// Set delay to save changes
+		persistEditorState(true);
+
+		return eventCode;
+	}
+
+	/**
+	 * Restore the editor state, including the EdObjects, from a JSON string
+	 */
+	public void restoreFromJSON(String script) {
+		if (script == null)
+			script = "{}";
+
+		try {
+			JSONObject map = JSONTools.parseMap(script);
+			JSONArray array = map.getJSONArray("objects");
+			mObjects.clear();
+			for (int i = 0; i < array.length(); i++) {
+				if (TRUNCATE_SAVED_OBJECTS) {
+					if (i < array.length() - 5) {
+						warning("omitting all but last n objects");
+						continue;
+					}
+				}
+				JSONObject objMap = array.getJSONObject(i);
+				String tag = objMap.getString("type");
+				EdObjectFactory factory = mObjectTypes.get(tag);
+				if (factory == null) {
+					warning("no factory found for: " + tag);
+					continue;
+				}
+				EdObject edObject = factory.parse(objMap);
+				mObjects.add(edObject);
+			}
+		} catch (JSONException e) {
+			warning("caught " + e);
+		}
+	}
+
+	/**
+	 * Save the editor state (including EdObjects) to a JSON string within the
+	 * user preferences
+	 * 
+	 * @param withDelay
+	 *            if true, save operation is delayed by several seconds using
+	 *            the QuiescentDelayOperation
+	 */
+	public void persistEditorState(boolean withDelay) {
+		if (!withDelay) {
+			persistEditorStateAux();
+			return;
+		}
+		// Make a delayed call to persist the values
+		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
+			final float FLUSH_DELAY = 5.0f;
+			mPendingFlushOperation = new QuiescentDelayOperation(
+					"flush editor", FLUSH_DELAY, new Runnable() {
+						public void run() {
+							persistEditorStateAux();
+						}
+					});
+		}
+	}
+
+	/**
+	 * Invoke a repeat of the last 'add object' operation
+	 */
+	void startAddAnotherOperation() {
+		if (mLastAddObjectOperation != null) {
+			startAddObjectOperation(mLastAddObjectOperation);
+		}
+	}
+
+	/**
+	 * Get the EdObjectArray being edited
+	 */
+	EdObjectArray objects() {
+		return mObjects;
+	}
+
+	/**
+	 * Clear current operation
+	 */
+	void clearOperation() {
+		setOperation(null);
 	}
 
 	private Context context() {
@@ -120,13 +254,6 @@ public class Editor implements EditorEventListener {
 		mEditorView = frameLayout;
 	}
 
-	/**
-	 * Clear current operation
-	 */
-	void clearOperation() {
-		setOperation(null);
-	}
-
 	private void startAddObjectOperation(EdObjectFactory objectType) {
 		objects().unselectAll();
 		setOperation(null);
@@ -144,57 +271,6 @@ public class Editor implements EditorEventListener {
 		mCurrentOperation = operation;
 	}
 
-	public void render() {
-		for (int i = 0; i < mObjects.size(); i++) {
-			EdObject obj = mObjects.get(i);
-			obj.render(mStepper);
-		}
-		mDefaultListener.render(mStepper);
-	}
-
-	// EditEventListener interface
-	@Override
-	public int processEvent(int eventCode, Point location) {
-
-		if (mPendingAddObjectOperation != null) {
-			switch (eventCode) {
-			case EVENT_DOWN:
-				addNewObject(mPendingAddObjectOperation);
-				// Have the now activated object-specific handler process the
-				// DOWN event
-				mPendingAddObjectOperation = null;
-				break;
-			case EVENT_DOWN_MULTIPLE:
-				mPendingAddObjectOperation = null;
-				break;
-			}
-		}
-
-		// If there's a current operation, let it handle it
-		if (mCurrentOperation != null) {
-			eventCode = mCurrentOperation.processEvent(eventCode, location);
-		}
-
-		eventCode = mDefaultListener.processEvent(eventCode, location);
-
-		// Always request a refresh of the editor view
-		mStepper.refresh();
-		// Set delay to save changes
-		persistEditorState(true);
-
-		return eventCode;
-	}
-
-	void startAddAnotherOperation() {
-		if (mLastAddObjectOperation != null) {
-			startAddObjectOperation(mLastAddObjectOperation);
-		}
-	}
-
-	EdObjectArray objects() {
-		return mObjects;
-	}
-
 	private void persistEditorStateAux() {
 		try {
 			String jsonState = compileObjectsToJSON();
@@ -205,55 +281,6 @@ public class Editor implements EditorEventListener {
 			}
 		} catch (JSONException e) {
 			warning("caught: " + e);
-		}
-	}
-
-	public void restoreFromJSON(String script) {
-		if (script == null)
-			script = "{}";
-
-		try {
-			JSONObject map = JSONTools.parseMap(script);
-			JSONArray array = map.getJSONArray("objects");
-			mObjects.clear();
-			for (int i = 0; i < array.length(); i++) {
-				if (true) {
-					if (i < array.length() - 5) {
-						warning("omitting all but last n objects");
-						continue;
-					}
-				}
-				JSONObject objMap = array.getJSONObject(i);
-				String tag = objMap.getString("type");
-				EdObjectFactory factory = mObjectTypes.get(tag);
-				if (factory == null) {
-					warning("no factory found for: " + tag);
-					continue;
-				}
-				EdObject edObject = factory.parse(objMap);
-				mObjects.add(edObject);
-			}
-		} catch (JSONException e) {
-			warning("caught " + e);
-		}
-
-	}
-
-	public void persistEditorState(boolean withDelay) {
-		if (!withDelay) {
-			persistEditorStateAux();
-			return;
-		}
-
-		// Make a delayed call to persist the values (on the UI thread)
-		if (QuiescentDelayOperation.replaceExisting(mPendingFlushOperation)) {
-			final float FLUSH_DELAY = 5.0f;
-			mPendingFlushOperation = new QuiescentDelayOperation(
-					"flush editor", FLUSH_DELAY, new Runnable() {
-						public void run() {
-							persistEditorStateAux();
-						}
-					});
 		}
 	}
 

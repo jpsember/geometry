@@ -18,7 +18,6 @@ public class DefaultEventListener implements EditorEventListener {
 
 	public DefaultEventListener(Editor editor) {
 		mEditor = editor;
-		reset();
 	}
 
 	private List<Integer> getPickSet(Point location, boolean selectedObjectsOnly) {
@@ -125,6 +124,7 @@ public class DefaultEventListener implements EditorEventListener {
 			mPreviousMoveLocation = mInitialDownLocation;
 		} else {
 			mDraggingRect = true;
+			unselectObjects(null);
 		}
 	}
 
@@ -153,6 +153,7 @@ public class DefaultEventListener implements EditorEventListener {
 			for (EdObject edObject : mEditor.objects()) {
 				edObject.setSelected(dragRect.contains(edObject.getBounds()));
 			}
+			mDraggingRect = false;
 		} else {
 		}
 	}
@@ -162,6 +163,7 @@ public class DefaultEventListener implements EditorEventListener {
 	 * was initiated
 	 */
 	private void reset() {
+		mNeedResetFlag = false;
 		mDragging = false;
 		mDraggingRect = false;
 		mDragCorner = null;
@@ -195,7 +197,6 @@ public class DefaultEventListener implements EditorEventListener {
 	 */
 	@Override
 	public int processEvent(int eventCode, Point location) {
-
 		// By default, we'll be handling this event; so clear return code
 		int returnCode = EVENT_NONE;
 
@@ -208,9 +209,23 @@ public class DefaultEventListener implements EditorEventListener {
 		case EVENT_DOWN:
 			reset();
 			mInitialDownLocation = location;
+			if (mPendingAddObjectType != null) {
+				EditorEventListener listener = mEditor
+						.addNewObject(mPendingAddObjectType);
+				mPendingAddObjectType = null;
+				// Have the now activated object-specific handler process the
+				// DOWN event
+				listener.processEvent(eventCode, location);
+			}
 			break;
 
 		case EVENT_DRAG:
+			verifyResetState();
+			// If this event is part of a sequence not initiated by us, ignore
+			if (mInitialDownLocation == null) {
+				warning("issue #112: EVENT_DRAG, no initial down location");
+				break;
+			}
 			if (!mDragging) {
 				mDragging = true;
 				doStartDrag(mInitialDownLocation);
@@ -219,27 +234,45 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EVENT_UP:
+			verifyResetState();
+			// If this event is part of a sequence not initiated by us, ignore
+			if (mInitialDownLocation == null) {
+				warning("issue #112: EVENT_UP, no initial down location");
+				break;
+			}
 			if (!mDragging) {
 				doClick(mInitialDownLocation);
 			} else {
 				doFinishDrag();
 			}
-			reset();
+			mNeedResetFlag = true;
 			break;
 
 		// A double tap will add another object of the last type added
 		case EVENT_DOWN_MULTIPLE:
 			reset();
+			if (mPendingAddObjectType != null) {
+				pr("...cancelling pending add object");
+				mPendingAddObjectType = null;
+				break;
+			}
 			mInitialDownLocation = location;
 			mEditor.startAddAnotherOperation();
 			break;
 
 		case EVENT_UP_MULTIPLE:
-			reset();
+			verifyResetState();
+			mNeedResetFlag = true;
 			break;
 		}
 
 		return returnCode;
+	}
+
+	private void verifyResetState() {
+		if (mNeedResetFlag) {
+			die("reset() ought to have been called!");
+		}
 	}
 
 	/**
@@ -259,14 +292,21 @@ public class DefaultEventListener implements EditorEventListener {
 
 	/**
 	 * Get the rectangle for the current drag selection operation, or null if
-	 * none is active
+	 * none is active (or rectangle is not available)
 	 * 
 	 * @return Rect, or null
 	 */
 	private Rect getDragRect() {
-		if (mDragCorner != null)
+		if (mDraggingRect && mDragCorner != null)
 			return new Rect(mInitialDownLocation, mDragCorner);
 		return null;
+	}
+
+	/**
+	 * Set pending 'add object' operation
+	 */
+	public void setAddObjectOper(EdObjectFactory objectType) {
+		mPendingAddObjectType = objectType;
 	}
 
 	private Editor mEditor;
@@ -276,4 +316,6 @@ public class DefaultEventListener implements EditorEventListener {
 	private boolean mDraggingRect;
 	private EdObjectArray mMoveObjectsOriginals;
 	private Point mPreviousMoveLocation;
+	private EdObjectFactory mPendingAddObjectType;
+	private boolean mNeedResetFlag;
 }

@@ -69,6 +69,19 @@ public class Editor implements EditorEventListener {
 		return b;
 	}
 
+	private Button addObjectTypeButton(String label,
+			final EdObjectFactory factory) {
+		Button button = buildSampleButton(label);
+		button.setOnClickListener(new Button.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Editor editor = Editor.this;
+				editor.startAddObjectOperation(factory);
+			}
+		});
+		return button;
+	}
+
 	private void constructView() {
 		FrameLayout frameLayout = new FrameLayout(mContentView.getContext());
 
@@ -88,15 +101,7 @@ public class Editor implements EditorEventListener {
 			// Give the toolview a transparent gray background
 			toolbar.setBackgroundColor(Color.argb(0x40, 0x80, 0x80, 0x80));
 
-			Button segmentButton = buildSampleButton("Seg");
-			segmentButton.setOnClickListener(new Button.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					Editor.this.startAddObjectOperation(EdSegment
-							.buildEditorOperation(Editor.this));
-				}
-			});
-			toolbar.addView(segmentButton);
+			toolbar.addView(addObjectTypeButton("Seg", EdSegment.FACTORY));
 			toolbar.addView(buildSampleButton("Save"));
 			toolbar.addView(buildSampleButton("Undo"));
 
@@ -124,16 +129,17 @@ public class Editor implements EditorEventListener {
 		}
 	}
 
-	private void startAddObjectOperation(EditorEventListener operation) {
+	private void startAddObjectOperation(EdObjectFactory objectType) {
 		objects().unselectAll();
-		setOperation(operation);
-		operation.processEvent(EVENT_ADD_NEW, null);
-		mLastAddObjectOperation = operation;
+		setOperation(null);
+		mLastAddObjectOperation = objectType;
+		mDefaultListener.setAddObjectOper(objectType);
 		if (false) // figure out a way to determine an appropriate toast message
 			toast(context(), "Add segment!");
 	}
 
 	private void setOperation(EditorEventListener operation) {
+		mDefaultListener.setAddObjectOper(null);
 		if (mCurrentOperation != null) {
 			mCurrentOperation.processEvent(EVENT_STOP, null);
 		}
@@ -151,14 +157,10 @@ public class Editor implements EditorEventListener {
 	// EditEventListener interface
 	@Override
 	public int processEvent(int eventCode, Point location) {
-		if (db)
-			pr("Editor processEvent " + eventCode + " loc:" + location);
 
 		// If there's a current operation, let it handle it
 		if (mCurrentOperation != null) {
 			eventCode = mCurrentOperation.processEvent(eventCode, location);
-			if (db)
-				pr(" handled by current operation...");
 		}
 
 		eventCode = mDefaultListener.processEvent(eventCode, location);
@@ -203,6 +205,12 @@ public class Editor implements EditorEventListener {
 			JSONArray array = map.getJSONArray("objects");
 			mObjects.clear();
 			for (int i = 0; i < array.length(); i++) {
+				if (true) {
+					if (i < array.length() - 5) {
+						warning("omitting all but last n objects");
+						continue;
+					}
+				}
 				JSONObject objMap = array.getJSONObject(i);
 				String tag = objMap.getString("type");
 				EdObjectFactory factory = mObjectTypes.get(tag);
@@ -261,10 +269,21 @@ public class Editor implements EditorEventListener {
 		addObjectType(EdSegment.FACTORY);
 	}
 
+	public EditorEventListener addNewObject(EdObjectFactory objectType) {
+		mObjects.unselectAll();
+		EdObject object = objectType.construct();
+		object.setSelected(true);
+		int slot = mObjects.add(object);
+
+		// Start operation for editing this one
+		setOperation(objectType.buildEditorOperation(this, slot));
+		return mCurrentOperation;
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private DefaultEventListener mDefaultListener;
 	private EditorEventListener mCurrentOperation;
-	private EditorEventListener mLastAddObjectOperation;
+	private EdObjectFactory mLastAddObjectOperation;
 	private View mContentView;
 	private View mEditorView;
 	private ConcreteStepper mStepper;

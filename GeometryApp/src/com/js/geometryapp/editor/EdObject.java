@@ -6,6 +6,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmStepper;
+import static com.js.basic.Tools.*;
 
 public abstract class EdObject implements Cloneable {
 
@@ -148,16 +149,9 @@ public abstract class EdObject implements Cloneable {
 
 	/**
 	 * Get location of a particular point
-	 * 
-	 * @param ptIndex
-	 *            index of point
-	 * @return location, or null if that point doesn't exist
 	 */
 	public Point getPoint(int ptIndex) {
-		Point ret = null;
-		if (ptIndex < mPoints.size())
-			ret = mPoints.get(ptIndex);
-		return ret;
+		return mPoints.get(ptIndex);
 	}
 
 	/**
@@ -167,7 +161,7 @@ public abstract class EdObject implements Cloneable {
 	 * 
 	 * @param ptIndex
 	 *            index of point; it is converted to modulo(nPoints())
-	 * @return location, or null if that point doesn't exist
+	 * @return location
 	 */
 	public Point getPointMod(int ptIndex) {
 		return getPoint(MyMath.myMod(ptIndex, nPoints()));
@@ -221,10 +215,8 @@ public abstract class EdObject implements Cloneable {
 	 *            amount to move by
 	 */
 	public void moveBy(EdObject orig, Point delta) {
-		for (int i = 0;; i++) {
+		for (int i = 0; i < orig.nPoints(); i++) {
 			Point pt = orig.getPoint(i);
-			if (pt == null)
-				break;
 			setPoint(i, MyMath.add(pt, delta));
 		}
 	}
@@ -303,6 +295,10 @@ public abstract class EdObject implements Cloneable {
 			for (int i = 0; i < nPoints(); i++)
 				s.highlight(getPoint(i));
 		}
+	}
+
+	static {
+		doNothing();
 	}
 
 	private int mFlags;

@@ -33,8 +33,8 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.size();
 	}
 
-	public EdObject get(int index) {
-		return mList.get(index);
+	public <T extends EdObject> T get(int index) {
+		return (T) mList.get(index);
 	}
 
 	public int getSlot(int index) {

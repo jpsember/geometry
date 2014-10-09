@@ -18,6 +18,8 @@ public class EdSegment extends EdObject {
 
 	@Override
 	public void render(AlgorithmStepper s) {
+		if (!complete())
+			return;
 		s.plotLine(getPoint(0), getPoint(1));
 		super.render(s);
 	}
@@ -32,7 +34,7 @@ public class EdSegment extends EdObject {
 	}
 
 	public boolean complete() {
-		return nPoints() >= 2;
+		return nPoints() == 2;
 	}
 
 	public float distFrom(Point pt) {
@@ -59,25 +61,21 @@ public class EdSegment extends EdObject {
 		public EdObject construct() {
 			return new EdSegment();
 		}
+
+		@Override
+		public EditorEventListener buildEditorOperation(Editor editor, int slot) {
+			return new EditorOperation(editor, slot);
+		}
 	};
 
-	/**
-	 * Construct an event handler for editor operations with these objects
-	 */
-	public static EditorEventListener buildEditorOperation(Editor editor) {
-		return new EditorOperation(editor);
-	}
-
 	private static class EditorOperation implements EditorEventListener {
-		public EditorOperation(Editor editor) {
+		public EditorOperation(Editor editor, int slot) {
 			mEditor = editor;
+			mEditSlot = slot;
 		}
 
 		@Override
 		public int processEvent(int eventCode, Point location) {
-			if (db)
-				pr("EdSegment addNewOperation, event " + eventCode + " loc:"
-						+ location);
 
 			// By default, we'll be handling the event
 			int returnCode = EVENT_NONE;
@@ -89,54 +87,34 @@ public class EdSegment extends EdObject {
 				returnCode = eventCode;
 				break;
 
-			case EVENT_DOWN:
-				if (db)
-					pr("EVENT_DOWN, addNewPending " + mAddNewPending);
-				if (mAddNewPending) {
-					mAddingNew = true;
-					mAddNewPending = false;
-					EdSegment seg = new EdSegment(location, location);
-					seg.setSelected(true);
-					mEditIndex = mEditor.objects().add(seg);
-					if (db)
-						pr(" just added " + seg);
+			case EVENT_DOWN: {
+				EdSegment seg = mEditor.objects().get(mEditSlot);
+				if (seg.nPoints() == 0) {
+					seg.addPoint(location);
+					seg.addPoint(location);
 				}
+			}
 				break;
 
 			case EVENT_DRAG: {
-				ASSERT(mEditIndex >= 0);
-				EdSegment seg = (EdSegment) mEditor.objects().get(mEditIndex);
+				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = (EdSegment) seg.clone();
 				seg2.setPoint(1, location);
-				mEditor.objects().set(mEditIndex, seg2);
+				mEditor.objects().set(mEditSlot, seg2);
 			}
 				break;
 
 			case EVENT_UP:
-				if (mAddingNew) {
-					mAddingNew = false;
-					mEditor.clearOperation(this);
-				}
+				mEditor.clearOperation(this);
 				break;
 
-			case EVENT_STOP:
-				mAddNewPending = false;
-				mAddingNew = false;
-				mEditIndex = -1;
-				break;
-
-			case EVENT_ADD_NEW:
-				mAddNewPending = true;
-				break;
 			}
 			return returnCode;
 		}
 
-		private boolean mAddNewPending;
 		private Editor mEditor;
 		// Index of object being edited
-		private int mEditIndex = -1;
-		private boolean mAddingNew;
+		private int mEditSlot;
 	}
 }

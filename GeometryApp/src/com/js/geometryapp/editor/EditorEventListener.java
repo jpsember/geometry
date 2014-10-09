@@ -18,8 +18,6 @@ public interface EditorEventListener {
 
 	// stop existing operation, if one is occurring
 	public static final int EVENT_STOP = 7;
-	// start operation to add new item
-	public static final int EVENT_ADD_NEW = 8;
 
 	public int processEvent(int eventCode, Point location);
 }

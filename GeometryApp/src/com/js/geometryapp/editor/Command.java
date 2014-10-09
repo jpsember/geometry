@@ -26,6 +26,18 @@ public abstract class Command {
 		return true;
 	}
 
+	public boolean isPairedWithNext() {
+		return mPairedWithNext;
+	}
+
+	/**
+	 * Set flag indicating this command and its follower should be considered an
+	 * atomic unit (see issue #116)
+	 */
+	public void setPairedWithNext(boolean f) {
+		mPairedWithNext = f;
+	}
+
 	/**
 	 * Construct a Command that generically saves and restores a subset of
 	 * objects that have been edited
@@ -142,7 +154,6 @@ public abstract class Command {
 
 		@Override
 		public void perform(Editor editor) {
-			pr("replacing objects, slots " + d(mSlots) + " mNew " + d(mNew));
 			editor.objects().replace(mSlots, mNew);
 			editor.objects().select(mSlots);
 		}
@@ -195,4 +206,5 @@ public abstract class Command {
 		private Command mReverse;
 	}
 
+	private boolean mPairedWithNext;
 }

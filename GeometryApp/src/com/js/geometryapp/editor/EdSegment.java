@@ -113,7 +113,6 @@ public class EdSegment extends EdObject {
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForEditedObjects(
 							mEditor.objects(), mOriginal));
-					warning("combine this command with previous somehow");
 				}
 				break;
 

@@ -39,7 +39,7 @@ public class Editor implements EditorEventListener {
 	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
 	private static final boolean DONT_RESTORE_OBJECTS = true && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
-	private static final int MAX_UNDO_STACK_SIZE = 5;
+	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 
 	/**
 	 * Constructor
@@ -119,9 +119,9 @@ public class Editor implements EditorEventListener {
 		updateButtonEnableStates();
 	}
 
-	private void updateButtonEnableStates() { 
-		mUndoButton.setEnabled(mCommandCursor > 0);
-		mRedoButton.setEnabled(mCommandCursor < mCommands.size());
+	private void updateButtonEnableStates() {
+		mUndoButton.setEnabled(mCommandHistoryCursor > 0);
+		mRedoButton.setEnabled(mCommandHistoryCursor < mCommandHistory.size());
 	}
 
 	/**
@@ -352,7 +352,9 @@ public class Editor implements EditorEventListener {
 		List<Integer> slots = new ArrayList();
 		slots.add(slot);
 		mObjects.select(slots);
-		pushCommand(Command.constructForAddedObjects(mObjects, slots));
+		Command c = Command.constructForAddedObjects(mObjects, slots);
+		c.setPairedWithNext(true);
+		pushCommand(c);
 
 		// Start operation for editing this one
 		setOperation(objectType.buildEditorOperation(this, slot));
@@ -360,29 +362,57 @@ public class Editor implements EditorEventListener {
 
 	void doUndo() {
 		final boolean db = DB_UNDO;
-		if (mCommandCursor == 0) {
-			warning("attempt to undo, nothing available");
+		if (mCommandHistoryCursor == 0) {
+			warning("attempt to undo, nothing available" + getHistory());
 			return;
 		}
-		mCommandCursor--;
-		Command command = mCommands.get(mCommandCursor);
+		mCommandHistoryCursor--;
+		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		if (db)
-			pr("Undoing " + command);
+			pr("Undoing " + command + getHistory());
 		command.getReverse().perform(this);
+		// While previous command exists, and is paired with the one we just
+		// undid, repeat undo
+		while (true) {
+			if (mCommandHistoryCursor == 0)
+				break;
+			command = mCommandHistory.get(mCommandHistoryCursor - 1);
+			if (!command.isPairedWithNext())
+				break;
+			mCommandHistoryCursor--;
+			if (db)
+				pr(" undoing paired previous: " + command);
+			command.getReverse().perform(this);
+		}
 		refresh();
 	}
 
 	void doRedo() {
 		final boolean db = DB_UNDO;
-		if (mCommandCursor == mCommands.size()) {
-			warning("attempt to redo, nothing left");
+		if (mCommandHistoryCursor == mCommandHistory.size()) {
+			warning("attempt to redo, nothing left" + getHistory());
 			return;
 		}
-		Command command = mCommands.get(mCommandCursor);
+		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		if (db)
 			pr("Redoing " + command);
 		command.perform(this);
-		mCommandCursor++;
+		mCommandHistoryCursor++;
+
+		// While next command exists, and is paired with the one we just
+		// did, repeat redo
+		while (command.isPairedWithNext()) {
+			if (mCommandHistoryCursor == mCommandHistory.size()) {
+				warning("attempt to redo paired follower, none found");
+				break;
+			}
+			command = mCommandHistory.get(mCommandHistoryCursor);
+			mCommandHistoryCursor++;
+			if (db)
+				pr(" redoing paired follower: " + command);
+			command.perform(this);
+		}
+
 		refresh();
 	}
 
@@ -390,38 +420,76 @@ public class Editor implements EditorEventListener {
 	 * Perform a command, and add to the undo stack
 	 */
 	void performCommand(Command command) {
-		pr("performCommand: " + nameOf(command));
+		final boolean db = DB_UNDO;
+		if (db)
+			pr("performCommand: " + nameOf(command));
 		pushCommand(command);
 		if (command.valid())
 			command.perform(this);
+	}
+
+	private String getHistory() {
+		if (DEBUG_ONLY_FEATURES) {
+			return " (History size:" + mCommandHistory.size() + " cursor:"
+					+ mCommandHistoryCursor + ")";
+		}
+		return "";
 	}
 
 	/**
 	 * Add a command that has already been performed to the undo stack
 	 */
 	public void pushCommand(Command command) {
+		final boolean db = DB_UNDO;
+		if (db)
+			pr("pushCommand to undo stack: " + command + getHistory());
+
 		if (!command.valid()) {
 			warning("attempt to perform invalid command: " + command);
 			return;
 		}
 		// Throw out any older 'redoable' commands that will now be stale
-		while (mCommands.size() > mCommandCursor)
-			pop(mCommands);
+		while (mCommandHistory.size() > mCommandHistoryCursor) {
+			Command popped = pop(mCommandHistory);
+			if (db)
+				pr(" popped command " + popped + getHistory());
+		}
 
-		mCommands.add(command);
-		mCommandCursor++;
+		mCommandHistory.add(command);
+		mCommandHistoryCursor++;
+		if (db)
+			pr(" added command" + getHistory());
 
 		// If this command is not reversible, throw out all commands, including
 		// this one
 		if (command.getReverse() == null) {
-			mCommands.clear();
-			mCommandCursor = 0;
+			mCommandHistory.clear();
+			mCommandHistoryCursor = 0;
+			if (db)
+				pr(" command isn't reversible; throwing out all commands"
+						+ getHistory());
 		}
 
-		if (mCommandCursor > MAX_UNDO_STACK_SIZE) {
-			int del = mCommandCursor - MAX_UNDO_STACK_SIZE;
-			mCommandCursor -= del;
-			mCommands.subList(0, del).clear();
+		if (mCommandHistoryCursor > MAX_COMMAND_HISTORY_SIZE) {
+			int del = mCommandHistoryCursor - MAX_COMMAND_HISTORY_SIZE;
+			if (db)
+				pr(" history full, deleting first " + del + " items");
+			// If last command to be deleted is paired with following, include
+			// following as well
+			while (true) {
+				if (del == mCommandHistoryCursor)
+					break;
+				Command last = mCommandHistory.get(del - 1);
+				if (!last.isPairedWithNext())
+					break;
+				del++;
+				if (db)
+					pr("  last element is paired, deleting extra one");
+			}
+			mCommandHistoryCursor -= del;
+			mCommandHistory.subList(0, del).clear();
+			if (db)
+				pr("  deleted first " + del + " items" + getHistory());
 		}
 
 	}
@@ -438,7 +506,7 @@ public class Editor implements EditorEventListener {
 	private EdObjectArray mObjects = new EdObjectArray();
 	private QuiescentDelayOperation mPendingFlushOperation;
 	private String mLastSavedState;
-	private List<Command> mCommands = new ArrayList();
-	private int mCommandCursor;
+	private List<Command> mCommandHistory = new ArrayList();
+	private int mCommandHistoryCursor;
 	private Button mUndoButton, mRedoButton;
 }

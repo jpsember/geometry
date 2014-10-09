@@ -194,7 +194,11 @@ public class EdObjectArray implements Iterable<EdObject> {
 		StringBuilder sb = new StringBuilder("EdObjectArray");
 		if (mSlots != null)
 			sb.append(" slots" + d(mSlots));
-		sb.append(" items:" + d(mList));
+		sb.append(" items[");
+		for (EdObject obj : mList) {
+			sb.append(" " + obj.getFactory().getTag());
+		}
+		sb.append("]");
 		return sb.toString();
 	}
 

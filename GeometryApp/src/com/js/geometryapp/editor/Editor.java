@@ -42,7 +42,9 @@ public class Editor implements EditorEventListener {
 	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
+	private static final String JSON_KEY_OBJECTS = "obj";
 
 	/**
 	 * Constructor
@@ -153,9 +155,12 @@ public class Editor implements EditorEventListener {
 			script = null;
 		if (script == null)
 			return;
+		if (DB_JSON) {
+			pr("\n\nRestoring JSON:\n" + script);
+		}
 		try {
 			JSONObject map = JSONTools.parseMap(script);
-			JSONArray array = map.getJSONArray("objects");
+			JSONArray array = map.getJSONArray(JSON_KEY_OBJECTS);
 			mObjects.clear();
 			for (int i = 0; i < array.length(); i++) {
 				if (TRUNCATE_SAVED_OBJECTS) {
@@ -349,6 +354,9 @@ public class Editor implements EditorEventListener {
 				AppPreferences.putString(
 						GeometryStepperActivity.PERSIST_KEY_EDITOR, jsonState);
 				mLastSavedState = jsonState;
+				if (DB_JSON) {
+					pr("\n\nJSON:\n" + mLastSavedState);
+				}
 			}
 		} catch (JSONException e) {
 			warning("caught: " + e);
@@ -366,7 +374,7 @@ public class Editor implements EditorEventListener {
 
 	private String compileObjectsToJSON() throws JSONException {
 		JSONObject editorMap = new JSONObject();
-		editorMap.put("objects", getEdObjectsArrayJSON(objects()));
+		editorMap.put(JSON_KEY_OBJECTS, getEdObjectsArrayJSON(objects()));
 		return editorMap.toString();
 	}
 

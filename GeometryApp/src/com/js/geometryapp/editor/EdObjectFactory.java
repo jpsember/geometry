@@ -70,11 +70,11 @@ public abstract class EdObjectFactory {
 	public Map write(EdObject obj) {
 		Map map = new HashMap();
 		map.put(JSON_KEY_TYPE, getTag());
-		ArrayList<Float> f = new ArrayList();
+		ArrayList<Integer> f = new ArrayList();
 		for (int i = 0; i < obj.nPoints(); i++) {
 			Point pt = obj.getPoint(i);
-			f.add(pt.x);
-			f.add(pt.y);
+			f.add((int) pt.x);
+			f.add((int) pt.y);
 		}
 		map.put(JSON_KEY_VERTICES, f);
 		return map;

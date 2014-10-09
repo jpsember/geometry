@@ -74,6 +74,19 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	/**
+	 * Make specific slots selected, and others unselected
+	 */
+	public void select(List<Integer> slots) {
+		int j = 0;
+		for (int i = 0; i < mList.size(); i++) {
+			boolean sel = j < slots.size() && slots.get(j) == i;
+			mList.get(i).setSelected(sel);
+			if (sel)
+				j++;
+		}
+	}
+
+	/**
 	 * Get subsequence of this array
 	 * 
 	 * @param slots
@@ -129,6 +142,13 @@ public class EdObjectArray implements Iterable<EdObject> {
 
 	public List<Integer> getSlots() {
 		return mSlots;
+	}
+
+	public void replace(List<Integer> slots, EdObjectArray replacementObjects) {
+		ASSERT(slots.size() == replacementObjects.size());
+		for (int i = 0; i < slots.size(); i++) {
+			set(slots.get(i), replacementObjects.get(i));
+		}
 	}
 
 	private ArrayList<EdObject> mList = new ArrayList();

@@ -154,7 +154,11 @@ public class DefaultEventListener implements EditorEventListener {
 				edObject.setSelected(dragRect.contains(edObject.getBounds()));
 			}
 			mDraggingRect = false;
-		} else {
+		} else if (mMoveObjectsOriginals != null) {
+			// Create command and undo
+			Command cmd = Command.constructForEditedObjects(mEditor.objects(),
+					mMoveObjectsOriginals);
+			mEditor.pushCommand(cmd);
 		}
 	}
 
@@ -168,6 +172,7 @@ public class DefaultEventListener implements EditorEventListener {
 		mDraggingRect = false;
 		mDragCorner = null;
 		mInitialDownLocation = null;
+		mMoveObjectsOriginals = null;
 	}
 
 	static {

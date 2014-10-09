@@ -104,11 +104,15 @@ public class Editor implements EditorEventListener {
 		eventCode = mDefaultListener.processEvent(eventCode, location);
 
 		// Always request a refresh of the editor view
+		refresh();
+
+		return eventCode;
+	}
+
+	private void refresh() {
 		mStepper.refresh();
 		// Set delay to save changes
 		persistEditorState(true);
-
-		return eventCode;
 	}
 
 	/**
@@ -346,7 +350,8 @@ public class Editor implements EditorEventListener {
 		}
 		mCommandCursor--;
 		Command command = mCommands.get(mCommandCursor);
-		command.getReverse().perform();
+		command.getReverse().perform(this);
+		refresh();
 	}
 
 	void doRedo() {
@@ -355,11 +360,25 @@ public class Editor implements EditorEventListener {
 			return;
 		}
 		Command command = mCommands.get(mCommandCursor);
-		command.perform();
+		command.perform(this);
 		mCommandCursor++;
+		refresh();
 	}
 
+	/**
+	 * Perform a command, and add to the undo stack
+	 */
 	void performCommand(Command command) {
+		pr("performCommand: " + nameOf(command));
+		pushCommand(command);
+		if (command.valid())
+			command.perform(this);
+	}
+
+	/**
+	 * Add a command that has already been performed to the undo stack
+	 */
+	public void pushCommand(Command command) {
 		if (!command.valid()) {
 			warning("attempt to perform invalid command: " + command);
 			return;
@@ -369,7 +388,7 @@ public class Editor implements EditorEventListener {
 			pop(mCommands);
 
 		mCommands.add(command);
-		command.perform();
+		mCommandCursor++;
 
 		// If this command is not reversible, throw out all commands, including
 		// this one

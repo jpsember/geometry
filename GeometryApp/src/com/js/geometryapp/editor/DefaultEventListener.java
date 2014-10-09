@@ -27,7 +27,10 @@ public class DefaultEventListener implements EditorEventListener {
 				continue;
 
 			float dist = src.distFrom(location);
-			if (dist > mEditor.pickRadius())
+			float pickRadius = mEditor.pickRadius();
+			if (src.isSelected())
+				pickRadius *= 2f;
+			if (dist > pickRadius)
 				continue;
 			slots.add(slot);
 		}

@@ -3,14 +3,15 @@ package com.js.geometry;
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.TreeSet;
 
 import android.graphics.Color;
 
-import com.js.basic.Queue;
 import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 
@@ -37,7 +38,7 @@ public class PolygonTriangulator {
 		mMesh = mesh;
 		mPolygon = polygon;
 		ASSERT(polygon.isCCW(mesh));
-		mMonotoneQueue = new Queue();
+		mMonotoneQueue = new ArrayDeque();
 		mVertexList = new ArrayList();
 	}
 
@@ -393,12 +394,15 @@ public class PolygonTriangulator {
 			// Construct CCW-ordered polygon from monotone face's vertices
 			buildVertexList(edgePointingToHighestVertex);
 			Polygon facePolygon = new Polygon();
-			Queue<Point> points = new Queue();
+			Deque<Point> points = new ArrayDeque();
 			for (Vertex vertex : mVertexList) {
-				points.push(vertex, !vertex.hasFlags(VERTEXFLAG_LEFTSIDE));
+				if (vertex.hasFlags(VERTEXFLAG_LEFTSIDE))
+					points.addLast(vertex);
+				else
+					points.addFirst(vertex);
 			}
 			while (!points.isEmpty())
-				facePolygon.add(points.pop());
+				facePolygon.add(points.removeFirst());
 			s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
 			s.plot(facePolygon, true);
 			s.closeLayer();
@@ -436,11 +440,11 @@ public class PolygonTriangulator {
 			Vertex v = mVertexList.get(vIndex++);
 			queueIsLeft = (v.flags() & VERTEXFLAG_LEFTSIDE) != 0;
 
-			mMonotoneQueue.push(v);
+			mMonotoneQueue.addLast(v);
 			Vertex v2 = mVertexList.get(vIndex++);
 			if (s.step())
 				s.show("Queuing vertex" + s.highlight(v2));
-			mMonotoneQueue.push(v2);
+			mMonotoneQueue.addLast(v2);
 		}
 
 		// We don't want to add edges that already exist. The last edge
@@ -454,24 +458,26 @@ public class PolygonTriangulator {
 			Vertex vertex = mVertexList.get(vIndex++);
 
 			if (queueIsLeft != ((vertex.flags() & VERTEXFLAG_LEFTSIDE) != 0)) {
-
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
 					// Skip the first queued vertex
-					Vertex v1 = mMonotoneQueue.pop();
+					Vertex v1 = mMonotoneQueue.removeFirst();
 					if (s.step())
 						s.show("Skipping first queued vertex" + s.highlight(v1));
-					Vertex v2 = mMonotoneQueue.peek();
+					Vertex v2 = mMonotoneQueue.getFirst();
 					addEdge(v2, vertex);
 					edgesRemaining--;
 				}
 				if (s.step())
 					s.show("Queuing vertex" + s.highlight(vertex));
-				mMonotoneQueue.push(vertex);
+				mMonotoneQueue.addLast(vertex);
 				queueIsLeft ^= true;
 			} else {
 				while (edgesRemaining != 0 && mMonotoneQueue.size() > 1) {
-					Vertex v1 = mMonotoneQueue.peek(false, 0);
-					Vertex v2 = mMonotoneQueue.peek(false, 1);
+					// Peek at the last two vertices in the queue (..v2,v1]) by
+					// temporarily removing v1
+					Vertex v1 = mMonotoneQueue.removeLast();
+					Vertex v2 = mMonotoneQueue.getLast();
+					mMonotoneQueue.addLast(v1);
 					float distance = pointUnitLineSignedDistance(vertex, v1, v2);
 					boolean isConvex = ((distance > 0) ^ queueIsLeft);
 					if (s.step())
@@ -482,11 +488,11 @@ public class PolygonTriangulator {
 						break;
 					addEdge(v2, vertex);
 					edgesRemaining--;
-					mMonotoneQueue.pop(false);
+					mMonotoneQueue.removeLast();
 				}
 				if (s.step())
 					s.show("Queuing vertex" + s.highlight(vertex));
-				mMonotoneQueue.push(vertex);
+				mMonotoneQueue.addLast(vertex);
 			}
 		}
 	}
@@ -577,7 +583,7 @@ public class PolygonTriangulator {
 	private TreeSet<SweepEdge> mSweepStatus;
 	private boolean mSweepLineVisible;
 	private float mSweepLinePosition;
-	private Queue<Vertex> mMonotoneQueue;
+	private Deque<Vertex> mMonotoneQueue;
 	private ArrayList<Vertex> mVertexList;
 	private int mPolygonMeshBase;
 }

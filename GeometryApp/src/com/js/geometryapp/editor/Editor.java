@@ -85,7 +85,7 @@ public class Editor implements EditorEventListener {
 				mStepper.setColor(Color.GRAY);
 				EditorTools.plotRect(mStepper, obj.getBounds(this));
 			}
-			obj.render(mStepper);
+			obj.render(this, mStepper);
 		}
 		if (mCurrentOperation != null)
 			mCurrentOperation.render(mStepper);

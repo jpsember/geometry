@@ -13,7 +13,7 @@ import static com.js.basic.Tools.*;
 
 public class EdPolyline extends EdObject {
 
-	public EdPolyline() {
+	private EdPolyline() {
 	}
 
 	@Override
@@ -22,7 +22,8 @@ public class EdPolyline extends EdObject {
 	}
 
 	@Override
-	public void render(AlgorithmStepper s) {
+	public void render(Editor editor, AlgorithmStepper s) {
+		prepareTabs(editor);
 		Point prev = null;
 		for (int i = 0; i < nPoints(); i++) {
 			Point pt = getPoint(i);
@@ -30,13 +31,21 @@ public class EdPolyline extends EdObject {
 				s.plotLine(prev, pt);
 			prev = pt;
 		}
-		super.render(s);
+		super.render(editor, s);
+
+		if (!isEditable())
+			return;
+		if (mTabsHidden)
+			return;
+		if (mInsertForwardTab != null)
+			s.highlight(mInsertForwardTab, 1.5f);
 	}
 
 	@Override
 	public EditorEventListener buildEditOperation(Editor editor, int slot,
 			Point location) {
 		unimp("implement polyline-specific features");
+
 		int vertexIndex = closestPoint(location, editor.pickRadius());
 		if (vertexIndex >= 0)
 			return new EditorOperation(editor, slot, vertexIndex);
@@ -59,6 +68,12 @@ public class EdPolyline extends EdObject {
 			prev = pt;
 		}
 		return minDistance;
+	}
+
+	@Override
+	public void setPoint(int ptIndex, Point point) {
+		super.setPoint(ptIndex, point);
+		mTabsValid = false;
 	}
 
 	public EdObjectFactory getFactory() {
@@ -104,13 +119,41 @@ public class EdPolyline extends EdObject {
 		return mCursor;
 	}
 
+	private void prepareTabs(Editor editor) {
+		if (!isEditable())
+			return;
+		if (mTabsValid)
+			return;
+		mInsertForwardTab = MyMath.pointOnCircle(getPoint(cursor()),
+				MyMath.PI * .3f, editor.pickRadius() * 2);
+
+		mTabsValid = true;
+	}
+
+	private void setTabsHidden(boolean f) {
+		mTabsHidden = f;
+	}
+
+	void invalidateTabs() {
+		mTabsValid = false;
+	}
+
 	// information concerning editable object
 	private int mCursor;
+	private boolean mTabsValid;
+	private boolean mTabsHidden;
+	private Point mInsertForwardTab;
 
 	private static class EditorOperation implements EditorEventListener {
+
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			mEditor = editor;
 			mEditSlot = slot;
+			mOriginalObjectSet = mEditor.objects().getSubset(mEditSlot);
+			// EdPolyline polyline = mOriginalObjectSet.get(0);
+			// ....clean up initializeOperation needing location...
+			unimp("construct editorOperation for slot " + slot + ", vert "
+					+ vertexNumber);
 		}
 
 		/**
@@ -120,21 +163,21 @@ public class EdPolyline extends EdObject {
 		 * EVENT_DOWN_x
 		 */
 		private void initializeOperation(Point location) {
-			if (mObj != null)
+			if (mInitialized)
 				return;
+			mInitialized = true;
 
-			mOriginal = mEditor.objects().getSubset(mEditSlot);
-			mObj = mOriginal.get(0);
-
-			while (mObj.nPoints() < 2) {
-				mObj.addPoint(location);
+			// mOriginalObjectSet = mEditor.objects().getSubset(mEditSlot);
+			EdPolyline polyline = mOriginalObjectSet.get(0);
+			while (polyline.nPoints() < 2) {
+				polyline.addPoint(location);
 			}
 		}
 
 		@Override
 		public int processEvent(int eventCode, Point location) {
 
-			final boolean db = true && DEBUG_ONLY_FEATURES;
+			final boolean db = false && DEBUG_ONLY_FEATURES;
 			if (db)
 				pr("EdPolyline processEvent "
 						+ Editor.editorEventName(eventCode));
@@ -156,14 +199,13 @@ public class EdPolyline extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdPolyline polyline = mEditor.objects().get(mEditSlot);
+				EdPolyline pOrig = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
-				EdPolyline polyline2 = (EdPolyline) polyline.clone();
-				polyline2.setPoint(polyline2.cursor(), location);
-				if (db)
-					pr(" changed endpoint; " + polyline2);
-				mEditor.objects().set(mEditSlot, polyline2);
+				mNewPolyline = (EdPolyline) pOrig.clone();
+				mNewPolyline.setPoint(mNewPolyline.cursor(), location);
+				mEditor.objects().set(mEditSlot, mNewPolyline);
 				mModified = true;
+				mNewPolyline.setTabsHidden(true);
 			}
 				break;
 
@@ -172,8 +214,12 @@ public class EdPolyline extends EdObject {
 					pr(" modified " + mModified);
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginal, FACTORY.getTag()));
+							mEditor.objects(), mOriginalObjectSet,
+							FACTORY.getTag()));
 				}
+				if (mNewPolyline != null)
+					mNewPolyline.setTabsHidden(false);
+
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
 				break;
@@ -194,7 +240,9 @@ public class EdPolyline extends EdObject {
 		// Index of object being edited
 		private int mEditSlot;
 		private boolean mModified;
-		private EdObjectArray mOriginal;
-		private EdPolyline mObj;
+		private EdObjectArray mOriginalObjectSet;
+		private EdPolyline mNewPolyline;
+		private boolean mInitialized;
 	}
+
 }

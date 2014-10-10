@@ -346,7 +346,7 @@ public abstract class EdObject implements Cloneable {
 	 * emphasize editable vertices with boxes, to avoid this inconsistency with
 	 * radii.
 	 */
-	public void render(AlgorithmStepper s) {
+	public void render(Editor editor, AlgorithmStepper s) {
 		if (nPoints() == 1) {
 			Point loc = getPoint(0);
 			if (isEditable())

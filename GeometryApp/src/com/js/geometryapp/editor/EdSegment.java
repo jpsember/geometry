@@ -17,9 +17,9 @@ public class EdSegment extends EdObject {
 	}
 
 	@Override
-	public void render(AlgorithmStepper s) {
+	public void render(Editor editor, AlgorithmStepper s) {
 		s.plotLine(getPoint(0), getPoint(1));
-		super.render(s);
+		super.render(editor, s);
 	}
 
 	@Override

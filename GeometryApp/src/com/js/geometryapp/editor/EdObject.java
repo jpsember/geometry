@@ -96,14 +96,6 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
-	 * Determine if object is in a complete state; i.e. if a polygon has at
-	 * least three vertices
-	 * 
-	 * @return true if so
-	 */
-	public abstract boolean complete();
-
-	/**
 	 * Set point
 	 * 
 	 * @param ptIndex

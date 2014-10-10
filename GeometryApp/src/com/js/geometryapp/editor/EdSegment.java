@@ -13,14 +13,8 @@ public class EdSegment extends EdObject {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		if (!complete())
-			return;
 		s.plotLine(getPoint(0), getPoint(1));
 		super.render(s);
-	}
-
-	public boolean complete() {
-		return nPoints() == 2;
 	}
 
 	public float distFrom(Point pt) {

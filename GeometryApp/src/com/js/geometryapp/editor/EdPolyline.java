@@ -23,10 +23,6 @@ public class EdPolyline extends EdObject {
 		super.render(s);
 	}
 
-	public boolean complete() {
-		return nPoints() >= 2;
-	}
-
 	public float distFrom(Point targetPoint) {
 		Point prev = null;
 		float minDistance = 1e8f;

@@ -42,6 +42,7 @@ public class DefaultEventListener implements EditorEventListener {
 	 * 
 	 * @param slotList
 	 *            list of item slots
+	 * @return subsequence of slotList that are selected
 	 */
 	private List<Integer> getSelectedObjects(List<Integer> slotList) {
 		List<Integer> selectedSlots = new ArrayList();
@@ -119,22 +120,38 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doStartDrag(Point location) {
-		// If location is at vertex of a selected object, edit that object's
-		// vertex; else,
-		// If initial press pickset contains any selected objects, move all
-		// selected objects;
-		// else, if initial press pickset contains any objects, select and move
-		// topmost;
-		// else, do selection rectangle
+		/**
+		 * <pre>
+		 * 
+		 * If there is a single selected object, and location is at vertex of a
+		 * selected object, edit that object's vertex;
+		 * 
+		 * else
+		 * 
+		 * If initial press pickset contains any selected objects, move all 
+		 * selected objects;
+		 * 
+		 * else
+		 * 
+		 * If initial press pickset contains any objects, select and move topmost;
+		 * 
+		 * else
+		 * 
+		 * Drag a selection rectangle and select the items contained within it
+		 * 
+		 * </pre>
+		 */
 		List<Integer> pickSet = getPickSet(location, false);
 		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
-		int editPointSlot = findSelectedObjectVertex(hlPickSet, location);
-		if (editPointSlot >= 0) {
-			unselectObjects(null);
-			mEditor.objects().get(editPointSlot).setSelected(true);
-			mEditor.startEditVertexOperation(editPointSlot, mSelectedVertex);
-			return;
+		if (mEditor.objects().getSelected().size() == 1) {
+			int editPointSlot = findSelectedObjectVertex(hlPickSet, location);
+			if (editPointSlot >= 0) {
+				unselectObjects(null);
+				mEditor.objects().get(editPointSlot).setSelected(true);
+				mEditor.startEditVertexOperation(editPointSlot, mSelectedVertex);
+				return;
+			}
 		}
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {

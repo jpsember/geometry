@@ -11,10 +11,6 @@ public class EdPoint extends EdObject {
 	public EdPoint() {
 	}
 
-	public EdPoint(Point location) {
-		setPoint(0, location);
-	}
-
 	public Point location() {
 		return getPoint(0);
 	}

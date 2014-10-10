@@ -307,6 +307,7 @@ public class Editor implements EditorEventListener {
 
 			toolbar.addView(addObjectTypeButton("Pt", EdPoint.FACTORY));
 			toolbar.addView(addObjectTypeButton("Seg", EdSegment.FACTORY));
+			toolbar.addView(addObjectTypeButton("Poly", EdPolyline.FACTORY));
 			{
 				Button button = buildSampleButton("Undo");
 				button.setOnClickListener(new Button.OnClickListener() {
@@ -404,6 +405,7 @@ public class Editor implements EditorEventListener {
 		mObjectTypes = new HashMap();
 		addObjectType(EdPoint.FACTORY);
 		addObjectType(EdSegment.FACTORY);
+		addObjectType(EdPolyline.FACTORY);
 	}
 
 	private void addNewObject(EdObjectFactory objectType) {

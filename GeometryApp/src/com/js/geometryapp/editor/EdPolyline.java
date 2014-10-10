@@ -6,36 +6,53 @@ import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.basic.Tools.*;
 
-public class EdSegment extends EdObject {
+public class EdPolyline extends EdObject {
 
-	public EdSegment() {
+	public EdPolyline() {
 	}
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		if (!complete())
-			return;
-		s.plotLine(getPoint(0), getPoint(1));
+		Point prev = null;
+		for (int i = 0; i < nPoints(); i++) {
+			Point pt = getPoint(i);
+			if (prev != null)
+				s.plotLine(prev, pt);
+			prev = pt;
+		}
 		super.render(s);
 	}
 
 	public boolean complete() {
-		return nPoints() == 2;
+		return nPoints() >= 2;
 	}
 
-	public float distFrom(Point pt) {
-		Point p1 = getPoint(0);
-		Point p2 = getPoint(1);
-		return MyMath.ptDistanceToSegment(pt, p1, p2, null);
+	public float distFrom(Point targetPoint) {
+		Point prev = null;
+		float minDistance = 1e8f;
+		if (nPoints() == 1)
+			minDistance = MyMath.distanceBetween(targetPoint, getPoint(0));
+		else {
+			for (int i = 0; i < nPoints(); i++) {
+				Point pt = getPoint(i);
+				if (prev != null) {
+					float distance = MyMath.ptDistanceToSegment(targetPoint,
+							prev, pt, null);
+					minDistance = Math.min(minDistance, distance);
+				}
+				prev = pt;
+			}
+		}
+		return minDistance;
 	}
 
 	public EdObjectFactory getFactory() {
 		return FACTORY;
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("pl") {
 		public EdObject construct() {
-			return new EdSegment();
+			return new EdPolyline();
 		}
 
 		@Override
@@ -47,7 +64,6 @@ public class EdSegment extends EdObject {
 
 	private static class EditorOperation implements EditorEventListener {
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
-			ASSERT(slot >= 0);
 			mEditor = editor;
 			mEditSlot = slot;
 			mEditPointIndex = vertexNumber;
@@ -63,25 +79,24 @@ public class EdSegment extends EdObject {
 			if (mOriginal != null)
 				return;
 
-			EdSegment seg = mEditor.objects().get(mEditSlot);
+			EdPolyline polyline = mEditor.objects().get(mEditSlot);
 			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
-			if (seg.nPoints() == 0) {
-				seg.addPoint(location);
-				seg.addPoint(location);
+			if (polyline.nPoints() == 0) {
+				polyline.addPoint(location);
 			}
 
 			if (mEditPointIndex < 0) {
-				mEditPointIndex = seg.nPoints() - 1;
+				mEditPointIndex = polyline.nPoints() - 1;
 			}
 		}
 
 		@Override
 		public int processEvent(int eventCode, Point location) {
 
-			final boolean db = false && DEBUG_ONLY_FEATURES;
+			final boolean db = true && DEBUG_ONLY_FEATURES;
 			if (db)
-				pr("EdSegment processEvent "
+				pr("EdPolyline processEvent "
 						+ Editor.editorEventName(eventCode));
 
 			if (location != null)
@@ -101,13 +116,13 @@ public class EdSegment extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdSegment seg = mEditor.objects().get(mEditSlot);
+				EdPolyline polyline = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
-				EdSegment seg2 = (EdSegment) seg.clone();
-				seg2.setPoint(mEditPointIndex, location);
+				EdPolyline polyline2 = (EdPolyline) polyline.clone();
+				polyline2.setPoint(mEditPointIndex, location);
 				if (db)
-					pr(" changed endpoint; " + seg2);
-				mEditor.objects().set(mEditSlot, seg2);
+					pr(" changed endpoint; " + polyline2);
+				mEditor.objects().set(mEditSlot, polyline2);
 				mModified = true;
 			}
 				break;

@@ -25,8 +25,23 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.iterator();
 	}
 
-	public void set(int index, EdObject object) {
+	/**
+	 * Add an object to the end of the list
+	 * 
+	 * @param object
+	 * @return the index of the object
+	 */
+	public int add(EdObject object) {
+		int index = mList.size();
+		mList.add(object);
+		return index;
+	}
 
+	public <T extends EdObject> T get(int index) {
+		return (T) mList.get(index);
+	}
+
+	public void set(int index, EdObject object) {
 		mList.set(index, object);
 	}
 
@@ -34,15 +49,41 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.size();
 	}
 
-	public <T extends EdObject> T get(int index) {
-		return (T) mList.get(index);
-	}
-
 	public int getSlot(int index) {
 		return mSlots.get(index);
 	}
 
-	public EdObjectArray getSubsequence(List<Integer> slots) {
+	/**
+	 * Replace objects within particular slots
+	 * 
+	 * @param slots
+	 *            slots of objects to replace
+	 * @param replacementObjects
+	 *            array of replacements; size must match slots
+	 * @param allowAppending
+	 *            if true, allows appending items to end of existing array
+	 */
+	public void replace(List<Integer> slots, EdObjectArray replacementObjects,
+			boolean allowAppending) {
+		if (slots.size() != replacementObjects.size())
+			throw new IllegalArgumentException();
+		for (int i = 0; i < slots.size(); i++) {
+			int slot = slots.get(i);
+			EdObject object = replacementObjects.get(i);
+			if (allowAppending && slot == size())
+				add(object);
+			else
+				set(slot, object);
+		}
+	}
+
+	/**
+	 * Construct subset of this array, using particular slots only
+	 * 
+	 * @param slots
+	 *            SlotList
+	 */
+	public EdObjectArray getSubset(List<Integer> slots) {
 		EdObjectArray subset = new EdObjectArray();
 		int prevSlot = -1;
 		for (int slot : slots) {
@@ -55,29 +96,29 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	/**
-	 * Utility method to construct a copy of a list of slots
+	 * Construct subset of this array that consists of a single slot
 	 */
-	public static List<Integer> copyOf(List<Integer> slots) {
-		return new ArrayList(slots);
+	public EdObjectArray getSubset(int slot) {
+		return getSubset(SlotList.build(slot));
 	}
 
 	/**
-	 * Construct subset containing those objects that are selected
+	 * Get slots of selected items
 	 */
-	public EdObjectArray getSelected() {
-		List<Integer> slots = new ArrayList();
+	public List<Integer> getSelectedSlots() {
+		List<Integer> slots = SlotList.build();
 		for (int i = 0; i < mList.size(); i++) {
 			if (mList.get(i).isSelected()) {
 				slots.add(i);
 			}
 		}
-		return getSubsequence(slots);
+		return slots;
 	}
 
 	/**
 	 * Make specific slots selected, and others unselected
 	 */
-	public void select(List<Integer> slots) {
+	public void selectOnly(List<Integer> slots) {
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
 			boolean sel = j < slots.size() && slots.get(j) == i;
@@ -85,34 +126,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 			if (sel)
 				j++;
 		}
-	}
-
-	/**
-	 * Get subsequence of this array
-	 * 
-	 * @param slots
-	 *            sequence of slots to include
-	 * @return
-	 */
-	public EdObjectArray get(List<Integer> slots) {
-		EdObjectArray subsequence = new EdObjectArray();
-		for (int slot : slots) {
-			subsequence.add(get(slot));
-		}
-		subsequence.mSlots = slots;
-		return subsequence;
-	}
-
-	/**
-	 * Construct a list of a single element
-	 * 
-	 * @param index
-	 * @return
-	 */
-	public EdObjectArray getList(int index) {
-		List<Integer> slots = new ArrayList();
-		slots.add(index);
-		return get(slots);
 	}
 
 	public void remove(List<Integer> slots) {
@@ -146,47 +159,16 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return subsequence;
 	}
 
-	/**
-	 * Add an object to the end of the list
-	 * 
-	 * @param object
-	 * @return the index of the object
-	 */
-	public int add(EdObject object) {
-		int index = mList.size();
-		mList.add(object);
-		return index;
-	}
-
 	public void unselectAll() {
-		select(new ArrayList());
+		selectOnly(new ArrayList());
 	}
 
-	@Deprecated
-	public void select(int slot) {
-		List<Integer> list = new ArrayList();
-		list.add(slot);
-		select(list);
-	}
-
-	public void setSlots(List<Integer> slots) {
+	private void setSlots(List<Integer> slots) {
 		mSlots = slots;
 	}
 
 	public List<Integer> getSlots() {
 		return mSlots;
-	}
-
-	public void replace(List<Integer> slots, EdObjectArray replacementObjects) {
-		ASSERT(slots.size() == replacementObjects.size());
-		for (int i = 0; i < slots.size(); i++) {
-			int slot = slots.get(i);
-			EdObject object = replacementObjects.get(i);
-			if (slot == size())
-				add(object);
-			else
-				set(slot, object);
-		}
 	}
 
 	@Override

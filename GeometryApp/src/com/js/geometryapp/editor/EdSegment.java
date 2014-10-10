@@ -78,7 +78,7 @@ public class EdSegment extends EdObject {
 				return;
 
 			EdSegment seg = mEditor.objects().get(mEditSlot);
-			mOriginal = mEditor.objects().getList(mEditSlot);
+			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
 			if (seg.nPoints() == 0) {
 				seg.addPoint(location);

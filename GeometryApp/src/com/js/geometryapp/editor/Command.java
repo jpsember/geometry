@@ -84,7 +84,8 @@ public abstract class Command {
 	 */
 	public static Command constructForAddedObjects(EdObjectArray editorObjects,
 			List<Integer> slots) {
-		return new CommandForAddedObjects(editorObjects.get(slots), slots);
+		return new CommandForAddedObjects(editorObjects.getSubset(slots),
+				slots);
 	}
 
 	/**
@@ -116,7 +117,7 @@ public abstract class Command {
 		public CommandForModifiedObjects(EdObjectArray editorObjects,
 				List<Integer> slots, EdObjectArray originalObjects,
 				String mergeKey) {
-			mNew = editorObjects.get(slots);
+			mNew = editorObjects.getSubset(slots);
 			mSlots = slots;
 			mOriginals = originalObjects;
 			mMergeKey = mergeKey;
@@ -163,8 +164,8 @@ public abstract class Command {
 
 		@Override
 		public void perform(Editor editor) {
-			editor.objects().replace(mSlots, mNew);
-			editor.objects().select(mSlots);
+			editor.objects().replace(mSlots, mNew, false);
+			editor.objects().selectOnly(mSlots);
 		}
 
 		@Override
@@ -205,8 +206,8 @@ public abstract class Command {
 
 		@Override
 		public void perform(Editor editor) {
-			editor.objects().replace(mSlots, mNew);
-			editor.objects().select(mSlots);
+			editor.objects().replace(mSlots, mNew, true);
+			editor.objects().selectOnly(mSlots);
 		}
 
 		@Override

@@ -28,8 +28,14 @@ public class EdPoint extends EdObject {
 	public void render(AlgorithmStepper s) {
 		if (!complete())
 			return;
-		s.plot(location());
-		super.render(s);
+		Point loc = location();
+		if (isSelected()) {
+			if (isEditable())
+				s.highlight(loc, 1.5f);
+			else
+				s.highlight(loc);
+		} else
+			s.plot(loc);
 	}
 
 	@Override
@@ -68,7 +74,7 @@ public class EdPoint extends EdObject {
 				return;
 
 			EdPoint pt = mEditor.objects().get(mEditSlot);
-			mOriginal = mEditor.objects().getList(mEditSlot);
+			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
 			if (pt.nPoints() == 0) {
 				pt.addPoint(location);

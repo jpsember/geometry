@@ -42,6 +42,7 @@ public class Editor implements EditorEventListener {
 	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_RENDER_EDITABLE = true && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
@@ -79,7 +80,8 @@ public class Editor implements EditorEventListener {
 	public void render() {
 		for (int i = 0; i < mObjects.size(); i++) {
 			EdObject obj = mObjects.get(i);
-			if (DB_RENDER_OBJ_BOUNDS) {
+			if (DB_RENDER_OBJ_BOUNDS
+					|| (DB_RENDER_EDITABLE && obj.isEditable())) {
 				mStepper.setColor(Color.GRAY);
 				EditorTools.plotRect(mStepper, obj.getBounds(this));
 			}
@@ -124,7 +126,7 @@ public class Editor implements EditorEventListener {
 			}
 		}
 
-		// Always request a refresh of the editor view
+		// Request a refresh of the editor view after any event
 		refresh();
 
 		return eventCode;
@@ -135,7 +137,23 @@ public class Editor implements EditorEventListener {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Make an object editable if it is the only selected object. We perform
+	 * this operation with each refresh, since this is simpler than trying to
+	 * maintain the editable state while the editor objects undergo various
+	 * editing operations
+	 */
+	private void updateEditableObjectStatus() {
+		List<Integer> list = mObjects.getSelectedSlots();
+		for (int slot : list) {
+			EdObject obj = mObjects.get(slot);
+			obj.setEditable(list.size() == 1);
+		}
+	}
+
 	private void refresh() {
+		updateEditableObjectStatus();
+
 		mStepper.refresh();
 		// Set delay to save changes
 		persistEditorState(true);
@@ -391,9 +409,8 @@ public class Editor implements EditorEventListener {
 	private void addNewObject(EdObjectFactory objectType) {
 		EdObject object = objectType.construct();
 		int slot = mObjects.add(object);
-		List<Integer> slots = new ArrayList();
-		slots.add(slot);
-		mObjects.select(slots);
+		List<Integer> slots = SlotList.build(slot);
+		mObjects.selectOnly(slots);
 		Command c = Command.constructForAddedObjects(mObjects, slots);
 		c.setPairedWithNext(true);
 		pushCommand(c);

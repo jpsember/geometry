@@ -11,6 +11,7 @@ import static com.js.basic.Tools.*;
 public abstract class EdObject implements Cloneable {
 
 	private static final int FLAG_SELECTED = (1 << 31);
+	private static final int FLAG_EDITABLE = (1 << 30);
 
 	@Override
 	public String toString() {
@@ -51,8 +52,6 @@ public abstract class EdObject implements Cloneable {
 
 	/**
 	 * Determine if object is selected
-	 * 
-	 * @return true if so
 	 */
 	public boolean isSelected() {
 		return hasFlags(FLAG_SELECTED);
@@ -60,12 +59,23 @@ public abstract class EdObject implements Cloneable {
 
 	/**
 	 * Set object's selected state
-	 * 
-	 * @param f
-	 *            new state
 	 */
 	public void setSelected(boolean f) {
-		setFlags(FLAG_SELECTED, f);
+		int flags = FLAG_SELECTED;
+		if (!f)
+			flags |= FLAG_EDITABLE;
+		setFlags(flags, f);
+	}
+
+	public boolean isEditable() {
+		return hasFlags(FLAG_EDITABLE);
+	}
+
+	public void setEditable(boolean f) {
+		int flags = FLAG_EDITABLE;
+		if (f)
+			flags |= FLAG_SELECTED;
+		setFlags(flags, f);
 	}
 
 	/**
@@ -144,15 +154,6 @@ public abstract class EdObject implements Cloneable {
 			throw new IllegalArgumentException();
 		setPoint(nPoints(), pt);
 	}
-
-	// /**
-	// * Return points of object as an array
-	// *
-	// * @return Point[] array
-	// */
-	// public Point[] getPoints() {
-	// return (Point[]) mVertices.toArray();
-	// }
 
 	/**
 	 * Get number of points of object
@@ -260,7 +261,7 @@ public abstract class EdObject implements Cloneable {
 	 *            new flags
 	 */
 	public void setFlags(int f) {
-		if (((f ^ mFlags) & FLAG_SELECTED) != 0)
+		if (((f ^ mFlags) & (FLAG_EDITABLE | FLAG_SELECTED)) != 0)
 			mBounds = null;
 		this.mFlags = f;
 	}
@@ -326,8 +327,13 @@ public abstract class EdObject implements Cloneable {
 	 */
 	public void render(AlgorithmStepper s) {
 		if (isSelected()) {
-			for (int i = 0; i < nPoints(); i++)
-				s.highlight(getPoint(i));
+			for (int i = 0; i < nPoints(); i++) {
+				Point loc = getPoint(i);
+				if (isEditable()) {
+					s.highlight(loc);
+				} else
+					s.plot(loc);
+			}
 		}
 	}
 

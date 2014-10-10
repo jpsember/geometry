@@ -2,7 +2,6 @@ package com.js.geometryapp.editor;
 
 import static com.js.basic.Tools.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Color;
@@ -18,14 +17,11 @@ public class DefaultEventListener implements EditorEventListener {
 		mEditor = editor;
 	}
 
-	private List<Integer> getPickSet(Point location, boolean selectedObjectsOnly) {
-		List<Integer> slots = new ArrayList();
+	private List<Integer> getPickSet(Point location) {
+		List<Integer> slots = SlotList.build();
 		EdObjectArray srcObjects = mEditor.objects();
 		for (int slot = 0; slot < srcObjects.size(); slot++) {
 			EdObject src = srcObjects.get(slot);
-			if (selectedObjectsOnly && !src.isSelected())
-				continue;
-
 			float dist = src.distFrom(location);
 			float pickRadius = mEditor.pickRadius();
 			if (src.isSelected())
@@ -37,17 +33,21 @@ public class DefaultEventListener implements EditorEventListener {
 		return slots;
 	}
 
+	private EdObject editorObject(int slot) {
+		return mEditor.objects().get(slot);
+	}
+
 	/**
-	 * Get subsequence of items that are selected
+	 * Given an item list, get subsequence of those items that are selected
 	 * 
 	 * @param slotList
 	 *            list of item slots
 	 * @return subsequence of slotList that are selected
 	 */
 	private List<Integer> getSelectedObjects(List<Integer> slotList) {
-		List<Integer> selectedSlots = new ArrayList();
+		List<Integer> selectedSlots = SlotList.build();
 		for (int slot : slotList) {
-			EdObject obj = mEditor.objects().get(slot);
+			EdObject obj = editorObject(slot);
 			if (obj.isSelected())
 				selectedSlots.add(slot);
 		}
@@ -64,50 +64,42 @@ public class DefaultEventListener implements EditorEventListener {
 	 */
 	private void unselectObjects(List<Integer> omit) {
 		int omitCursor = 0;
-		EdObjectArray list = mEditor.objects();
-		for (int i = 0; i < list.size(); i++) {
+		for (int i = 0; i < mEditor.objects().size(); i++) {
 			if (omit != null && omitCursor < omit.size()
 					&& i == omit.get(omitCursor)) {
 				omitCursor++;
 				continue;
 			}
-			list.get(i).setSelected(false);
+			editorObject(i).setSelected(false);
 		}
 	}
 
 	private void selectObjects(List<Integer> slots) {
 		EdObjectArray list = mEditor.objects();
 		for (int slot : slots) {
-			list.get(slot).setSelected(true);
+			EdObject obj = list.get(slot);
+			obj.setSelected(true);
 		}
 	}
 
 	private int mSelectedVertex;
 
-	private int findSelectedObjectVertex(List<Integer> pickSet, Point location) {
-		for (int i = pickSet.size() - 1; i >= 0; i--) {
-			int slot = pickSet.get(i);
-			EdObject object = mEditor.objects().get(slot);
-			if (!object.isSelected())
-				continue;
-			// Find object vertex at location
-			int objVertex = object.closestPoint(location, mEditor.pickRadius());
-			if (objVertex < 0)
-				continue;
-			mSelectedVertex = objVertex;
-			return slot;
-		}
-		return -1;
+	private int findSelectedObjectVertex(EdObject object, Point location) {
+		int objVertex = -1;
+		if (object.isSelected())
+			objVertex = object.closestPoint(location, mEditor.pickRadius());
+		mSelectedVertex = objVertex;
+		return objVertex;
 	}
 
 	private void doClick(Point location) {
-		// If clicked on a vertex of a selected object, edit that object's
-		// vertex.
-		// Else, cycle through the pick set under that location
-		List<Integer> pickSet = getPickSet(location, false);
-		unselectObjects(pickSet);
-		if (pickSet.isEmpty())
+		// Construct pick set of selected objects. If empty, unselect
+		// all objects; else cycle to next object and make it editable
+		List<Integer> pickSet = getPickSet(location);
+		if (pickSet.isEmpty()) {
+			unselectObjects(null);
 			return;
+		}
 		// Find selected item with highest index
 		int highestIndex = pickSet.size();
 		for (int i = 0; i < pickSet.size(); i++) {
@@ -116,15 +108,15 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
 		unselectObjects(null);
-		mEditor.objects().get(pickSet.get(nextSelectedIndex)).setSelected(true);
+		mEditor.objects().get(pickSet.get(nextSelectedIndex)).setEditable(true);
 	}
 
 	private void doStartDrag(Point location) {
 		/**
 		 * <pre>
 		 * 
-		 * If there is a single selected object, and location is at vertex of a
-		 * selected object, edit that object's vertex;
+		 * If there is an editable object, and location is at one of its vertices,
+		 * edit that vertex;
 		 * 
 		 * else
 		 * 
@@ -141,22 +133,23 @@ public class DefaultEventListener implements EditorEventListener {
 		 * 
 		 * </pre>
 		 */
-		List<Integer> pickSet = getPickSet(location, false);
+		List<Integer> pickSet = getPickSet(location);
 		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
-		if (mEditor.objects().getSelected().size() == 1) {
-			int editPointSlot = findSelectedObjectVertex(hlPickSet, location);
-			if (editPointSlot >= 0) {
-				unselectObjects(null);
-				mEditor.objects().get(editPointSlot).setSelected(true);
-				mEditor.startEditVertexOperation(editPointSlot, mSelectedVertex);
-				return;
+		if (hlPickSet.size() == 1) {
+			int slot = hlPickSet.get(0);
+			EdObject obj = editorObject(slot);
+			if (obj.isEditable()) {
+				int selVert = findSelectedObjectVertex(obj, location);
+				if (selVert >= 0) {
+					mEditor.startEditVertexOperation(slot, mSelectedVertex);
+					return;
+				}
 			}
 		}
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
-			int slot = last(pickSet);
-			hlPickSet.add(slot);
+			hlPickSet = SlotList.build(last(pickSet));
 			unselectObjects(null);
 			selectObjects(hlPickSet);
 			// fall through to next...
@@ -165,10 +158,9 @@ public class DefaultEventListener implements EditorEventListener {
 			// Get all selected objects, and store in a list since we
 			// will want access to their original positions; then replace the
 			// objects with copies that will be moved
-			mMoveObjectsOriginals = mEditor.objects().getSelected();
-			unselectObjects(mMoveObjectsOriginals.getSlots());
-			mEditor.objects().replaceWithCopies(
-					mMoveObjectsOriginals.getSlots());
+			List<Integer> selSlots = mEditor.objects().getSelectedSlots();
+			mMoveObjectsOriginals = mEditor.objects().getSubset(selSlots);
+			mEditor.objects().replaceWithCopies(selSlots);
 			mPreviousMoveLocation = mInitialDownLocation;
 		} else {
 			mDraggingRect = true;

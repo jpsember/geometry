@@ -7,6 +7,8 @@ import static com.js.basic.Tools.*;
 public class ToolsTest extends MyTestCase {
 
 	public void testASSERT() {
+		if (!DEBUG_ONLY_FEATURES)
+			return;
 		String msg = "";
 		ASSERT(true);
 
@@ -62,8 +64,7 @@ public class ToolsTest extends MyTestCase {
 		double[] doubleArray = { 4.2, 4.2222222, 444.2222222, 444.2256,
 				444.9994, 444.9995, 999.9994, 999.9995, 0, 0.0000001,
 				9999.9994, 99999.9994, 999999.9994, -9999.9994, -99999.9994,
-				-999999.9994,
-		};
+				-999999.9994, };
 		IOSnapshot.open();
 		pr("Floating point:");
 		for (int i = 0; i < doubleArray.length; i++) {

@@ -102,6 +102,10 @@ public class MeshTest extends MyTestCase {
 	}
 
 	public void testDeleteEdges() {
+		// Dumping a mesh is not available except in debug
+		if (!DEBUG_ONLY_FEATURES)
+			return;
+
 		IOSnapshot.open();
 		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
 		triangulatePolygon();
@@ -121,6 +125,10 @@ public class MeshTest extends MyTestCase {
 	}
 
 	public void testDeleteVertices() {
+		// Dumping a mesh is not available except in debug
+		if (!DEBUG_ONLY_FEATURES)
+			return;
+
 		IOSnapshot.open();
 		polygon(Polygon.TESTPOLY_DRAGON_X + 1);
 		triangulatePolygon();

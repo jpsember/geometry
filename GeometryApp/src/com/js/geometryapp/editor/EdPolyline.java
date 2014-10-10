@@ -12,6 +12,11 @@ public class EdPolyline extends EdObject {
 	}
 
 	@Override
+	public boolean valid() {
+		return nPoints() >= 2;
+	}
+
+	@Override
 	public void render(AlgorithmStepper s) {
 		Point prev = null;
 		for (int i = 0; i < nPoints(); i++) {
@@ -23,21 +28,30 @@ public class EdPolyline extends EdObject {
 		super.render(s);
 	}
 
+	@Override
+	public EditorEventListener buildEditOperation(Editor editor, int slot,
+			Point location) {
+		unimp("implement polyline-specific features");
+		int vertexIndex = closestPoint(location, editor.pickRadius());
+		if (vertexIndex >= 0)
+			return new EditorOperation(editor, slot, vertexIndex);
+		return null;
+	}
+
 	public float distFrom(Point targetPoint) {
 		Point prev = null;
-		float minDistance = 1e8f;
-		if (nPoints() == 1)
-			minDistance = MyMath.distanceBetween(targetPoint, getPoint(0));
-		else {
-			for (int i = 0; i < nPoints(); i++) {
-				Point pt = getPoint(i);
-				if (prev != null) {
-					float distance = MyMath.ptDistanceToSegment(targetPoint,
-							prev, pt, null);
-					minDistance = Math.min(minDistance, distance);
-				}
-				prev = pt;
+		float minDistance = -1;
+		ASSERT(nPoints() >= 2);
+		for (int i = 0; i < nPoints(); i++) {
+			Point pt = getPoint(i);
+			if (prev != null) {
+				float distance = MyMath.ptDistanceToSegment(targetPoint, prev,
+						pt, null);
+				if (minDistance < 0)
+					minDistance = distance;
+				minDistance = Math.min(minDistance, distance);
 			}
+			prev = pt;
 		}
 		return minDistance;
 	}
@@ -52,9 +66,9 @@ public class EdPolyline extends EdObject {
 		}
 
 		@Override
-		public EditorEventListener buildEditorOperation(Editor editor,
-				int slot, int vertexNumber) {
-			return new EditorOperation(editor, slot, vertexNumber);
+		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
+				int slot) {
+			return new EditorOperation(editor, slot, -1);
 		}
 	};
 
@@ -62,7 +76,7 @@ public class EdPolyline extends EdObject {
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			mEditor = editor;
 			mEditSlot = slot;
-			mEditPointIndex = vertexNumber;
+			mCursor = vertexNumber;
 		}
 
 		/**
@@ -78,12 +92,12 @@ public class EdPolyline extends EdObject {
 			EdPolyline polyline = mEditor.objects().get(mEditSlot);
 			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
-			if (polyline.nPoints() == 0) {
+			while (polyline.nPoints() < 2) {
 				polyline.addPoint(location);
 			}
 
-			if (mEditPointIndex < 0) {
-				mEditPointIndex = polyline.nPoints() - 1;
+			if (mCursor < 0) {
+				mCursor = polyline.nPoints() - 1;
 			}
 		}
 
@@ -115,7 +129,7 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdPolyline polyline2 = (EdPolyline) polyline.clone();
-				polyline2.setPoint(mEditPointIndex, location);
+				polyline2.setPoint(mCursor, location);
 				if (db)
 					pr(" changed endpoint; " + polyline2);
 				mEditor.objects().set(mEditSlot, polyline2);
@@ -149,8 +163,7 @@ public class EdPolyline extends EdObject {
 		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
-		// Index of point being edited
-		private int mEditPointIndex;
+		private int mCursor;
 		private boolean mModified;
 		private EdObjectArray mOriginal;
 	}

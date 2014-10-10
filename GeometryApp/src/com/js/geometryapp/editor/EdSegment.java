@@ -12,9 +12,23 @@ public class EdSegment extends EdObject {
 	}
 
 	@Override
+	public boolean valid() {
+		return nPoints() == 2;
+	}
+
+	@Override
 	public void render(AlgorithmStepper s) {
 		s.plotLine(getPoint(0), getPoint(1));
 		super.render(s);
+	}
+
+	@Override
+	public EditorEventListener buildEditOperation(Editor editor, int slot,
+			Point location) {
+		int vertexIndex = closestPoint(location, editor.pickRadius());
+		if (vertexIndex >= 0)
+			return new EditorOperation(editor, slot, vertexIndex);
+		return null;
 	}
 
 	public float distFrom(Point pt) {
@@ -33,9 +47,9 @@ public class EdSegment extends EdObject {
 		}
 
 		@Override
-		public EditorEventListener buildEditorOperation(Editor editor,
-				int slot, int vertexNumber) {
-			return new EditorOperation(editor, slot, vertexNumber);
+		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
+				int slot) {
+			return new EditorOperation(editor, slot, -1);
 		}
 	};
 
@@ -60,8 +74,7 @@ public class EdSegment extends EdObject {
 			EdSegment seg = mEditor.objects().get(mEditSlot);
 			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
-			if (seg.nPoints() == 0) {
-				seg.addPoint(location);
+			while (seg.nPoints() < 2) {
 				seg.addPoint(location);
 			}
 

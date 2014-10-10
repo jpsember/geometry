@@ -82,16 +82,6 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 	}
 
-	private int mSelectedVertex;
-
-	private int findSelectedObjectVertex(EdObject object, Point location) {
-		int objVertex = -1;
-		if (object.isSelected())
-			objVertex = object.closestPoint(location, mEditor.pickRadius());
-		mSelectedVertex = objVertex;
-		return objVertex;
-	}
-
 	private void doClick(Point location) {
 		// Construct pick set of selected objects. If empty, unselect
 		// all objects; else cycle to next object and make it editable
@@ -112,11 +102,12 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doStartDrag(Point location) {
+
 		/**
 		 * <pre>
 		 * 
-		 * If there is an editable object, and location is at one of its vertices,
-		 * edit that vertex;
+		 * If there is an editable object, and object can construct an edit operation
+		 * for the location, start that operation;
 		 * 
 		 * else
 		 * 
@@ -140,9 +131,12 @@ public class DefaultEventListener implements EditorEventListener {
 			int slot = hlPickSet.get(0);
 			EdObject obj = editorObject(slot);
 			if (obj.isEditable()) {
-				int selVert = findSelectedObjectVertex(obj, location);
-				if (selVert >= 0) {
-					mEditor.startEditVertexOperation(slot, mSelectedVertex);
+
+				EditorEventListener operation = obj.buildEditOperation(mEditor,
+						slot, location);
+
+				if (operation != null) {
+					mEditor.setOperation(operation);
 					return;
 				}
 			}

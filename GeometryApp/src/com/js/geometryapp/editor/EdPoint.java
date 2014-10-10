@@ -16,6 +16,11 @@ public class EdPoint extends EdObject {
 	}
 
 	@Override
+	public boolean valid() {
+		return nPoints() == 1;
+	}
+
+	@Override
 	public float distFrom(Point pt) {
 		return MyMath.distanceBetween(pt, location());
 	}
@@ -25,16 +30,26 @@ public class EdPoint extends EdObject {
 		return FACTORY;
 	}
 
+	@Override
+	public EditorEventListener buildEditOperation(Editor editor, int slot,
+			Point location) {
+		int vertexIndex = closestPoint(location, editor.pickRadius());
+		if (vertexIndex >= 0)
+			return new EditorOperation(editor, slot, vertexIndex);
+		return null;
+	}
+
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {
 		public EdObject construct() {
 			return new EdPoint();
 		}
 
 		@Override
-		public EditorEventListener buildEditorOperation(Editor editor,
-				int slot, int vertexNumber) {
-			return new EditorOperation(editor, slot, vertexNumber);
+		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
+				int slot) {
+			return new EditorOperation(editor, slot, -1);
 		}
+
 	};
 
 	private static class EditorOperation implements EditorEventListener {

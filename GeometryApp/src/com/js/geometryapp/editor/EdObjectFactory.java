@@ -30,11 +30,9 @@ public abstract class EdObjectFactory {
 	 * @param editor
 	 * @param slot
 	 *            slot number of object to be edited
-	 * @param vertex
-	 *            index of vertex within object to be edited, or -1
 	 */
-	public abstract EditorEventListener buildEditorOperation(Editor editor,
-			int slot, int vertex);
+	public abstract EditorEventListener buildNewObjectEditorOperation(
+			Editor editor, int slot);
 
 	/**
 	 * Get name of this object. This is an identifier that is written to text
@@ -45,20 +43,17 @@ public abstract class EdObjectFactory {
 	}
 
 	/**
-	 * Construct an EditObj of this type. Used when user wants to add a new
-	 * object in the editor.
-	 * 
-	 * @return EditObj
+	 * Construct an object of this type
 	 */
-	public abstract EdObject construct();
+	public abstract <T extends EdObject> T construct();
 
 	/**
 	 * Parse EdObject from a JSON object
 	 * 
 	 * @throws JSONException
 	 */
-	public EdObject parse(JSONObject map) throws JSONException {
-		EdObject obj = construct();
+	public <T extends EdObject> T parse(JSONObject map) throws JSONException {
+		T obj = construct();
 		parsePoints(obj, map);
 		return obj;
 	}

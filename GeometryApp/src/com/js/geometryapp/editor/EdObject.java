@@ -26,6 +26,17 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
+	 * Determine if this object is well-formed. Called after reading object from
+	 * JSON, for example
+	 */
+	public boolean valid() {
+		return true;
+	}
+
+	public abstract EditorEventListener buildEditOperation(Editor editor,
+			int slot, Point location);
+
+	/**
 	 * Replace object's points with those of another object
 	 */
 	private void copyPointsFrom(EdObject src) {

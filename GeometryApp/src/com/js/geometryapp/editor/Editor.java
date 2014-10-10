@@ -195,6 +195,10 @@ public class Editor implements EditorEventListener {
 					continue;
 				}
 				EdObject edObject = factory.parse(objMap);
+				if (!edObject.valid()) {
+					warning("Unable to parse: " + objMap);
+					continue;
+				}
 				mObjects.add(edObject);
 			}
 		} catch (JSONException e) {
@@ -234,13 +238,6 @@ public class Editor implements EditorEventListener {
 		if (mLastAddObjectOperation != null) {
 			startAddObjectOperation(mLastAddObjectOperation);
 		}
-	}
-
-	void startEditVertexOperation(int slot, int vertexNumber) {
-		EdObject obj = mObjects.get(slot);
-		EditorEventListener operation = obj.getFactory().buildEditorOperation(
-				this, slot, vertexNumber);
-		setOperation(operation);
 	}
 
 	EditorEventListener currentOperation() {
@@ -358,7 +355,7 @@ public class Editor implements EditorEventListener {
 			toast(context(), "Add segment!");
 	}
 
-	private void setOperation(EditorEventListener operation) {
+	void setOperation(EditorEventListener operation) {
 		mPendingAddObjectOperation = null;
 		if (mCurrentOperation != null) {
 			mCurrentOperation.processEvent(EVENT_STOP, null);
@@ -418,7 +415,7 @@ public class Editor implements EditorEventListener {
 		pushCommand(c);
 
 		// Start operation for editing this one
-		setOperation(objectType.buildEditorOperation(this, slot, -1));
+		setOperation(objectType.buildNewObjectEditorOperation(this, slot));
 	}
 
 	void doUndo() {
@@ -562,12 +559,12 @@ public class Editor implements EditorEventListener {
 	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG", "UP",
 			"DOWN_M", "DRAG_M", "UP_M", "STOP", };
 
-	public static String editorEventName(int name) {
+	public static String editorEventName(int eventCode) {
 		if (!DEBUG_ONLY_FEATURES)
 			return null;
-		if (name < 0 || name >= sEditorEventNames.length)
-			return "??#" + name + "??";
-		return sEditorEventNames[name];
+		if (eventCode < 0 || eventCode >= sEditorEventNames.length)
+			return "??#" + eventCode + "??";
+		return sEditorEventNames[eventCode];
 	}
 
 	public float pickRadius() {

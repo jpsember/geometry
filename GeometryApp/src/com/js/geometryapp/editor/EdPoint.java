@@ -8,7 +8,8 @@ import static com.js.basic.Tools.*;
 
 public class EdPoint extends EdObject {
 
-	public EdPoint() {
+	private EdPoint(Point location) {
+		addPoint(location);
 	}
 
 	public Point location() {
@@ -40,16 +41,9 @@ public class EdPoint extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {
-		public EdObject construct() {
-			return new EdPoint();
+		public EdObject construct(Point initialLocation) {
+			return new EdPoint(initialLocation);
 		}
-
-		@Override
-		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
-				int slot) {
-			return new EditorOperation(editor, slot, -1);
-		}
-
 	};
 
 	private static class EditorOperation implements EditorEventListener {

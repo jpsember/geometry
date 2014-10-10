@@ -100,7 +100,7 @@ public class Editor implements EditorEventListener {
 		if (mPendingAddObjectOperation != null) {
 			switch (eventCode) {
 			case EVENT_DOWN:
-				addNewObject(mPendingAddObjectOperation);
+				addNewObject(mPendingAddObjectOperation, location);
 				// Have the now activated object-specific handler process the
 				// DOWN event
 				mPendingAddObjectOperation = null;
@@ -405,8 +405,8 @@ public class Editor implements EditorEventListener {
 		addObjectType(EdPolyline.FACTORY);
 	}
 
-	private void addNewObject(EdObjectFactory objectType) {
-		EdObject object = objectType.construct();
+	private void addNewObject(EdObjectFactory objectType, Point location) {
+		EdObject object = objectType.construct(location);
 		int slot = mObjects.add(object);
 		List<Integer> slots = SlotList.build(slot);
 		mObjects.selectOnly(slots);
@@ -415,7 +415,7 @@ public class Editor implements EditorEventListener {
 		pushCommand(c);
 
 		// Start operation for editing this one
-		setOperation(objectType.buildNewObjectEditorOperation(this, slot));
+		setOperation(object.buildEditOperation(this, slot, location));
 	}
 
 	void doUndo() {

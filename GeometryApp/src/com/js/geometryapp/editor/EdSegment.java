@@ -8,7 +8,11 @@ import static com.js.basic.Tools.*;
 
 public class EdSegment extends EdObject {
 
-	public EdSegment() {
+	private static final Point DEFAULT_OFFSET = new Point(20, 10);
+
+	private EdSegment(Point initialLocation) {
+		addPoint(initialLocation);
+		addPoint(MyMath.add(initialLocation, DEFAULT_OFFSET));
 	}
 
 	@Override
@@ -42,14 +46,8 @@ public class EdSegment extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
-		public EdObject construct() {
-			return new EdSegment();
-		}
-
-		@Override
-		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
-				int slot) {
-			return new EditorOperation(editor, slot, -1);
+		public EdObject construct(Point initialLocation) {
+			return new EdSegment(initialLocation);
 		}
 	};
 
@@ -73,10 +71,6 @@ public class EdSegment extends EdObject {
 
 			EdSegment seg = mEditor.objects().get(mEditSlot);
 			mOriginal = mEditor.objects().getSubset(mEditSlot);
-
-			while (seg.nPoints() < 2) {
-				seg.addPoint(location);
-			}
 
 			if (mEditPointIndex < 0) {
 				mEditPointIndex = seg.nPoints() - 1;

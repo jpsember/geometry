@@ -117,15 +117,11 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
-	 * Set point
-	 * 
-	 * @param ptIndex
-	 *            index of point
-	 * @param point
-	 *            new location of point
+	 * Set point, by replacing existing (if index < size()) or by adding new (if
+	 * index == size())
 	 */
-	public void setPoint(int ptIndex, Point point) {
-		storePoint(ptIndex, new Point(point));
+	public void setPoint(int index, Point point) {
+		storePoint(index, new Point(point));
 	}
 
 	/**
@@ -138,8 +134,6 @@ public abstract class EdObject implements Cloneable {
 	 *            location of point
 	 */
 	private void storePoint(int ptIndex, Point point) {
-		if (ptIndex > mPoints.size())
-			throw new IllegalArgumentException();
 		if (mPoints.size() == ptIndex)
 			mPoints.add(point);
 		else

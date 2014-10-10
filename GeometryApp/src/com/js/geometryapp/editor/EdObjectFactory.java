@@ -25,16 +25,6 @@ public abstract class EdObjectFactory {
 	}
 
 	/**
-	 * Construct an event handler for editor operations with these objects
-	 * 
-	 * @param editor
-	 * @param slot
-	 *            slot number of object to be edited
-	 */
-	public abstract EditorEventListener buildNewObjectEditorOperation(
-			Editor editor, int slot);
-
-	/**
 	 * Get name of this object. This is an identifier that is written to text
 	 * files to identify this object.
 	 */
@@ -44,8 +34,11 @@ public abstract class EdObjectFactory {
 
 	/**
 	 * Construct an object of this type
+	 * 
+	 * @param initialLocation
+	 *            a single point that serves as the object's default location
 	 */
-	public abstract <T extends EdObject> T construct();
+	public abstract <T extends EdObject> T construct(Point initialLocation);
 
 	/**
 	 * Parse EdObject from a JSON object
@@ -53,7 +46,7 @@ public abstract class EdObjectFactory {
 	 * @throws JSONException
 	 */
 	public <T extends EdObject> T parse(JSONObject map) throws JSONException {
-		T obj = construct();
+		T obj = construct(Point.ZERO);
 		parsePoints(obj, map);
 		return obj;
 	}
@@ -85,7 +78,7 @@ public abstract class EdObjectFactory {
 		while (i < coordinates.length()) {
 			float x = coordinates.getLong(i);
 			float y = coordinates.getLong(i + 1);
-			destinationObject.addPoint(new Point(x, y));
+			destinationObject.setPoint(i / 2, new Point(x, y));
 			i += 2;
 		}
 	}

@@ -13,7 +13,11 @@ import static com.js.basic.Tools.*;
 
 public class EdPolyline extends EdObject {
 
-	private EdPolyline() {
+	private static final Point DEFAULT_OFFSET = new Point(20, 10);
+
+	private EdPolyline(Point initialLocation) {
+		addPoint(initialLocation);
+		addPoint(MyMath.add(initialLocation, DEFAULT_OFFSET));
 	}
 
 	@Override
@@ -84,14 +88,8 @@ public class EdPolyline extends EdObject {
 
 		private static final String JSON_KEY_CURSOR = "c";
 
-		public EdObject construct() {
-			return new EdPolyline();
-		}
-
-		@Override
-		public EditorEventListener buildNewObjectEditorOperation(Editor editor,
-				int slot) {
-			return new EditorOperation(editor, slot, -1);
+		public EdObject construct(Point initialLocation) {
+			return new EdPolyline(initialLocation);
 		}
 
 		@Override
@@ -150,10 +148,6 @@ public class EdPolyline extends EdObject {
 			mEditor = editor;
 			mEditSlot = slot;
 			mOriginalObjectSet = mEditor.objects().getSubset(mEditSlot);
-			// EdPolyline polyline = mOriginalObjectSet.get(0);
-			// ....clean up initializeOperation needing location...
-			unimp("construct editorOperation for slot " + slot + ", vert "
-					+ vertexNumber);
 		}
 
 		/**
@@ -166,12 +160,6 @@ public class EdPolyline extends EdObject {
 			if (mInitialized)
 				return;
 			mInitialized = true;
-
-			// mOriginalObjectSet = mEditor.objects().getSubset(mEditSlot);
-			EdPolyline polyline = mOriginalObjectSet.get(0);
-			while (polyline.nPoints() < 2) {
-				polyline.addPoint(location);
-			}
 		}
 
 		@Override

@@ -33,6 +33,16 @@ public abstract class EdObject implements Cloneable {
 		return true;
 	}
 
+	/**
+	 * If possible, construct an operation to edit this editable object
+	 * 
+	 * @param editor
+	 * @param slot
+	 * @param location
+	 *            location of user press; e.g., to see if it is at a draggable
+	 *            vertex
+	 * @return operation, or null
+	 */
 	public abstract EditorEventListener buildEditOperation(Editor editor,
 			int slot, Point location);
 

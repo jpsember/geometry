@@ -1,5 +1,10 @@
 package com.js.geometryapp.editor;
 
+import java.util.Map;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -13,7 +18,7 @@ public class EdPolyline extends EdObject {
 
 	@Override
 	public boolean valid() {
-		return nPoints() >= 2;
+		return nPoints() >= 2 && mCursor >= 0 && mCursor < nPoints();
 	}
 
 	@Override
@@ -61,6 +66,9 @@ public class EdPolyline extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pl") {
+
+		private static final String JSON_KEY_CURSOR = "c";
+
 		public EdObject construct() {
 			return new EdPolyline();
 		}
@@ -70,13 +78,39 @@ public class EdPolyline extends EdObject {
 				int slot) {
 			return new EditorOperation(editor, slot, -1);
 		}
+
+		@Override
+		public Map write(EdObject obj) {
+			EdPolyline p = (EdPolyline) obj;
+			Map map = super.write(obj);
+			map.put(JSON_KEY_CURSOR, p.cursor());
+			return map;
+		}
+
+		@Override
+		public EdPolyline parse(JSONObject map) throws JSONException {
+			EdPolyline p = super.parse(map);
+			// TODO: is it necessary to persist the cursor?
+			p.setCursor(map.optInt(JSON_KEY_CURSOR));
+			return p;
+		};
 	};
+
+	private void setCursor(int c) {
+		mCursor = c;
+	}
+
+	private int cursor() {
+		return mCursor;
+	}
+
+	// information concerning editable object
+	private int mCursor;
 
 	private static class EditorOperation implements EditorEventListener {
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			mEditor = editor;
 			mEditSlot = slot;
-			mCursor = vertexNumber;
 		}
 
 		/**
@@ -86,18 +120,14 @@ public class EdPolyline extends EdObject {
 		 * EVENT_DOWN_x
 		 */
 		private void initializeOperation(Point location) {
-			if (mOriginal != null)
+			if (mObj != null)
 				return;
 
-			EdPolyline polyline = mEditor.objects().get(mEditSlot);
 			mOriginal = mEditor.objects().getSubset(mEditSlot);
+			mObj = mOriginal.get(0);
 
-			while (polyline.nPoints() < 2) {
-				polyline.addPoint(location);
-			}
-
-			if (mCursor < 0) {
-				mCursor = polyline.nPoints() - 1;
+			while (mObj.nPoints() < 2) {
+				mObj.addPoint(location);
 			}
 		}
 
@@ -129,7 +159,7 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdPolyline polyline2 = (EdPolyline) polyline.clone();
-				polyline2.setPoint(mCursor, location);
+				polyline2.setPoint(polyline2.cursor(), location);
 				if (db)
 					pr(" changed endpoint; " + polyline2);
 				mEditor.objects().set(mEditSlot, polyline2);
@@ -163,8 +193,8 @@ public class EdPolyline extends EdObject {
 		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
-		private int mCursor;
 		private boolean mModified;
 		private EdObjectArray mOriginal;
+		private EdPolyline mObj;
 	}
 }

@@ -21,25 +21,6 @@ public class EdPoint extends EdObject {
 	}
 
 	@Override
-	public void render(AlgorithmStepper s) {
-		if (!complete())
-			return;
-		Point loc = location();
-		if (isSelected()) {
-			if (isEditable())
-				s.highlight(loc, 1.5f);
-			else
-				s.highlight(loc);
-		} else
-			s.plot(loc);
-	}
-
-	@Override
-	public boolean complete() {
-		return nPoints() == 1;
-	}
-
-	@Override
 	public EdObjectFactory getFactory() {
 		return FACTORY;
 	}

@@ -323,17 +323,35 @@ public abstract class EdObject implements Cloneable {
 
 	/**
 	 * Render object within editor. Override this to change highlighting
-	 * behaviour for points.
+	 * behaviour for points. Default implementation renders each point if the
+	 * object is selected, and highlights them if the object is editable.
+	 * 
+	 * A special case is made if the object has a single point. To prevent the
+	 * object from disappearing if it's not selected, such points are always
+	 * rendered, are highlighted if the object is selected, and are highlighted
+	 * with a larger radius if the object is editable. Perhaps we should
+	 * emphasize editable vertices with boxes, to avoid this inconsistency with
+	 * radii.
 	 */
 	public void render(AlgorithmStepper s) {
-		if (isSelected()) {
-			for (int i = 0; i < nPoints(); i++) {
-				Point loc = getPoint(i);
-				if (isEditable()) {
-					s.highlight(loc);
-				} else
-					s.plot(loc);
-			}
+		if (nPoints() == 1) {
+			Point loc = getPoint(0);
+			if (isEditable())
+				s.highlight(loc, 1.5f);
+			else if (isSelected())
+				s.highlight(loc);
+			else
+				s.plot(loc);
+			return;
+		}
+		if (!isSelected())
+			return;
+		for (int i = 0; i < nPoints(); i++) {
+			Point loc = getPoint(i);
+			if (isEditable())
+				s.highlight(loc);
+			else
+				s.plot(loc);
 		}
 	}
 

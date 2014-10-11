@@ -337,6 +337,13 @@ public class EdPolyline extends EdObject {
 				// Create a new copy of the segment, with modified endpoint
 				mNewPolyline = (EdPolyline) pOrig.clone();
 				mNewPolyline.setPoint(mNewPolyline.cursor(), location);
+				int absorbVertex = findAbsorbingVertex(mNewPolyline,
+						mAbsorptionFactor);
+				mAbsorbSignal = (absorbVertex >= 0);
+				if (mAbsorbSignal) {
+					mNewPolyline.setPoint(mNewPolyline.cursor(),
+							mNewPolyline.getPoint(absorbVertex));
+				}
 				mEditor.objects().set(mEditSlot, mNewPolyline);
 				mModified = true;
 				mNewPolyline.setTabsHidden(true);
@@ -350,7 +357,11 @@ public class EdPolyline extends EdObject {
 					// Determine if user just dragged a vertex essentially on
 					// top of one of its neighbors. If so, the vertex is
 					// 'absorbed': delete that vertex
-					checkForVertexAbsorbtion(mNewPolyline, mAbsorptionFactor);
+					int absVert = findAbsorbingVertex(mNewPolyline,
+							mAbsorptionFactor);
+					if (absVert >= 0) {
+						performAbsorption(mNewPolyline, absVert);
+					}
 					// Don't allow any merging with polygon commands, because
 					// the user may end up doing a lot of work on a single
 					// polygon and he should be able to undo individual steps
@@ -376,9 +387,18 @@ public class EdPolyline extends EdObject {
 			return returnCode;
 		}
 
-		private void checkForVertexAbsorbtion(EdPolyline p, float factor) {
+		/**
+		 * Determine which vertex, if any, is close enough to absorb the
+		 * cursor's
+		 * 
+		 * @param p
+		 *            polyline
+		 * @param factor
+		 * @return index of absorbing vertex, or -1
+		 */
+		private int findAbsorbingVertex(EdPolyline p, float factor) {
 			if (p.nPoints() == 2)
-				return;
+				return -1;
 			Point cp = p.getPoint(p.cursor());
 			for (int pass = 0; pass < 2; pass++) {
 				int delta = (pass == 0) ? -1 : 1;
@@ -389,15 +409,25 @@ public class EdPolyline extends EdObject {
 				float dist = MyMath.distanceBetween(cp, c2);
 				if (dist >= mEditor.pickRadius() * factor)
 					continue;
-				// Delete the cursor vertex
-				p.removePoint(p.cursor());
-				p.setCursor(Math.min(p.cursor(), neighbor));
-				break;
+				return neighbor;
 			}
+			return -1;
+		}
+
+		private void performAbsorption(EdPolyline p, int absorberIndex) {
+			// Delete the cursor vertex
+			p.removePoint(p.cursor());
+			p.setCursor(Math.min(p.cursor(), absorberIndex));
 		}
 
 		@Override
 		public void render(AlgorithmStepper s) {
+			if (mAbsorbSignal) {
+				Point signalLocation = mNewPolyline.getPoint(mNewPolyline
+						.cursor());
+				s.setColor(Color.argb(0x40, 0xff, 0x80, 0x80));
+				s.plot(signalLocation, 15);
+			}
 		}
 
 		// Index of object being edited
@@ -408,6 +438,7 @@ public class EdPolyline extends EdObject {
 		private boolean mInitialized;
 		private Editor mEditor;
 		private float mAbsorptionFactor;
+		private boolean mAbsorbSignal;
 	}
 
 }

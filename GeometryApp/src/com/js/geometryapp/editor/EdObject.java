@@ -169,6 +169,10 @@ public abstract class EdObject implements Cloneable {
 		addPoint(nPoints(), pt);
 	}
 
+	public void removePoint(int index) {
+		mPoints.remove(index);
+	}
+
 	/**
 	 * Get number of points of object
 	 * 

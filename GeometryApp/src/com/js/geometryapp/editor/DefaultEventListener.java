@@ -98,6 +98,12 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 	}
 
+	/**
+	 * User did a DOWN+UP without any dragging
+	 * 
+	 * @param location
+	 *            location where DOWN occurred
+	 */
 	private void doClick(Point location) {
 
 		// As we did for the drag logic, first check: if there is an editable
@@ -113,6 +119,7 @@ public class DefaultEventListener implements EditorEventListener {
 			unselectObjects(null);
 			return;
 		}
+
 		// Find selected item with highest index
 		int highestIndex = pickSet.size();
 		for (int i = 0; i < pickSet.size(); i++) {

@@ -120,6 +120,13 @@ public class EdPolyline extends EdObject {
 		mTabsValid = false;
 	}
 
+	@Override
+	public void removePoint(int index) {
+		unimp("have a 'points modified' flag we can check & clear in EdObject, so we don't need to override these methods");
+		super.removePoint(index);
+		mTabsValid = false;
+	}
+
 	public EdObjectFactory getFactory() {
 		return FACTORY;
 	}
@@ -326,12 +333,14 @@ public class EdPolyline extends EdObject {
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
+					// Determine if user just dragged a vertex essentially on
+					// top of one of its neighbors. If so, delete that vertex
+					checkForDragDeletion(mNewPolyline);
 					mEditor.pushCommand(Command.constructForEditedObjects(
 							mEditor.objects(), mOriginalObjectSet,
 							FACTORY.getTag()));
-				}
-				if (mNewPolyline != null)
 					mNewPolyline.setTabsHidden(false);
+				}
 
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -343,6 +352,26 @@ public class EdPolyline extends EdObject {
 				break;
 			}
 			return returnCode;
+		}
+
+		private void checkForDragDeletion(EdPolyline p) {
+			if (p.nPoints() == 2)
+				return;
+			Point cp = p.getPoint(p.cursor());
+			for (int pass = 0; pass < 2; pass++) {
+				int delta = (pass == 0) ? -1 : 1;
+				int neighbor = p.cursor() + delta;
+				if (neighbor < 0 || neighbor >= p.nPoints())
+					continue;
+				Point c2 = p.getPoint(neighbor);
+				float dist = MyMath.distanceBetween(cp, c2);
+				if (dist > mEditor.pickRadius() * .5f)
+					continue;
+				// Delete the cursor vertex
+				p.removePoint(p.cursor());
+				p.setCursor(Math.min(p.cursor(), neighbor));
+				break;
+			}
 		}
 
 		@Override

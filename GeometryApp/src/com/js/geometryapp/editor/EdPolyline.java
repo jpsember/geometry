@@ -304,6 +304,10 @@ public class EdPolyline extends EdObject {
 			editor.objects().set(slot, mReference);
 		}
 
+		private EdPolyline activePolyline() {
+			return mEditor.objects().get(mEditSlot);
+		}
+
 		public static EditorEventListener buildMoveOperation(Editor editor,
 				int slot, EdPolyline mod) {
 			EditorOperation oper = new EditorOperation(editor, slot, mod,
@@ -350,47 +354,44 @@ public class EdPolyline extends EdObject {
 
 			case EVENT_DRAG: {
 				// Create a new copy of the polyline, with modified endpoint
-				mNewPolyline = (EdPolyline) mReference.clone();
-				mNewPolyline.setTabsHidden(true);
+				EdPolyline polyline = (EdPolyline) mReference.clone();
+				mEditor.objects().set(mEditSlot, polyline);
+				polyline.setTabsHidden(true);
 				if (mOperType == OPER_SPLIT) {
 					// If we're moved sufficiently far from the original point,
-					// set the split flag
-					EdPolyline splitVersion = null;
+					// perform a split
 					mSignal = MyMath.distanceBetween(location,
 							mReference.getPoint(mReference.cursor())) > mEditor
 							.pickRadius() * 3;
+					mChangesMade = mSignal;
 					if (mSignal) {
-						splitVersion = constructSplitPolygon(mNewPolyline,
-								mReference.cursor());
-						splitVersion.setTabsHidden(true);
-						mNewPolyline = splitVersion;
+						polyline = constructSplitPolygon(polyline,
+								polyline.cursor());
 					}
 				} else {
-					mNewPolyline.setPoint(mNewPolyline.cursor(), location);
-					int absorbVertex = findAbsorbingVertex(mNewPolyline);
+					mChangesMade = true;
+					polyline.setPoint(polyline.cursor(), location);
+					int absorbVertex = findAbsorbingVertex(polyline);
 					mSignal = (absorbVertex >= 0);
 					if (mSignal) {
-						mNewPolyline.setPoint(mNewPolyline.cursor(),
-								mNewPolyline.getPoint(absorbVertex));
+						polyline.setPoint(polyline.cursor(),
+								polyline.getPoint(absorbVertex));
 					}
 				}
-				mEditor.objects().set(mEditSlot, mNewPolyline);
 			}
 				break;
 
 			case EVENT_UP:
-				if (mOperType == OPER_SPLIT) {
-					if (mNewPolyline != null) {
-						mEditor.pushCommand(Command.constructForEditedObjects(
-								mEditor.objects(), mOriginalObjectSet, null));
-					}
-				} else if (mNewPolyline != null) {
-					// Determine if user just dragged a vertex essentially on
-					// top of one of its neighbors. If so, the vertex is
-					// 'absorbed': delete that vertex
-					int absVert = findAbsorbingVertex(mNewPolyline);
-					if (absVert >= 0) {
-						performAbsorption(mNewPolyline, absVert);
+				if (mChangesMade) {
+					switch (mOperType) {
+					case OPER_MOVE:
+					case OPER_INSERT:
+						EdPolyline polyline = activePolyline();
+						int absVert = findAbsorbingVertex(polyline);
+						if (absVert >= 0) {
+							performAbsorption(polyline, absVert);
+						}
+						break;
 					}
 					// Don't allow any merging with polygon commands, because
 					// the user may end up doing a lot of work on a single
@@ -408,9 +409,7 @@ public class EdPolyline extends EdObject {
 				break;
 
 			case EVENT_STOP:
-				if (mNewPolyline != null) {
-					mNewPolyline.setTabsHidden(false);
-				}
+				activePolyline().setTabsHidden(false);
 				break;
 
 			}
@@ -478,8 +477,8 @@ public class EdPolyline extends EdObject {
 		@Override
 		public void render(AlgorithmStepper s) {
 			if (mSignal) {
-				Point signalLocation = mNewPolyline.getPoint(mNewPolyline
-						.cursor());
+				EdPolyline polyline = activePolyline();
+				Point signalLocation = polyline.getPoint(polyline.cursor());
 				s.setColor(Color.argb(0x40, 0xff, 0x80, 0x80));
 				s.plot(signalLocation, 15);
 			}
@@ -503,8 +502,7 @@ public class EdPolyline extends EdObject {
 		private EdObjectArray mOriginalObjectSet;
 		// polyline when editing operation began
 		private EdPolyline mReference;
-		// new version of polyline being edited; will be null if no changes made
-		private EdPolyline mNewPolyline;
+		private boolean mChangesMade;
 		private boolean mSignal;
 		private int mOperType;
 		// To filter some debug printing only

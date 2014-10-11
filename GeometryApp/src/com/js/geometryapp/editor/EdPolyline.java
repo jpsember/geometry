@@ -465,13 +465,15 @@ public class EdPolyline extends EdObject {
 		}
 
 		private void performAbsorption(EdPolyline p, int absorberIndex) {
+			int removedIndex = p.cursor();
 			// Delete the cursor vertex
-			p.removePoint(p.cursor());
+			p.removePoint(removedIndex);
 			// Check if we're closing an open polygon by this procedure
-			boolean closingFlag = Math.abs(p.cursor() - absorberIndex) > 1;
+			boolean closingFlag = Math.abs(removedIndex - absorberIndex) > 1;
 			if (closingFlag)
 				p.setClosed(closingFlag);
-			p.setCursor(Math.min(p.cursor(), absorberIndex));
+			p.setCursor(removedIndex < absorberIndex ? absorberIndex - 1
+					: absorberIndex);
 		}
 
 		@Override

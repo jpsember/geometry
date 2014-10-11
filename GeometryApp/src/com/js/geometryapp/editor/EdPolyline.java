@@ -41,6 +41,9 @@ public class EdPolyline extends EdObject {
 		}
 
 		Point prev = null;
+		if (closed() && nPoints() > 2)
+			prev = getPointMod(-1);
+
 		s.setColor(Color.BLUE);
 
 		for (int i = 0; i < nPoints(); i++) {
@@ -143,6 +146,7 @@ public class EdPolyline extends EdObject {
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pl") {
 
 		private static final String JSON_KEY_CURSOR = "c";
+		private static final String JSON_KEY_CLOSED = "cl";
 
 		public EdObject construct() {
 			return new EdPolyline();
@@ -153,6 +157,7 @@ public class EdPolyline extends EdObject {
 			EdPolyline p = (EdPolyline) obj;
 			Map map = super.write(obj);
 			map.put(JSON_KEY_CURSOR, p.cursor());
+			map.put(JSON_KEY_CLOSED, p.closed());
 			return map;
 		}
 
@@ -161,6 +166,7 @@ public class EdPolyline extends EdObject {
 			EdPolyline p = super.parse(map);
 			// TODO: is it necessary to persist the cursor?
 			p.setCursor(map.optInt(JSON_KEY_CURSOR));
+			p.setClosed(map.optBoolean(JSON_KEY_CLOSED));
 			return p;
 		};
 
@@ -176,6 +182,14 @@ public class EdPolyline extends EdObject {
 
 	public int cursor() {
 		return mCursor;
+	}
+
+	public boolean closed() {
+		return mClosed;
+	}
+
+	public void setClosed(boolean f) {
+		mClosed = f;
 	}
 
 	private static float calcAngle(Point p1, Point p2) {
@@ -226,10 +240,10 @@ public class EdPolyline extends EdObject {
 		Point pa = null;
 		Point pb = polyline.getPoint(c);
 		Point pc = null;
-		if (c > 0)
-			pa = polyline.getPoint(c - 1);
-		if (c + 1 < polyline.nPoints())
-			pc = polyline.getPoint(c + 1);
+		if (c > 0 || polyline.closed())
+			pa = polyline.getPointMod(c - 1);
+		if (c + 1 < polyline.nPoints() || polyline.closed())
+			pc = polyline.getPointMod(c + 1);
 
 		if (pa != null) {
 			dist1 = MyMath.distanceBetween(pa, pb) * .5f;
@@ -261,6 +275,8 @@ public class EdPolyline extends EdObject {
 
 		return tabs;
 	}
+
+	private boolean mClosed;
 
 	// information concerning editable object
 	private int mCursor;
@@ -402,9 +418,7 @@ public class EdPolyline extends EdObject {
 			Point cp = p.getPoint(p.cursor());
 			for (int pass = 0; pass < 2; pass++) {
 				int delta = (pass == 0) ? -1 : 1;
-				int neighbor = p.cursor() + delta;
-				if (neighbor < 0 || neighbor >= p.nPoints())
-					continue;
+				int neighbor = MyMath.myMod(p.cursor() + delta, p.nPoints());
 				Point c2 = p.getPoint(neighbor);
 				float dist = MyMath.distanceBetween(cp, c2);
 				if (dist >= mEditor.pickRadius() * factor)
@@ -417,6 +431,10 @@ public class EdPolyline extends EdObject {
 		private void performAbsorption(EdPolyline p, int absorberIndex) {
 			// Delete the cursor vertex
 			p.removePoint(p.cursor());
+			// Check if we're closing an open polygon by this procedure
+			boolean closingFlag = Math.abs(p.cursor() - absorberIndex) > 1;
+			if (closingFlag)
+				p.setClosed(closingFlag);
 			p.setCursor(Math.min(p.cursor(), absorberIndex));
 		}
 

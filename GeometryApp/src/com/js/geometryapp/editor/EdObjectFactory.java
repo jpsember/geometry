@@ -34,11 +34,10 @@ public abstract class EdObjectFactory {
 
 	/**
 	 * Construct an object of this type
-	 * 
-	 * @param initialLocation
-	 *            a single point that serves as the object's default location
 	 */
-	public abstract <T extends EdObject> T construct(Point initialLocation);
+	public abstract <T extends EdObject> T construct();
+
+	public abstract int minimumPoints();
 
 	/**
 	 * Parse EdObject from a JSON object
@@ -46,7 +45,7 @@ public abstract class EdObjectFactory {
 	 * @throws JSONException
 	 */
 	public <T extends EdObject> T parse(JSONObject map) throws JSONException {
-		T obj = construct(Point.ZERO);
+		T obj = construct();
 		parsePoints(obj, map);
 		return obj;
 	}
@@ -78,7 +77,7 @@ public abstract class EdObjectFactory {
 		while (i < coordinates.length()) {
 			float x = coordinates.getLong(i);
 			float y = coordinates.getLong(i + 1);
-			destinationObject.setPoint(i / 2, new Point(x, y));
+			destinationObject.addPoint(new Point(x, y));
 			i += 2;
 		}
 	}

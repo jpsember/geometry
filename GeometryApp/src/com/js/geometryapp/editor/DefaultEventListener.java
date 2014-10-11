@@ -17,6 +17,22 @@ public class DefaultEventListener implements EditorEventListener {
 		mEditor = editor;
 	}
 
+	/**
+	 * Determine which slot, if any, holds the (at most one) editable object
+	 * 
+	 * @return slot if found, or -1
+	 */
+	private int getEditableSlot() {
+		EdObjectArray srcObjects = mEditor.objects();
+		for (int slot = 0; slot < srcObjects.size(); slot++) {
+			EdObject src = srcObjects.get(slot);
+			if (src.isEditable()) {
+				return slot;
+			}
+		}
+		return -1;
+	}
+
 	private List<Integer> getPickSet(Point location) {
 		List<Integer> slots = SlotList.build();
 		EdObjectArray srcObjects = mEditor.objects();
@@ -124,23 +140,21 @@ public class DefaultEventListener implements EditorEventListener {
 		 * 
 		 * </pre>
 		 */
-		List<Integer> pickSet = getPickSet(location);
-		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
-		if (hlPickSet.size() == 1) {
-			int slot = hlPickSet.get(0);
-			EdObject obj = editorObject(slot);
-			if (obj.isEditable()) {
+		int editableSlot = getEditableSlot();
+		if (editableSlot >= 0) {
+			EdObject obj = editorObject(editableSlot);
+			EditorEventListener operation = obj.buildEditOperation(
+					editableSlot, location);
 
-				EditorEventListener operation = obj.buildEditOperation(mEditor,
-						slot, location);
-
-				if (operation != null) {
-					mEditor.setOperation(operation);
-					return;
-				}
+			if (operation != null) {
+				mEditor.setOperation(operation);
+				return;
 			}
 		}
+
+		List<Integer> pickSet = getPickSet(location);
+		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
 			hlPickSet = SlotList.build(last(pickSet));

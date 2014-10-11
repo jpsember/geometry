@@ -85,7 +85,7 @@ public class Editor implements EditorEventListener {
 				mStepper.setColor(Color.GRAY);
 				EditorTools.plotRect(mStepper, obj.getBounds(this));
 			}
-			obj.render(this, mStepper);
+			obj.render(mStepper);
 		}
 		if (mCurrentOperation != null)
 			mCurrentOperation.render(mStepper);
@@ -195,6 +195,7 @@ public class Editor implements EditorEventListener {
 					continue;
 				}
 				EdObject edObject = factory.parse(objMap);
+				edObject.setEditor(this);
 				if (!edObject.valid()) {
 					warning("Unable to parse: " + objMap);
 					continue;
@@ -406,16 +407,20 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void addNewObject(EdObjectFactory objectType, Point location) {
-		EdObject object = objectType.construct(location);
-		int slot = mObjects.add(object);
+		EdObject newObject = objectType.construct();
+		newObject.setEditor(this);
+		newObject.setDefaultLocation(location);
+		newObject.setEditable(true);
+		int slot = mObjects.add(newObject);
 		List<Integer> slots = SlotList.build(slot);
 		mObjects.selectOnly(slots);
+
 		Command c = Command.constructForAddedObjects(mObjects, slots);
 		c.setPairedWithNext(true);
 		pushCommand(c);
 
 		// Start operation for editing this one
-		setOperation(object.buildEditOperation(this, slot, location));
+		setOperation(newObject.buildEditOperation(slot, location));
 	}
 
 	void doUndo() {

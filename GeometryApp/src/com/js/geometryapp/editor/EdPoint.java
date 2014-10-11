@@ -8,8 +8,7 @@ import static com.js.basic.Tools.*;
 
 public class EdPoint extends EdObject {
 
-	private EdPoint(Point location) {
-		addPoint(location);
+	private EdPoint() {
 	}
 
 	public Point location() {
@@ -32,23 +31,27 @@ public class EdPoint extends EdObject {
 	}
 
 	@Override
-	public EditorEventListener buildEditOperation(Editor editor, int slot,
-			Point location) {
-		int vertexIndex = closestPoint(location, editor.pickRadius());
+	public EditorEventListener buildEditOperation(int slot, Point location) {
+		int vertexIndex = closestPoint(location, editor().pickRadius());
 		if (vertexIndex >= 0)
-			return new EditorOperation(editor, slot, vertexIndex);
+			return new EditorOperation(slot, vertexIndex);
 		return null;
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {
-		public EdObject construct(Point initialLocation) {
-			return new EdPoint(initialLocation);
+		@Override
+		public EdObject construct() {
+			return new EdPoint();
+		}
+
+		@Override
+		public int minimumPoints() {
+			return 1;
 		}
 	};
 
-	private static class EditorOperation implements EditorEventListener {
-		public EditorOperation(Editor editor, int slot, int vertexNumber) {
-			mEditor = editor;
+	private class EditorOperation implements EditorEventListener {
+		public EditorOperation(int slot, int vertexNumber) {
 			mEditSlot = slot;
 		}
 
@@ -59,8 +62,8 @@ public class EdPoint extends EdObject {
 			if (mOriginal != null)
 				return;
 
-			EdPoint pt = mEditor.objects().get(mEditSlot);
-			mOriginal = mEditor.objects().getSubset(mEditSlot);
+			EdPoint pt = editor().objects().get(mEditSlot);
+			mOriginal = editor().objects().getSubset(mEditSlot);
 
 			if (pt.nPoints() == 0) {
 				pt.addPoint(location);
@@ -91,19 +94,20 @@ public class EdPoint extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdPoint pt = mEditor.objects().get(mEditSlot);
+				EdPoint pt = editor().objects().get(mEditSlot);
 				// Create a new copy of the point, with modified location
 				EdPoint pt2 = (EdPoint) pt.clone();
 				pt2.setPoint(0, location);
-				mEditor.objects().set(mEditSlot, pt2);
+				editor().objects().set(mEditSlot, pt2);
 				mModified = true;
 			}
 				break;
 
 			case EVENT_UP:
 				if (mModified) {
-					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginal, FACTORY.getTag()));
+					editor().pushCommand(
+							Command.constructForEditedObjects(editor()
+									.objects(), mOriginal, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -121,7 +125,6 @@ public class EdPoint extends EdObject {
 		public void render(AlgorithmStepper s) {
 		}
 
-		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
 		private boolean mModified;

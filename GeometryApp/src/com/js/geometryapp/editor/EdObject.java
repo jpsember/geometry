@@ -25,6 +25,13 @@ public abstract class EdObject implements Cloneable {
 		return sb.toString();
 	}
 
+	public void setDefaultLocation(Point location) {
+		while (nPoints() < getFactory().minimumPoints()) {
+			location = MyMath.add(location, new Point(20, 10));
+			addPoint(location);
+		}
+	}
+
 	/**
 	 * Determine if this object is well-formed. Called after reading object from
 	 * JSON, for example
@@ -36,15 +43,14 @@ public abstract class EdObject implements Cloneable {
 	/**
 	 * If possible, construct an operation to edit this editable object
 	 * 
-	 * @param editor
 	 * @param slot
 	 * @param location
 	 *            location of user press; e.g., to see if it is at a draggable
 	 *            vertex
 	 * @return operation, or null
 	 */
-	public abstract EditorEventListener buildEditOperation(Editor editor,
-			int slot, Point location);
+	public abstract EditorEventListener buildEditOperation(int slot,
+			Point location);
 
 	/**
 	 * Replace object's points with those of another object
@@ -340,7 +346,7 @@ public abstract class EdObject implements Cloneable {
 	 * emphasize editable vertices with boxes, to avoid this inconsistency with
 	 * radii.
 	 */
-	public void render(Editor editor, AlgorithmStepper s) {
+	public void render(AlgorithmStepper s) {
 		if (nPoints() == 1) {
 			Point loc = getPoint(0);
 			if (isEditable())
@@ -366,6 +372,15 @@ public abstract class EdObject implements Cloneable {
 		doNothing();
 	}
 
+	public void setEditor(Editor editor) {
+		mEditor = editor;
+	}
+
+	public Editor editor() {
+		return mEditor;
+	}
+
+	private Editor mEditor;
 	private int mFlags;
 	private ArrayList<Point> mPoints = new ArrayList();
 	// cached bounds of object, or null

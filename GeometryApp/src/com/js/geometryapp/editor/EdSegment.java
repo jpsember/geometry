@@ -8,11 +8,7 @@ import static com.js.basic.Tools.*;
 
 public class EdSegment extends EdObject {
 
-	private static final Point DEFAULT_OFFSET = new Point(20, 10);
-
-	private EdSegment(Point initialLocation) {
-		addPoint(initialLocation);
-		addPoint(MyMath.add(initialLocation, DEFAULT_OFFSET));
+	private EdSegment() {
 	}
 
 	@Override
@@ -21,17 +17,16 @@ public class EdSegment extends EdObject {
 	}
 
 	@Override
-	public void render(Editor editor, AlgorithmStepper s) {
+	public void render(AlgorithmStepper s) {
 		s.plotLine(getPoint(0), getPoint(1));
-		super.render(editor, s);
+		super.render(s);
 	}
 
 	@Override
-	public EditorEventListener buildEditOperation(Editor editor, int slot,
-			Point location) {
-		int vertexIndex = closestPoint(location, editor.pickRadius());
+	public EditorEventListener buildEditOperation(int slot, Point location) {
+		int vertexIndex = closestPoint(location, editor().pickRadius());
 		if (vertexIndex >= 0)
-			return new EditorOperation(editor, slot, vertexIndex);
+			return new EditorOperation(slot, vertexIndex);
 		return null;
 	}
 
@@ -46,15 +41,18 @@ public class EdSegment extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
-		public EdObject construct(Point initialLocation) {
-			return new EdSegment(initialLocation);
+		public EdObject construct() {
+			return new EdSegment();
+		}
+
+		@Override
+		public int minimumPoints() {
+			return 2;
 		}
 	};
 
-	private static class EditorOperation implements EditorEventListener {
-		public EditorOperation(Editor editor, int slot, int vertexNumber) {
-			ASSERT(slot >= 0);
-			mEditor = editor;
+	private class EditorOperation implements EditorEventListener {
+		public EditorOperation(int slot, int vertexNumber) {
 			mEditSlot = slot;
 			mEditPointIndex = vertexNumber;
 		}
@@ -69,8 +67,8 @@ public class EdSegment extends EdObject {
 			if (mOriginal != null)
 				return;
 
-			EdSegment seg = mEditor.objects().get(mEditSlot);
-			mOriginal = mEditor.objects().getSubset(mEditSlot);
+			EdSegment seg = editor().objects().get(mEditSlot);
+			mOriginal = editor().objects().getSubset(mEditSlot);
 
 			if (mEditPointIndex < 0) {
 				mEditPointIndex = seg.nPoints() - 1;
@@ -102,13 +100,13 @@ public class EdSegment extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdSegment seg = mEditor.objects().get(mEditSlot);
+				EdSegment seg = editor().objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = (EdSegment) seg.clone();
 				seg2.setPoint(mEditPointIndex, location);
 				if (db)
 					pr(" changed endpoint; " + seg2);
-				mEditor.objects().set(mEditSlot, seg2);
+				editor().objects().set(mEditSlot, seg2);
 				mModified = true;
 			}
 				break;
@@ -117,8 +115,9 @@ public class EdSegment extends EdObject {
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
-					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginal, FACTORY.getTag()));
+					editor().pushCommand(
+							Command.constructForEditedObjects(editor()
+									.objects(), mOriginal, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -136,7 +135,6 @@ public class EdSegment extends EdObject {
 		public void render(AlgorithmStepper s) {
 		}
 
-		private Editor mEditor;
 		// Index of object being edited
 		private int mEditSlot;
 		// Index of point being edited

@@ -99,6 +99,13 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	private void doClick(Point location) {
+
+		// As we did for the drag logic, first check: if there is an editable
+		// object, and object can construct an edit operation for the location,
+		// start that operation
+		if (startEditableObjectOperation(location))
+			return;
+
 		// Construct pick set of selected objects. If empty, unselect
 		// all objects; else cycle to next object and make it editable
 		List<Integer> pickSet = getPickSet(location);
@@ -115,6 +122,26 @@ public class DefaultEventListener implements EditorEventListener {
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
 		unselectObjects(null);
 		mEditor.objects().get(pickSet.get(nextSelectedIndex)).setEditable(true);
+	}
+
+	/**
+	 * Determine if there's an editable object which can construct an edit
+	 * operation for a particular location. If so, start the operation and
+	 * return true
+	 */
+	private boolean startEditableObjectOperation(Point location) {
+		int editableSlot = getEditableSlot();
+		if (editableSlot >= 0) {
+			EdObject obj = editorObject(editableSlot);
+			EditorEventListener operation = obj.buildEditOperation(
+					editableSlot, location);
+
+			if (operation != null) {
+				mEditor.setOperation(operation);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void doStartDrag(Point location) {
@@ -141,17 +168,8 @@ public class DefaultEventListener implements EditorEventListener {
 		 * </pre>
 		 */
 
-		int editableSlot = getEditableSlot();
-		if (editableSlot >= 0) {
-			EdObject obj = editorObject(editableSlot);
-			EditorEventListener operation = obj.buildEditOperation(
-					editableSlot, location);
-
-			if (operation != null) {
-				mEditor.setOperation(operation);
-				return;
-			}
-		}
+		if (startEditableObjectOperation(location))
+			return;
 
 		List<Integer> pickSet = getPickSet(location);
 		List<Integer> hlPickSet = getSelectedObjects(pickSet);
@@ -235,6 +253,11 @@ public class DefaultEventListener implements EditorEventListener {
 	public int processEvent(int eventCode, Point location) {
 		// By default, we'll be handling this event; so clear return code
 		int returnCode = EVENT_NONE;
+
+		final boolean db = false && DEBUG_ONLY_FEATURES;
+		if (db)
+			pr("DefaultEventListener " + Editor.editorEventName(eventCode)
+					+ " at " + location);
 
 		switch (eventCode) {
 		default:

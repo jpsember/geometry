@@ -499,7 +499,7 @@ public final class Tools {
 	 * Convert an angle, in radians, to one in degrees and dump
 	 */
 	public static String da(double angleInRadians) {
-		return d(angleInRadians * MyMath.M_DEG, 3, 2);
+		return d(angleInRadians / MyMath.M_DEG, 3, 2);
 	}
 
 	public static String d(int f) {

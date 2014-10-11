@@ -230,20 +230,27 @@ public class EdPolyline extends EdObject {
 			pc = polyline.getPointMod(c + 1);
 
 		if (pa != null) {
-			dist1 = MyMath.distanceBetween(pa, pb) * .5f;
 			a1 = calcAngle(pa, pb);
 		}
 		if (pc != null) {
-			dist2 = MyMath.distanceBetween(pb, pc) * .5f;
 			a2 = calcAngle(pb, pc);
 		}
-		dist1 = MyMath.clamp(dist1, defaultDist * .8f, defaultDist * 1.2f);
-		dist2 = MyMath.clamp(dist2, defaultDist * .8f, defaultDist * 1.2f);
 
 		if (pa == null)
 			a1 = a2;
 		if (pc == null)
 			a2 = a1;
+
+		{
+			// If angles are too close to being 180 degrees, change them
+			float separation = MyMath.normalizeAngle(a2 - a1);
+			float clampedSeparation = MyMath.clamp(separation,
+					-MyMath.M_DEG * 100, MyMath.M_DEG * 100);
+			float diff = clampedSeparation - separation;
+			a2 += diff / 2;
+			a1 -= diff / 2;
+		}
+
 		if (pa != null && pc != null) {
 			convex = MyMath.sideOfLine(pa, pb, pc) > 0;
 		}
@@ -258,6 +265,9 @@ public class EdPolyline extends EdObject {
 		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2, dist2);
 		if (polyline.closed()) {
 			float a3 = MyMath.interpolateBetweenAngles(a1, a2, .5f);
+			// Always try to make this tab point downwards, for consistency
+			if (a3 > 0)
+				a3 -= MyMath.PI;
 			tabLocations[TAB_SPLIT] = MyMath
 					.pointOnCircle(pb, a3, dist2 * 1.5f);
 		}

@@ -5,6 +5,8 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.graphics.Color;
+
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -12,6 +14,8 @@ import com.js.geometryapp.AlgorithmStepper;
 import static com.js.basic.Tools.*;
 
 public class EdPolyline extends EdObject {
+
+	private static final boolean DB_PLOT_RAYS = false && DEBUG_ONLY_FEATURES;
 
 	private EdPolyline() {
 	}
@@ -24,21 +28,36 @@ public class EdPolyline extends EdObject {
 	@Override
 	public void render(AlgorithmStepper s) {
 		prepareTabs();
+		boolean showTabs = isEditable() && !mTabsHidden;
+		Point cursor = null;
+
+		if (showTabs) {
+			cursor = getPoint(mCursor);
+			s.setColor(Color.GRAY);
+			s.plotLine(cursor, mInsertForwardTab);
+			s.plotLine(cursor, mInsertBackwardTab);
+		}
+
 		Point prev = null;
+		s.setColor(Color.BLUE);
+
 		for (int i = 0; i < nPoints(); i++) {
 			Point pt = getPoint(i);
-			if (prev != null)
-				s.plotLine(prev, pt);
+			if (prev != null) {
+				if (DB_PLOT_RAYS)
+					s.plotRay(prev, pt);
+				else
+					s.plotLine(prev, pt);
+			}
 			prev = pt;
 		}
 		super.render(s);
 
-		if (!isEditable())
-			return;
-		if (mTabsHidden)
-			return;
-		if (mInsertForwardTab != null)
+		if (showTabs) {
+			s.highlight(cursor, 1.5f);
 			s.highlight(mInsertForwardTab, 1.5f);
+			s.highlight(mInsertBackwardTab, 1.5f);
+		}
 	}
 
 	private boolean targetWithinTab(Point target, Point tabLocation) {
@@ -48,15 +67,32 @@ public class EdPolyline extends EdObject {
 
 	@Override
 	public EditorEventListener buildEditOperation(int slot, Point location) {
+
 		prepareTabs();
+
 		if (targetWithinTab(location, mInsertForwardTab)) {
-			pr("touch at fwd tab location");
-			return null;
+			EdPolyline mod = (EdPolyline) this.clone();
+			// Insert a new vertex after of the cursor
+			mod.mCursor++;
+			mod.addPoint(mod.mCursor, location);
+			return new EditorOperation(editor(), slot, mod);
+		}
+
+		if (targetWithinTab(location, mInsertBackwardTab)) {
+			EdPolyline mod = (EdPolyline) this.clone();
+			// Insert a new vertex in before the cursor
+			mod.addPoint(mod.mCursor, location);
+			return new EditorOperation(editor(), slot, mod);
 		}
 
 		int vertexIndex = closestPoint(location, editor().pickRadius());
-		if (vertexIndex >= 0)
-			return new EditorOperation(slot, vertexIndex);
+		if (vertexIndex >= 0) {
+			mCursor = vertexIndex;
+			invalidateTabs();
+			EdPolyline mod = (EdPolyline) this.clone();
+			mod.mCursor = vertexIndex;
+			return new EditorOperation(editor(), slot, mod);
+		}
 		return null;
 	}
 
@@ -122,8 +158,15 @@ public class EdPolyline extends EdObject {
 		mCursor = c;
 	}
 
-	private int cursor() {
+	public int cursor() {
 		return mCursor;
+	}
+
+	private static float calcAngle(Point p1, Point p2) {
+		if (MyMath.distanceBetween(p1, p2) < 5) {
+			return 0;
+		}
+		return MyMath.polarAngleOfSegment(p1, p2);
 	}
 
 	private void prepareTabs() {
@@ -131,8 +174,10 @@ public class EdPolyline extends EdObject {
 			return;
 		if (mTabsValid)
 			return;
-		mInsertForwardTab = MyMath.pointOnCircle(getPoint(cursor()),
-				MyMath.PI * .3f, editor().pickRadius() * 2);
+
+		Point[] tabs = calculateInsertTabPositions(this);
+		mInsertBackwardTab = tabs[0];
+		mInsertForwardTab = tabs[1];
 
 		mTabsValid = true;
 	}
@@ -145,17 +190,89 @@ public class EdPolyline extends EdObject {
 		mTabsValid = false;
 	}
 
+	/**
+	 * Calculate a reasonable place to put the insert vertex tabs for an
+	 * editable polyline
+	 * 
+	 * @param polyline
+	 * @return array of [backward, forward] insertion tab locations
+	 */
+	private static Point[] calculateInsertTabPositions(EdPolyline polyline) {
+		Point[] tabs = new Point[2];
+		int c = polyline.cursor();
+
+		float defaultDist = polyline.editor().pickRadius() * 1.3f;
+		float dist1 = defaultDist;
+		float dist2 = defaultDist;
+
+		float a1 = 0, a2 = 0;
+		boolean convex = true;
+		Point pa = null;
+		Point pb = polyline.getPoint(c);
+		Point pc = null;
+		if (c > 0)
+			pa = polyline.getPoint(c - 1);
+		if (c + 1 < polyline.nPoints())
+			pc = polyline.getPoint(c + 1);
+
+		if (pa != null) {
+			dist1 = MyMath.distanceBetween(pa, pb) * .5f;
+			a1 = calcAngle(pa, pb);
+		}
+		if (pc != null) {
+			dist2 = MyMath.distanceBetween(pb, pc) * .5f;
+			a2 = calcAngle(pb, pc);
+		}
+		dist1 = MyMath.clamp(dist1, defaultDist * .8f, defaultDist * 1.2f);
+		dist2 = MyMath.clamp(dist2, defaultDist * .8f, defaultDist * 1.2f);
+
+		if (pa == null)
+			a1 = a2;
+		if (pc == null)
+			a2 = a1;
+		if (pa != null && pc != null) {
+			convex = MyMath.sideOfLine(pa, pb, pc) > 0;
+		}
+		float diff = MyMath.M_DEG * 15;
+		if (!convex) {
+			diff = -diff;
+		}
+		a1 += diff;
+		a2 -= diff;
+
+		tabs[0] = MyMath.pointOnCircle(pb, a1 + MyMath.PI, dist1);
+		tabs[1] = MyMath.pointOnCircle(pb, a2, dist2);
+
+		return tabs;
+	}
+
 	// information concerning editable object
 	private int mCursor;
 	private boolean mTabsValid;
 	private boolean mTabsHidden;
 	private Point mInsertForwardTab;
+	private Point mInsertBackwardTab;
 
-	private class EditorOperation implements EditorEventListener {
+	private static class EditorOperation implements EditorEventListener {
 
-		public EditorOperation(int slot, int vertexNumber) {
+		/**
+		 * Constructor
+		 * 
+		 * @param editor
+		 * @param slot
+		 *            slot containing object being edited
+		 * @param vertexNumber
+		 *            vertex number being edited
+		 * @param original
+		 *            original object (before editing)
+		 */
+		public EditorOperation(Editor editor, int slot, EdPolyline modified) {
+			mEditor = editor;
 			mEditSlot = slot;
-			mOriginalObjectSet = editor().objects().getSubset(mEditSlot);
+			mOriginalObjectSet = new EdObjectArray();
+			mOriginalObjectSet.add(editor.objects().get(slot));
+			mOriginalObjectSet.setSlots(SlotList.build(slot));
+			editor.objects().set(slot, modified);
 		}
 
 		/**
@@ -195,11 +312,11 @@ public class EdPolyline extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdPolyline pOrig = editor().objects().get(mEditSlot);
+				EdPolyline pOrig = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				mNewPolyline = (EdPolyline) pOrig.clone();
 				mNewPolyline.setPoint(mNewPolyline.cursor(), location);
-				editor().objects().set(mEditSlot, mNewPolyline);
+				mEditor.objects().set(mEditSlot, mNewPolyline);
 				mModified = true;
 				mNewPolyline.setTabsHidden(true);
 			}
@@ -209,9 +326,8 @@ public class EdPolyline extends EdObject {
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
-					editor().pushCommand(
-							Command.constructForEditedObjects(editor()
-									.objects(), mOriginalObjectSet,
+					mEditor.pushCommand(Command.constructForEditedObjects(
+							mEditor.objects(), mOriginalObjectSet,
 							FACTORY.getTag()));
 				}
 				if (mNewPolyline != null)
@@ -239,6 +355,7 @@ public class EdPolyline extends EdObject {
 		private EdObjectArray mOriginalObjectSet;
 		private EdPolyline mNewPolyline;
 		private boolean mInitialized;
+		private Editor mEditor;
 	}
 
 }

@@ -156,7 +156,8 @@ public abstract class EdObject implements Cloneable {
 	 * @param point
 	 */
 	public void addPoint(int ptIndex, Point point) {
-		storePoint(mPoints.size(), point);
+		mPoints.add(ptIndex, point);
+		mBounds = null;
 	}
 
 	/**
@@ -165,7 +166,7 @@ public abstract class EdObject implements Cloneable {
 	public void addPoint(Point pt) {
 		if (pt == null)
 			throw new IllegalArgumentException();
-		setPoint(nPoints(), pt);
+		addPoint(nPoints(), pt);
 	}
 
 	/**

@@ -26,7 +26,7 @@ public class EdSegment extends EdObject {
 	public EditorEventListener buildEditOperation(int slot, Point location) {
 		int vertexIndex = closestPoint(location, editor().pickRadius());
 		if (vertexIndex >= 0)
-			return new EditorOperation(slot, vertexIndex);
+			return new EditorOperation(editor(), slot, vertexIndex);
 		return null;
 	}
 
@@ -51,8 +51,9 @@ public class EdSegment extends EdObject {
 		}
 	};
 
-	private class EditorOperation implements EditorEventListener {
-		public EditorOperation(int slot, int vertexNumber) {
+	private static class EditorOperation implements EditorEventListener {
+		public EditorOperation(Editor editor, int slot, int vertexNumber) {
+			mEditor = editor;
 			mEditSlot = slot;
 			mEditPointIndex = vertexNumber;
 		}
@@ -67,8 +68,8 @@ public class EdSegment extends EdObject {
 			if (mOriginal != null)
 				return;
 
-			EdSegment seg = editor().objects().get(mEditSlot);
-			mOriginal = editor().objects().getSubset(mEditSlot);
+			EdSegment seg = mEditor.objects().get(mEditSlot);
+			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
 			if (mEditPointIndex < 0) {
 				mEditPointIndex = seg.nPoints() - 1;
@@ -100,13 +101,13 @@ public class EdSegment extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdSegment seg = editor().objects().get(mEditSlot);
+				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = (EdSegment) seg.clone();
 				seg2.setPoint(mEditPointIndex, location);
 				if (db)
 					pr(" changed endpoint; " + seg2);
-				editor().objects().set(mEditSlot, seg2);
+				mEditor.objects().set(mEditSlot, seg2);
 				mModified = true;
 			}
 				break;
@@ -115,9 +116,8 @@ public class EdSegment extends EdObject {
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
-					editor().pushCommand(
-							Command.constructForEditedObjects(editor()
-									.objects(), mOriginal, FACTORY.getTag()));
+					mEditor.pushCommand(Command.constructForEditedObjects(
+							mEditor.objects(), mOriginal, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -141,5 +141,6 @@ public class EdSegment extends EdObject {
 		private int mEditPointIndex;
 		private boolean mModified;
 		private EdObjectArray mOriginal;
+		private Editor mEditor;
 	}
 }

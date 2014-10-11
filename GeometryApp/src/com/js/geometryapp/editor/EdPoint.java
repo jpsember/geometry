@@ -34,7 +34,7 @@ public class EdPoint extends EdObject {
 	public EditorEventListener buildEditOperation(int slot, Point location) {
 		int vertexIndex = closestPoint(location, editor().pickRadius());
 		if (vertexIndex >= 0)
-			return new EditorOperation(slot, vertexIndex);
+			return new EditorOperation(editor(), slot, vertexIndex);
 		return null;
 	}
 
@@ -50,8 +50,9 @@ public class EdPoint extends EdObject {
 		}
 	};
 
-	private class EditorOperation implements EditorEventListener {
-		public EditorOperation(int slot, int vertexNumber) {
+	private static class EditorOperation implements EditorEventListener {
+		public EditorOperation(Editor editor, int slot, int vertexNumber) {
+			mEditor = editor;
 			mEditSlot = slot;
 		}
 
@@ -62,8 +63,8 @@ public class EdPoint extends EdObject {
 			if (mOriginal != null)
 				return;
 
-			EdPoint pt = editor().objects().get(mEditSlot);
-			mOriginal = editor().objects().getSubset(mEditSlot);
+			EdPoint pt = mEditor.objects().get(mEditSlot);
+			mOriginal = mEditor.objects().getSubset(mEditSlot);
 
 			if (pt.nPoints() == 0) {
 				pt.addPoint(location);
@@ -94,20 +95,19 @@ public class EdPoint extends EdObject {
 				break;
 
 			case EVENT_DRAG: {
-				EdPoint pt = editor().objects().get(mEditSlot);
+				EdPoint pt = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the point, with modified location
 				EdPoint pt2 = (EdPoint) pt.clone();
 				pt2.setPoint(0, location);
-				editor().objects().set(mEditSlot, pt2);
+				mEditor.objects().set(mEditSlot, pt2);
 				mModified = true;
 			}
 				break;
 
 			case EVENT_UP:
 				if (mModified) {
-					editor().pushCommand(
-							Command.constructForEditedObjects(editor()
-									.objects(), mOriginal, FACTORY.getTag()));
+					mEditor.pushCommand(Command.constructForEditedObjects(
+							mEditor.objects(), mOriginal, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -129,5 +129,6 @@ public class EdPoint extends EdObject {
 		private int mEditSlot;
 		private boolean mModified;
 		private EdObjectArray mOriginal;
+		private Editor mEditor;
 	}
 }

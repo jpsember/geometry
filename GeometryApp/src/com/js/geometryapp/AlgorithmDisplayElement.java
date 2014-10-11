@@ -75,8 +75,10 @@ public abstract class AlgorithmDisplayElement {
 	}
 
 	static void renderRay(Point p1, Point p2) {
-		float angleOfRay = MyMath.polarAngleOfSegment(p1, p2);
 		float length = MyMath.distanceBetween(p1, p2);
+		if (length < .2f)
+			return;
+		float angleOfRay = MyMath.polarAngleOfSegment(p1, p2);
 		float setback = sArrowheadLength * .3f;
 		boolean drawArrowhead = (length > 2 * setback);
 		Point p2b = p2;
@@ -243,8 +245,8 @@ public abstract class AlgorithmDisplayElement {
 				break;
 		}
 
-		Point textLocation = new Point(titleIndentPixels, 10 + font.lineHeight()
-				* lines.size());
+		Point textLocation = new Point(titleIndentPixels, 10
+				+ font.lineHeight() * lines.size());
 		font.setColor(Color.BLACK);
 		for (String s : lines) {
 			font.render(s, textLocation);

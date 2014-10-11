@@ -163,7 +163,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 		selectOnly(new ArrayList());
 	}
 
-	private void setSlots(List<Integer> slots) {
+	public void setSlots(List<Integer> slots) {
 		mSlots = slots;
 	}
 

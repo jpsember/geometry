@@ -16,6 +16,8 @@ import static com.js.basic.Tools.*;
 public class EdPolyline extends EdObject {
 
 	private static final boolean DB_PLOT_RAYS = false && DEBUG_ONLY_FEATURES;
+	private static final float ABSORBTION_FACTOR_NORMAL = 1.4f;
+	private static final float ABSORBTION_FACTOR_WHILE_INSERTING = .3f;
 
 	private EdPolyline() {
 	}
@@ -70,7 +72,7 @@ public class EdPolyline extends EdObject {
 
 		prepareTabs();
 
-		// 'absorbing' vertices is not possible with the insert tabs;
+		// 'absorbing' vertices factor is much smaller with the insert tabs;
 		// this allows the user to place vertices very close together if they
 		// desire
 
@@ -79,14 +81,16 @@ public class EdPolyline extends EdObject {
 			// Insert a new vertex after the cursor
 			mod.mCursor++;
 			mod.addPoint(mod.mCursor, location);
-			return new EditorOperation(editor(), slot, mod);
+			return new EditorOperation(editor(), slot, mod)
+					.setAbsorbFactor(ABSORBTION_FACTOR_WHILE_INSERTING);
 		}
 
 		if (targetWithinTab(location, mInsertBackwardTab)) {
 			EdPolyline mod = (EdPolyline) this.clone();
 			// Insert a new vertex before the cursor
 			mod.addPoint(mod.mCursor, location);
-			return new EditorOperation(editor(), slot, mod);
+			return new EditorOperation(editor(), slot, mod)
+					.setAbsorbFactor(ABSORBTION_FACTOR_WHILE_INSERTING);
 		}
 
 		int vertexIndex = closestPoint(location, editor().pickRadius());
@@ -96,7 +100,7 @@ public class EdPolyline extends EdObject {
 			EdPolyline mod = (EdPolyline) this.clone();
 			mod.mCursor = vertexIndex;
 			return new EditorOperation(editor(), slot, mod)
-					.setAbsorbPossible(true);
+					.setAbsorbFactor(ABSORBTION_FACTOR_NORMAL);
 		}
 		return null;
 	}
@@ -287,8 +291,8 @@ public class EdPolyline extends EdObject {
 			editor.objects().set(slot, modified);
 		}
 
-		public EditorOperation setAbsorbPossible(boolean f) {
-			mAbsorbPossible = f;
+		public EditorOperation setAbsorbFactor(float factor) {
+			mAbsorptionFactor = factor;
 			return this;
 		}
 
@@ -342,19 +346,17 @@ public class EdPolyline extends EdObject {
 			case EVENT_UP:
 				if (db)
 					pr(" modified " + mModified);
-				if (mModified && mAbsorbPossible) {
+				if (mModified) {
 					// Determine if user just dragged a vertex essentially on
 					// top of one of its neighbors. If so, the vertex is
 					// 'absorbed': delete that vertex
-					checkForDragDeletion(mNewPolyline);
+					checkForVertexAbsorbtion(mNewPolyline, mAbsorptionFactor);
 					// Don't allow any merging with polygon commands, because
 					// the user may end up doing a lot of work on a single
 					// polygon and he should be able to undo individual steps
 					mEditor.pushCommand(Command.constructForEditedObjects(
 							mEditor.objects(), mOriginalObjectSet, null));
-					mNewPolyline.setTabsHidden(false);
 				}
-
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
 				break;
@@ -363,11 +365,18 @@ public class EdPolyline extends EdObject {
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
 				break;
+
+			case EVENT_STOP:
+				if (mNewPolyline != null) {
+					mNewPolyline.setTabsHidden(false);
+				}
+				break;
+
 			}
 			return returnCode;
 		}
 
-		private void checkForDragDeletion(EdPolyline p) {
+		private void checkForVertexAbsorbtion(EdPolyline p, float factor) {
 			if (p.nPoints() == 2)
 				return;
 			Point cp = p.getPoint(p.cursor());
@@ -378,7 +387,7 @@ public class EdPolyline extends EdObject {
 					continue;
 				Point c2 = p.getPoint(neighbor);
 				float dist = MyMath.distanceBetween(cp, c2);
-				if (dist > mEditor.pickRadius() * .5f)
+				if (dist >= mEditor.pickRadius() * factor)
 					continue;
 				// Delete the cursor vertex
 				p.removePoint(p.cursor());
@@ -398,7 +407,7 @@ public class EdPolyline extends EdObject {
 		private EdPolyline mNewPolyline;
 		private boolean mInitialized;
 		private Editor mEditor;
-		private boolean mAbsorbPossible;
+		private float mAbsorptionFactor;
 	}
 
 }

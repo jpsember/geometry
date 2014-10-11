@@ -70,9 +70,13 @@ public class EdPolyline extends EdObject {
 
 		prepareTabs();
 
+		// 'absorbing' vertices is not possible with the insert tabs;
+		// this allows the user to place vertices very close together if they
+		// desire
+
 		if (targetWithinTab(location, mInsertForwardTab)) {
 			EdPolyline mod = (EdPolyline) this.clone();
-			// Insert a new vertex after of the cursor
+			// Insert a new vertex after the cursor
 			mod.mCursor++;
 			mod.addPoint(mod.mCursor, location);
 			return new EditorOperation(editor(), slot, mod);
@@ -80,7 +84,7 @@ public class EdPolyline extends EdObject {
 
 		if (targetWithinTab(location, mInsertBackwardTab)) {
 			EdPolyline mod = (EdPolyline) this.clone();
-			// Insert a new vertex in before the cursor
+			// Insert a new vertex before the cursor
 			mod.addPoint(mod.mCursor, location);
 			return new EditorOperation(editor(), slot, mod);
 		}
@@ -91,7 +95,8 @@ public class EdPolyline extends EdObject {
 			invalidateTabs();
 			EdPolyline mod = (EdPolyline) this.clone();
 			mod.mCursor = vertexIndex;
-			return new EditorOperation(editor(), slot, mod);
+			return new EditorOperation(editor(), slot, mod)
+					.setAbsorbPossible(true);
 		}
 		return null;
 	}
@@ -282,6 +287,11 @@ public class EdPolyline extends EdObject {
 			editor.objects().set(slot, modified);
 		}
 
+		public EditorOperation setAbsorbPossible(boolean f) {
+			mAbsorbPossible = f;
+			return this;
+		}
+
 		/**
 		 * Initialize the edit operation, if it hasn't already been
 		 * 
@@ -332,13 +342,16 @@ public class EdPolyline extends EdObject {
 			case EVENT_UP:
 				if (db)
 					pr(" modified " + mModified);
-				if (mModified) {
+				if (mModified && mAbsorbPossible) {
 					// Determine if user just dragged a vertex essentially on
-					// top of one of its neighbors. If so, delete that vertex
+					// top of one of its neighbors. If so, the vertex is
+					// 'absorbed': delete that vertex
 					checkForDragDeletion(mNewPolyline);
+					// Don't allow any merging with polygon commands, because
+					// the user may end up doing a lot of work on a single
+					// polygon and he should be able to undo individual steps
 					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginalObjectSet,
-							FACTORY.getTag()));
+							mEditor.objects(), mOriginalObjectSet, null));
 					mNewPolyline.setTabsHidden(false);
 				}
 
@@ -385,6 +398,7 @@ public class EdPolyline extends EdObject {
 		private EdPolyline mNewPolyline;
 		private boolean mInitialized;
 		private Editor mEditor;
+		private boolean mAbsorbPossible;
 	}
 
 }

@@ -675,14 +675,11 @@ public class ConcreteStepper implements AlgorithmStepper {
 	 * false.
 	 * 
 	 */
-	Object getLock() {
+	public Object getLock() {
 		return aSynchronizationLock;
 	}
 
-	/**
-	 * 
-	 */
-	void acquireLock() {
+	public void acquireLock() {
 		if (VERIFY_LOCK) {
 			if (aLockCounter != 0
 					&& Thread.currentThread() != aLockActiveThread) {
@@ -694,7 +691,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 		}
 	}
 
-	void releaseLock() {
+	public void releaseLock() {
 		if (VERIFY_LOCK) {
 			haveLock();
 			aLockCounter--;

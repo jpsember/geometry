@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmRenderer;
+import com.js.geometryapp.ConcreteStepper;
 import com.js.opengl.OurGLSurfaceView;
 import static com.js.basic.Tools.*;
 
@@ -38,7 +39,24 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 	}
 
 	@Override
-	public boolean onTouchEvent(MotionEvent e) {
+	public boolean onTouchEvent(final MotionEvent e) {
+		// Make sure we're synchronized with the OpenGL thread
+		ConcreteStepper mStepper = mEditor.getStepper();
+		// We need to have a bogus call to performClick() to prevent compile
+		// warnings
+		boolean mAlwaysFalse = db;
+		if (mAlwaysFalse)
+			performClick();
+		boolean mTouchEventResult;
+		synchronized (mStepper.getLock()) {
+			mStepper.acquireLock();
+			mTouchEventResult = onTouchEventAux(e);
+			mStepper.releaseLock();
+		}
+		return mTouchEventResult;
+	}
+
+	private boolean onTouchEventAux(MotionEvent e) {
 		final boolean db = TOUCH_DIAGNOSTICS;
 
 		Point viewPoint = new Point(e.getX(), e.getY());

@@ -19,6 +19,11 @@ public class EdPolyline extends EdObject {
 	private static final float ABSORBTION_FACTOR_NORMAL = 1.4f;
 	private static final float ABSORBTION_FACTOR_WHILE_INSERTING = .3f;
 
+	private static final int TAB_INSERT_BACKWARD = 0;
+	private static final int TAB_INSERT_FORWARD = 1;
+	private static final int TAB_SPLIT = 2;
+	private static final int TAB_TOTAL = 3;
+
 	private EdPolyline() {
 	}
 
@@ -29,15 +34,25 @@ public class EdPolyline extends EdObject {
 
 	@Override
 	public void render(AlgorithmStepper s) {
+		if (mAlternate != null) {
+			mAlternate.render(s);
+			return;
+		}
+		// Do we need to prepare tabs here? Keep in mind we're in the OpenGL
+		// thread
 		prepareTabs();
+
 		boolean showTabs = isEditable() && !mTabsHidden;
 		Point cursor = null;
 
 		if (showTabs) {
 			cursor = getPoint(mCursor);
 			s.setColor(Color.GRAY);
-			s.plotLine(cursor, mInsertForwardTab);
-			s.plotLine(cursor, mInsertBackwardTab);
+			for (Point pt : mTabs) {
+				if (pt == null)
+					continue;
+				s.plotLine(cursor, pt);
+			}
 		}
 
 		Point prev = null;
@@ -58,16 +73,24 @@ public class EdPolyline extends EdObject {
 		}
 		super.render(s);
 
-		if (showTabs) {
+		if (showTabs && mTabs != null) {
 			s.highlight(cursor, 1.5f);
-			s.highlight(mInsertForwardTab, 1.5f);
-			s.highlight(mInsertBackwardTab, 1.5f);
+			for (Point pt : mTabs) {
+				if (pt == null)
+					continue;
+				s.highlight(pt, 1.5f);
+			}
 		}
 	}
 
-	private boolean targetWithinTab(Point target, Point tabLocation) {
-		return MyMath.distanceBetween(target, tabLocation) <= editor()
-				.pickRadius();
+	private boolean targetWithinTab(Point target, int tabIndex) {
+		boolean within = false;
+		Point tabLocation = mTabs[tabIndex];
+		if (tabLocation != null) {
+			float dist = MyMath.distanceBetween(target, tabLocation);
+			within = (dist <= editor().pickRadius());
+		}
+		return within;
 	}
 
 	@Override
@@ -79,7 +102,7 @@ public class EdPolyline extends EdObject {
 		// this allows the user to place vertices very close together if they
 		// desire
 
-		if (targetWithinTab(location, mInsertForwardTab)) {
+		if (targetWithinTab(location, TAB_INSERT_FORWARD)) {
 			EdPolyline mod = (EdPolyline) this.clone();
 			// Insert a new vertex after the cursor
 			mod.mCursor++;
@@ -88,12 +111,17 @@ public class EdPolyline extends EdObject {
 					.setAbsorbFactor(ABSORBTION_FACTOR_WHILE_INSERTING);
 		}
 
-		if (targetWithinTab(location, mInsertBackwardTab)) {
+		if (targetWithinTab(location, TAB_INSERT_BACKWARD)) {
 			EdPolyline mod = (EdPolyline) this.clone();
 			// Insert a new vertex before the cursor
 			mod.addPoint(mod.mCursor, location);
 			return new EditorOperation(editor(), slot, mod)
 					.setAbsorbFactor(ABSORBTION_FACTOR_WHILE_INSERTING);
+		}
+
+		if (targetWithinTab(location, TAB_SPLIT)) {
+			EdPolyline mod = (EdPolyline) this.clone();
+			return new EditorOperation(editor(), slot, mod).setSplitting();
 		}
 
 		int vertexIndex = closestPoint(location, editor().pickRadius());
@@ -111,9 +139,9 @@ public class EdPolyline extends EdObject {
 	public float distFrom(Point targetPoint) {
 		Point prev = null;
 		float minDistance = -1;
-		ASSERT(nPoints() >= 2);
-		for (int i = 0; i < nPoints(); i++) {
-			Point pt = getPoint(i);
+		int max = closed() ? nPoints() : nPoints() - 1;
+		for (int i = 0; i <= max; i++) {
+			Point pt = getPointMod(i);
 			if (prev != null) {
 				float distance = MyMath.ptDistanceToSegment(targetPoint, prev,
 						pt, null);
@@ -129,14 +157,14 @@ public class EdPolyline extends EdObject {
 	@Override
 	public void setPoint(int ptIndex, Point point) {
 		super.setPoint(ptIndex, point);
-		mTabsValid = false;
+		invalidateTabs();
 	}
 
 	@Override
 	public void removePoint(int index) {
 		unimp("have a 'points modified' flag we can check & clear in EdObject, so we don't need to override these methods");
 		super.removePoint(index);
-		mTabsValid = false;
+		invalidateTabs();
 	}
 
 	public EdObjectFactory getFactory() {
@@ -200,16 +228,11 @@ public class EdPolyline extends EdObject {
 	}
 
 	private void prepareTabs() {
-		if (!isEditable())
+		if (!isEditable() || mTabsHidden)
 			return;
-		if (mTabsValid)
+		if (mTabs != null)
 			return;
-
-		Point[] tabs = calculateInsertTabPositions(this);
-		mInsertBackwardTab = tabs[0];
-		mInsertForwardTab = tabs[1];
-
-		mTabsValid = true;
+		mTabs = calculateTabPositions(this);
 	}
 
 	private void setTabsHidden(boolean f) {
@@ -217,7 +240,7 @@ public class EdPolyline extends EdObject {
 	}
 
 	void invalidateTabs() {
-		mTabsValid = false;
+		mTabs = null;
 	}
 
 	/**
@@ -227,8 +250,8 @@ public class EdPolyline extends EdObject {
 	 * @param polyline
 	 * @return array of [backward, forward] insertion tab locations
 	 */
-	private static Point[] calculateInsertTabPositions(EdPolyline polyline) {
-		Point[] tabs = new Point[2];
+	private static Point[] calculateTabPositions(EdPolyline polyline) {
+		Point[] tabs = new Point[TAB_TOTAL];
 		int c = polyline.cursor();
 
 		float defaultDist = polyline.editor().pickRadius() * 1.3f;
@@ -270,8 +293,15 @@ public class EdPolyline extends EdObject {
 		a1 += diff;
 		a2 -= diff;
 
-		tabs[0] = MyMath.pointOnCircle(pb, a1 + MyMath.PI, dist1);
-		tabs[1] = MyMath.pointOnCircle(pb, a2, dist2);
+		tabs[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1 + diff
+				+ MyMath.PI, dist1);
+		tabs[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2 - diff, dist2);
+		if (polyline.closed()) {
+			// TODO: figure out how to put a3 between a1 and a2 (radial math
+			// confusion)
+			float a3 = -MyMath.PI / 2; // /MATH_PI/2; //a2 + (a1 - a2) / 2;
+			tabs[TAB_SPLIT] = MyMath.pointOnCircle(pb, a3, dist2 * 1.5f);
+		}
 
 		return tabs;
 	}
@@ -280,10 +310,9 @@ public class EdPolyline extends EdObject {
 
 	// information concerning editable object
 	private int mCursor;
-	private boolean mTabsValid;
 	private boolean mTabsHidden;
-	private Point mInsertForwardTab;
-	private Point mInsertBackwardTab;
+	private Point[] mTabs;
+	private EdPolyline mAlternate;
 
 	private static class EditorOperation implements EditorEventListener {
 
@@ -307,6 +336,11 @@ public class EdPolyline extends EdObject {
 			editor.objects().set(slot, modified);
 		}
 
+		public EditorEventListener setSplitting() {
+			mSplitting = true;
+			return this;
+		}
+
 		public EditorOperation setAbsorbFactor(float factor) {
 			mAbsorptionFactor = factor;
 			return this;
@@ -328,9 +362,11 @@ public class EdPolyline extends EdObject {
 		public int processEvent(int eventCode, Point location) {
 
 			final boolean db = false && DEBUG_ONLY_FEATURES;
-			if (db)
+			if (db && eventCode != mPreviousEventProcessed)
 				pr("EdPolyline processEvent "
-						+ Editor.editorEventName(eventCode));
+						+ Editor.editorEventName(eventCode) + " loc "
+						+ location);
+			mPreviousEventProcessed = eventCode;
 
 			if (location != null)
 				initializeOperation(location);
@@ -350,18 +386,36 @@ public class EdPolyline extends EdObject {
 
 			case EVENT_DRAG: {
 				EdPolyline pOrig = mEditor.objects().get(mEditSlot);
+
 				// Create a new copy of the segment, with modified endpoint
 				mNewPolyline = (EdPolyline) pOrig.clone();
 				mNewPolyline.setPoint(mNewPolyline.cursor(), location);
-				int absorbVertex = findAbsorbingVertex(mNewPolyline,
-						mAbsorptionFactor);
-				mAbsorbSignal = (absorbVertex >= 0);
-				if (mAbsorbSignal) {
-					mNewPolyline.setPoint(mNewPolyline.cursor(),
-							mNewPolyline.getPoint(absorbVertex));
+				if (mSplitting) {
+					EdPolyline origPolyline = (EdPolyline) mOriginalObjectSet
+							.get(0);
+					// If we're moved sufficiently far from the original point,
+					// set the split flag
+					boolean mSplitSignal = MyMath.distanceBetween(location,
+							origPolyline.getPoint(origPolyline.cursor())) > mEditor
+							.pickRadius() * 3;
+					mSplitVersion = null;
+					if (mSplitSignal) {
+						mSplitVersion = constructSplitPolygon(origPolyline,
+								origPolyline.cursor());
+						mSplitVersion.setTabsHidden(true);
+					}
+					mNewPolyline.mAlternate = mSplitVersion;
+				} else {
+					int absorbVertex = findAbsorbingVertex(mNewPolyline,
+							mAbsorptionFactor);
+					mAbsorbSignal = (absorbVertex >= 0);
+					if (mAbsorbSignal) {
+						mNewPolyline.setPoint(mNewPolyline.cursor(),
+								mNewPolyline.getPoint(absorbVertex));
+					}
+					mModified = true;
 				}
 				mEditor.objects().set(mEditSlot, mNewPolyline);
-				mModified = true;
 				mNewPolyline.setTabsHidden(true);
 			}
 				break;
@@ -369,7 +423,13 @@ public class EdPolyline extends EdObject {
 			case EVENT_UP:
 				if (db)
 					pr(" modified " + mModified);
-				if (mModified) {
+				if (mSplitting) {
+					if (mSplitVersion != null) {
+						mSplitVersion.setTabsHidden(false);
+						mSplitVersion.invalidateTabs();
+						mEditor.objects().set(mEditSlot, mSplitVersion);
+					}
+				} else if (mModified) {
 					// Determine if user just dragged a vertex essentially on
 					// top of one of its neighbors. If so, the vertex is
 					// 'absorbed': delete that vertex
@@ -395,6 +455,7 @@ public class EdPolyline extends EdObject {
 
 			case EVENT_STOP:
 				if (mNewPolyline != null) {
+					mNewPolyline.mAlternate = null;
 					mNewPolyline.setTabsHidden(false);
 				}
 				break;
@@ -428,6 +489,28 @@ public class EdPolyline extends EdObject {
 			return -1;
 		}
 
+		/**
+		 * Construct an open polyline by splitting a closed one at a particular
+		 * vertex
+		 */
+		private EdPolyline constructSplitPolygon(EdPolyline p, int cursor) {
+			ASSERT(p.closed());
+			EdPolyline c = (EdPolyline) p.clone();
+			c.setClosed(false);
+			c.setCursor(0);
+			c.clearPoints();
+
+			for (int i = 0; i <= p.nPoints(); i++) {
+				Point v = new Point(p.getPointMod(i + cursor));
+				if (i == 0 || i == p.nPoints()) {
+					// translate point a bit
+					v.x += (i == 0) ? 20 : -20;
+				}
+				c.addPoint(v);
+			}
+			return c;
+		}
+
 		private void performAbsorption(EdPolyline p, int absorberIndex) {
 			// Delete the cursor vertex
 			p.removePoint(p.cursor());
@@ -440,7 +523,7 @@ public class EdPolyline extends EdObject {
 
 		@Override
 		public void render(AlgorithmStepper s) {
-			if (mAbsorbSignal) {
+			if (mAbsorbSignal || (mSplitVersion != null)) {
 				Point signalLocation = mNewPolyline.getPoint(mNewPolyline
 						.cursor());
 				s.setColor(Color.argb(0x40, 0xff, 0x80, 0x80));
@@ -457,6 +540,10 @@ public class EdPolyline extends EdObject {
 		private Editor mEditor;
 		private float mAbsorptionFactor;
 		private boolean mAbsorbSignal;
+		private boolean mSplitting;
+		private EdPolyline mSplitVersion;
+		// To filter some debug printing only
+		private int mPreviousEventProcessed;
 	}
 
 }

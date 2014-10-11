@@ -26,8 +26,8 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	public void setDefaultLocation(Point location) {
+    // Add multiple points at this location until we have minimum number
 		while (nPoints() < getFactory().minimumPoints()) {
-			location = MyMath.add(location, new Point(20, 10));
 			addPoint(location);
 		}
 	}
@@ -128,6 +128,11 @@ public abstract class EdObject implements Cloneable {
 	 */
 	public void setPoint(int index, Point point) {
 		storePoint(index, new Point(point));
+	}
+
+	public void clearPoints() {
+		mPoints.clear();
+		mBounds = null;
 	}
 
 	/**

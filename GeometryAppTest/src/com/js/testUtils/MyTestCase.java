@@ -35,6 +35,12 @@ public class MyTestCase extends AndroidTestCase {
 		assertEquals(expected, got, 1e-10);
 	}
 
+	public static void assertEqualsFloat(double expected, double got,
+			double epsilon) {
+		assertEquals(expected, got, epsilon);
+	}
+
+
 	public static void assertStringsMatch(Object s1, Object s2) {
 		if (s1 == null)
 			s1 = "<null>";

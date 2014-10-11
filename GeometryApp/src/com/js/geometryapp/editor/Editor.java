@@ -40,7 +40,7 @@ public class Editor implements EditorEventListener {
 	private static final boolean PADDING_BETWEEN_TOOLBAR_AND_CONTAINER = false;
 	private static final boolean PADDING_INSIDE_TOOLBAR = true;
 	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
-	private static final boolean DONT_RESTORE_OBJECTS = true && DEBUG_ONLY_FEATURES;
+	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;

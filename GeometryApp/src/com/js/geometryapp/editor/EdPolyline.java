@@ -251,17 +251,13 @@ public class EdPolyline extends EdObject {
 		if (!convex) {
 			diff = -diff;
 		}
-		a1 += diff;
+		a1 += diff + MyMath.PI;
 		a2 -= diff;
 
-		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1 + diff
-				+ MyMath.PI, dist1);
-		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2 - diff,
-				dist2);
+		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1, dist1);
+		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2, dist2);
 		if (polyline.closed()) {
-			// TODO: figure out how to put a3 between a1 and a2 (radial math
-			// confusion)
-			float a3 = -MyMath.PI / 2; // /MATH_PI/2; //a2 + (a1 - a2) / 2;
+			float a3 = MyMath.interpolateBetweenAngles(a1, a2, .5f);
 			tabLocations[TAB_SPLIT] = MyMath
 					.pointOnCircle(pb, a3, dist2 * 1.5f);
 		}
@@ -360,13 +356,15 @@ public class EdPolyline extends EdObject {
 				if (mOperType == OPER_SPLIT) {
 					// If we're moved sufficiently far from the original point,
 					// perform a split
-					mSignal = MyMath.distanceBetween(location,
+					mSignal = true;
+					mSignalAlt = MyMath.distanceBetween(location,
 							mReference.getPoint(mReference.cursor())) > mEditor
 							.pickRadius() * 3;
-					mChangesMade = mSignal;
-					if (mSignal) {
+					mChangesMade = mSignalAlt;
+					if (mChangesMade) {
 						polyline = constructSplitPolygon(polyline,
 								polyline.cursor());
+						mEditor.objects().set(mEditSlot, polyline);
 					}
 				} else {
 					mChangesMade = true;
@@ -374,6 +372,7 @@ public class EdPolyline extends EdObject {
 					int absorbVertex = findAbsorbingVertex(polyline);
 					mSignal = (absorbVertex >= 0);
 					if (mSignal) {
+						mSignalAlt = true;
 						polyline.setPoint(polyline.cursor(),
 								polyline.getPoint(absorbVertex));
 					}
@@ -453,11 +452,16 @@ public class EdPolyline extends EdObject {
 			c.setCursor(0);
 			c.clearPoints();
 
+			Point na = p.getPointMod(cursor - 1);
+			Point nb = p.getPointMod(cursor + 1);
+			float angle = MyMath.polarAngleOfSegment(na, nb);
+			float dist = mEditor.pickRadius() * .5f;
+
 			for (int i = 0; i <= p.nPoints(); i++) {
 				Point v = new Point(p.getPointMod(i + cursor));
 				if (i == 0 || i == p.nPoints()) {
-					// translate point a bit
-					v.x += (i == 0) ? 20 : -20;
+					v = MyMath.pointOnCircle(v, (i == 0) ? angle : angle
+							+ MyMath.PI, dist);
 				}
 				c.addPoint(v);
 			}
@@ -481,7 +485,8 @@ public class EdPolyline extends EdObject {
 			if (mSignal) {
 				EdPolyline polyline = activePolyline();
 				Point signalLocation = polyline.getPoint(polyline.cursor());
-				s.setColor(Color.argb(0x40, 0xff, 0x80, 0x80));
+				s.setColor(mSignalAlt ? Color.argb(0x40, 0x60, 0xff, 0x60)
+						: Color.argb(0x40, 0xff, 0x80, 0x80));
 				s.plot(signalLocation, 15);
 			}
 		}
@@ -506,6 +511,7 @@ public class EdPolyline extends EdObject {
 		private EdPolyline mReference;
 		private boolean mChangesMade;
 		private boolean mSignal;
+		private boolean mSignalAlt;
 		private int mOperType;
 		// To filter some debug printing only
 		private int mPreviousEventProcessed;

@@ -72,4 +72,30 @@ public class MyMathTest extends MyTestCase {
 		}
 	}
 
+	public void testInterpolateBetweenAngles() {
+		float angles[] = { //
+		//
+				0, 160, .5f, 80, //
+				0, -160, .5f, -80,//
+				170, -160, .5f, -175, //
+				-170, -10, .5f, -90,//
+				-170, -10, .25f, -130,//
+				170, 10, .5f, 90,//
+				170, 10, .25f, 130,//
+		};
+		for (int i = 0; i < angles.length; i += 4) {
+			float a1 = angles[i + 0] * MyMath.M_DEG;
+			float a2 = angles[i + 1] * MyMath.M_DEG;
+			float t = angles[i + 2];
+			float exp = angles[i + 3] * MyMath.M_DEG;
+
+			float got = MyMath.interpolateBetweenAngles(a1, a2, t);
+			assertEqualsFloat(exp, got, 1e-6);
+
+			a1 -= MyMath.PI * 4;
+			a2 += MyMath.PI * 6;
+			got = MyMath.interpolateBetweenAngles(a1, a2, t);
+			assertEqualsFloat(exp, got, 1e-5);
+		}
+	}
 }

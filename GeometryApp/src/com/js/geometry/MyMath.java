@@ -111,9 +111,9 @@ public final class MyMath {
 	}
 
 	public static float normalizeAngle(float a) {
-		float kRange = (float) Math.PI * 2;
+		float kRange = MyMath.PI * 2;
 		float an = myMod(a, kRange);
-		if (an >= kRange / 2)
+		if (an >= MyMath.PI)
 			an -= kRange;
 		return an;
 	}

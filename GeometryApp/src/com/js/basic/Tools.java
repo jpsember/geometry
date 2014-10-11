@@ -495,6 +495,13 @@ public final class Tools {
 		return d(f, 5, 3);
 	}
 
+	/**
+	 * Convert an angle, in radians, to one in degrees and dump
+	 */
+	public static String da(double angleInRadians) {
+		return d(angleInRadians * MyMath.M_DEG, 3, 2);
+	}
+
 	public static String d(int f) {
 		return d(f, 6, true);
 	}

@@ -78,6 +78,15 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
+	 * Object has just been made editable
+	 * 
+	 * @param location
+	 *            location where user pressed to cause this
+	 */
+	public void selectedForEditing(Point location) {
+	}
+
+	/**
 	 * Determine if object is selected
 	 */
 	public boolean isSelected() {
@@ -234,7 +243,7 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
-	 * Determine closest object point to a point
+	 * Determine closest vertex to a point
 	 * 
 	 * @param point
 	 * @param maxDistance
@@ -242,7 +251,7 @@ public abstract class EdObject implements Cloneable {
 	 *            than this)
 	 * @return index of closest point, or -1
 	 */
-	public int closestPoint(Point point, float maxDistance) {
+	public int closestVertex(Point point, float maxDistance) {
 		float bestDistance = maxDistance;
 		int closestIndex = -1;
 		for (int i = 0; i < nPoints(); i++) {

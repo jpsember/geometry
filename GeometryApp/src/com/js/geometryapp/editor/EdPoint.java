@@ -32,7 +32,7 @@ public class EdPoint extends EdObject {
 
 	@Override
 	public EditorEventListener buildEditOperation(int slot, Point location) {
-		int vertexIndex = closestPoint(location, editor().pickRadius());
+		int vertexIndex = closestVertex(location, editor().pickRadius());
 		if (vertexIndex >= 0)
 			return new EditorOperation(editor(), slot, vertexIndex);
 		return null;

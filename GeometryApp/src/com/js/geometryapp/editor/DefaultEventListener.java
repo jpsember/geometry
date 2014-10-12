@@ -128,7 +128,9 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
 		unselectObjects(null);
-		mEditor.objects().get(pickSet.get(nextSelectedIndex)).setEditable(true);
+		EdObject editObject = mEditor.objects().get(pickSet.get(nextSelectedIndex));
+		editObject.setEditable(true);
+		editObject.selectedForEditing(location);
 	}
 
 	/**

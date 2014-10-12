@@ -143,7 +143,7 @@ public class EdPolyline extends EdObject {
 			return EditorOperation.buildInsertOperation(editor(), slot, mod);
 		}
 
-		int vertexIndex = closestPoint(location, editor().pickRadius());
+		int vertexIndex = closestVertex(location, editor().pickRadius());
 		if (vertexIndex >= 0) {
 			mCursor = vertexIndex;
 			EdPolyline mod = (EdPolyline) this.clone();
@@ -153,6 +153,7 @@ public class EdPolyline extends EdObject {
 		return null;
 	}
 
+	@Override
 	public float distFrom(Point targetPoint) {
 		Point prev = null;
 		float minDistance = -1;
@@ -169,6 +170,14 @@ public class EdPolyline extends EdObject {
 			prev = pt;
 		}
 		return minDistance;
+	}
+
+	@Override
+	public void selectedForEditing(Point location) {
+		int vertexIndex = closestVertex(location, editor().pickRadius());
+		if (vertexIndex >= 0) {
+			setCursor(vertexIndex);
+		}
 	}
 
 	public EdObjectFactory getFactory() {

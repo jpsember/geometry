@@ -26,7 +26,7 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	public void setDefaultLocation(Point location) {
-    // Add multiple points at this location until we have minimum number
+		// Add multiple points at this location until we have minimum number
 		while (nPoints() < getFactory().minimumPoints()) {
 			addPoint(location);
 		}

@@ -1,5 +1,8 @@
 package com.js.geometryapp.editor;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -21,8 +24,10 @@ public class EdPolyline extends EdObject {
 
 	private static final int TAB_INSERT_BACKWARD = 0;
 	private static final int TAB_INSERT_FORWARD = 1;
-	private static final int TAB_SPLIT = 2;
-	private static final int TAB_TOTAL = 3;
+	private static final int TAB_TOTAL = 2;
+
+	private static final int COLOR_SIGNAL_GREEN = Color.argb(0x40, 0x60, 0xff,
+			0x60);
 
 	private EdPolyline() {
 	}
@@ -88,6 +93,29 @@ public class EdPolyline extends EdObject {
 	}
 
 	@Override
+	public String toString() {
+		if (!DEBUG_ONLY_FEATURES)
+			return "";
+
+		StringBuilder sb = new StringBuilder("EdPolyline");
+		sb.append(closed() ? " CL" : " OP");
+		sb.append(" c=" + d(cursor(), 2));
+		sb.append(" [");
+		for (int i = 0; i < nPoints(); i++) {
+			Point pt = getPoint(i);
+			if (i == cursor())
+				sb.append("   *");
+			else
+				sb.append("    ");
+			sb.append(d((int) pt.x, 3));
+			sb.append(',');
+			sb.append(d((int) pt.y, 3));
+		}
+		sb.append("]");
+		return sb.toString();
+	}
+
+	@Override
 	public EditorEventListener buildEditOperation(int slot, Point location) {
 
 		Point[] tabLocations = calculateTabPositions(this);
@@ -97,6 +125,10 @@ public class EdPolyline extends EdObject {
 			// Insert a new vertex after the cursor
 			mod.mCursor++;
 			mod.addPoint(mod.mCursor, location);
+			if (mod.closed()) {
+				mod.rotateVertexPositions(-1);
+				mod.setClosed(false);
+			}
 			return EditorOperation.buildInsertOperation(editor(), slot, mod);
 		}
 
@@ -104,12 +136,11 @@ public class EdPolyline extends EdObject {
 			EdPolyline mod = (EdPolyline) this.clone();
 			// Insert a new vertex before the cursor
 			mod.addPoint(mod.mCursor, location);
+			if (mod.closed()) {
+				mod.rotateVertexPositions(0);
+				mod.setClosed(false);
+			}
 			return EditorOperation.buildInsertOperation(editor(), slot, mod);
-		}
-
-		if (targetWithinTab(location, tabLocations[TAB_SPLIT])) {
-			EdPolyline mod = (EdPolyline) this.clone();
-			return EditorOperation.buildSplitOperation(editor(), slot, mod);
 		}
 
 		int vertexIndex = closestPoint(location, editor().pickRadius());
@@ -205,6 +236,26 @@ public class EdPolyline extends EdObject {
 	}
 
 	/**
+	 * Shift this polyline's vertex positions around
+	 * 
+	 * @param newCursorPosition
+	 *            position of cursor vertex after shift
+	 */
+	private void rotateVertexPositions(int newCursorPosition) {
+		newCursorPosition = MyMath.myMod(newCursorPosition, nPoints());
+		int delta = MyMath.myMod(newCursorPosition - cursor(), nPoints());
+		if (delta == 0)
+			return;
+		List<Point> v = new ArrayList();
+		for (int i = 0; i < nPoints(); i++)
+			v.add(getPoint(i));
+		Collections.rotate(v, delta);
+		for (int i = 0; i < nPoints(); i++)
+			setPoint(i, v.get(i));
+		setCursor(newCursorPosition);
+	}
+
+	/**
 	 * Calculate a reasonable place to put the insert vertex tabs for an
 	 * editable polyline
 	 * 
@@ -263,14 +314,6 @@ public class EdPolyline extends EdObject {
 
 		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1, dist1);
 		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2, dist2);
-		if (polyline.closed()) {
-			float a3 = MyMath.interpolateBetweenAngles(a1, a2, .5f);
-			// Always try to make this tab point downwards, for consistency
-			if (a3 > 0)
-				a3 -= MyMath.PI;
-			tabLocations[TAB_SPLIT] = MyMath
-					.pointOnCircle(pb, a3, dist2 * 1.5f);
-		}
 
 		return tabLocations;
 	}
@@ -285,7 +328,6 @@ public class EdPolyline extends EdObject {
 
 		private final static int OPER_MOVE = 0;
 		private final static int OPER_INSERT = 1;
-		private final static int OPER_SPLIT = 2;
 
 		/**
 		 * Constructor
@@ -328,13 +370,6 @@ public class EdPolyline extends EdObject {
 			return oper;
 		}
 
-		public static EditorEventListener buildSplitOperation(Editor editor,
-				int slot, EdPolyline mod) {
-			EditorOperation oper = new EditorOperation(editor, slot, mod,
-					EditorOperation.OPER_SPLIT);
-			return oper;
-		}
-
 		@Override
 		public int processEvent(int eventCode, Point location) {
 
@@ -363,26 +398,12 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = (EdPolyline) mReference.clone();
 				mEditor.objects().set(mEditSlot, polyline);
 				polyline.setTabsHidden(true);
-				if (mOperType == OPER_SPLIT) {
-					// If we're moved sufficiently far from the original point,
-					// perform a split
-					mSignal = true;
-					mSignalAlt = MyMath.distanceBetween(location,
-							mReference.getPoint(mReference.cursor())) > mEditor
-							.pickRadius() * 3;
-					mChangesMade = mSignalAlt;
-					if (mChangesMade) {
-						polyline = constructSplitPolygon(polyline,
-								polyline.cursor());
-						mEditor.objects().set(mEditSlot, polyline);
-					}
-				} else {
+				{
 					mChangesMade = true;
 					polyline.setPoint(polyline.cursor(), location);
 					int absorbVertex = findAbsorbingVertex(polyline);
 					mSignal = (absorbVertex >= 0);
 					if (mSignal) {
-						mSignalAlt = true;
 						polyline.setPoint(polyline.cursor(),
 								polyline.getPoint(absorbVertex));
 					}
@@ -392,15 +413,10 @@ public class EdPolyline extends EdObject {
 
 			case EVENT_UP:
 				if (mChangesMade) {
-					switch (mOperType) {
-					case OPER_MOVE:
-					case OPER_INSERT:
-						EdPolyline polyline = activePolyline();
-						int absVert = findAbsorbingVertex(polyline);
-						if (absVert >= 0) {
-							performAbsorption(polyline, absVert);
-						}
-						break;
+					EdPolyline polyline = activePolyline();
+					int absVert = findAbsorbingVertex(polyline);
+					if (absVert >= 0) {
+						performAbsorption(polyline, absVert);
 					}
 					// Don't allow any merging with polygon commands, because
 					// the user may end up doing a lot of work on a single
@@ -435,47 +451,28 @@ public class EdPolyline extends EdObject {
 		 * @return index of absorbing vertex, or -1
 		 */
 		private int findAbsorbingVertex(EdPolyline p) {
-			float factor = absorptionFactor();
 			if (p.nPoints() == 2)
 				return -1;
+
+			float factor = absorptionFactor();
 			Point cp = p.getPoint(p.cursor());
 			for (int pass = 0; pass < 2; pass++) {
 				int delta = (pass == 0) ? -1 : 1;
 				int neighbor = MyMath.myMod(p.cursor() + delta, p.nPoints());
 				Point c2 = p.getPoint(neighbor);
 				float dist = MyMath.distanceBetween(cp, c2);
-				if (dist >= mEditor.pickRadius() * factor)
+				float factor2 = factor;
+				if (false) {
+					// Special case if polygon is open and we're
+					// considering closing the polygon; then use larger factor.
+					if (!p.closed() && Math.abs(neighbor - p.cursor()) > 1)
+						factor2 = ABSORBTION_FACTOR_NORMAL;
+				}
+				if (dist >= mEditor.pickRadius() * factor2)
 					continue;
 				return neighbor;
 			}
 			return -1;
-		}
-
-		/**
-		 * Construct an open polyline by splitting a closed one at a particular
-		 * vertex
-		 */
-		private EdPolyline constructSplitPolygon(EdPolyline p, int cursor) {
-			ASSERT(p.closed());
-			EdPolyline c = (EdPolyline) p.clone();
-			c.setClosed(false);
-			c.setCursor(0);
-			c.clearPoints();
-
-			Point na = p.getPointMod(cursor - 1);
-			Point nb = p.getPointMod(cursor + 1);
-			float angle = MyMath.polarAngleOfSegment(na, nb);
-			float dist = mEditor.pickRadius() * .5f;
-
-			for (int i = 0; i <= p.nPoints(); i++) {
-				Point v = new Point(p.getPointMod(i + cursor));
-				if (i == 0 || i == p.nPoints()) {
-					v = MyMath.pointOnCircle(v, (i == 0) ? angle : angle
-							+ MyMath.PI, dist);
-				}
-				c.addPoint(v);
-			}
-			return c;
 		}
 
 		private void performAbsorption(EdPolyline p, int absorberIndex) {
@@ -495,16 +492,15 @@ public class EdPolyline extends EdObject {
 			if (mSignal) {
 				EdPolyline polyline = activePolyline();
 				Point signalLocation = polyline.getPoint(polyline.cursor());
-				s.setColor(mSignalAlt ? Color.argb(0x40, 0x60, 0xff, 0x60)
-						: Color.argb(0x40, 0xff, 0x80, 0x80));
+				s.setColor(COLOR_SIGNAL_GREEN);
 				s.plot(signalLocation, 15);
 			}
 		}
 
 		private float absorptionFactor() {
-			// 'absorbing' vertices factor is much smaller when inserting;
+			// The 'absorbing' vertices factor is much smaller when inserting;
 			// this allows the user to place vertices very close together if
-			// they desire
+			// they desire.
 			switch (mOperType) {
 			case OPER_INSERT:
 				return ABSORBTION_FACTOR_WHILE_INSERTING;
@@ -521,7 +517,6 @@ public class EdPolyline extends EdObject {
 		private EdPolyline mReference;
 		private boolean mChangesMade;
 		private boolean mSignal;
-		private boolean mSignalAlt;
 		private int mOperType;
 		// To filter some debug printing only
 		private int mPreviousEventProcessed;

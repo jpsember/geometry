@@ -14,46 +14,66 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 
-import static com.js.basic.Tools.*;
-
 /**
  * Organizes and prepares sprites for rendering. Sprites are drawn using
- * GLSpritePrograms, with tint mode active
+ * GLSpritePrograms, and at present, tint mode is always active.
  */
 public class SpriteSet {
 
-	private static final boolean DUMP_ATLAS_PNG = true;
+	private static final boolean DUMP_ATLAS_PNG = false;
 
 	/**
 	 * Constructor
 	 * 
 	 * @param context
 	 * @param spriteResourceIds
-	 *            array of resource ids (e.g. raw.crosshair) to compile sprites
-	 *            for
+	 *            array of resource ids (e.g. raw.squareicon)
 	 */
-	public SpriteSet(Context context, int[] spriteResourceIds,
-			String transformName) {
+	public SpriteSet(Context context, int[] spriteResourceIds) {
 		mContext = context;
-		mTransformName = transformName;
 		constructSpritePrograms(spriteResourceIds);
 		setAtlasSize(new Point(256, 256));
 	}
 
+	/**
+	 * Set the transform to be applied to sprites when plotted; by default this
+	 * is OurGLRenderer.TRANSFORM_DEVICE_TO_NDC
+	 */
+	public void setTransformName(String transformName) {
+		if (compiled())
+			throw new IllegalStateException();
+		mTransformName = transformName;
+	}
+
 	public void setAtlasSize(Point size) {
+		if (compiled())
+			throw new IllegalStateException();
 		mAtlasSize = size;
 	}
 
-	private String mTransformName;
-	private boolean mCompiled;
-	private Point mAtlasSize;
-
 	public void compile() {
-		mTintedSpriteContext = new SpriteContext(mTransformName, true);
+		if (compiled())
+			throw new IllegalStateException();
+		if (mTransformName == null)
+			mTransformName = OurGLRenderer.TRANSFORM_NAME_DEVICE_TO_NDC;
+		mSpriteContext = new SpriteContext(mTransformName, true);
 		arrangeSprites();
 		GLTexture atlasTexture = buildAtlasTexture();
 		buildSpritePrograms(atlasTexture);
-		mCompiled = true;
+	}
+
+	/**
+	 * Plot a sprite
+	 */
+	public void plot(int spriteId, Point location, int color) {
+		if (!compiled())
+			throw new IllegalStateException("sprite set not yet compiled");
+
+		SpriteProgramRecord spriteRec = getProgramForSpriteId(spriteId);
+		mSpriteContext.setTintColor(color);
+		GLSpriteProgram sprite = spriteRec.spriteProgram();
+		sprite.setPosition(MyMath.subtract(location, spriteRec.centerpoint()));
+		sprite.render();
 	}
 
 	private void buildSpritePrograms(GLTexture atlasTexture) {
@@ -62,23 +82,13 @@ public class SpriteSet {
 			rec.mCenterpoint = new Point(rect.midX() - rect.x, rect.midY()
 					- rect.y);
 			// TODO: allow more sophisticated method of determining centerpoint
-			rec.mSpriteProgram = new GLSpriteProgram(mTintedSpriteContext,
+			rec.mSpriteProgram = new GLSpriteProgram(mSpriteContext,
 					atlasTexture, rect);
 		}
 	}
 
-	/**
-	 * Plot a sprite
-	 */
-	public void plot(int spriteId, Point location, int color) {
-		if (!mCompiled)
-			throw new IllegalStateException("sprite set not yet compiled");
-
-		SpriteProgramRecord spriteRec = getProgramForSpriteId(spriteId);
-		mTintedSpriteContext.setTintColor(color);
-		GLSpriteProgram sprite = spriteRec.spriteProgram();
-		sprite.setPosition(MyMath.subtract(location, spriteRec.centerpoint()));
-		sprite.render();
+	private boolean compiled() {
+		return mSpriteContext != null;
 	}
 
 	private SpriteProgramRecord getProgramForSpriteId(int spriteId) {
@@ -87,31 +97,6 @@ public class SpriteSet {
 			throw new IllegalArgumentException("no sprite found for id "
 					+ spriteId);
 		return rec;
-	}
-
-	private class SpriteProgramRecord {
-		public SpriteProgramRecord(int spriteId) {
-			Bitmap bitmap = BitmapUtil.readFromResource(mContext, spriteId);
-			bitmap = BitmapUtil.trimPadding(bitmap);
-			// Construct bounding rect whose position is undefined; we'll have
-			// the AtlasBuilder arrange them all at once later
-			mBounds = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-			mBitmap = bitmap;
-		}
-
-		public GLSpriteProgram spriteProgram() {
-			return mSpriteProgram;
-		}
-
-		public Point centerpoint() {
-			return mCenterpoint;
-		}
-
-		// bounds of this sprite within its atlas
-		private Rect mBounds;
-		private Bitmap mBitmap;
-		private Point mCenterpoint;
-		private GLSpriteProgram mSpriteProgram;
 	}
 
 	private Bitmap buildAtlasBitmap() {
@@ -139,7 +124,6 @@ public class SpriteSet {
 	}
 
 	private void arrangeSprites() {
-		ASSERT(mAtlasSize != null);
 		AtlasBuilder b = new AtlasBuilder(mAtlasSize);
 		b.setPadding(1);
 
@@ -163,7 +147,34 @@ public class SpriteSet {
 		}
 	}
 
+	private class SpriteProgramRecord {
+		public SpriteProgramRecord(int spriteId) {
+			Bitmap bitmap = BitmapUtil.readFromResource(mContext, spriteId);
+			bitmap = BitmapUtil.trimPadding(bitmap);
+			// Construct bounding rect whose position is undefined; we'll have
+			// the AtlasBuilder arrange them all at once later
+			mBounds = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
+			mBitmap = bitmap;
+		}
+
+		public GLSpriteProgram spriteProgram() {
+			return mSpriteProgram;
+		}
+
+		public Point centerpoint() {
+			return mCenterpoint;
+		}
+
+		// bounds of this sprite within its atlas
+		private Rect mBounds;
+		private Bitmap mBitmap;
+		private Point mCenterpoint;
+		private GLSpriteProgram mSpriteProgram;
+	}
+
 	private Context mContext;
 	private Map<Integer, SpriteProgramRecord> mSpriteMap = new HashMap();
-	private SpriteContext mTintedSpriteContext;
+	private SpriteContext mSpriteContext;
+	private String mTransformName;
+	private Point mAtlasSize;
 }

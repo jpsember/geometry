@@ -327,8 +327,8 @@ public abstract class AlgorithmDisplayElement {
 	};
 
 	private static void prepareSprites() {
-		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds,
-				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds);
+		mIcons.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		mIcons.compile();
 	}
 

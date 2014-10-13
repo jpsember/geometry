@@ -41,13 +41,13 @@ public class SampleAnimationActivity extends GeometryActivity {
 			super.onSurfaceChanged(gl, w, h);
 			mSpriteContext = new SpriteContext(TRANSFORM_NAME_DEVICE_TO_NDC,
 					false);
-			GLTexture t = new GLTexture(context(), R.raw.texture);
+			GLTexture t = new GLTexture(context(), R.raw.texture, true);
 			mSpriteProgram = new GLSpriteProgram(mSpriteContext, t, new Rect(0,
 					0, t.width(), t.height()));
 
 			mSpriteContext2 = new SpriteContext(TRANSFORM_NAME_DEVICE_TO_NDC,
 					true);
-			GLTexture t2 = new GLTexture(context(), R.raw.squareicon);
+			GLTexture t2 = new GLTexture(context(), R.raw.squareicon, true);
 			mSpriteProgram2 = new GLSpriteProgram(mSpriteContext2, t2,
 					new Rect(0, 0, t2.width(), t2.height()));
 		}

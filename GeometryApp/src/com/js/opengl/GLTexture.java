@@ -3,13 +3,12 @@ package com.js.opengl;
 import static android.opengl.GLES20.*;
 import static com.js.basic.Tools.*;
 
-import java.io.InputStream;
-
 import javax.microedition.khronos.opengles.GL10;
+
+import com.js.android.BitmapUtil;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLUtils;
 
 /**
@@ -38,12 +37,23 @@ public class GLTexture {
 	 * @param resourceId
 	 */
 	public GLTexture(Context context, int resourceId) {
+		this(context, resourceId, false);
+	}
+
+	/**
+	 * Constructor; must be called from OpenGL thread
+	 * 
+	 * @param context
+	 * @param resourceId
+	 */
+	public GLTexture(Context context, int resourceId,
+			boolean trimTransparentPadding) {
 		GLTools.ensureRenderThread();
 
 		doNothing();
+		Bitmap bitmap = BitmapUtil.readFromResource(context, resourceId);
+		bitmap = BitmapUtil.trimPadding(bitmap);
 
-		InputStream is = context.getResources().openRawResource(resourceId);
-		Bitmap bitmap = BitmapFactory.decodeStream(is);
 		initWithBitmap(bitmap);
 	}
 

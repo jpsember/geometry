@@ -241,6 +241,10 @@ public class Rect {
 		return (x < t.endX() && endX() > t.x && y < t.endY() && endY() > t.y);
 	}
 
+	public Point size() {
+		return new Point(width, height);
+	}
+
 	public float x, y, width, height;
 
 }

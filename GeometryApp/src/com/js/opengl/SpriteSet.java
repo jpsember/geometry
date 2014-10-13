@@ -53,7 +53,7 @@ public class SpriteSet {
 
 	private class SpriteProgramRecord {
 		public SpriteProgramRecord(int spriteId) {
-			GLTexture t = new GLTexture(mContext, spriteId);
+			GLTexture t = new GLTexture(mContext, spriteId, true);
 			Rect rect = new Rect(0, 0, t.width(), t.height());
 
 			// Inset rect by 1/2 pixel to avoid edge effects

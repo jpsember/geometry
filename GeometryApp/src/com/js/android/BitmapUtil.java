@@ -1,6 +1,10 @@
 package com.js.android;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
 import com.js.geometry.IPoint;
 import com.js.geometry.Rect;
@@ -9,6 +13,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Bitmap.CompressFormat;
+import android.os.Environment;
 import static com.js.basic.Tools.*;
 
 public class BitmapUtil {
@@ -74,4 +80,35 @@ public class BitmapUtil {
 		sb.append("size:" + new IPoint(b.getWidth(), b.getHeight()));
 		return sb.toString();
 	}
+
+	private static void prepareDynamicSnapshotsDir() {
+		if (sPNGSaveDirectory == null) {
+			File directory = Environment.getExternalStorageDirectory();
+			if (directory == null)
+				die("external files dir is null");
+			sPNGSaveDirectory = new File(directory, "png");
+			sPNGSaveDirectory.mkdirs();
+			if (!sPNGSaveDirectory.exists())
+				die("unable to create " + sPNGSaveDirectory);
+		}
+	}
+
+	public static void saveBitmapAsPNG(Bitmap bitmap, String pngName) {
+		String pngNameWithExtension = pngName + ".png";
+		try {
+			prepareDynamicSnapshotsDir();
+			File f = new File(sPNGSaveDirectory, pngNameWithExtension);
+			OutputStream stream = new FileOutputStream(f);
+			bitmap.compress(CompressFormat.PNG, 80, stream);
+			stream.close();
+			pr("Saved bitmap; use 'adb pull /sdcard/png/"
+					+ pngNameWithExtension + " ~/Desktop/"
+					+ pngNameWithExtension + "'");
+		} catch (IOException e) {
+			die(e);
+		}
+	}
+
+	private static File sPNGSaveDirectory;
+
 }

@@ -1,4 +1,4 @@
-package com.js.geometryapp;
+package com.js.opengl;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,9 +8,7 @@ import android.content.Context;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
-import com.js.opengl.GLSpriteProgram;
-import com.js.opengl.GLTexture;
-import com.js.opengl.SpriteContext;
+
 import static com.js.basic.Tools.*;
 
 /**
@@ -27,10 +25,10 @@ public class SpriteSet {
 	 *            array of resource ids (e.g. raw.crosshair) to compile sprites
 	 *            for
 	 */
-	public SpriteSet(Context context, int[] spriteResourceIds) {
+	public SpriteSet(Context context, int[] spriteResourceIds,
+			String transformName) {
 		mContext = context;
-		mTintedSpriteContext = new SpriteContext(
-				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC, true);
+		mTintedSpriteContext = new SpriteContext(transformName, true);
 		constructSpritePrograms(spriteResourceIds);
 	}
 

@@ -13,6 +13,7 @@ import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
 import com.js.opengl.Font;
 import com.js.opengl.GLTools;
+import com.js.opengl.SpriteSet;
 
 import static com.js.basic.Tools.*;
 
@@ -326,7 +327,8 @@ public abstract class AlgorithmDisplayElement {
 	};
 
 	private static void prepareSprites() {
-		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds);
+		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds,
+				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 	}
 
 	static SpriteSet iconSet() {

@@ -13,8 +13,8 @@ import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.basic.JSONTools;
-import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
@@ -47,8 +47,6 @@ public class Editor implements EditorEventListener {
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
-	// Issue #125
-	private static final boolean MOVE_TOUCH_UPWARD = false;
 
 	/**
 	 * Constructor
@@ -85,13 +83,6 @@ public class Editor implements EditorEventListener {
 	 * selection rectangle)
 	 */
 	public void render() {
-		if (MOVE_TOUCH_UPWARD) {
-			if (mTouchLocation != null) {
-				mStepper.setColor(Color.argb(0x80, 0x40, 0xc0, 0x40));
-				mStepper.plot(mTouchLocation, 2);
-			}
-		}
-
 		for (int i = 0; i < mObjects.size(); i++) {
 			EdObject obj = mObjects.get(i);
 			if (DB_RENDER_OBJ_BOUNDS
@@ -103,6 +94,10 @@ public class Editor implements EditorEventListener {
 		}
 		if (mCurrentOperation != null)
 			mCurrentOperation.render(mStepper);
+		if (mTouchLocation != null) {
+			mStepper.setColor(Color.BLACK);
+			mStepper.plotSprite(R.raw.crosshairicon, mTouchLocation);
+		}
 	}
 
 	/**
@@ -110,16 +105,6 @@ public class Editor implements EditorEventListener {
 	 */
 	@Override
 	public int processEvent(int eventCode, Point location) {
-
-		if (MOVE_TOUCH_UPWARD) {
-			mTouchLocation = null;
-			if (location != null) {
-				// Issue #125: try moving effective touch location upward
-				location = MyMath.add(location, new Point(0,
-						pickRadius() * 1.5f));
-				mTouchLocation = location;
-			}
-		}
 
 		if (mPendingAddObjectOperation != null) {
 			switch (eventCode) {
@@ -141,6 +126,12 @@ public class Editor implements EditorEventListener {
 			if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE) {
 				setOperation(new DefaultEventListener(this));
 			}
+		}
+
+		if (eventCode == EVENT_UP || eventCode == EVENT_UP_MULTIPLE) {
+			mTouchLocation = null;
+		} else if (location != null) {
+			mTouchLocation = location;
 		}
 
 		if (mCurrentOperation != null) {

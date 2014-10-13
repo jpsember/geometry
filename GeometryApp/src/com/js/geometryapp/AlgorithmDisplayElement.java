@@ -10,6 +10,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonMesh;
+import com.js.geometry.R;
 import com.js.opengl.Font;
 import com.js.opengl.GLTools;
 
@@ -136,6 +137,7 @@ public abstract class AlgorithmDisplayElement {
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		buildArrowheads();
 		buildPoints();
+		prepareSprites();
 
 		int titleFontSize = 18;
 		int elementFontSize = 14;
@@ -300,6 +302,10 @@ public abstract class AlgorithmDisplayElement {
 		sColor = Color.BLUE;
 	}
 
+	static int getRenderColor() {
+		return sColor;
+	}
+
 	/**
 	 * Set rendering state. If false, any render operations will generate
 	 * display elements for later rendering; if true, render operations actually
@@ -311,6 +317,20 @@ public abstract class AlgorithmDisplayElement {
 
 	static boolean rendering() {
 		return sRendering;
+	}
+
+	private static final int[] sSpriteIds = { //
+	//
+			R.raw.crosshairicon, //
+			R.raw.squareicon, //
+	};
+
+	private static void prepareSprites() {
+		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds);
+	}
+
+	static SpriteSet iconSet() {
+		return mIcons;
 	}
 
 	private int mColor;
@@ -328,4 +348,6 @@ public abstract class AlgorithmDisplayElement {
 	private static boolean sRendering;
 	private static int sElementsConstructed;
 	private static AlgorithmRenderer sRenderer;
+	private static SpriteSet mIcons;
+
 }

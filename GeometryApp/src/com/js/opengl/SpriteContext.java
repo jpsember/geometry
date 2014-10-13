@@ -53,6 +53,7 @@ public class SpriteContext {
 
 		mTexture.select();
 
+		GLTools.verifyNoError();
 		vertexData.position(0);
 		int stride = TOTAL_COMPONENTS * BYTES_PER_FLOAT;
 
@@ -65,6 +66,7 @@ public class SpriteContext {
 				TEXTURE_COMPONENT_COUNT, GL_FLOAT, false, stride, vertexData);
 		glEnableVertexAttribArray(mTextureCoordinateLocation);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+		GLTools.verifyNoError();
 	}
 
 	/**

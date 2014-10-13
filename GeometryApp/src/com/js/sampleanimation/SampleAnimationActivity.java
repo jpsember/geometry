@@ -5,6 +5,7 @@ import static com.js.basic.Tools.*;
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 
 import com.js.geometry.MyMath;
@@ -43,6 +44,12 @@ public class SampleAnimationActivity extends GeometryActivity {
 			GLTexture t = new GLTexture(context(), R.raw.texture);
 			mSpriteProgram = new GLSpriteProgram(mSpriteContext, t, new Rect(0,
 					0, t.width(), t.height()));
+
+			mSpriteContext2 = new SpriteContext(TRANSFORM_NAME_DEVICE_TO_NDC,
+					true);
+			GLTexture t2 = new GLTexture(context(), R.raw.squareicon);
+			mSpriteProgram2 = new GLSpriteProgram(mSpriteContext2, t2,
+					new Rect(0, 0, t2.width(), t2.height()));
 		}
 
 		@Override
@@ -52,10 +59,18 @@ public class SampleAnimationActivity extends GeometryActivity {
 			mSpriteProgram.setPosition(MyMath.pointOnCircle(
 					new Point(250, 500), mFrame * 5 * MyMath.M_DEG, 200));
 			mSpriteProgram.render();
+
+			mSpriteContext2.setTintColor(Color.RED);
+			mSpriteProgram2.setPosition(new Point(200, 200));
+			mSpriteProgram2.render();
+
 		}
 
 		private int mFrame;
 		private SpriteContext mSpriteContext;
+		private SpriteContext mSpriteContext2;
 		private GLSpriteProgram mSpriteProgram;
+		private GLSpriteProgram mSpriteProgram2;
+
 	}
 }

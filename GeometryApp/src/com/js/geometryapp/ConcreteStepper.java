@@ -382,6 +382,17 @@ public class ConcreteStepper implements AlgorithmStepper {
 		return setColor(Color.BLUE) + setLineWidth(1);
 	}
 
+	@Override
+	public String plotSprite(int spriteResourceId, Point location) {
+		return plot(new SpriteElement(spriteResourceId, location));
+	}
+
+	@Override
+	public String highlightSprite(int spriteResourceId, Point location) {
+		return setColor(Color.RED) + plotSprite(spriteResourceId, location)
+				+ setNormal();
+	}
+
 	/**
 	 * Request a refresh of the algorithm display. Runs to the target step (if
 	 * possible) and displays that frame.
@@ -791,5 +802,4 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private int mTargetStep;
 	private int mTotalSteps;
 	private int mCurrentStep;
-
 }

@@ -27,10 +27,10 @@
         </activity>
 
         <activity
-            android:name="sampleanimation.SampleAnimationActivity"
+            android:name="com.js.sampleanimation.SampleAnimationActivity"
             android:label="Animation"
             android:icon="@drawable/ic_animation"
-            android:taskAffinity="com.js.samplealgorithm.SampleAnimationActivity" >
+            android:taskAffinity="com.js.sampleanimation.SampleAnimationActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

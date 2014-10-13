@@ -12,6 +12,7 @@ import android.graphics.Color;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.basic.Tools.*;
@@ -75,10 +76,11 @@ public class EdPolyline extends EdObject {
 
 		if (tabLocations != null) {
 			s.highlight(cursor, 1.5f);
+			s.setColor(Color.GRAY);
 			for (Point pt : tabLocations) {
 				if (pt == null)
 					continue;
-				s.highlight(pt, 1.5f);
+				s.plotSprite(R.raw.squareicon, pt);
 			}
 		}
 	}

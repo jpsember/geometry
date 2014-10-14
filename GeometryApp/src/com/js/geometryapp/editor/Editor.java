@@ -15,16 +15,18 @@ import com.js.android.QuiescentDelayOperation;
 import com.js.basic.JSONTools;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
+import com.js.geometryapp.widget.AbstractWidget;
+import com.js.geometryapp.widget.AbstractWidget.Listener;
 
 import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
@@ -48,6 +50,9 @@ public class Editor implements EditorEventListener {
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
 
+	public Editor() {
+	}
+
 	/**
 	 * Constructor
 	 * 
@@ -56,11 +61,41 @@ public class Editor implements EditorEventListener {
 	 * @param stepper
 	 *            ConcreteStepper for rendering editor objects
 	 */
-	public Editor(View contentView, ConcreteStepper stepper) {
+	public void prepare(View contentView, ConcreteStepper stepper) {
 		mContentView = contentView;
 		mStepper = stepper;
 		mPickRadius = MyActivity.inchesToPixels(.28f);
 		prepareObjectTypes();
+	}
+
+	public void prepareOptions(AlgorithmOptions op) {
+		mOptions = op;
+		op.addButton("Undo").addListener(new Listener() {
+			public void valueChanged(AbstractWidget widget) {
+				doUndo();
+			}
+		});
+		op.addButton("Redo").addListener(new Listener() {
+			public void valueChanged(AbstractWidget widget) {
+				doRedo();
+			}
+		});
+		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg", EdPoint.FACTORY,
+				"Poly", EdPolyline.FACTORY);
+	}
+
+	private void prepareAddObjectButtons(Object... args) {
+		int i = 0;
+		while (i < args.length) {
+			String label = (String) args[i];
+			final EdObjectFactory factory = (EdObjectFactory) args[i + 1];
+			mOptions.addButton(label).addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					startAddObjectOperation(factory);
+				}
+			});
+			i += 2;
+		}
 	}
 
 	public ConcreteStepper getStepper() {
@@ -75,6 +110,10 @@ public class Editor implements EditorEventListener {
 		if (mEditorView == null)
 			constructView();
 		return mEditorView;
+	}
+
+	public boolean isActive() {
+		return mOptions.isEditorActive();
 	}
 
 	/**
@@ -176,8 +215,14 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void updateButtonEnableStates() {
-		mUndoButton.setEnabled(mCommandHistoryCursor > 0);
-		mRedoButton.setEnabled(mCommandHistoryCursor < mCommandHistory.size());
+		if (mOptions == null)
+			return;
+		if (!mOptions.isEditorActive())
+			return;
+
+		mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
+		mOptions.setEnabled("Redo",
+				mCommandHistoryCursor < mCommandHistory.size());
 	}
 
 	/**
@@ -278,27 +323,6 @@ public class Editor implements EditorEventListener {
 		return mContentView.getContext();
 	}
 
-	private Button buildSampleButton(String label) {
-		Button b = new Button(context());
-		b.setText(label);
-		b.setLayoutParams(new LinearLayout.LayoutParams(
-				LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-		return b;
-	}
-
-	private Button addObjectTypeButton(String label,
-			final EdObjectFactory factory) {
-		Button button = buildSampleButton(label);
-		button.setOnClickListener(new Button.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Editor editor = Editor.this;
-				editor.startAddObjectOperation(factory);
-			}
-		});
-		return button;
-	}
-
 	private void constructView() {
 		FrameLayout frameLayout = new FrameLayout(mContentView.getContext());
 
@@ -317,34 +341,8 @@ public class Editor implements EditorEventListener {
 
 			// Give the toolview a transparent gray background
 			toolbar.setBackgroundColor(Color.argb(0x40, 0x80, 0x80, 0x80));
-
-			toolbar.addView(addObjectTypeButton("Pt", EdPoint.FACTORY));
-			toolbar.addView(addObjectTypeButton("Seg", EdSegment.FACTORY));
-			toolbar.addView(addObjectTypeButton("Poly", EdPolyline.FACTORY));
-			{
-				Button button = buildSampleButton("Undo");
-				button.setOnClickListener(new Button.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						Editor editor = Editor.this;
-						editor.doUndo();
-					}
-				});
-				toolbar.addView(button);
-				mUndoButton = button;
-			}
-			{
-				Button button = buildSampleButton("Redo");
-				button.setOnClickListener(new Button.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						Editor editor = Editor.this;
-						editor.doRedo();
-					}
-				});
-				toolbar.addView(button);
-				mRedoButton = button;
-			}
+      
+      // TODO: get rid of toolbar completely, now that we're using a distinct Editor active operation
 
 			p = new FrameLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
 					LayoutParams.WRAP_CONTENT);
@@ -591,6 +589,9 @@ public class Editor implements EditorEventListener {
 		return mPickRadius;
 	}
 
+	// TODO: clean up exists vs initialized pattern (assume ptrs are non null
+	// etc)
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
@@ -604,7 +605,7 @@ public class Editor implements EditorEventListener {
 	private String mLastSavedState;
 	private List<Command> mCommandHistory = new ArrayList();
 	private int mCommandHistoryCursor;
-	private Button mUndoButton, mRedoButton;
 	private float mPickRadius;
 	private Point mTouchLocation;
+	private AlgorithmOptions mOptions;
 }

@@ -215,6 +215,9 @@ public abstract class AbstractWidget {
 		return this;
 	}
 
+	public void setEnabled(boolean state) {
+	}
+
 	/**
 	 * Construct a label for this widget
 	 */

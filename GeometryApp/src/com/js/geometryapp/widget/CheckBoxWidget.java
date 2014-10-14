@@ -62,6 +62,11 @@ public class CheckBoxWidget extends AbstractWidget {
 		return this;
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		mCheckBox.setEnabled(enabled);
+	}
+
 	/**
 	 * Get displayed value, and transform to 'internal' representation.
 	 */

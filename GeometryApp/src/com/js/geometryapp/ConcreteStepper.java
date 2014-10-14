@@ -402,10 +402,12 @@ public class ConcreteStepper implements AlgorithmStepper {
 		if (mRefreshing)
 			return;
 		mRefreshing = true;
-		synchronized (getLock()) {
-			acquireLock();
-			performAlgorithm();
-			releaseLock();
+		if (mOptions.getActiveAlgorithm() != null) {
+			synchronized (getLock()) {
+				acquireLock();
+				performAlgorithm();
+				releaseLock();
+			}
 		}
 		mglSurfaceView.requestRender();
 		mRefreshing = false;

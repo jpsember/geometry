@@ -18,6 +18,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	public static final String PERSIST_KEY_EDITOR = "_editor";
 
 	public GeometryStepperActivity() {
+		mEditor = new Editor();
 		mStepper = new ConcreteStepper();
 	}
 
@@ -53,7 +54,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 			// Wrap the GLSurfaceView within another container, so we can
 			// overlay it with an editing toolbar
-			mEditor = new Editor(glView, mStepper);
+			mEditor.prepare(glView, mStepper);
 			mRenderer.setEditor(mEditor);
 			mSurfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
@@ -64,6 +65,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			mEditor.restoreFromJSON(script);
 		}
 		mOptions = mStepper.constructOptions(this);
+		mOptions.setEditor(mEditor);
 
 		// Add the stepper control panel to this container
 		mainView.addView(mStepper.controllerView());

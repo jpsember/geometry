@@ -85,5 +85,10 @@ public class SliderWidget extends AbstractWidget {
 		return Integer.toString(userIntValue);
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		mSeekBar.setEnabled(enabled);
+	}
+
 	private SeekBar mSeekBar;
 }

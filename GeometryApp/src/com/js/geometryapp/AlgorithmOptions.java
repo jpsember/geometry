@@ -16,6 +16,7 @@ import com.js.android.AppPreferences;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.UITools;
 import com.js.basic.JSONTools;
+import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
@@ -37,7 +38,7 @@ public class AlgorithmOptions {
 	private static final String WIDGET_ID_TARGETSTEP_AUX = "_"
 			+ WIDGET_ID_TARGETSTEP;
 
-	private static final String WIDGET_ID_ALGORITHM = "_algorithm_";
+	private static final String WIDGET_ID_OPERATION = "_algorithm_";
 
 	/**
 	 * Prepare the options views
@@ -53,27 +54,31 @@ public class AlgorithmOptions {
 	}
 
 	private void addPrimaryWidgets() {
-		if (mAlgorithms.size() == 1) {
-			AlgorithmRecord r = mAlgorithms.get(0);
-			addHeader(r.name());
-		} else {
-			ComboBoxWidget w = addComboBox(WIDGET_ID_ALGORITHM, "label",
-					"Algorithm");
-			for (AlgorithmRecord r : mAlgorithms) {
-				w.addItem(r.name());
-			}
-			w.prepare();
-			w.addListener(new Listener() {
-				@Override
-				public void valueChanged(AbstractWidget widget) {
-					int index = widget.getIntValue();
-					selectAlgorithm(mAlgorithms.get(index));
-				}
-			});
+		ComboBoxWidget w = addComboBox(WIDGET_ID_OPERATION, "label",
+				"Operation");
+		for (ActiveOperationRecord r : mAlgorithms) {
+			w.addItem(r.name());
 		}
+		w.prepare();
+		w.addListener(new Listener() {
+			@Override
+			public void valueChanged(AbstractWidget widget) {
+				int index = widget.getIntValue();
+				selectAlgorithm(mAlgorithms.get(index));
+			}
+		});
+
 		// Add some vertical space by adding blank text; perhaps later we'll add
 		// widgets for this purpose
 		addStaticText("");
+	}
+
+	private void prepareEditorOperationRecord() {
+		ActiveOperationRecord algorithmRecord = new ActiveOperationRecord();
+		mAlgorithms.add(algorithmRecord);
+		algorithmRecord.setWidgetGroup(new WidgetGroup(constructSubView()));
+		activateSecondaryWidgetGroup(algorithmRecord);
+		mEditor.prepareOptions(this);
 	}
 
 	/**
@@ -155,6 +160,10 @@ public class AlgorithmOptions {
 		getWidget(widgetId).setValue(Integer.toString(intValue));
 	}
 
+	public void setEnabled(String widgetId, boolean enabled) {
+		getWidget(widgetId).setEnabled(enabled);
+	}
+
 	/**
 	 * Get value of widget as a boolean
 	 */
@@ -217,8 +226,8 @@ public class AlgorithmOptions {
 		}
 	}
 
-	private AlgorithmRecord findAlgorithm(String name) {
-		for (AlgorithmRecord rec : mAlgorithms) {
+	private ActiveOperationRecord findAlgorithm(String name) {
+		for (ActiveOperationRecord rec : mAlgorithms) {
 			if (rec.name().equals(name))
 				return rec;
 		}
@@ -241,7 +250,7 @@ public class AlgorithmOptions {
 		groupValues.put(PRIMARY_GROUP_KEY,
 				getWidgetValueMap(mPrimaryWidgetGroup));
 
-		for (AlgorithmRecord a : mAlgorithms) {
+		for (ActiveOperationRecord a : mAlgorithms) {
 			groupValues.put(a.name(), getWidgetValueMap(a.widgets()));
 		}
 		return groupValues.toString();
@@ -272,7 +281,7 @@ public class AlgorithmOptions {
 				if (algName.equals(PRIMARY_GROUP_KEY)) {
 					activateSecondaryWidgetGroup(null);
 				} else {
-					AlgorithmRecord rec = findAlgorithm(algName);
+					ActiveOperationRecord rec = findAlgorithm(algName);
 					if (rec == null) {
 						warning("can't find algorithm '" + algName + "'");
 						continue;
@@ -296,8 +305,7 @@ public class AlgorithmOptions {
 		}
 		mPrepared = true;
 		int algNumber = 0;
-		if (mAlgorithms.size() > 1)
-			algNumber = getIntValue(WIDGET_ID_ALGORITHM);
+		algNumber = getIntValue(WIDGET_ID_OPERATION);
 		selectAlgorithm(mAlgorithms.get(algNumber));
 	}
 
@@ -306,13 +314,13 @@ public class AlgorithmOptions {
 	 * active algorithm)
 	 */
 	private void saveStepsInformation() {
-		if (mActiveAlgorithm != null) {
+		if (mActiveAlgorithm != null && mActiveAlgorithm.isAlgorithm()) {
 			setValue(WIDGET_ID_TOTALSTEPS_AUX, readTotalSteps());
 			setValue(WIDGET_ID_TARGETSTEP_AUX, readTargetStep());
 		}
 	}
 
-	private void selectAlgorithm(AlgorithmRecord ar) {
+	private void selectAlgorithm(ActiveOperationRecord ar) {
 		if (mActiveAlgorithm == ar)
 			return;
 		QuiescentDelayOperation.cancelExisting(mPendingRecalculationOperation);
@@ -327,18 +335,30 @@ public class AlgorithmOptions {
 		mActiveAlgorithm = ar;
 		mContainingView.addView(mActiveAlgorithm.widgets().view());
 
-		// Copy total, target steps from algorithm-specific versions
-		setTotalSteps(getIntValue(WIDGET_ID_TOTALSTEPS_AUX));
-		setTargetStep(getIntValue(WIDGET_ID_TARGETSTEP_AUX));
+		setStepperControlsActive(mActiveAlgorithm.isAlgorithm());
+		if (mActiveAlgorithm.isAlgorithm()) {
+			// Copy total, target steps from algorithm-specific versions
+			setTotalSteps(getIntValue(WIDGET_ID_TOTALSTEPS_AUX));
+			setTargetStep(getIntValue(WIDGET_ID_TARGETSTEP_AUX));
+		}
 
 		mPrepared = true;
 
-		// Bound the target step to the total step slider's value. We must do
-		// this explicitly here, because
-		// the listener that normally does this was disabled while restoring the
-		// stepper state
-		SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
-		s.setMaxValue(readTotalSteps());
+		if (mActiveAlgorithm.isAlgorithm()) {
+			// Bound the target step to the total step slider's value. We must
+			// do
+			// this explicitly here, because
+			// the listener that normally does this was disabled while restoring
+			// the
+			// stepper state
+			SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
+			s.setMaxValue(readTotalSteps());
+		}
+		mStepper.refresh();
+	}
+
+	private void setStepperControlsActive(boolean state) {
+		unimp("enable/disable stepper controls");
 	}
 
 	private void persistStepperStateAux() {
@@ -428,25 +448,28 @@ public class AlgorithmOptions {
 				listener.valueChanged(widget);
 			}
 
-			// Unless the 'refresh' option exists and is false,
-			// trigger a refresh of the algorithm view.
-			if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM, true)) {
-				mStepper.refresh();
-			}
+			if (mActiveAlgorithm.isAlgorithm()) {
+				// Unless the 'refresh' option exists and is false,
+				// trigger a refresh of the algorithm view.
+				if (widget.boolAttr(AbstractWidget.OPTION_REFRESH_ALGORITHM,
+						true)) {
+					mStepper.refresh();
+				}
 
-			// If this is a widget that may change the algorithm total steps,
-			// trigger a recalculation after a delay
-			if (widget.boolAttr(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS,
-					false)) {
-				final float RECALC_DELAY = .5f;
-				if (QuiescentDelayOperation
-						.replaceExisting(mPendingRecalculationOperation)) {
-					mPendingRecalculationOperation = new QuiescentDelayOperation(
-							"calc steps", RECALC_DELAY, new Runnable() {
-								public void run() {
-									mStepper.calculateAlgorithmTotalSteps();
-								}
-							});
+				// If this is a widget that may change the algorithm total
+				// steps, trigger a recalculation after a delay
+				if (widget.boolAttr(
+						AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, false)) {
+					final float RECALC_DELAY = .5f;
+					if (QuiescentDelayOperation
+							.replaceExisting(mPendingRecalculationOperation)) {
+						mPendingRecalculationOperation = new QuiescentDelayOperation(
+								"calc steps", RECALC_DELAY, new Runnable() {
+									public void run() {
+										mStepper.calculateAlgorithmTotalSteps();
+									}
+								});
+					}
 				}
 			}
 			mStepper.releaseLock();
@@ -475,7 +498,7 @@ public class AlgorithmOptions {
 	 * @param group
 	 *            secondary group, or null
 	 */
-	void activateSecondaryWidgetGroup(AlgorithmRecord algorithmRecord) {
+	void activateSecondaryWidgetGroup(ActiveOperationRecord algorithmRecord) {
 		if (algorithmRecord == mSecondaryWidgetGroup)
 			return;
 		if (mSecondaryWidgetGroup != null) {
@@ -493,9 +516,10 @@ public class AlgorithmOptions {
 	}
 
 	void begin(ArrayList<Algorithm> algorithms) {
-		// Create a WidgetGroup for each algorithm
+		prepareEditorOperationRecord();
+		// Create an ActiveOperationRecord for each algorithm
 		for (Algorithm algorithm : algorithms) {
-			AlgorithmRecord algorithmRecord = new AlgorithmRecord();
+			ActiveOperationRecord algorithmRecord = new ActiveOperationRecord();
 			mAlgorithms.add(algorithmRecord);
 
 			algorithmRecord.setDelegate(algorithm);
@@ -544,7 +568,11 @@ public class AlgorithmOptions {
 		setValue(AlgorithmOptions.WIDGET_ID_TOTALSTEPS, totalSteps);
 	}
 
-	Algorithm getActiveAlgorithm() {
+	public boolean isEditorActive() {
+		return mActiveAlgorithm.delegate() == null;
+	}
+
+	public Algorithm getActiveAlgorithm() {
 		return mActiveAlgorithm.delegate();
 	}
 
@@ -555,6 +583,10 @@ public class AlgorithmOptions {
 		return mContext;
 	}
 
+	public void setEditor(Editor editor) {
+		mEditor = editor;
+	}
+
 	private ConcreteStepper mStepper;
 	private ViewGroup mContainingView;
 	// Until this flag is true, no listeners are sent messages about widget
@@ -563,9 +595,9 @@ public class AlgorithmOptions {
 	private Context mContext;
 	private Map<String, AbstractWidget> mWidgetsMap;
 	private WidgetGroup mPrimaryWidgetGroup;
-	private ArrayList<AlgorithmRecord> mAlgorithms;
-	private AlgorithmRecord mActiveAlgorithm;
-	private AlgorithmRecord mSecondaryWidgetGroup;
+	private ArrayList<ActiveOperationRecord> mAlgorithms;
+	private ActiveOperationRecord mActiveAlgorithm;
+	private ActiveOperationRecord mSecondaryWidgetGroup;
 
 	private boolean mFlushRequired;
 	private QuiescentDelayOperation mPendingFlushOperation;
@@ -573,4 +605,6 @@ public class AlgorithmOptions {
 
 	// For generating unique text ids
 	private int mPreviousTextIndex;
+	private Editor mEditor;
+
 }

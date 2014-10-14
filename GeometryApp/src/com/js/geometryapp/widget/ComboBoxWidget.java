@@ -120,6 +120,11 @@ public class ComboBoxWidget extends AbstractWidget {
 		return mMap.get(getSelectedKey());
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		mSpinner.setEnabled(enabled);
+	}
+
 	private boolean prepared() {
 		return mAdapter != null;
 	}

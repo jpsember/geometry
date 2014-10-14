@@ -30,5 +30,10 @@ public class ButtonWidget extends AbstractWidget {
 		getView().addView(mButton, p);
 	}
 
+	@Override
+	public void setEnabled(boolean enabled) {
+		mButton.setEnabled(enabled);
+	}
+
 	private Button mButton;
 }

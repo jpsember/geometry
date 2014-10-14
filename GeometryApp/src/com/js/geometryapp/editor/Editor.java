@@ -79,8 +79,8 @@ public class Editor implements EditorEventListener {
 				doRedo();
 			}
 		});
-		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg", EdPoint.FACTORY,
-				"Poly", EdPolyline.FACTORY);
+		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
+				EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
 	}
 
 	private void prepareAddObjectButtons(Object... args) {

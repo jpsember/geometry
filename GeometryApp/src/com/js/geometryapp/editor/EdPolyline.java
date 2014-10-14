@@ -35,7 +35,7 @@ public class EdPolyline extends EdObject {
 
 	@Override
 	public boolean valid() {
-		return nPoints() >= 2 && mCursor >= 0 && mCursor < nPoints();
+		return nPoints() >= 1 && mCursor >= 0 && mCursor < nPoints();
 	}
 
 	@Override
@@ -69,6 +69,12 @@ public class EdPolyline extends EdObject {
 					s.plotRay(prev, pt);
 				else
 					s.plotLine(prev, pt);
+				// If two vertices are very close, the segment between them
+				// might be very small or absent; so plot one of the vertices to
+				// emphasize this
+				if (MyMath.distanceBetween(prev, pt) <= editor().pickRadius() * .2f) {
+					s.plot(pt);
+				}
 			}
 			prev = pt;
 		}
@@ -158,7 +164,7 @@ public class EdPolyline extends EdObject {
 	@Override
 	public float distFrom(Point targetPoint) {
 		Point prev = null;
-		float minDistance = -1;
+		float minDistance = MyMath.distanceBetween(targetPoint, getPoint(0));
 		int max = closed() ? nPoints() : nPoints() - 1;
 		for (int i = 0; i <= max; i++) {
 			Point pt = getPointMod(i);
@@ -462,7 +468,7 @@ public class EdPolyline extends EdObject {
 		 * @return index of absorbing vertex, or -1
 		 */
 		private int findAbsorbingVertex(EdPolyline p) {
-			if (p.nPoints() == 2)
+			if (p.nPoints() <= 1)
 				return -1;
 
 			float factor = absorptionFactor();

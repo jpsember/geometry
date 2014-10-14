@@ -39,6 +39,20 @@ public class EdPolyline extends EdObject {
 
 	@Override
 	public void render(AlgorithmStepper s) {
+		Point prev = null;
+		if (closed() && nPoints() > 2)
+			prev = getPointMod(-1);
+
+		s.setColor(Color.BLUE);
+		for (int i = 0; i < nPoints(); i++) {
+			Point pt = getPoint(i);
+			if (prev != null) {
+				renderLine(s, prev, pt);
+			}
+			prev = pt;
+		}
+		super.render(s);
+
 		Point[] tabLocations = null;
 		if (isEditable() && !mTabsHidden) {
 			tabLocations = calculateTabPositions(this);
@@ -53,25 +67,6 @@ public class EdPolyline extends EdObject {
 					continue;
 				s.plotLine(cursor, pt);
 			}
-		}
-
-		Point prev = null;
-		if (closed() && nPoints() > 2)
-			prev = getPointMod(-1);
-
-		s.setColor(Color.BLUE);
-
-		for (int i = 0; i < nPoints(); i++) {
-			Point pt = getPoint(i);
-			if (prev != null) {
-				renderLine(s, prev, pt);
-			}
-			prev = pt;
-		}
-		super.render(s);
-
-		if (tabLocations != null) {
-			s.highlight(cursor, 1.5f);
 			s.setColor(Color.GRAY);
 			for (Point pt : tabLocations) {
 				if (pt == null)

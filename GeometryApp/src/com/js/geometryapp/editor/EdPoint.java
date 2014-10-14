@@ -1,5 +1,7 @@
 package com.js.geometryapp.editor;
 
+import android.graphics.Color;
+
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -36,6 +38,16 @@ public class EdPoint extends EdObject {
 		if (vertexIndex >= 0)
 			return new EditorOperation(editor(), slot, vertexIndex);
 		return null;
+	}
+
+	@Override
+	public void render(AlgorithmStepper s) {
+		if (isSelected()) {
+			super.render(s);
+		} else {
+			s.setColor(Color.BLUE);
+			s.plot(getPoint(0));
+		}
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {

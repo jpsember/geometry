@@ -34,10 +34,12 @@ public abstract class EdObjectFactory {
 
 	/**
 	 * Construct an object of this type
+	 * 
+	 * @param defaultLocation
+	 *            if not null, default location; e.g. location where user first
+	 *            touched to create object
 	 */
-	public abstract <T extends EdObject> T construct();
-
-	public abstract int minimumPoints();
+	public abstract <T extends EdObject> T construct(Point defaultLocation);
 
 	/**
 	 * Parse EdObject from a JSON object
@@ -45,7 +47,7 @@ public abstract class EdObjectFactory {
 	 * @throws JSONException
 	 */
 	public <T extends EdObject> T parse(JSONObject map) throws JSONException {
-		T obj = construct();
+		T obj = construct(null);
 		parsePoints(obj, map);
 		return obj;
 	}

@@ -25,13 +25,6 @@ public abstract class EdObject implements Cloneable {
 		return sb.toString();
 	}
 
-	public void setDefaultLocation(Point location) {
-		// Add multiple points at this location until we have minimum number
-		while (nPoints() < getFactory().minimumPoints()) {
-			addPoint(location);
-		}
-	}
-
 	/**
 	 * Determine if this object is well-formed. Called after reading object from
 	 * JSON, for example
@@ -384,6 +377,20 @@ public abstract class EdObject implements Cloneable {
 				s.highlight(loc);
 			else
 				s.plot(loc);
+		}
+	}
+
+	/**
+	 * Plot a line segment between two points, and emphasize one of the
+	 * endpoints if the segment is very short
+	 * 
+	 * @param v0
+	 * @param v1
+	 */
+	protected void renderLine(AlgorithmStepper s, Point v0, Point v1) {
+		s.plotLine(v0, v1);
+		if (MyMath.distanceBetween(v0, v1) <= editor().pickRadius() * .2f) {
+			s.plot(v0);
 		}
 	}
 

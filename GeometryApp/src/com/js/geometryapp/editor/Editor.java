@@ -380,9 +380,8 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void addNewObject(EdObjectFactory objectType, Point location) {
-		EdObject newObject = objectType.construct();
+		EdObject newObject = objectType.construct(location);
 		newObject.setEditor(this);
-		newObject.setDefaultLocation(location);
 		newObject.setEditable(true);
 		int slot = mObjects.add(newObject);
 		List<Integer> slots = SlotList.build(slot);

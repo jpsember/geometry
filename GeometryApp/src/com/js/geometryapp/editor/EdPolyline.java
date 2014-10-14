@@ -19,7 +19,6 @@ import static com.js.basic.Tools.*;
 
 public class EdPolyline extends EdObject {
 
-	private static final boolean DB_PLOT_RAYS = false && DEBUG_ONLY_FEATURES;
 	private static final float ABSORBTION_FACTOR_NORMAL = 1.4f;
 	private static final float ABSORBTION_FACTOR_WHILE_INSERTING = .3f;
 
@@ -65,16 +64,7 @@ public class EdPolyline extends EdObject {
 		for (int i = 0; i < nPoints(); i++) {
 			Point pt = getPoint(i);
 			if (prev != null) {
-				if (DB_PLOT_RAYS)
-					s.plotRay(prev, pt);
-				else
-					s.plotLine(prev, pt);
-				// If two vertices are very close, the segment between them
-				// might be very small or absent; so plot one of the vertices to
-				// emphasize this
-				if (MyMath.distanceBetween(prev, pt) <= editor().pickRadius() * .2f) {
-					s.plot(pt);
-				}
+				renderLine(s, prev, pt);
 			}
 			prev = pt;
 		}
@@ -197,8 +187,13 @@ public class EdPolyline extends EdObject {
 		private static final String JSON_KEY_CURSOR = "c";
 		private static final String JSON_KEY_CLOSED = "cl";
 
-		public EdObject construct() {
-			return new EdPolyline();
+		public EdObject construct(Point defaultLocation) {
+			EdPolyline p = new EdPolyline();
+			if (defaultLocation != null) {
+				p.addPoint(defaultLocation);
+				p.addPoint(defaultLocation);
+			}
+			return p;
 		}
 
 		@Override
@@ -219,10 +214,6 @@ public class EdPolyline extends EdObject {
 			return p;
 		};
 
-		@Override
-		public int minimumPoints() {
-			return 2;
-		}
 	};
 
 	private void setCursor(int c) {

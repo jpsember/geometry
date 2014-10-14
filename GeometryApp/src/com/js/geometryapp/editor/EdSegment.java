@@ -1,5 +1,7 @@
 package com.js.geometryapp.editor;
 
+import android.graphics.Color;
+
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
@@ -18,7 +20,8 @@ public class EdSegment extends EdObject {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		s.plotLine(getPoint(0), getPoint(1));
+		s.setColor(Color.BLUE);
+		renderLine(s, getPoint(0), getPoint(1));
 		super.render(s);
 	}
 
@@ -41,13 +44,13 @@ public class EdSegment extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
-		public EdObject construct() {
-			return new EdSegment();
-		}
-
-		@Override
-		public int minimumPoints() {
-			return 2;
+		public EdObject construct(Point defaultLocation) {
+			EdSegment s = new EdSegment();
+			if (defaultLocation != null) {
+				s.addPoint(defaultLocation);
+				s.addPoint(defaultLocation);
+			}
+			return s;
 		}
 	};
 

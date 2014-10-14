@@ -40,14 +40,13 @@ public class EdPoint extends EdObject {
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {
 		@Override
-		public EdObject construct() {
-			return new EdPoint();
+		public EdObject construct(Point defaultLocation) {
+			EdPoint pt = new EdPoint();
+			if (defaultLocation != null)
+				pt.addPoint(defaultLocation);
+			return pt;
 		}
 
-		@Override
-		public int minimumPoints() {
-			return 1;
-		}
 	};
 
 	private static class EditorOperation implements EditorEventListener {

@@ -69,6 +69,8 @@ public class Editor implements EditorEventListener {
 	 */
 	public void prepareOptions(AlgorithmOptions algorithmOptions) {
 		mOptions = algorithmOptions;
+		mOptions.pushWidgetContainer(false);
+		mOptions.addLabel("");
 		algorithmOptions.addButton("Undo").addListener(new Listener() {
 			public void valueChanged(AbstractWidget widget) {
 				doUndo();
@@ -79,11 +81,16 @@ public class Editor implements EditorEventListener {
 				doRedo();
 			}
 		});
+		mOptions.popWidgetContainer();
+		mOptions.addStaticText("");
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
 				EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
+		mOptions.pushWidgetContainer(false);
+
+		mOptions.addLabel("Add:");
 		int i = 0;
 		while (i < args.length) {
 			String label = (String) args[i];
@@ -95,6 +102,8 @@ public class Editor implements EditorEventListener {
 			});
 			i += 2;
 		}
+		mOptions.popWidgetContainer();
+
 	}
 
 	public ConcreteStepper getStepper() {

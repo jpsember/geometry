@@ -3,6 +3,7 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONException;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
+import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.UITools;
 import com.js.basic.JSONTools;
@@ -48,8 +50,7 @@ public class AlgorithmOptions {
 	 */
 	void prepareViews(ViewGroup containingView) {
 		mContainingView = containingView;
-
-		mPrimaryWidgetGroup = new WidgetGroup(constructSubView());
+		mPrimaryWidgetGroup = new WidgetGroup(getContext());
 		mContainingView.addView(mPrimaryWidgetGroup.view());
 	}
 
@@ -76,7 +77,7 @@ public class AlgorithmOptions {
 	private void prepareEditorOperationRecord() {
 		ActiveOperationRecord algorithmRecord = new ActiveOperationRecord();
 		mAlgorithms.add(algorithmRecord);
-		algorithmRecord.setWidgetGroup(new WidgetGroup(constructSubView()));
+		algorithmRecord.setWidgetGroup(new WidgetGroup(getContext()));
 		activateSecondaryWidgetGroup(algorithmRecord);
 		mEditor.prepareOptions(this);
 	}
@@ -135,6 +136,13 @@ public class AlgorithmOptions {
 		TextWidget w = new TextWidget(this, attributes);
 		addWidget(w);
 		return w;
+	}
+
+	public void addLabel(String label) {
+		WidgetGroup w = currentWidgetGroup();
+		LinearLayout.LayoutParams p = UITools.layoutParams(true);
+		p.width = MyActivity.inchesToPixels(.8f);
+		w.addView(AbstractWidget.buildLabelView(getContext(), label), p);
 	}
 
 	public TextWidget addHeader(String content) {
@@ -203,6 +211,30 @@ public class AlgorithmOptions {
 		return attributes;
 	}
 
+	/**
+	 * Get the active WidgetGroup
+	 */
+	private WidgetGroup currentWidgetGroup() {
+		boolean algSpecific = (mSecondaryWidgetGroup != null);
+		WidgetGroup destination = algSpecific ? mSecondaryWidgetGroup.widgets()
+				: mPrimaryWidgetGroup;
+		return destination;
+	}
+
+	private List<LinearLayout> mWidgetContainerStack = new ArrayList();
+
+	public void pushWidgetContainer(boolean vertical) {
+		WidgetGroup w = currentWidgetGroup();
+		mWidgetContainerStack.add(w.getContainer());
+		w.setContainer(w.constructContainer(vertical), true);
+	}
+
+	public void popWidgetContainer() {
+		WidgetGroup w = currentWidgetGroup();
+		LinearLayout v = pop(mWidgetContainerStack);
+		w.setContainer(v, false);
+	}
+
 	void addWidget(AbstractWidget w) {
 		// Add it to the map
 		AbstractWidget previousMapping = mWidgetsMap.put(w.getId(), w);
@@ -214,8 +246,7 @@ public class AlgorithmOptions {
 			return;
 
 		boolean algSpecific = (mSecondaryWidgetGroup != null);
-		WidgetGroup destination = algSpecific ? mSecondaryWidgetGroup.widgets()
-				: mPrimaryWidgetGroup;
+		WidgetGroup destination = currentWidgetGroup();
 		destination.add(w);
 
 		// If this is being added to the secondary (i.e. algorithm-specific)
@@ -478,17 +509,6 @@ public class AlgorithmOptions {
 	}
 
 	/**
-	 * Construct a view that will be stacked vertically with others within the
-	 * main container view
-	 */
-	private ViewGroup constructSubView() {
-		LinearLayout view = new LinearLayout(mContext);
-		view.setOrientation(LinearLayout.VERTICAL);
-		UITools.applyDebugColors(view);
-		return view;
-	}
-
-	/**
 	 * Select the active secondary widget group. Any old auxilliary widget
 	 * group's widgets are removed from the map, and the new one's are added.
 	 * This means only one secondary group's widgets are accessible to the
@@ -523,7 +543,7 @@ public class AlgorithmOptions {
 			mAlgorithms.add(algorithmRecord);
 
 			algorithmRecord.setDelegate(algorithm);
-			algorithmRecord.setWidgetGroup(new WidgetGroup(constructSubView()));
+			algorithmRecord.setWidgetGroup(new WidgetGroup(mContext));
 			activateSecondaryWidgetGroup(algorithmRecord);
 			// Add hidden values to represent total, target steps; these will be
 			// copied to/from the main slider as the algorithm becomes

@@ -240,16 +240,16 @@ public abstract class AbstractWidget {
 		throw new UnsupportedOperationException();
 	}
 
-	public View buildLabelView(boolean addColon) {
+	public static View buildLabelView(Context context, String labelText) {
 
 		// Place the label within a separate container, following an expanding
 		// view to achieve right-justified text
 
-		String labelText = getLabel(addColon);
-		TextView label = new TextView(context());
+		TextView label = new TextView(context);
 		label.setText(labelText);
 
-		LinearLayout container = new LinearLayout(context());
+		LinearLayout container = new LinearLayout(context);
+		container.setOrientation(LinearLayout.VERTICAL);
 
 		LinearLayout.LayoutParams p = UITools.layoutParams(false);
 		p.width = MyActivity.inchesToPixels(.8f);
@@ -258,7 +258,7 @@ public abstract class AbstractWidget {
 
 		p = UITools.layoutParams(false);
 		p.weight = 1;
-		container.addView(new FrameLayout(context()), p);
+		container.addView(new FrameLayout(context), p);
 
 		p = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
 				LayoutParams.WRAP_CONTENT);
@@ -266,6 +266,11 @@ public abstract class AbstractWidget {
 		container.addView(label, p);
 
 		return container;
+	}
+
+	public View buildLabelView(boolean addColon) {
+		String labelText = getLabel(addColon);
+		return buildLabelView(context(), labelText);
 	}
 
 	public static interface Listener {

@@ -33,6 +33,7 @@ public class AlgorithmOptions {
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
+	private static final String WIDGET_ID_PREV_OPER = "_prevoper_";
 
 	// Algorithm-specific versions of the target & total steps
 	private static final String WIDGET_ID_TOTALSTEPS_AUX = "_"
@@ -55,6 +56,17 @@ public class AlgorithmOptions {
 	}
 
 	private void addPrimaryWidgets() {
+		addSlider(WIDGET_ID_PREV_OPER, AbstractWidget.OPTION_HIDDEN, true);
+
+		addButton("_<<", "label", "<").addListener(new Listener() {
+			public void valueChanged(AbstractWidget widget) {
+				int k = getIntValue(WIDGET_ID_PREV_OPER);
+				if (k != mAlgorithms.indexOf(mActiveAlgorithm)) {
+					setValue(WIDGET_ID_OPERATION, k);
+				}
+			}
+		});
+
 		ComboBoxWidget w = addComboBox(WIDGET_ID_OPERATION, "label",
 				"Operation");
 		for (ActiveOperationRecord r : mAlgorithms) {
@@ -354,6 +366,10 @@ public class AlgorithmOptions {
 	private void selectAlgorithm(ActiveOperationRecord ar) {
 		if (mActiveAlgorithm == ar)
 			return;
+		if (mActiveAlgorithm != null) {
+			setValue(WIDGET_ID_PREV_OPER, mAlgorithms.indexOf(mActiveAlgorithm));
+		}
+
 		QuiescentDelayOperation.cancelExisting(mPendingRecalculationOperation);
 
 		mPrepared = false;

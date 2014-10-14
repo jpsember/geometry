@@ -56,18 +56,13 @@ public class EdPolyline extends EdObject {
 		Point[] tabLocations = null;
 		if (isEditable() && !mTabsHidden) {
 			tabLocations = calculateTabPositions(this);
-		}
-
-		Point cursor = null;
-		if (tabLocations != null) {
-			cursor = getPoint(mCursor);
-			s.setColor(Color.GRAY);
+			Point cursor = getPoint(mCursor);
+			s.setColor(Color.RED);
 			for (Point pt : tabLocations) {
 				if (pt == null)
 					continue;
 				s.plotLine(cursor, pt);
 			}
-			s.setColor(Color.GRAY);
 			for (Point pt : tabLocations) {
 				if (pt == null)
 					continue;
@@ -269,9 +264,7 @@ public class EdPolyline extends EdObject {
 		Point[] tabLocations = new Point[TAB_TOTAL];
 		int c = polyline.cursor();
 
-		float defaultDist = polyline.editor().pickRadius() * 1.3f;
-		float dist1 = defaultDist;
-		float dist2 = defaultDist;
+		float tabDistance = polyline.editor().pickRadius() * 2f;
 
 		float a1 = 0, a2 = 0;
 		boolean convex = true;
@@ -295,11 +288,15 @@ public class EdPolyline extends EdObject {
 		if (pc == null)
 			a2 = a1;
 
+		final float TAB_ROTATION_FROM_ADJACENT_SEGMENTS = MyMath.M_DEG * 12;
+		final float TAB_MIN_ANGULAR_SEPARATION = MyMath.M_DEG * 45;
+
 		{
-			// If angles are too close to being 180 degrees, change them
+			// If tab arms are too close together, ajust them
 			float separation = MyMath.normalizeAngle(a2 - a1);
 			float clampedSeparation = MyMath.clamp(separation,
-					-MyMath.M_DEG * 100, MyMath.M_DEG * 100);
+					-(MyMath.PI - TAB_MIN_ANGULAR_SEPARATION), MyMath.PI
+							- TAB_MIN_ANGULAR_SEPARATION);
 			float diff = clampedSeparation - separation;
 			a2 += diff / 2;
 			a1 -= diff / 2;
@@ -308,15 +305,17 @@ public class EdPolyline extends EdObject {
 		if (pa != null && pc != null) {
 			convex = MyMath.sideOfLine(pa, pb, pc) > 0;
 		}
-		float diff = MyMath.M_DEG * 15;
+		float tabRotationFactor = TAB_ROTATION_FROM_ADJACENT_SEGMENTS;
 		if (!convex) {
-			diff = -diff;
+			tabRotationFactor = -tabRotationFactor;
 		}
-		a1 += diff + MyMath.PI;
-		a2 -= diff;
+		a1 += tabRotationFactor + MyMath.PI;
+		a2 -= tabRotationFactor;
 
-		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1, dist1);
-		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2, dist2);
+		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1,
+				tabDistance);
+		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2,
+				tabDistance);
 
 		return tabLocations;
 	}

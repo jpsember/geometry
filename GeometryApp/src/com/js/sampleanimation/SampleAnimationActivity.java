@@ -7,6 +7,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.content.Context;
 import android.graphics.Color;
 import android.opengl.GLSurfaceView;
+import android.view.View;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -20,7 +21,8 @@ import com.js.opengl.SpriteContext;
 
 public class SampleAnimationActivity extends GeometryActivity {
 
-	protected GLSurfaceView buildOpenGLView() {
+	@Override
+	protected View buildContentView() {
 		GLSurfaceView v = new GLSurfaceView(this);
 		v.setEGLContextClientVersion(2);
 		v.setRenderer(new SampleRenderer(this));
@@ -72,6 +74,5 @@ public class SampleAnimationActivity extends GeometryActivity {
 		private SpriteContext mSpriteContext2;
 		private GLSpriteProgram mSpriteProgram;
 		private GLSpriteProgram mSpriteProgram2;
-
 	}
 }

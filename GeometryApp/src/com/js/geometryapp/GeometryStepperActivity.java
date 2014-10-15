@@ -40,9 +40,13 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected View buildContentView() {
-		// Have superclass construct the OpenGL view
-		GLSurfaceView glView = (GLSurfaceView) super.buildContentView();
-		mStepper.setGLSurfaceView(glView);
+
+		mSurfaceView = new EditorGLSurfaceView(this);
+		mRenderer = buildRenderer(this);
+		mSurfaceView.setRenderer(mRenderer);
+		mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+
+		mStepper.setGLSurfaceView(mSurfaceView);
 
 		// Build a view that will contain the GLSurfaceView and a stepper
 		// control panel
@@ -54,7 +58,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 			// Wrap the GLSurfaceView within another container, so we can
 			// overlay it with an editing toolbar
-			mEditor.prepare(glView, mStepper);
+			mEditor.prepare(mSurfaceView, mStepper);
 			mRenderer.setEditor(mEditor);
 			mSurfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
@@ -73,15 +77,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		mOptions.prepareViews(twinViews.getAuxilliaryView());
 		return twinViews.getContainer();
-	}
-
-	@Override
-	protected final GLSurfaceView buildOpenGLView() {
-		mSurfaceView = new EditorGLSurfaceView(this);
-		mRenderer = buildRenderer(this);
-		mSurfaceView.setRenderer(mRenderer);
-		mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-		return mSurfaceView;
 	}
 
 	/**

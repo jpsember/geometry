@@ -64,14 +64,10 @@ public class GeometryActivity extends MyActivity {
 	 * default implementation constructs a GLSurfaceView
 	 */
 	protected View buildContentView() {
-		mGLView = buildOpenGLView();
-		return mGLView;
-	}
-
-	protected GLSurfaceView buildOpenGLView() {
 		GLSurfaceView v = new GLSurfaceView(this);
 		v.setEGLContextClientVersion(2);
 		v.setRenderer(new OurGLRenderer(this));
+		mGLView = v;
 		return v;
 	}
 

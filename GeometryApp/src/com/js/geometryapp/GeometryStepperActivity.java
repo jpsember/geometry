@@ -5,7 +5,6 @@ import com.js.android.UITools;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorGLSurfaceView;
 
-import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
@@ -22,7 +21,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		mEditor = new Editor();
 		mStepper = new ConcreteStepper();
 		mOptions = new AlgorithmOptions(this);
-		mRenderer = buildRenderer(this);
+		mRenderer = new AlgorithmRenderer(this);
 
 		// Second, we initialize the dependencies; this is analogous to
 		// constructing the edges of the object graph
@@ -82,13 +81,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		mOptions.prepareViews(twinViews.getAuxilliaryView());
 		return twinViews.getContainer();
-	}
-
-	/**
-	 * Subclass can override this method to build their own renderer
-	 */
-	protected AlgorithmRenderer buildRenderer(Context context) {
-		return new AlgorithmRenderer(context);
 	}
 
 	private ConcreteStepper mStepper;

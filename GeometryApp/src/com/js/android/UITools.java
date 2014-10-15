@@ -1,16 +1,17 @@
 package com.js.android;
 
+import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import static com.js.basic.Tools.*;
 
 import com.js.geometry.MyMath;
+import static com.js.basic.Tools.*;
 
 public final class UITools {
 
-	public static final boolean SET_DEBUG_COLORS = (false && DEBUG_ONLY_FEATURES);
+	public static final boolean SET_DEBUG_COLORS = false && DEBUG_ONLY_FEATURES;
 
 	private static int debugColors[] = {
 			//
@@ -41,6 +42,31 @@ public final class UITools {
 			view.setBackgroundColor(debugColor());
 	}
 
+	/**
+	 * Construct a LinearLayout
+	 * 
+	 * @param context
+	 * @param vertical
+	 *            true if it is to have a vertical orientation
+	 */
+	public static LinearLayout linearLayout(Context context, boolean vertical) {
+		LinearLayout view = new LinearLayout(context);
+		view.setOrientation(vertical ? LinearLayout.VERTICAL
+				: LinearLayout.HORIZONTAL);
+		UITools.applyDebugColors(view);
+		return view;
+	}
+
+	/**
+	 * Construct LayoutParams for child views of a LinearLayout container with a
+	 * particular orientation
+	 * 
+	 * @param forHorizontalLayout
+	 *            if true, constructs params for a containing LinearLayout with
+	 *            horizontal orientation: width wraps content, height matches
+	 *            container's. If false, width matches container's, height wraps
+	 *            content
+	 */
 	public static LinearLayout.LayoutParams layoutParams(
 			boolean forHorizontalLayout) {
 		LinearLayout.LayoutParams params;
@@ -53,6 +79,15 @@ public final class UITools {
 		return params;
 	}
 
-	private static int sDebugColorIndex;
+	/**
+	 * Construct LayoutParams for child views of a LinearLayout container
+	 * 
+	 * @param container
+	 * @return LayoutParams appropriate to the container's orientation
+	 */
+	public static LinearLayout.LayoutParams layoutParams(LinearLayout container) {
+		return layoutParams(container.getOrientation() == LinearLayout.VERTICAL);
+	}
 
+	private static int sDebugColorIndex;
 }

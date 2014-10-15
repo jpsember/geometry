@@ -14,8 +14,10 @@ import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.widget.LinearLayout;
 
 import com.js.android.MyActivity;
+import com.js.android.UITools;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
@@ -416,12 +418,44 @@ public class ConcreteStepper implements AlgorithmStepper {
 		mRefreshing = false;
 	}
 
+	private LinearLayout mAuxView;
+	private View mStepperControlsView;
+
 	/**
 	 * Construct stepper controller view
 	 */
 	View buildControllerView() {
+		mAuxView = UITools.linearLayout(mOptions.getContext(), true);
+
 		AlgorithmStepperPanel panel = new AlgorithmStepperPanel(mOptions);
-		return panel.view();
+		mStepperControlsView = panel.view();
+
+		return mAuxView;
+	}
+
+	/**
+	 * Set contents of stepper view to either the stepper controls, or some
+	 * other view
+	 * 
+	 * @param auxView
+	 *            view, or null to use stepper controls
+	 */
+	void setAuxViewContent(View content) {
+		if (content == null) {
+			content = mStepperControlsView;
+		}
+
+		View currentContent = null;
+		if (mAuxView.getChildCount() == 1)
+			currentContent = mAuxView.getChildAt(0);
+		if (currentContent != content) {
+			mAuxView.removeAllViews();
+			// Set layout parameters assuming we're adding at the bottom of a
+			// vertical list
+			mAuxView.addView(content, UITools.layoutParams(false));
+			// new LinearLayout.LayoutParams(
+			// LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+		}
 	}
 
 	AlgorithmOptions getOptions() {

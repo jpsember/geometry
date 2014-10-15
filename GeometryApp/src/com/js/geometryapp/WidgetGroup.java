@@ -7,6 +7,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
 import com.js.android.UITools;
 import com.js.geometryapp.widget.AbstractWidget;
@@ -17,12 +18,11 @@ class WidgetGroup {
 	 * Constructor; opens a vertical layout
 	 */
 	public WidgetGroup(Context context) {
-		mContext = context;
-		setContainer(constructContainer(true), false);
+		setContainer(UITools.linearLayout(context, true));
 	}
 
-	public ViewGroup view() {
-		return mView;
+	public ViewGroup container() {
+		return mContainer;
 	}
 
 	public List<AbstractWidget> widgets() {
@@ -36,42 +36,26 @@ class WidgetGroup {
 		mWidgets.add(widget);
 	}
 
+	public LayoutParams layoutParamsForCurrentContainer() {
+		return UITools.layoutParams(mContainer);
+	}
+
 	public void addView(View view) {
-		addView(view, UITools.layoutParams(activeContainerIsVertical()));
+		addView(view, layoutParamsForCurrentContainer());
 	}
 
 	public void addView(View view, LinearLayout.LayoutParams params) {
-		mView.addView(view, params);
+		mContainer.addView(view, params);
 	}
 
-
-	LinearLayout getContainer() {
-		return mView;
+	public void setContainer(LinearLayout container) {
+		mContainer = container;
 	}
 
-	private boolean activeContainerIsVertical() {
-		return mView.getOrientation() == LinearLayout.VERTICAL;
+	public LinearLayout getContainer() {
+		return mContainer;
 	}
 
-	void setContainer(LinearLayout container, boolean addToExisting) {
-		if (addToExisting)
-			mView.addView(container,
-					UITools.layoutParams(activeContainerIsVertical()));
-		mView = container;
-	}
-
-	/**
-	 * Construct a view for stacking widgets horizontally or vertically
-	 */
-	LinearLayout constructContainer(boolean vertical) {
-		LinearLayout view = new LinearLayout(mContext);
-		view.setOrientation(vertical ? LinearLayout.VERTICAL
-				: LinearLayout.HORIZONTAL);
-		UITools.applyDebugColors(view);
-		return view;
-	}
-
-	private Context mContext;
-	private LinearLayout mView;
+	private LinearLayout mContainer;
 	private List<AbstractWidget> mWidgets = new ArrayList();
 }

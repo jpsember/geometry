@@ -10,6 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
@@ -61,7 +63,7 @@ public class AlgorithmOptions {
 	void prepareViews(ViewGroup containingView) {
 		mContainingView = containingView;
 		mPrimaryWidgetGroup = new WidgetGroup(getContext());
-		mContainingView.addView(mPrimaryWidgetGroup.view());
+		mContainingView.addView(mPrimaryWidgetGroup.container());
 	}
 
 	private void addPrimaryWidgets() {
@@ -100,7 +102,7 @@ public class AlgorithmOptions {
 		mAlgorithms.add(algorithmRecord);
 		algorithmRecord.setWidgetGroup(new WidgetGroup(getContext()));
 		activateSecondaryWidgetGroup(algorithmRecord);
-		mEditor.prepareOptions(this);
+		mEditor.prepareOptions();
 	}
 
 	/**
@@ -161,8 +163,11 @@ public class AlgorithmOptions {
 
 	public void addLabel(String label) {
 		WidgetGroup w = currentWidgetGroup();
-		LinearLayout.LayoutParams p = UITools.layoutParams(true);
+		LinearLayout.LayoutParams p = w.layoutParamsForCurrentContainer();
 		p.width = MyActivity.inchesToPixels(.8f);
+		p.gravity = Gravity.BOTTOM;
+		// TODO: is vertical centering being attempted elsewhere, e.g., within
+		// buildLabelView?
 		w.addView(AbstractWidget.buildLabelView(getContext(), label), p);
 	}
 
@@ -234,18 +239,42 @@ public class AlgorithmOptions {
 		return destination;
 	}
 
-	private List<LinearLayout> mWidgetContainerStack = new ArrayList();
-
-	public void pushWidgetContainer(boolean vertical) {
+	/**
+	 * Save the current widget container on a stack, and make a user-supplied
+	 * container active instead
+	 */
+	public void pushView(LinearLayout container) {
 		WidgetGroup w = currentWidgetGroup();
 		mWidgetContainerStack.add(w.getContainer());
-		w.setContainer(w.constructContainer(vertical), true);
+		w.setContainer(container);
 	}
 
-	public void popWidgetContainer() {
+	/**
+	 * Construct a LinearLayout and add it to the widget container
+	 * 
+	 * @param vertical
+	 *            true if layout is to have vertical orientation
+	 */
+	public LinearLayout addView(boolean vertical) {
+		LinearLayout newContainer = UITools.linearLayout(mContext, vertical);
+		addView(newContainer);
+		return newContainer;
+	}
+
+	/**
+	 * Add a view to the widget container
+	 */
+	private void addView(View view) {
+		currentWidgetGroup().addView(view);
+	}
+
+	/**
+	 * Restore widget container from stack
+	 */
+	public void popView() {
 		WidgetGroup w = currentWidgetGroup();
 		LinearLayout v = pop(mWidgetContainerStack);
-		w.setContainer(v, false);
+		w.setContainer(v);
 	}
 
 	void addWidget(AbstractWidget w) {
@@ -258,13 +287,12 @@ public class AlgorithmOptions {
 		if (w.boolAttr(AbstractWidget.OPTION_DETACHED, false))
 			return;
 
-		boolean algSpecific = (mSecondaryWidgetGroup != null);
-		WidgetGroup destination = currentWidgetGroup();
-		destination.add(w);
+		currentWidgetGroup().add(w);
 
 		// If this is being added to the secondary (i.e. algorithm-specific)
 		// group, and it's not hidden, flag it as a widget that changes the
 		// algorithm total steps
+		boolean algSpecific = (mSecondaryWidgetGroup != null);
 		if (algSpecific && !w.boolAttr(AbstractWidget.OPTION_HIDDEN, false)) {
 			w.setAttribute(AbstractWidget.OPTION_RECALC_ALGORITHM_STEPS, true);
 		}
@@ -379,11 +407,10 @@ public class AlgorithmOptions {
 
 		activateSecondaryWidgetGroup(ar);
 		if (mActiveAlgorithm != null)
-			mContainingView.removeView(mActiveAlgorithm.widgets().view());
+			mContainingView.removeView(mActiveAlgorithm.widgets().container());
 		mActiveAlgorithm = ar;
-		mContainingView.addView(mActiveAlgorithm.widgets().view());
+		mContainingView.addView(mActiveAlgorithm.widgets().container());
 
-		setStepperControlsActive(mActiveAlgorithm.isAlgorithm());
 		if (mActiveAlgorithm.isAlgorithm()) {
 			// Copy total, target steps from algorithm-specific versions
 			setTotalSteps(getIntValue(WIDGET_ID_TOTALSTEPS_AUX));
@@ -394,19 +421,16 @@ public class AlgorithmOptions {
 
 		if (mActiveAlgorithm.isAlgorithm()) {
 			// Bound the target step to the total step slider's value. We must
-			// do
-			// this explicitly here, because
-			// the listener that normally does this was disabled while restoring
-			// the
-			// stepper state
+			// do this explicitly here, because the listener that normally does
+			// this was disabled while restoring the stepper state
 			SliderWidget s = getWidget(WIDGET_ID_TARGETSTEP);
 			s.setMaxValue(readTotalSteps());
 		}
-		mStepper.refresh();
-	}
 
-	private void setStepperControlsActive(boolean state) {
-		unimp("enable/disable stepper controls");
+		mStepper.setAuxViewContent(mActiveAlgorithm.isAlgorithm() ? null
+				: mEditor.getAuxControlsView());
+
+		mStepper.refresh();
 	}
 
 	private void persistStepperStateAux() {
@@ -639,4 +663,5 @@ public class AlgorithmOptions {
 	// For generating unique text ids
 	private int mPreviousTextIndex;
 	private Editor mEditor;
+	private List<LinearLayout> mWidgetContainerStack = new ArrayList();
 }

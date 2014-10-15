@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
+import com.js.android.UITools;
 import com.js.basic.JSONTools;
 import com.js.geometry.Point;
 import com.js.geometry.R;
@@ -25,6 +26,7 @@ import com.js.geometryapp.widget.AbstractWidget.Listener;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
+import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
 
@@ -47,8 +49,10 @@ public class Editor implements EditorEventListener {
 	public Editor() {
 	}
 
-	public void setDependencies(ConcreteStepper stepper) {
+	public void setDependencies(ConcreteStepper stepper,
+			AlgorithmOptions options) {
 		mStepper = stepper;
+		mOptions = options;
 	}
 
 	/**
@@ -68,30 +72,34 @@ public class Editor implements EditorEventListener {
 	 * 
 	 * @param algorithmOptions
 	 */
-	public void prepareOptions(AlgorithmOptions algorithmOptions) {
-		mOptions = algorithmOptions;
-		mOptions.pushWidgetContainer(false);
-		mOptions.addLabel("");
-		algorithmOptions.addButton("Undo").addListener(new Listener() {
-			public void valueChanged(AbstractWidget widget) {
-				doUndo();
-			}
-		});
-		algorithmOptions.addButton("Redo").addListener(new Listener() {
-			public void valueChanged(AbstractWidget widget) {
-				doRedo();
-			}
-		});
-		mOptions.popWidgetContainer();
-		mOptions.addStaticText("");
+	public void prepareOptions() {
+
+		// Place these controls in the aux controls view
+		mOptions.pushView(getAuxControlsView());
+
+		// Add a horizontal row of buttons for undo, redo
+		{
+			mOptions.pushView(mOptions.addView(false));
+			// mOptions.addLabel("");
+			mOptions.addButton("Undo").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doUndo();
+				}
+			});
+			mOptions.addButton("Redo").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doRedo();
+				}
+			});
+			mOptions.popView();
+		}
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
 				EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
+		mOptions.popView();
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
-		mOptions.pushWidgetContainer(false);
-
-		mOptions.addLabel("Add:");
+		mOptions.pushView(mOptions.addView(false));
 		int i = 0;
 		while (i < args.length) {
 			String label = (String) args[i];
@@ -103,8 +111,7 @@ public class Editor implements EditorEventListener {
 			});
 			i += 2;
 		}
-		mOptions.popWidgetContainer();
-
+		mOptions.popView();
 	}
 
 	public ConcreteStepper getStepper() {
@@ -558,8 +565,12 @@ public class Editor implements EditorEventListener {
 		return mPickRadius;
 	}
 
-	// TODO: clean up exists vs initialized pattern (assume ptrs are non null
-	// etc)
+	public LinearLayout getAuxControlsView() {
+		if (mAuxView == null) {
+			mAuxView = UITools.linearLayout(context(), true);
+		}
+		return mAuxView;
+	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
@@ -576,4 +587,5 @@ public class Editor implements EditorEventListener {
 	private float mPickRadius;
 	private Point mTouchLocation;
 	private AlgorithmOptions mOptions;
+	private LinearLayout mAuxView;
 }

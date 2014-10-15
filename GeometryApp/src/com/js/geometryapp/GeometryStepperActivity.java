@@ -25,7 +25,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 		// Second, we initialize the dependencies; this is analogous to
 		// constructing the edges of the object graph
-		mEditor.setDependencies(mStepper);
+		mEditor.setDependencies(mStepper, mOptions);
 		mStepper.setDependencies(mOptions);
 		mOptions.setDependencies(mEditor, mStepper);
 		mRenderer.setDependencies(mEditor, mStepper);
@@ -85,12 +85,20 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			mEditor.restoreFromJSON(script);
 		}
 
+		buildAuxilliaryView();
+		mainView.addView(mAuxView);
+
 		// Add the stepper control panel to this container
 		mainView.addView(mStepper.buildControllerView());
+
 		// Make the container the main view of a TwinViewContainer
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		mOptions.prepareViews(twinViews.getAuxilliaryView());
 		return twinViews.getContainer();
+	}
+
+	private void buildAuxilliaryView() {
+		mAuxView = new LinearLayout(this);
 	}
 
 	private ConcreteStepper mStepper;
@@ -98,4 +106,5 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	private AlgorithmRenderer mRenderer;
 	private Editor mEditor;
 	private EditorGLSurfaceView mGLView;
+	private LinearLayout mAuxView;
 }

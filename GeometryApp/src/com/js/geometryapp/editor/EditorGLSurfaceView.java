@@ -9,10 +9,9 @@ import android.view.MotionEvent;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmRenderer;
 import com.js.geometryapp.ConcreteStepper;
-import com.js.opengl.OurGLSurfaceView;
 import static com.js.basic.Tools.*;
 
-public class EditorGLSurfaceView extends OurGLSurfaceView {
+public class EditorGLSurfaceView extends GLSurfaceView {
 
 	private static final boolean TOUCH_DIAGNOSTICS = false && DEBUG_ONLY_FEATURES;
 
@@ -30,8 +29,15 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 
 	private static final long MULTITOUCH_TIMEOUT_MS = 200;
 
-	public EditorGLSurfaceView(Context context, GLSurfaceView.Renderer renderer) {
-		super(context, renderer);
+	public EditorGLSurfaceView(Context context) {
+		super(context);
+		setEGLContextClientVersion(2);
+	}
+
+	@Override
+	public void setRenderer(Renderer renderer) {
+		mRenderer = (AlgorithmRenderer) renderer;
+		super.setRenderer(renderer);
 	}
 
 	public void setEditor(Editor editor) {
@@ -62,12 +68,10 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 		Point viewPoint = new Point(e.getX(), e.getY());
 
 		// Transform point from device to algorithm coordinates
-		{
-			AlgorithmRenderer renderer = (AlgorithmRenderer) renderer();
-			Matrix deviceToAlgorithMatrix = renderer
-					.getTransform(AlgorithmRenderer.TRANSFORM_NAME_DEVICE_TO_ALGORITHM);
-			viewPoint.apply(deviceToAlgorithMatrix);
-		}
+
+		Matrix deviceToAlgorithMatrix = mRenderer
+				.getTransform(AlgorithmRenderer.TRANSFORM_NAME_DEVICE_TO_ALGORITHM);
+		viewPoint.apply(deviceToAlgorithMatrix);
 
 		mCurrentTouchLocation = viewPoint;
 		int action = e.getActionMasked();
@@ -221,4 +225,5 @@ public class EditorGLSurfaceView extends OurGLSurfaceView {
 	private Point mInitialTouchLocation;
 	private Point mCurrentTouchLocation;
 	private Editor mEditor;
+	private AlgorithmRenderer mRenderer;
 }

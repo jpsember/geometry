@@ -16,13 +16,14 @@ import com.js.geometryapp.GeometryActivity;
 import com.js.opengl.GLSpriteProgram;
 import com.js.opengl.GLTexture;
 import com.js.opengl.OurGLRenderer;
-import com.js.opengl.OurGLSurfaceView;
 import com.js.opengl.SpriteContext;
 
 public class SampleAnimationActivity extends GeometryActivity {
 
 	protected GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = new OurGLSurfaceView(this, new SampleRenderer(this));
+		GLSurfaceView v = new GLSurfaceView(this);
+		v.setEGLContextClientVersion(2);
+		v.setRenderer(new SampleRenderer(this));
 		return v;
 	}
 

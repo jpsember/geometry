@@ -4,7 +4,6 @@ import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
 import com.js.opengl.OurGLRenderer;
-import com.js.opengl.OurGLSurfaceView;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -70,7 +69,9 @@ public class GeometryActivity extends MyActivity {
 	}
 
 	protected GLSurfaceView buildOpenGLView() {
-		GLSurfaceView v = new OurGLSurfaceView(this, new OurGLRenderer(this));
+		GLSurfaceView v = new GLSurfaceView(this);
+		v.setEGLContextClientVersion(2);
+		v.setRenderer(new OurGLRenderer(this));
 		return v;
 	}
 

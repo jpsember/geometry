@@ -77,8 +77,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected final GLSurfaceView buildOpenGLView() {
+		mSurfaceView = new EditorGLSurfaceView(this);
 		mRenderer = buildRenderer(this);
-		mSurfaceView = new EditorGLSurfaceView(this, mRenderer);
+		mSurfaceView.setRenderer(mRenderer);
 		mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 		return mSurfaceView;
 	}

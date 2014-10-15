@@ -92,6 +92,22 @@ public class Editor implements EditorEventListener {
 					doRedo();
 				}
 			});
+			mOptions.addStaticText("   ");
+			mOptions.addButton("Cut").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doCut();
+				}
+			});
+			mOptions.addButton("Copy").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doCopy();
+				}
+			});
+			mOptions.addButton("Paste").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doPaste();
+				}
+			});
 			mOptions.popView();
 		}
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
@@ -230,14 +246,16 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void updateButtonEnableStates() {
-		if (mOptions == null)
-			return;
 		if (!mOptions.isEditorActive())
 			return;
 
+		List<Integer> selected = objects().getSelectedSlots();
 		mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
 		mOptions.setEnabled("Redo",
 				mCommandHistoryCursor < mCommandHistory.size());
+		mOptions.setEnabled("Cut", !selected.isEmpty());
+		mOptions.setEnabled("Copy", !selected.isEmpty());
+		mOptions.setEnabled("Paste", !mClipboard.isEmpty());
 	}
 
 	/**
@@ -258,6 +276,10 @@ public class Editor implements EditorEventListener {
 		} catch (JSONException e) {
 			warning("caught " + e);
 		}
+	}
+
+	public void begin() {
+		updateButtonEnableStates();
 	}
 
 	/**
@@ -489,6 +511,18 @@ public class Editor implements EditorEventListener {
 		}
 
 		refresh();
+	}
+
+	void doCut() {
+		unimp();
+	}
+
+	void doCopy() {
+		unimp();
+	}
+
+	void doPaste() {
+		unimp();
 	}
 
 	private String getHistory() {

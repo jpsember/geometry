@@ -605,6 +605,7 @@ public class AlgorithmOptions {
 		mStepper.addStepperViewListeners();
 
 		restoreStepperState();
+		mEditor.begin();
 	}
 
 	/**

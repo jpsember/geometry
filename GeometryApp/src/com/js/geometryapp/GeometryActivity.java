@@ -74,13 +74,5 @@ public class GeometryActivity extends MyActivity {
 		return v;
 	}
 
-	protected GLSurfaceView getGLSurfaceView() {
-		return mGLView;
-	}
-
-	static {
-		doNothing();
-	}
-
 	private GLSurfaceView mGLView;
 }

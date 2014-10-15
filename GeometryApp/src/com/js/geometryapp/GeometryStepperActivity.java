@@ -41,8 +41,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	@Override
 	protected View buildContentView() {
 		// Have superclass construct the OpenGL view
-		View glView = super.buildContentView();
-		mStepper.setGLSurfaceView(getGLSurfaceView());
+		GLSurfaceView glView = (GLSurfaceView) super.buildContentView();
+		mStepper.setGLSurfaceView(glView);
 
 		// Build a view that will contain the GLSurfaceView and a stepper
 		// control panel

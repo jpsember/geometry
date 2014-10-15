@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.util.DisplayMetrics;
@@ -41,6 +40,10 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private static final float HIGHLIGHT_LINE_WIDTH = 3.0f;
 
 	ConcreteStepper() {
+	}
+
+	void setDependencies(AlgorithmOptions options) {
+		mOptions = options;
 	}
 
 	void setGLSurfaceView(GLSurfaceView glSurfaceView) {
@@ -416,16 +419,12 @@ public class ConcreteStepper implements AlgorithmStepper {
 	/**
 	 * Construct stepper controller view
 	 */
-	View controllerView() {
-		return AlgorithmStepperPanel.build(mOptions);
+	View buildControllerView() {
+		AlgorithmStepperPanel panel = new AlgorithmStepperPanel(mOptions);
+		return panel.view();
 	}
 
 	AlgorithmOptions getOptions() {
-		return mOptions;
-	}
-
-	AlgorithmOptions constructOptions(Context context) {
-		mOptions = new AlgorithmOptions(context, this);
 		return mOptions;
 	}
 

@@ -18,8 +18,16 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	public static final String PERSIST_KEY_EDITOR = "_editor";
 
 	public GeometryStepperActivity() {
+		// First, we construct the various components; this is analogous to
+		// constructing the vertices of the object graph
 		mEditor = new Editor();
 		mStepper = new ConcreteStepper();
+		mOptions = new AlgorithmOptions(this);
+
+		// Second, we initialize the dependencies; this is analogous to
+		// constructing the edges of the object graph
+		mStepper.setDependencies(mOptions);
+		mOptions.setDependencies(mStepper);
 	}
 
 	@Override
@@ -68,11 +76,10 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 					GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
 			mEditor.restoreFromJSON(script);
 		}
-		mOptions = mStepper.constructOptions(this);
 		mOptions.setEditor(mEditor);
 
 		// Add the stepper control panel to this container
-		mainView.addView(mStepper.controllerView());
+		mainView.addView(mStepper.buildControllerView());
 		// Make the container the main view of a TwinViewContainer
 		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
 		mOptions.prepareViews(twinViews.getAuxilliaryView());

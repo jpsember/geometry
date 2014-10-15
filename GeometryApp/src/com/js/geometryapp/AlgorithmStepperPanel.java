@@ -8,26 +8,13 @@ import com.js.geometryapp.widget.SliderWidget;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import static com.js.basic.Tools.*;
 
 /**
  * View that contains the step controls (slider and page / step buttons)
  */
 class AlgorithmStepperPanel {
 
-	/**
-	 * Factory constructor
-	 * 
-	 * @param context
-	 * @return View containing the various controls
-	 */
-	public static View build(AlgorithmOptions options) {
-		AlgorithmStepperPanel v = new AlgorithmStepperPanel(options);
-		return v.view();
-	}
-
 	AlgorithmStepperPanel(AlgorithmOptions options) {
-		doNothing();
 		mOptions = options;
 	}
 
@@ -38,7 +25,7 @@ class AlgorithmStepperPanel {
 		parent.addView(w.getView(), buildLayoutParams(true));
 	}
 
-	private View view() {
+	View view() {
 		if (mView != null)
 			return mView;
 		LinearLayout layout = linearLayout(true);

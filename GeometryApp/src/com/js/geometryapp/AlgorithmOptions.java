@@ -43,6 +43,10 @@ public class AlgorithmOptions {
 
 	private static final String WIDGET_ID_OPERATION = "_algorithm_";
 
+	AlgorithmOptions(Context context) {
+		mContext = context;
+	}
+
 	/**
 	 * Prepare the options views
 	 * 
@@ -203,12 +207,8 @@ public class AlgorithmOptions {
 		return field;
 	}
 
-	AlgorithmOptions(Context context, ConcreteStepper stepper) {
-		mContext = context;
+	void setDependencies(ConcreteStepper stepper) {
 		mStepper = stepper;
-
-		mWidgetsMap = new HashMap();
-		mAlgorithms = new ArrayList();
 	}
 
 	private static Map<String, Object> buildAttributes(String identifier,
@@ -629,9 +629,9 @@ public class AlgorithmOptions {
 	// value changes
 	private boolean mPrepared;
 	private Context mContext;
-	private Map<String, AbstractWidget> mWidgetsMap;
+	private Map<String, AbstractWidget> mWidgetsMap = new HashMap();
 	private WidgetGroup mPrimaryWidgetGroup;
-	private ArrayList<ActiveOperationRecord> mAlgorithms;
+	private List<ActiveOperationRecord> mAlgorithms = new ArrayList();
 	private ActiveOperationRecord mActiveAlgorithm;
 	private ActiveOperationRecord mSecondaryWidgetGroup;
 
@@ -642,5 +642,4 @@ public class AlgorithmOptions {
 	// For generating unique text ids
 	private int mPreviousTextIndex;
 	private Editor mEditor;
-
 }

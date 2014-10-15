@@ -24,10 +24,27 @@ public class SampleAnimationActivity extends GeometryActivity {
 	@Override
 	protected View buildContentView() {
 		GLSurfaceView v = new GLSurfaceView(this);
+		mGLView = v;
 		v.setEGLContextClientVersion(2);
 		v.setRenderer(new SampleRenderer(this));
 		return v;
 	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mGLView != null)
+			mGLView.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (mGLView != null)
+			mGLView.onPause();
+	}
+
+	private GLSurfaceView mGLView;
 
 	/**
 	 * Define a custom renderer

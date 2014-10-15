@@ -57,7 +57,7 @@ public class GeometryActivity extends MyActivity {
 
 	/**
 	 * Subclasses should override this to set the activity's content view. The
-	 * default implementation constructs a GLSurfaceView
+	 * default implementation constructs a GLSurfaceView with an OurGLRenderer
 	 */
 	protected View buildContentView() {
 		GLSurfaceView v = new GLSurfaceView(this);

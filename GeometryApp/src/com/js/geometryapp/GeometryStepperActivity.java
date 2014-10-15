@@ -41,15 +41,25 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	public abstract void addAlgorithms(AlgorithmStepper s);
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		if (mGLView != null)
+			mGLView.onResume();
+	}
+
+	@Override
 	protected void onPause() {
 		mOptions.persistStepperState(false);
 		mEditor.persistEditorState(false);
 		super.onPause();
+		if (mGLView != null)
+			mGLView.onPause();
 	}
 
 	@Override
 	protected View buildContentView() {
 		EditorGLSurfaceView surfaceView = new EditorGLSurfaceView(this);
+		mGLView = surfaceView;
 		surfaceView.setRenderer(mRenderer);
 		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
@@ -87,4 +97,5 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	private AlgorithmOptions mOptions;
 	private AlgorithmRenderer mRenderer;
 	private Editor mEditor;
+	private EditorGLSurfaceView mGLView;
 }

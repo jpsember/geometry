@@ -47,17 +47,18 @@ public class Editor implements EditorEventListener {
 	public Editor() {
 	}
 
+	public void setDependencies(ConcreteStepper stepper) {
+		mStepper = stepper;
+	}
+
 	/**
 	 * Constructor
 	 * 
 	 * @param contentView
 	 *            view displaying objects being edited; probably a GLSurfaceView
-	 * @param stepper
-	 *            ConcreteStepper for rendering editor objects
 	 */
-	public void prepare(View contentView, ConcreteStepper stepper) {
+	public void prepare(View contentView) {
 		mEditorView = contentView;
-		mStepper = stepper;
 		mPickRadius = MyActivity.inchesToPixels(.28f);
 		prepareObjectTypes();
 	}

@@ -22,14 +22,13 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	public static final String TRANSFORM_NAME_ALGORITHM_TO_DEVICE = "algorithm->device";
 	public static final String TRANSFORM_NAME_DEVICE_TO_ALGORITHM = "device->algorithm";
 
-	public AlgorithmRenderer(Context context, ConcreteStepper stepper) {
+	public AlgorithmRenderer(Context context) {
 		super(context);
-		mStepper = stepper;
-		doNothing();
 	}
 
-	public void setEditor(Editor editor) {
+	void setDependencies(Editor editor, ConcreteStepper stepper) {
 		mEditor = editor;
+		mStepper = stepper;
 	}
 
 	/**

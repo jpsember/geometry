@@ -47,6 +47,11 @@ public class AlgorithmOptions {
 		mContext = context;
 	}
 
+	void setDependencies(Editor editor, ConcreteStepper stepper) {
+		mEditor = editor;
+		mStepper = stepper;
+	}
+
 	/**
 	 * Prepare the options views
 	 * 
@@ -205,10 +210,6 @@ public class AlgorithmOptions {
 			throw new IllegalArgumentException("no widget found with name "
 					+ widgetName + "; ids: " + d(mWidgetsMap.keySet(), false));
 		return field;
-	}
-
-	void setDependencies(ConcreteStepper stepper) {
-		mStepper = stepper;
 	}
 
 	private static Map<String, Object> buildAttributes(String identifier,
@@ -617,10 +618,6 @@ public class AlgorithmOptions {
 	 */
 	public Context getContext() {
 		return mContext;
-	}
-
-	public void setEditor(Editor editor) {
-		mEditor = editor;
 	}
 
 	private ConcreteStepper mStepper;

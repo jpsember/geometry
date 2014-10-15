@@ -10,7 +10,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
-import static com.js.basic.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
@@ -23,11 +22,14 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		mEditor = new Editor();
 		mStepper = new ConcreteStepper();
 		mOptions = new AlgorithmOptions(this);
+		mRenderer = buildRenderer(this);
 
 		// Second, we initialize the dependencies; this is analogous to
 		// constructing the edges of the object graph
+		mEditor.setDependencies(mStepper);
 		mStepper.setDependencies(mOptions);
-		mOptions.setDependencies(mStepper);
+		mOptions.setDependencies(mEditor, mStepper);
+		mRenderer.setDependencies(mEditor, mStepper);
 	}
 
 	@Override
@@ -48,13 +50,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected View buildContentView() {
+		EditorGLSurfaceView surfaceView = new EditorGLSurfaceView(this);
+		surfaceView.setRenderer(mRenderer);
+		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-		mSurfaceView = new EditorGLSurfaceView(this);
-		mRenderer = buildRenderer(this);
-		mSurfaceView.setRenderer(mRenderer);
-		mSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-
-		mStepper.setGLSurfaceView(mSurfaceView);
+		mStepper.setGLSurfaceView(surfaceView);
 
 		// Build a view that will contain the GLSurfaceView and a stepper
 		// control panel
@@ -66,9 +66,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 			// Wrap the GLSurfaceView within another container, so we can
 			// overlay it with an editing toolbar
-			mEditor.prepare(mSurfaceView, mStepper);
-			mRenderer.setEditor(mEditor);
-			mSurfaceView.setEditor(mEditor);
+			mEditor.prepare(surfaceView);
+			surfaceView.setEditor(mEditor);
 			mainView.addView(mEditor.getView(), p);
 
 			// Restore previous items
@@ -76,7 +75,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 					GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
 			mEditor.restoreFromJSON(script);
 		}
-		mOptions.setEditor(mEditor);
 
 		// Add the stepper control panel to this container
 		mainView.addView(mStepper.buildControllerView());
@@ -90,20 +88,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	 * Subclass can override this method to build their own renderer
 	 */
 	protected AlgorithmRenderer buildRenderer(Context context) {
-		return new AlgorithmRenderer(context, mStepper);
-	}
-
-	public AlgorithmStepper getStepper() {
-		return mStepper;
-	}
-
-	static {
-		doNothing();
+		return new AlgorithmRenderer(context);
 	}
 
 	private ConcreteStepper mStepper;
 	private AlgorithmOptions mOptions;
 	private AlgorithmRenderer mRenderer;
-	private EditorGLSurfaceView mSurfaceView;
 	private Editor mEditor;
 }

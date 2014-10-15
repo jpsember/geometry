@@ -33,6 +33,17 @@ class TwinViewContainer {
 	}
 
 	/**
+	 * Get the view that contains both the main and auxilliary views
+	 */
+	ViewGroup getContainer() {
+		return mSlidingPane;
+	}
+
+	ViewGroup getAuxilliaryView() {
+		return mAuxilliaryView;
+	}
+
+	/**
 	 * Build a view that will appear in the sliding pane
 	 */
 	private void buildAuxilliaryView() {
@@ -41,17 +52,6 @@ class TwinViewContainer {
 		int padding = MyActivity.inchesToPixels(.06f);
 		view.setPadding(padding, padding, padding, padding);
 		mAuxilliaryView = view;
-	}
-
-	/**
-	 * Get the view that contains both the main and auxilliary views
-	 */
-	ViewGroup getContainer() {
-		return mSlidingPane;
-	}
-
-	public ViewGroup getAuxilliaryView() {
-		return mAuxilliaryView;
 	}
 
 	private void buildSlidingPane(Context context) {

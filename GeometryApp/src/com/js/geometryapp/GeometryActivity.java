@@ -1,7 +1,5 @@
 package com.js.geometryapp;
 
-import static com.js.basic.Tools.*;
-
 import com.js.android.MyActivity;
 import com.js.opengl.OurGLRenderer;
 
@@ -55,8 +53,6 @@ public class GeometryActivity extends MyActivity {
 		super.onResume();
 		if (mGLView != null)
 			mGLView.onResume();
-		else
-			warning("onResume with no GLSurfaceView");
 	}
 
 	/**

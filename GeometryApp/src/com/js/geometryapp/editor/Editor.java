@@ -37,7 +37,7 @@ import static com.js.android.Tools.*;
  */
 public class Editor implements EditorEventListener {
 
-	private static final boolean TRUNCATE_SAVED_OBJECTS = true && DEBUG_ONLY_FEATURES;
+	private static final boolean TRUNCATE_SAVED_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
@@ -45,6 +45,7 @@ public class Editor implements EditorEventListener {
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
+	private static final String JSON_KEY_CLIPBOARD = "cb";
 
 	public Editor() {
 	}
@@ -252,13 +253,36 @@ public class Editor implements EditorEventListener {
 		}
 		try {
 			JSONObject map = JSONTools.parseMap(script);
-			JSONArray array = map.getJSONArray(JSON_KEY_OBJECTS);
-			mObjects.clear();
+			parseObjects(mObjects, map, JSON_KEY_OBJECTS);
+			parseObjects(mClipboard, map, JSON_KEY_CLIPBOARD);
+		} catch (JSONException e) {
+			warning("caught " + e);
+		}
+	}
+
+	/**
+	 * Parse an EdObjectArray from JSON map
+	 * 
+	 * @param objectsArray
+	 *            where to store the objects; cleared beforehand
+	 * @param map
+	 * @param key
+	 *            key objects are stored as
+	 * @return object array, or null if no key found
+	 * @throws JSONException
+	 */
+	private void parseObjects(EdObjectArray objectsArray, JSONObject map,
+			String key) throws JSONException {
+		objectsArray.clear();
+		if (map.has(key)) {
+			JSONArray array = map.getJSONArray(key);
 			for (int i = 0; i < array.length(); i++) {
 				if (TRUNCATE_SAVED_OBJECTS) {
-					if (i < array.length() - 5) {
-						warning("omitting all but last n objects");
-						continue;
+					if (key.equals(JSON_KEY_OBJECTS)) {
+						if (i < array.length() - 5) {
+							warning("omitting all but last n objects");
+							continue;
+						}
 					}
 				}
 				JSONObject objMap = array.getJSONObject(i);
@@ -274,10 +298,8 @@ public class Editor implements EditorEventListener {
 					warning("Unable to parse: " + objMap);
 					continue;
 				}
-				mObjects.add(edObject);
+				objectsArray.add(edObject);
 			}
-		} catch (JSONException e) {
-			warning("caught " + e);
 		}
 	}
 
@@ -382,6 +404,7 @@ public class Editor implements EditorEventListener {
 	private String compileObjectsToJSON() throws JSONException {
 		JSONObject editorMap = new JSONObject();
 		editorMap.put(JSON_KEY_OBJECTS, getEdObjectsArrayJSON(objects()));
+		editorMap.put(JSON_KEY_CLIPBOARD, getEdObjectsArrayJSON(mClipboard));
 		return editorMap.toString();
 	}
 
@@ -588,4 +611,5 @@ public class Editor implements EditorEventListener {
 	private Point mTouchLocation;
 	private AlgorithmOptions mOptions;
 	private LinearLayout mAuxView;
+	private EdObjectArray mClipboard = new EdObjectArray();
 }

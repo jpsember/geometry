@@ -442,6 +442,9 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void addNewObject(EdObjectFactory objectType, Point location) {
+		EdObjectArray originalAll = mObjects.getFrozen();
+		List<Integer> originalSelected = originalAll.getSelectedSlots();
+
 		EdObject newObject = objectType.construct(location);
 		newObject.setEditor(this);
 		newObject.setEditable(true);
@@ -449,7 +452,8 @@ public class Editor implements EditorEventListener {
 		List<Integer> slots = SlotList.build(slot);
 		mObjects.selectOnly(slots);
 
-		Command c = Command.constructForAddedObjects(mObjects, slots);
+		Command c = Command.constructForGeneralChanges(originalAll,
+				originalSelected, null, mObjects, slots, null, null);
 		c.setPairedWithNext(true);
 		pushCommand(c);
 
@@ -514,15 +518,75 @@ public class Editor implements EditorEventListener {
 	}
 
 	void doCut() {
-		unimp();
+
+		List<Integer> slots = objects().getSelectedSlots();
+		if (slots.isEmpty())
+			return;
+
+		EdObjectArray originalObjects = objects().getFrozen();
+		EdObjectArray newClipboard = objects().getSubset(slots).freeze();
+		EdObjectArray origClipboard = mClipboard;
+		setClipboard(newClipboard);
+		objects().remove(slots);
+
+		Command command = Command.constructForGeneralChanges(//
+				originalObjects,//
+				slots, //
+				origClipboard, //
+				objects(), //
+				SlotList.build(),// cutting all selected objects, so none remain
+				newClipboard, //
+				null);
+		pushCommand(command);
+		refresh();
 	}
 
 	void doCopy() {
-		unimp();
+		List<Integer> slots = objects().getSelectedSlots();
+		if (slots.isEmpty())
+			return;
+		EdObjectArray originalObjects = objects().getFrozen();
+		EdObjectArray newClipboard = objects().getSubset(slots).freeze();
+		EdObjectArray origClipboard = mClipboard;
+		setClipboard(newClipboard);
+
+		Command command = Command.constructForGeneralChanges(//
+				originalObjects, //
+				slots,//
+				origClipboard, //
+				originalObjects, // copying doesn't change the current objects
+				null, // nor which are selected
+				newClipboard, //
+				null);
+		pushCommand(command);
+		refresh();
 	}
 
 	void doPaste() {
-		unimp();
+		if (mClipboard.isEmpty())
+			return;
+		List<Integer> originalSlots = objects().getSelectedSlots();
+		EdObjectArray originalObjects = objects().getFrozen();
+		List<Integer> newSelected = SlotList.build();
+		for (EdObject obj : mClipboard) {
+			newSelected.add(objects().size());
+			EdObject copy = (EdObject) obj.clone();
+			copy.moveBy(obj, new Point(20, 20));
+			objects().add(copy);
+		}
+		objects().selectOnly(newSelected);
+		unimp("more sophisticated translation method");
+
+		Command command = Command.constructForGeneralChanges(//
+				originalObjects, //
+				originalSlots,//
+				mClipboard, //
+				objects(), //
+				newSelected, //
+				mClipboard, // pasting doesn't change the clipboard contents
+				null);
+		pushCommand(command);
+		refresh();
 	}
 
 	private String getHistory() {
@@ -627,6 +691,18 @@ public class Editor implements EditorEventListener {
 			mAuxView = UITools.linearLayout(context(), true);
 		}
 		return mAuxView;
+	}
+
+	public EdObjectArray getClipboard() {
+		return mClipboard;
+	}
+
+	public void setClipboard(EdObjectArray clipboard) {
+		mClipboard = clipboard.freeze();
+	}
+
+	public void setObjects(EdObjectArray objects) {
+		mObjects = objects;
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;

@@ -1,5 +1,7 @@
 package com.js.geometryapp.editor;
 
+import java.util.List;
+
 import android.graphics.Color;
 
 import com.js.geometry.MyMath;
@@ -68,11 +70,12 @@ public class EdSegment extends EdObject {
 		 * EVENT_DOWN_x
 		 */
 		private void initializeOperation(Point location) {
-			if (mOriginal != null)
+			if (mSelectedSlots != null)
 				return;
 
+			mSelectedSlots = SlotList.build(mEditSlot);
 			EdSegment seg = mEditor.objects().get(mEditSlot);
-			mOriginal = mEditor.objects().getSubset(mEditSlot);
+			mOriginalAll = mEditor.objects().getFrozen();
 
 			if (mEditPointIndex < 0) {
 				mEditPointIndex = seg.nPoints() - 1;
@@ -119,8 +122,9 @@ public class EdSegment extends EdObject {
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
-					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginal, FACTORY.getTag()));
+					mEditor.pushCommand(Command.constructForGeneralChanges(
+							mOriginalAll, mSelectedSlots, null,
+							mEditor.objects(), null, null, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -143,7 +147,8 @@ public class EdSegment extends EdObject {
 		// Index of point being edited
 		private int mEditPointIndex;
 		private boolean mModified;
-		private EdObjectArray mOriginal;
+		private EdObjectArray mOriginalAll;
+		private List<Integer> mSelectedSlots;
 		private Editor mEditor;
 	}
 }

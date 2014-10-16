@@ -128,7 +128,8 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
 		unselectObjects(null);
-		EdObject editObject = mEditor.objects().get(pickSet.get(nextSelectedIndex));
+		EdObject editObject = mEditor.objects().get(
+				pickSet.get(nextSelectedIndex));
 		editObject.setEditable(true);
 		editObject.selectedForEditing(location);
 	}
@@ -194,6 +195,7 @@ public class DefaultEventListener implements EditorEventListener {
 			// will want access to their original positions; then replace the
 			// objects with copies that will be moved
 			List<Integer> selSlots = mEditor.objects().getSelectedSlots();
+			mMoveObjectsOriginalArray = mEditor.objects().getCopy();
 			mMoveObjectsOriginals = mEditor.objects().getSubset(selSlots);
 			mEditor.objects().replaceWithCopies(selSlots);
 			mPreviousMoveLocation = mInitialDownLocation;
@@ -230,9 +232,11 @@ public class DefaultEventListener implements EditorEventListener {
 						.getBounds(mEditor)));
 			}
 		} else if (mMoveObjectsOriginals != null) {
-			// Create command and undo
-			Command cmd = Command.constructForEditedObjects(mEditor.objects(),
-					mMoveObjectsOriginals, "move");
+			// Create command
+			Command cmd = Command.constructForGeneralChanges(
+					mMoveObjectsOriginalArray,
+					mMoveObjectsOriginals.getSlots(), null, mEditor.objects(),
+					null, null, "move");
 			mEditor.pushCommand(cmd);
 		}
 	}
@@ -337,5 +341,6 @@ public class DefaultEventListener implements EditorEventListener {
 	private boolean mDragStarted;
 	private boolean mDraggingRect;
 	private EdObjectArray mMoveObjectsOriginals;
+	private EdObjectArray mMoveObjectsOriginalArray;
 	private Point mPreviousMoveLocation;
 }

@@ -348,9 +348,8 @@ public class EdPolyline extends EdObject {
 			mEditor = editor;
 			mEditSlot = slot;
 			mReference = modified;
-			mOriginalObjectSet = new EdObjectArray();
-			mOriginalObjectSet.add(editor.objects().get(slot));
-			mOriginalObjectSet.setSlots(SlotList.build(slot));
+			mSelectedSlots = SlotList.build(mEditSlot);
+			mOriginalAll = editor.objects().getFrozen();
 			editor.objects().set(slot, mReference);
 		}
 
@@ -423,8 +422,9 @@ public class EdPolyline extends EdObject {
 					// Don't allow any merging with polygon commands, because
 					// the user may end up doing a lot of work on a single
 					// polygon and he should be able to undo individual steps
-					mEditor.pushCommand(Command.constructForEditedObjects(
-							mEditor.objects(), mOriginalObjectSet, null));
+					mEditor.pushCommand(Command.constructForGeneralChanges(
+							mOriginalAll, mSelectedSlots, null,
+							mEditor.objects(), null, null, null));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -514,7 +514,8 @@ public class EdPolyline extends EdObject {
 		// Index of object being edited
 		private Editor mEditor;
 		private int mEditSlot;
-		private EdObjectArray mOriginalObjectSet;
+		private EdObjectArray mOriginalAll;
+		private List<Integer> mSelectedSlots;
 		// polyline when editing operation began
 		private EdPolyline mReference;
 		private boolean mChangesMade;

@@ -52,211 +52,143 @@ public abstract class Command {
 	}
 
 	/**
-	 * Construct a Command that generically saves and restores a subset of
-	 * objects that have been edited
+	 * Construct a Command for arbitrary objects having changed, including
+	 * selected states, and clipboard
 	 * 
-	 * @param editorObjects
-	 *            the editor's objects
 	 * @param originalObjects
-	 *            the subset of edited objects, before they were edited; must
-	 *            include the slots
+	 *            array containing all of the original objects
+	 * @param originalSelectedSlots
+	 *            slots of the items selected originally
+	 * @param originalClipboard
+	 *            original clipboard contents, or null if this command doesn't
+	 *            modify the clipboard
+	 * @param newObjects
+	 *            array containing all of the objects, including any
+	 *            modifications
+	 * @param newSelectedSlots
+	 *            slots of the selected items after the command, or null if same
+	 *            as originalSelectedSlots
+	 * @param newClipboard
+	 *            new clipboard contents, or null if this command doesn't modify
+	 *            the clipboard
 	 * @param mergeKey
 	 *            if not null, a string that identifies whether this command can
 	 *            be merged with its neighbors; if the keys match, and their
 	 *            slots match, then merging will be performed
 	 */
-	public static Command constructForEditedObjects(
-			EdObjectArray editorObjects, EdObjectArray originalObjects,
+	public static Command constructForGeneralChanges(
+			EdObjectArray originalObjects, List<Integer> originalSelectedSlots,
+			EdObjectArray originalClipboard, EdObjectArray newObjects,
+			List<Integer> newSelectedSlots, EdObjectArray newClipboard,
 			String mergeKey) {
-		if (originalObjects.getSlots() == null)
-			throw new IllegalArgumentException("no slots available");
-		return new CommandForModifiedObjects(editorObjects,
-				originalObjects.getSlots(), originalObjects, mergeKey);
+		return new CommandForGeneralChanges(originalObjects,
+				originalSelectedSlots, originalClipboard, newObjects,
+				newSelectedSlots, newClipboard, mergeKey);
 	}
 
-	/**
-	 * Construct a Command for objects that have been added
-	 * 
-	 * @param editorObjects
-	 *            the editor's objects
-	 * @param slots
-	 *            slots of objects that were added
-	 */
-	public static Command constructForAddedObjects(EdObjectArray editorObjects,
-			List<Integer> slots) {
-		return new CommandForAddedObjects(editorObjects.getSubset(slots),
-				slots);
-	}
+	private static class CommandForGeneralChanges extends Command {
 
-	/**
-	 * Construct a Command for objects that have been removed
-	 * 
-	 * @param removedObjects
-	 *            objects that were removed
-	 * @param slots
-	 *            their slots
-	 */
-	public static Command constructForRemovedObjects(
-			EdObjectArray removedObjects, List<Integer> slots) {
-		return new CommandForRemovedObjects(removedObjects, slots);
-	}
-
-	private static class CommandForModifiedObjects extends Command {
+		// TODO: we could do a more sophisticated analysis of exactly which
+		// objects are being changed, and 'difference encode' the various
+		// arrays;
+		// this would take up less memory (though it doesn't store
+		// copies of objects, rather copies of their pointers). The savings
+		// come from not having to store O(n*u) pointers for object array |n|
+		// and undo stack |u|. Rather, something like O(k * u) where k is a
+		// small constant k << n.
 
 		@Override
 		public String toString() {
 			if (!DEBUG_ONLY_FEATURES)
 				return null;
-			StringBuilder sb = new StringBuilder("Command: modified objects ");
-			sb.append(d(mSlots));
-			if (mMergeKey != null)
-				sb.append(" mergeKey:" + mMergeKey);
+			StringBuilder sb = new StringBuilder("Command: general changes ");
+			sb.append(d(mOriginalObjects));
+			sb.append(d(mOriginalSelectedSlots));
+			sb.append("clipboard: " + d(mOriginalClipboard));
 			return sb.toString();
 		}
 
-		public CommandForModifiedObjects(EdObjectArray editorObjects,
-				List<Integer> slots, EdObjectArray originalObjects,
+		public CommandForGeneralChanges(EdObjectArray originalObjects,
+				List<Integer> originalSelectedSlots,
+				EdObjectArray originalClipboard, EdObjectArray newObjects,
+				List<Integer> newSelectedSlots, EdObjectArray newClipboard,
 				String mergeKey) {
-			mNew = editorObjects.getSubset(slots);
-			mSlots = slots;
-			mOriginals = originalObjects;
+			mOriginalObjects = originalObjects.getFrozen();
+			mOriginalSelectedSlots = originalSelectedSlots;
+			mOriginalClipboard = originalClipboard;
+			mNewObjects = newObjects.getFrozen();
+			mNewSelectedSlots = newSelectedSlots;
+			if (newSelectedSlots == null)
+				mNewSelectedSlots = mOriginalSelectedSlots;
+			mNewClipboard = newClipboard;
 			mMergeKey = mergeKey;
 		}
 
-		private CommandForModifiedObjects() {
+		@Override
+		public Command getReverse() {
+			if (mReverse == null) {
+				mReverse = new CommandForGeneralChanges(mNewObjects,
+						mNewSelectedSlots, mNewClipboard, mOriginalObjects,
+						mOriginalSelectedSlots, mOriginalClipboard, null);
+			}
+			return mReverse;
+		}
+
+		@Override
+		public void perform(Editor editor) {
+			editor.setObjects(mNewObjects.getMutableCopy());
+			if (mNewClipboard != null)
+				editor.setClipboard(mNewClipboard);
+			editor.objects().selectOnly(mNewSelectedSlots);
+		}
+
+		@Override
+		public boolean valid() {
+			return true;
 		}
 
 		@Override
 		public Command attemptMergeWith(Command follower) {
-			CommandForModifiedObjects merged = null;
+			CommandForGeneralChanges merged = null;
 			do {
 				if (mMergeKey == null)
 					break;
-				if (!(follower instanceof CommandForModifiedObjects))
+
+				if (!(follower instanceof CommandForGeneralChanges))
 					break;
-				CommandForModifiedObjects f = (CommandForModifiedObjects) follower;
+				CommandForGeneralChanges f = (CommandForGeneralChanges) follower;
 				if (!mMergeKey.equals(f.mMergeKey))
 					break;
-				if (!mSlots.equals(f.mSlots))
+
+				if (mOriginalObjects.size() != mNewObjects.size())
+					break;
+
+				if (mNewObjects.size() != f.mOriginalObjects.size())
+					break;
+				if (f.mOriginalObjects.size() != f.mNewObjects.size())
+					break;
+
+				if (!mOriginalSelectedSlots.equals(f.mOriginalSelectedSlots))
+					break;
+				if (mOriginalClipboard != mNewClipboard
+						|| f.mOriginalClipboard != f.mOriginalClipboard
+						|| f.mOriginalClipboard != f.mNewClipboard)
 					break;
 
 				// Merging is possible, so construct merged command
-				merged = new CommandForModifiedObjects();
-				merged.mOriginals = this.mOriginals;
-				merged.mNew = f.mNew;
-				merged.mSlots = this.mSlots;
-				merged.mMergeKey = this.mMergeKey;
+				merged = new CommandForGeneralChanges(mOriginalObjects,
+						mOriginalSelectedSlots, mOriginalClipboard,
+						f.mNewObjects, f.mNewSelectedSlots, f.mNewClipboard,
+						mMergeKey);
+
 			} while (false);
 			return merged;
 		}
 
-		@Override
-		public Command getReverse() {
-			if (mReverse == null) {
-				CommandForModifiedObjects c = new CommandForModifiedObjects();
-				c.mSlots = this.mSlots;
-				c.mOriginals = this.mNew;
-				c.mNew = this.mOriginals;
-				mReverse = c;
-			}
-			return mReverse;
-		}
-
-		@Override
-		public void perform(Editor editor) {
-			editor.objects().replace(mSlots, mNew, false);
-			editor.objects().selectOnly(mSlots);
-		}
-
-		@Override
-		public boolean valid() {
-			return true;
-		}
-
-		private List<Integer> mSlots;
-		private EdObjectArray mOriginals;
-		private EdObjectArray mNew;
-		private Command mReverse;
+		private EdObjectArray mOriginalObjects, mNewObjects,
+				mOriginalClipboard, mNewClipboard;
+		private List<Integer> mOriginalSelectedSlots, mNewSelectedSlots;
 		private String mMergeKey;
-	}
-
-	private static class CommandForAddedObjects extends Command {
-		@Override
-		public String toString() {
-			if (!DEBUG_ONLY_FEATURES)
-				return null;
-			StringBuilder sb = new StringBuilder("Command: added objects ");
-			sb.append(d(mSlots));
-			return sb.toString();
-		}
-
-		public CommandForAddedObjects(EdObjectArray addedObjects,
-				List<Integer> slots) {
-			mNew = addedObjects;
-			mSlots = slots;
-		}
-
-		@Override
-		public Command getReverse() {
-			if (mReverse == null) {
-				mReverse = constructForRemovedObjects(mNew, mSlots);
-			}
-			return mReverse;
-		}
-
-		@Override
-		public void perform(Editor editor) {
-			editor.objects().replace(mSlots, mNew, true);
-			editor.objects().selectOnly(mSlots);
-		}
-
-		@Override
-		public boolean valid() {
-			return true;
-		}
-
-		private List<Integer> mSlots;
-		private EdObjectArray mNew;
-		private Command mReverse;
-	}
-
-	private static class CommandForRemovedObjects extends Command {
-		@Override
-		public String toString() {
-			if (!DEBUG_ONLY_FEATURES)
-				return null;
-			StringBuilder sb = new StringBuilder("Command: removed objects ");
-			sb.append(d(mSlots));
-			return sb.toString();
-		}
-
-		public CommandForRemovedObjects(EdObjectArray removedObjects,
-				List<Integer> slots) {
-			mRemoved = removedObjects;
-			mSlots = slots;
-		}
-
-		@Override
-		public Command getReverse() {
-			if (mReverse == null) {
-				mReverse = new CommandForAddedObjects(mRemoved, mSlots);
-			}
-			return mReverse;
-		}
-
-		@Override
-		public void perform(Editor editor) {
-			editor.objects().remove(mSlots);
-			editor.objects().unselectAll();
-		}
-
-		@Override
-		public boolean valid() {
-			return true;
-		}
-
-		private List<Integer> mSlots;
-		private EdObjectArray mRemoved;
 		private Command mReverse;
 	}
 

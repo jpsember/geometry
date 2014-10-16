@@ -13,11 +13,22 @@ import static com.js.basic.Tools.*;
  */
 public class EdObjectArray implements Iterable<EdObject> {
 
+	private void verifyMutable() {
+		if (mFrozen)
+			throw new IllegalStateException();
+	}
+
 	public boolean isEmpty() {
 		return mList.isEmpty();
 	}
 
+	public EdObjectArray freeze() {
+		mFrozen = true;
+		return this;
+	}
+
 	public void clear() {
+		verifyMutable();
 		mList.clear();
 	}
 
@@ -32,6 +43,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * @return the index of the object
 	 */
 	public int add(EdObject object) {
+		verifyMutable();
 		int index = mList.size();
 		mList.add(object);
 		return index;
@@ -42,6 +54,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void set(int index, EdObject object) {
+		verifyMutable();
 		mList.set(index, object);
 	}
 
@@ -65,6 +78,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 */
 	public void replace(List<Integer> slots, EdObjectArray replacementObjects,
 			boolean allowAppending) {
+		verifyMutable();
 		if (slots.size() != replacementObjects.size())
 			throw new IllegalArgumentException();
 		for (int i = 0; i < slots.size(); i++) {
@@ -93,6 +107,27 @@ public class EdObjectArray implements Iterable<EdObject> {
 		}
 		subset.setSlots(slots);
 		return subset;
+	}
+
+	public EdObjectArray getMutableCopy() {
+		EdObjectArray copy = new EdObjectArray();
+		for (EdObject obj : mList)
+			copy.add(obj);
+		return copy;
+	}
+
+	public EdObjectArray getFrozen() {
+		return getCopy().freeze();
+	}
+
+	public EdObjectArray getCopy() {
+		if (isFrozen())
+			return this;
+		return getMutableCopy();
+	}
+
+	public boolean isFrozen() {
+		return mFrozen;
 	}
 
 	/**
@@ -129,6 +164,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void remove(List<Integer> slots) {
+		verifyMutable();
 		ArrayList<EdObject> newList = new ArrayList();
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
@@ -150,6 +186,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * @return array containing original objects
 	 */
 	public EdObjectArray replaceWithCopies(List<Integer> slots) {
+		verifyMutable();
 		EdObjectArray subsequence = new EdObjectArray();
 		for (int slot : slots) {
 			EdObject obj = get(slot);
@@ -164,7 +201,12 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void setSlots(List<Integer> slots) {
+		verifyMutable();
 		mSlots = slots;
+	}
+
+	public boolean hasSlots() {
+		return mSlots != null;
 	}
 
 	public List<Integer> getSlots() {
@@ -189,4 +231,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	// If not null, a list of slots corresponding to the objects in this array,
 	// indicating their positions within some other array
 	private List<Integer> mSlots;
+
+	private boolean mFrozen;
+
 }

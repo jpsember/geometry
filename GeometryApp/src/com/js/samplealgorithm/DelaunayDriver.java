@@ -1,6 +1,7 @@
 package com.js.samplealgorithm;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import android.graphics.Color;
@@ -19,6 +20,7 @@ public class DelaunayDriver implements Algorithm {
 
 	private static final String BGND_ELEMENT_MESH = "50:mesh";
 	private static final String BGND_ELEMENT_VORONOI_CELLS = "60";
+	private static final String USE_EDITOR_POINTS = "Use editor points";
 
 	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 
@@ -29,7 +31,7 @@ public class DelaunayDriver implements Algorithm {
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
-		warning("ignoring inputs");
+		mEditorPoints = input.points;
 	}
 
 	@Override
@@ -51,13 +53,12 @@ public class DelaunayDriver implements Algorithm {
 		mOptions.addCheckBox(Delaunay.DETAIL_SWAPS, "value", true);
 		mOptions.addCheckBox(Delaunay.DETAIL_FIND_TRIANGLE, "value", true);
 		mOptions.addCheckBox(Delaunay.DETAIL_TRIANGULATE_HOLE, "value", false);
+		mOptions.addCheckBox(USE_EDITOR_POINTS);
 	}
 
 	@Override
-	public void run(AlgorithmStepper stepper) {
-
-		Rect pointBounds = new Rect(50, 50, 900, 900);
-		s = stepper;
+	public void run(final AlgorithmStepper s) {
+		mPointBounds = new Rect(50, 50, 900, 900);
 		mMesh = new Mesh();
 		mRandom = new Random(mOptions.getIntValue("Seed"));
 		boolean deleteAll = mOptions.getBooleanValue("Delete all");
@@ -73,39 +74,27 @@ public class DelaunayDriver implements Algorithm {
 
 		Rect delaunayBounds = null;
 		if (mOptions.getBooleanValue("Small initial mesh")) {
-			delaunayBounds = new Rect(pointBounds);
+			delaunayBounds = new Rect(mPointBounds);
 			delaunayBounds.inset(-10, -10);
 		}
-		mDelaunay = new Delaunay(mMesh, delaunayBounds, stepper);
+		mDelaunay = new Delaunay(mMesh, delaunayBounds, s);
 		if (s.bigStep())
 			s.show("Initial triangulation");
 
-		int numPoints = mOptions.getIntValue("Points");
-		mVertices = new ArrayList();
-
-		ComboBoxWidget w = mOptions.getWidget("Pattern");
-		String pattern = (String) w.getSelectedKey();
-
-		for (int i = 0; i < numPoints; i++) {
-			Point pt;
-			if (pattern.equals("Circle")) {
-				Point center = pointBounds.midPoint();
-				if (i == numPoints - 1)
-					pt = center;
-				else
-					pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
-							/ (numPoints - 1), .49f * pointBounds.minDim());
-				MyMath.perturb(mRandom, pt);
-			} else {
-				if (mOptions.getBooleanValue("Random disc")) {
-					pt = MyMath.randomPointInDisc(mRandom,
-							pointBounds.midPoint(), pointBounds.minDim() / 2);
-				} else
-					pt = new Point(pointBounds.x + mRandom.nextFloat()
-							* pointBounds.width, pointBounds.y
-							+ mRandom.nextFloat() * pointBounds.height);
+		List<Point> inputPoints = new ArrayList();
+		if (mOptions.getBooleanValue(USE_EDITOR_POINTS)) {
+			for (Point pt : mEditorPoints) {
+				if (mPointBounds.contains(pt))
+					inputPoints.add(pt);
 			}
+		} else {
+			constructRandomPoints(inputPoints);
+		}
+		if (inputPoints.isEmpty())
+			GeometryException.raise("no points");
 
+		mVertices = new ArrayList();
+		for (Point pt : inputPoints) {
 			int attempt = 0;
 			while (true) {
 				try {
@@ -134,7 +123,6 @@ public class DelaunayDriver implements Algorithm {
 				}
 			}
 		}
-
 		if (deleteAll) {
 			while (!mVertices.isEmpty())
 				removeArbitraryVertex();
@@ -146,7 +134,6 @@ public class DelaunayDriver implements Algorithm {
 					public void render() {
 						s.setLineWidth(2);
 						s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
-
 						for (int i = 0; i < mDelaunay.nSites(); i++) {
 							Vertex v = mDelaunay.site(i);
 							s.plot(v);
@@ -161,15 +148,46 @@ public class DelaunayDriver implements Algorithm {
 		}
 	}
 
+	private void constructRandomPoints(List<Point> points) {
+		int numPoints = mOptions.getIntValue("Points");
+
+		ComboBoxWidget w = mOptions.getWidget("Pattern");
+		String pattern = (String) w.getSelectedKey();
+
+		for (int i = 0; i < numPoints; i++) {
+			Point pt;
+			if (pattern.equals("Circle")) {
+				Point center = mPointBounds.midPoint();
+				if (i == numPoints - 1)
+					pt = center;
+				else
+					pt = MyMath.pointOnCircle(center, (i * MyMath.PI * 2)
+							/ (numPoints - 1), .49f * mPointBounds.minDim());
+				MyMath.perturb(mRandom, pt);
+			} else {
+				if (mOptions.getBooleanValue("Random disc")) {
+					pt = MyMath.randomPointInDisc(mRandom,
+							mPointBounds.midPoint(), mPointBounds.minDim() / 2);
+				} else
+					pt = new Point(mPointBounds.x + mRandom.nextFloat()
+							* mPointBounds.width, mPointBounds.y
+							+ mRandom.nextFloat() * mPointBounds.height);
+			}
+
+			points.add(pt);
+		}
+	}
+
 	private void removeArbitraryVertex() {
 		Vertex v = removeAndFill(mVertices, mRandom.nextInt(mVertices.size()));
 		mDelaunay.remove(v);
 	}
 
 	private AlgorithmOptions mOptions;
-	private AlgorithmStepper s;
 	private Mesh mMesh;
 	private Delaunay mDelaunay;
 	private Random mRandom;
-	private ArrayList<Vertex> mVertices;
+	private List<Vertex> mVertices;
+	private Rect mPointBounds;
+	private Point[] mEditorPoints;
 }

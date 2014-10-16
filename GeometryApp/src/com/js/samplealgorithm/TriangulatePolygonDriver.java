@@ -1,7 +1,6 @@
 package com.js.samplealgorithm;
 
-import static com.js.basic.Tools.warning;
-
+import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
@@ -13,6 +12,8 @@ import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
 public class TriangulatePolygonDriver implements Algorithm {
+
+	private static final String USE_EDITOR_POLYGON = "Use editor polygon";
 
 	@Override
 	public String getAlgorithmName() {
@@ -34,6 +35,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 		w.addItem("Dragon #8", Polygon.TESTPOLY_DRAGON_X + 8);
 		w.addItem("Star-shaped (small)", Polygon.TESTPOLY_STARSHAPED_X + 15);
 		w.addItem("Star-shaped (large)", Polygon.TESTPOLY_STARSHAPED_X + 100);
+		mOptions.addCheckBox(USE_EDITOR_POLYGON);
 
 		w.prepare();
 
@@ -44,7 +46,7 @@ public class TriangulatePolygonDriver implements Algorithm {
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
-		warning("ignoring inputs");
+		mEditorPolygon = input.getPolygon(null);
 	}
 
 	@Override
@@ -59,12 +61,17 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	private void prepareInput() {
-		ComboBoxWidget w = mOptions.getWidget("Polygon");
-		int polygonName = (Integer) w.getSelectedValue();
-
 		mMesh = new Mesh();
-		mPolygon = Polygon.testPolygon(polygonName);
-		mPolygon.rotateBy(16 * MyMath.M_DEG);
+		if (mOptions.getBooleanValue(USE_EDITOR_POLYGON)) {
+			mPolygon = mEditorPolygon;
+		} else {
+			ComboBoxWidget w = mOptions.getWidget("Polygon");
+			int polygonName = (Integer) w.getSelectedValue();
+			mPolygon = Polygon.testPolygon(polygonName);
+			mPolygon.rotateBy(16 * MyMath.M_DEG);
+		}
+		if (mPolygon == null)
+			GeometryException.raise("no polygon");
 		mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
 	}
 
@@ -72,4 +79,5 @@ public class TriangulatePolygonDriver implements Algorithm {
 	private AlgorithmStepper mStepper;
 	private Mesh mMesh;
 	private Polygon mPolygon;
+	private Polygon mEditorPolygon;
 }

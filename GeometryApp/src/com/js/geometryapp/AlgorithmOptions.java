@@ -645,6 +645,10 @@ public class AlgorithmOptions {
 		return mContext;
 	}
 
+	void prepareAlgorithmInput() {
+		getActiveAlgorithm().prepareInput(mEditor.constructAlgorithmInput());
+	}
+
 	private ConcreteStepper mStepper;
 	private ViewGroup mContainingView;
 	// Until this flag is true, no listeners are sent messages about widget

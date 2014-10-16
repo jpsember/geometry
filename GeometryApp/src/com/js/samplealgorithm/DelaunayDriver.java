@@ -8,6 +8,7 @@ import android.graphics.Color;
 import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmDisplayElement;
+import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
@@ -24,6 +25,11 @@ public class DelaunayDriver implements Algorithm {
 	@Override
 	public String getAlgorithmName() {
 		return "Delaunay Triangulation";
+	}
+
+	@Override
+	public void prepareInput(AlgorithmInput input) {
+		warning("ignoring inputs");
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometryapp.Algorithm;
+import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 
@@ -33,6 +34,11 @@ public class StarshapedDriver implements Algorithm {
 		mOptions.addSlider("Length", "min", 2, "max", 150, "value", 95);
 		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
 		mOptions.addCheckBox("Reversed");
+	}
+
+	@Override
+	public void prepareInput(AlgorithmInput input) {
+		warning("ignoring inputs");
 	}
 
 	@Override

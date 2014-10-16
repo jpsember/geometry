@@ -16,8 +16,10 @@ import com.js.android.UITools;
 import com.js.basic.JSONTools;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.ConcreteStepper;
@@ -834,6 +836,30 @@ public class Editor implements EditorEventListener {
 		mObjects = objects;
 	}
 
+	public AlgorithmInput constructAlgorithmInput() {
+		AlgorithmInput algorithmInput = new AlgorithmInput();
+		List<Point> pointList = new ArrayList();
+		List<Polygon> polygonList = new ArrayList();
+
+		for (EdObject obj : objects()) {
+			if (obj instanceof EdPoint) {
+				EdPoint pt = (EdPoint) obj;
+				pointList.add(new Point(pt.getPoint(0)));
+			} else if (obj instanceof EdPolyline) {
+				EdPolyline polyline = (EdPolyline) obj;
+				if (!polyline.closed())
+					continue;
+				Polygon polygon = new Polygon();
+				for (int i = 0; i < polyline.nPoints(); i++)
+					polygon.add(polyline.getPoint(i));
+				polygonList.add(polygon);
+			}
+		}
+		algorithmInput.points = pointList.toArray(new Point[0]);
+		algorithmInput.polygons = polygonList.toArray(new Polygon[0]);
+		return algorithmInput;
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
@@ -852,4 +878,5 @@ public class Editor implements EditorEventListener {
 	private LinearLayout mAuxView;
 	private EdObjectArray mClipboard = new EdObjectArray();
 	private QuiescentDelayOperation mPendingEnableOperation;
+
 }

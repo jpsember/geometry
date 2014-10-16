@@ -555,7 +555,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			mCompleted = false;
 			try {
-				mOptions.getActiveAlgorithm().run(this);
+				mOptions.prepareAlgorithmInput();
+				Algorithm algorithm = mOptions.getActiveAlgorithm();
+				algorithm.run(this);
 
 				// We completed the algorithm without halting.
 				// We're about to throw an exception that will be caught below;

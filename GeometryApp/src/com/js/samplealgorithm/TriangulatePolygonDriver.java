@@ -1,10 +1,13 @@
 package com.js.samplealgorithm;
 
+import static com.js.basic.Tools.warning;
+
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometryapp.Algorithm;
+import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
@@ -37,6 +40,11 @@ public class TriangulatePolygonDriver implements Algorithm {
 		mOptions.addCheckBox(
 				PolygonTriangulator.DETAIL_TRIANGULATE_MONOTONE_FACE, "value",
 				true);
+	}
+
+	@Override
+	public void prepareInput(AlgorithmInput input) {
+		warning("ignoring inputs");
 	}
 
 	@Override

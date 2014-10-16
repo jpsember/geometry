@@ -52,6 +52,10 @@ public class EdPolyline extends EdObject {
 			prev = pt;
 		}
 		super.render(s);
+		// If there's a single point, we must plot it (if unselected) since no
+		// segments were drawn
+		if (!isSelected() && nPoints() == 1)
+			s.plot(getPoint(0));
 
 		Point[] tabLocations = null;
 		if (isEditable() && !mTabsHidden) {
@@ -435,10 +439,23 @@ public class EdPolyline extends EdObject {
 				returnCode = EVENT_STOP;
 				break;
 
-			case EVENT_STOP:
+			case EVENT_STOP: {
 				activePolyline().setTabsHidden(false);
-				break;
 
+				// Check if polyline has only two vertices very close together.
+				// This can happen when the user clicks when adding a new
+				// polyline
+				// instead of dragging.
+				// Delete the second one if this occurs.
+				EdPolyline polyline = activePolyline();
+				if (polyline.nPoints() == 2
+						&& MyMath.distanceBetween(polyline.getPoint(0),
+								polyline.getPoint(1)) < 5) {
+					polyline.removePoint(1);
+					polyline.setCursor(0);
+				}
+			}
+				break;
 			}
 			return returnCode;
 		}

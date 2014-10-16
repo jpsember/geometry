@@ -195,7 +195,7 @@ public class DefaultEventListener implements EditorEventListener {
 			// will want access to their original positions; then replace the
 			// objects with copies that will be moved
 			List<Integer> selSlots = mEditor.objects().getSelectedSlots();
-			mMoveObjectsOriginalArray = mEditor.objects().getCopy();
+			mMoveObjectsOriginalArray = mEditor.objects().getFrozen();
 			mMoveObjectsOriginals = mEditor.objects().getSubset(selSlots);
 			mEditor.objects().replaceWithCopies(selSlots);
 			mPreviousMoveLocation = mInitialDownLocation;

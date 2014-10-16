@@ -133,21 +133,17 @@ public class Rect {
 	}
 
 	public float distanceFrom(Point pt) {
-		float dist = 0;
-		if (!contains(pt)) {
-			float dx = x - pt.x;
-			if (dx < 0)
-				dx = pt.x - endX();
-			if (dx < 0)
-				dx = 0;
-			float dy = y - pt.y;
-			if (dy < 0)
-				dy = pt.y - endY();
-			if (dy < 0)
-				dy = 0;
-			dist = (float) Math.sqrt(dx * dx + dy * dy);
-		}
-		return dist;
+		return MyMath.distanceBetween(pt, nearestPointTo(pt));
+	}
+
+	/**
+	 * Find the nearest point within the rectangle to a query point
+	 * 
+	 * @param queryPoint
+	 */
+	public Point nearestPointTo(Point queryPoint) {
+		return new Point(MyMath.clamp(queryPoint.x, x, endX()), MyMath.clamp(
+				queryPoint.y, y, endY()));
 	}
 
 	public void translate(float dx, float dy) {

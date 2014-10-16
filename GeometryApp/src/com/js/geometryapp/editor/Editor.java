@@ -14,8 +14,10 @@ import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.UITools;
 import com.js.basic.JSONTools;
+import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.ConcreteStepper;
@@ -85,27 +87,32 @@ public class Editor implements EditorEventListener {
 			mOptions.addButton("Undo").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doUndo();
+					refresh();
 				}
 			});
 			mOptions.addButton("Redo").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doRedo();
+					refresh();
 				}
 			});
 			mOptions.addStaticText("   ");
 			mOptions.addButton("Cut").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doCut();
+					refresh();
 				}
 			});
 			mOptions.addButton("Copy").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doCopy();
+					refresh();
 				}
 			});
 			mOptions.addButton("Paste").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doPaste();
+					refresh();
 				}
 			});
 			mOptions.popView();
@@ -113,6 +120,14 @@ public class Editor implements EditorEventListener {
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
 				EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
 		mOptions.popView();
+
+		// put additional controls in the options window
+		mOptions.addButton("Unhide").addListener(new Listener() {
+			public void valueChanged(AbstractWidget widget) {
+				doUnhide();
+				refresh();
+			}
+		});
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
@@ -485,7 +500,6 @@ public class Editor implements EditorEventListener {
 				pr(" undoing paired previous: " + command);
 			command.getReverse().perform(this);
 		}
-		refresh();
 	}
 
 	void doRedo() {
@@ -513,12 +527,9 @@ public class Editor implements EditorEventListener {
 				pr(" redoing paired follower: " + command);
 			command.perform(this);
 		}
-
-		refresh();
 	}
 
 	void doCut() {
-
 		List<Integer> slots = objects().getSelectedSlots();
 		if (slots.isEmpty())
 			return;
@@ -538,7 +549,6 @@ public class Editor implements EditorEventListener {
 				newClipboard, //
 				null);
 		pushCommand(command);
-		refresh();
 	}
 
 	void doCopy() {
@@ -559,7 +569,6 @@ public class Editor implements EditorEventListener {
 				newClipboard, //
 				null);
 		pushCommand(command);
-		refresh();
 	}
 
 	void doPaste() {
@@ -586,7 +595,69 @@ public class Editor implements EditorEventListener {
 				mClipboard, // pasting doesn't change the clipboard contents
 				null);
 		pushCommand(command);
-		refresh();
+	}
+
+	private List<Integer> findHiddenObjects() {
+		Rect r = new Rect(mStepper.algorithmRect());
+		r.inset(20, 20);
+
+		List<Integer> slots = SlotList.build();
+		for (int i = 0; i < objects().size(); i++) {
+			EdObject obj = objects().get(i);
+			// If none of this object's vertices are visible, assume it's hidden
+			boolean hidden = true;
+			for (int j = 0; j < obj.nPoints(); j++) {
+				Point v = obj.getPoint(j);
+				if (r.contains(v)) {
+					hidden = false;
+					break;
+				}
+			}
+			if (hidden)
+				slots.add(i);
+		}
+		return slots;
+	}
+
+	private void unhide(EdObject obj) {
+		Rect r = new Rect(mStepper.algorithmRect());
+		r.inset(80, 80);
+		float minDistance = 0;
+		int minVertex = -1;
+
+		for (int j = 0; j < obj.nPoints(); j++) {
+			Point v = obj.getPoint(j);
+			float distance = r.distanceFrom(v);
+			if (j == 0 || distance < minDistance) {
+				minVertex = j;
+				minDistance = distance;
+			}
+		}
+		Point nearest = obj.getPoint(minVertex);
+		Point inRange = r.nearestPointTo(nearest);
+		EdObject origObject = (EdObject) obj.clone();
+		obj.moveBy(origObject, MyMath.subtract(inRange, nearest));
+	}
+
+	private void doUnhide() {
+		List<Integer> slots = findHiddenObjects();
+		if (slots.isEmpty())
+			return;
+
+		EdObjectArray mMoveObjectsOriginalArray = objects().getFrozen();
+		List<Integer> selSlots = objects().getSelectedSlots();
+
+		for (int slot : slots) {
+			EdObject obj = objects().get(slot);
+			unhide(obj);
+		}
+		objects().selectOnly(slots);
+
+		// Create command
+		Command cmd = Command.constructForGeneralChanges(
+				mMoveObjectsOriginalArray, selSlots, null, objects(), slots,
+				null, "unhide");
+		pushCommand(cmd);
 	}
 
 	private String getHistory() {
@@ -668,7 +739,6 @@ public class Editor implements EditorEventListener {
 			if (db)
 				pr("  deleted first " + del + " items" + getHistory());
 		}
-
 	}
 
 	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG", "UP",

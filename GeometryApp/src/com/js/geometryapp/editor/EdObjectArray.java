@@ -183,17 +183,13 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * 
 	 * @param slots
 	 *            sequence of slots to include
-	 * @return array containing original objects
 	 */
-	public EdObjectArray replaceWithCopies(List<Integer> slots) {
+	public void replaceWithCopies(List<Integer> slots) {
 		verifyMutable();
-		EdObjectArray subsequence = new EdObjectArray();
 		for (int slot : slots) {
 			EdObject obj = get(slot);
-			subsequence.add(obj);
 			set(slot, (EdObject) obj.clone());
 		}
-		return subsequence;
 	}
 
 	public void unselectAll() {

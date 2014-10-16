@@ -260,7 +260,7 @@ public abstract class EdObject implements Cloneable {
 	}
 
 	/**
-	 * Move entire object by a displacement Default implementation just adjusts
+	 * Move entire object by a displacement. Default implementation just adjusts
 	 * each point.
 	 * 
 	 * Caution: objects should usually be considered immutable for editing
@@ -270,11 +270,18 @@ public abstract class EdObject implements Cloneable {
 	 * list) are valid.
 	 * 
 	 * @param orig
-	 *            a copy of the original object
+	 *            a copy of the original object; if null, constructs one
 	 * @param delta
 	 *            amount to move by
 	 */
 	public void moveBy(EdObject orig, Point delta) {
+		// Some objects may enforce constraints that affect other vertices when
+		// one is moved; e.g., a square. Thus for safety we should use a
+		// distinct object as the 'starting' point
+		if (this == orig)
+			throw new IllegalArgumentException();
+		if (orig == null)
+			orig = (EdObject) this.clone();
 		for (int i = 0; i < orig.nPoints(); i++) {
 			Point pt = orig.getPoint(i);
 			setPoint(i, MyMath.add(pt, delta));

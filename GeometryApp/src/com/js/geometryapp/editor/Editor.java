@@ -261,6 +261,8 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void updateButtonEnableStates() {
+		// TODO: we could optimize this by e.g. caching the selected slots or
+		// something
 		if (!mOptions.isEditorActive())
 			return;
 
@@ -271,6 +273,7 @@ public class Editor implements EditorEventListener {
 		mOptions.setEnabled("Cut", !selected.isEmpty());
 		mOptions.setEnabled("Copy", !selected.isEmpty());
 		mOptions.setEnabled("Paste", !mClipboard.isEmpty());
+		mOptions.setEnabled("Unhide", unhidePossible());
 	}
 
 	/**
@@ -597,66 +600,89 @@ public class Editor implements EditorEventListener {
 		pushCommand(command);
 	}
 
-	private List<Integer> findHiddenObjects() {
-		Rect r = new Rect(mStepper.algorithmRect());
-		r.inset(20, 20);
+	private boolean unhidePossible() {
+		return !findHiddenObjects(null).isEmpty();
+	}
+
+	/**
+	 * Find which objects, if any, are essentially offscreen and thus hidden
+	 * from the user. Note: an object is deemed to be hidden if all of its
+	 * vertices are outside of a (slightly inset) rectangle representing the
+	 * editor view. This is inaccurate; consider a very large polygon that
+	 * contains the editor view, but none of whose vertices lie within it.
+	 * 
+	 * @param translation
+	 *            if not null, and hidden objects are found, this is set to a
+	 *            translation to apply to all objects to bring (at least one of
+	 *            them) onscreen
+	 * @return slots of hidden objects
+	 */
+	private List<Integer> findHiddenObjects(Point translation) {
+		float minUnhideSquaredDistance = 0;
+		boolean translationDefined = false;
+
+		Rect r = mStepper.algorithmRect();
+		// Construct a slightly inset version for detecting hidden objects, and
+		// a more inset one representing where we'll move vertices to unhide
+		// them
+		Rect outerRect = new Rect(r);
+		outerRect.inset(20, 20);
+		Rect innerRect = new Rect(r);
+		innerRect.inset(40, 40);
 
 		List<Integer> slots = SlotList.build();
-		for (int i = 0; i < objects().size(); i++) {
+		objLoop: for (int i = 0; i < objects().size(); i++) {
 			EdObject obj = objects().get(i);
+
 			// If none of this object's vertices are visible, assume it's hidden
-			boolean hidden = true;
 			for (int j = 0; j < obj.nPoints(); j++) {
 				Point v = obj.getPoint(j);
-				if (r.contains(v)) {
-					hidden = false;
-					break;
+				if (outerRect.contains(v))
+					continue objLoop;
+			}
+
+			// This is a hidden object; add to output list
+			slots.add(i);
+
+			if (translation != null) {
+				// See if one of its vertices is closest yet to the inner rect
+				for (int j = 0; j < obj.nPoints(); j++) {
+					Point v = obj.getPoint(j);
+					Point v2 = outerRect.nearestPointTo(v);
+					float squaredDistance = MyMath
+							.squaredDistanceBetween(v, v2);
+					if (!translationDefined
+							|| squaredDistance < minUnhideSquaredDistance) {
+						translationDefined = true;
+						translation.setTo(MyMath.subtract(v2, v));
+						minUnhideSquaredDistance = squaredDistance;
+					}
 				}
 			}
-			if (hidden)
-				slots.add(i);
 		}
 		return slots;
 	}
 
-	private void unhide(EdObject obj) {
-		Rect r = new Rect(mStepper.algorithmRect());
-		r.inset(80, 80);
-		float minDistance = 0;
-		int minVertex = -1;
-
-		for (int j = 0; j < obj.nPoints(); j++) {
-			Point v = obj.getPoint(j);
-			float distance = r.distanceFrom(v);
-			if (j == 0 || distance < minDistance) {
-				minVertex = j;
-				minDistance = distance;
-			}
-		}
-		Point nearest = obj.getPoint(minVertex);
-		Point inRange = r.nearestPointTo(nearest);
-		EdObject origObject = (EdObject) obj.clone();
-		obj.moveBy(origObject, MyMath.subtract(inRange, nearest));
-	}
-
 	private void doUnhide() {
-		List<Integer> slots = findHiddenObjects();
+		Point translation = new Point();
+		List<Integer> slots = findHiddenObjects(translation);
 		if (slots.isEmpty())
 			return;
 
-		EdObjectArray mMoveObjectsOriginalArray = objects().getFrozen();
-		List<Integer> selSlots = objects().getSelectedSlots();
+		EdObjectArray originalObjects = objects().getFrozen();
+		List<Integer> selectedSlots = objects().getSelectedSlots();
+
+		objects().selectOnly(slots);
+		objects().replaceWithCopies(slots);
 
 		for (int slot : slots) {
 			EdObject obj = objects().get(slot);
-			unhide(obj);
+			obj.moveBy(null, translation);
 		}
-		objects().selectOnly(slots);
 
 		// Create command
-		Command cmd = Command.constructForGeneralChanges(
-				mMoveObjectsOriginalArray, selSlots, null, objects(), slots,
-				null, "unhide");
+		Command cmd = Command.constructForGeneralChanges(originalObjects,
+				selectedSlots, null, objects(), slots, null, "unhide");
 		pushCommand(cmd);
 	}
 

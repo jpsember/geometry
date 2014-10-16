@@ -37,13 +37,10 @@ public class TriangulatePolygonDriver implements Algorithm {
 		mOptions.addCheckBox(
 				PolygonTriangulator.DETAIL_TRIANGULATE_MONOTONE_FACE, "value",
 				true);
-		mOptions.addCheckBox("Do Nothing");
 	}
 
 	@Override
 	public void run(AlgorithmStepper stepper) {
-		if (mOptions.getBooleanValue("Do Nothing"))
-			return;
 		mStepper = stepper;
 		prepareInput();
 

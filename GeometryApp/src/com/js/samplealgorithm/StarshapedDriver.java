@@ -4,6 +4,7 @@ import java.util.Random;
 
 import com.js.geometry.Edge;
 import com.js.geometry.FloatArray;
+import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -16,6 +17,8 @@ import com.js.geometryapp.AlgorithmStepper;
 import static com.js.basic.Tools.*;
 
 public class StarshapedDriver implements Algorithm {
+
+	private static final String USE_EDITOR_POLYGON = "Use editor polygon";
 
 	@Override
 	public String getAlgorithmName() {
@@ -34,11 +37,13 @@ public class StarshapedDriver implements Algorithm {
 		mOptions.addSlider("Length", "min", 2, "max", 150, "value", 95);
 		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
 		mOptions.addCheckBox("Reversed");
+		mOptions.addCheckBox(USE_EDITOR_POLYGON);
+		mOptions.addSlider("Index", "min", 0, "max", 20);
 	}
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
-		warning("ignoring inputs");
+		mEditorPolygon = input.getPolygon(mOptions.getIntValue("Index"), null);
 	}
 
 	@Override
@@ -98,11 +103,17 @@ public class StarshapedDriver implements Algorithm {
 		mKernelPoint = bounds.midPoint();
 		Polygon p;
 
-		if (mOptions.getBooleanValue("Experiment")) {
+		if (mOptions.getBooleanValue(USE_EDITOR_POLYGON)) {
+			p = mEditorPolygon;
+		} else if (mOptions.getBooleanValue("Experiment")) {
 			p = buildExperimentalPolygon(nPoints);
 		} else {
 			p = Polygon.starshapedPolygon(bounds, nPoints, mRandom);
 		}
+		if (p == null)
+			GeometryException.raise("No polygon");
+		p.transformToFitRect(mStepper.algorithmRect(), true);
+
 		int baseVertex = p.embed(mMesh);
 		return baseVertex;
 	}
@@ -116,5 +127,5 @@ public class StarshapedDriver implements Algorithm {
 	private Point mKernelPoint;
 	private Mesh mMesh;
 	private Random mRandom;
-
+	private Polygon mEditorPolygon;
 }

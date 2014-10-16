@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import android.graphics.Color;
 
 import com.js.geometry.Edge;
+import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -97,6 +98,8 @@ public class StarshapedHoleTriangulator {
 		while (mHoleSize > 3) {
 
 			mTotalSteps++;
+			if (mTotalSteps > mInitialHoleSize * 50)
+				GeometryException.raise("Too many steps!");
 
 			Edge advanceEdge = mStartEdge.nextFaceEdge();
 			Vertex v0 = mStartEdge.sourceVertex();

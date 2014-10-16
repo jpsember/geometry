@@ -851,7 +851,15 @@ public class Editor implements EditorEventListener {
 					continue;
 				Polygon polygon = new Polygon();
 				for (int i = 0; i < polyline.nPoints(); i++)
-					polygon.add(polyline.getPoint(i));
+					polygon.add(new Point(polyline.getPoint(i)));
+				if (polygon.numVertices() < 3)
+					continue;
+				int orientation = polygon.orientation();
+				if (orientation == 0)
+					continue;
+				if (orientation < 0)
+					polygon.reverse();
+
 				polygonList.add(polygon);
 			}
 		}

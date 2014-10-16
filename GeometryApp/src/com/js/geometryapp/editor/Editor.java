@@ -122,12 +122,23 @@ public class Editor implements EditorEventListener {
 		mOptions.popView();
 
 		// put additional controls in the options window
-		mOptions.addButton("Unhide").addListener(new Listener() {
-			public void valueChanged(AbstractWidget widget) {
-				doUnhide();
-				refresh();
-			}
-		});
+
+		mOptions.pushView(mOptions.addView(false));
+		{
+			mOptions.addButton("All").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doSelectAll();
+					refresh();
+				}
+			});
+			mOptions.addButton("Unhide").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doUnhide();
+					refresh();
+				}
+			});
+		}
+		mOptions.popView();
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
@@ -266,14 +277,28 @@ public class Editor implements EditorEventListener {
 		if (!mOptions.isEditorActive())
 			return;
 
-		List<Integer> selected = objects().getSelectedSlots();
-		mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
-		mOptions.setEnabled("Redo",
-				mCommandHistoryCursor < mCommandHistory.size());
-		mOptions.setEnabled("Cut", !selected.isEmpty());
-		mOptions.setEnabled("Copy", !selected.isEmpty());
-		mOptions.setEnabled("Paste", !mClipboard.isEmpty());
-		mOptions.setEnabled("Unhide", unhidePossible());
+		if (QuiescentDelayOperation.replaceExisting(mPendingEnableOperation)) {
+			final float ENABLE_DELAY = .2f;
+			mPendingEnableOperation = new QuiescentDelayOperation("enable",
+					ENABLE_DELAY, new Runnable() {
+						public void run() {
+							List<Integer> selected = objects()
+									.getSelectedSlots();
+							mOptions.setEnabled("Undo",
+									mCommandHistoryCursor > 0);
+							mOptions.setEnabled("Redo",
+									mCommandHistoryCursor < mCommandHistory
+											.size());
+							mOptions.setEnabled("Cut", !selected.isEmpty());
+							mOptions.setEnabled("Copy", !selected.isEmpty());
+							mOptions.setEnabled("Paste", !mClipboard.isEmpty());
+							mOptions.setEnabled("All", objects()
+									.getSelectedSlots().size() < objects()
+									.size());
+							mOptions.setEnabled("Unhide", unhidePossible());
+						}
+					});
+		}
 	}
 
 	/**
@@ -481,8 +506,9 @@ public class Editor implements EditorEventListener {
 
 	void doUndo() {
 		final boolean db = DB_UNDO;
+		// Button enabling is delayed, so we can't assume this operation is
+		// possible
 		if (mCommandHistoryCursor == 0) {
-			warning("attempt to undo, nothing available" + getHistory());
 			return;
 		}
 		mCommandHistoryCursor--;
@@ -507,8 +533,9 @@ public class Editor implements EditorEventListener {
 
 	void doRedo() {
 		final boolean db = DB_UNDO;
+		// Button enabling is delayed, so we can't assume this operation is
+		// possible
 		if (mCommandHistoryCursor == mCommandHistory.size()) {
-			warning("attempt to redo, nothing left" + getHistory());
 			return;
 		}
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
@@ -661,6 +688,12 @@ public class Editor implements EditorEventListener {
 			}
 		}
 		return slots;
+	}
+
+	private void doSelectAll() {
+		for (EdObject obj : objects())
+			obj.setSelected(true);
+		refresh();
 	}
 
 	private void doUnhide() {
@@ -818,4 +851,5 @@ public class Editor implements EditorEventListener {
 	private AlgorithmOptions mOptions;
 	private LinearLayout mAuxView;
 	private EdObjectArray mClipboard = new EdObjectArray();
+	private QuiescentDelayOperation mPendingEnableOperation;
 }

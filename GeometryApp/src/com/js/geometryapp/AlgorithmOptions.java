@@ -409,7 +409,8 @@ public class AlgorithmOptions {
 		if (mActiveAlgorithm != null)
 			mContainingView.removeView(mActiveAlgorithm.widgets().container());
 		mActiveAlgorithm = ar;
-		mContainingView.addView(mActiveAlgorithm.widgets().container());
+		mContainingView.addView(mActiveAlgorithm.widgets().container(),
+				UITools.layoutParams(false));
 
 		if (mActiveAlgorithm.isAlgorithm()) {
 			// Copy total, target steps from algorithm-specific versions

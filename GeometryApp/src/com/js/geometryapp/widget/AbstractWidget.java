@@ -119,12 +119,7 @@ public abstract class AbstractWidget {
 		mOptions = options;
 		mAttributes = attributes;
 		mWidgetValue = "";
-
-		LinearLayout widgetContainer = new LinearLayout(options.getContext());
-		widgetContainer.setLayoutParams(UITools.layoutParams(false));
-		UITools.applyDebugColors(widgetContainer);
-
-		this.mPrimaryView = widgetContainer;
+		this.mPrimaryView = UITools.linearLayout(options.getContext(), false);
 	}
 
 	/**

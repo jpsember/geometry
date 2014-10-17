@@ -453,8 +453,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 			// Set layout parameters assuming we're adding at the bottom of a
 			// vertical list
 			mAuxView.addView(content, UITools.layoutParams(false));
-			// new LinearLayout.LayoutParams(
-			// LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 		}
 	}
 

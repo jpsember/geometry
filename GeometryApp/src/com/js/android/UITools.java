@@ -86,7 +86,7 @@ public final class UITools {
 	 * @return LayoutParams appropriate to the container's orientation
 	 */
 	public static LinearLayout.LayoutParams layoutParams(LinearLayout container) {
-		return layoutParams(container.getOrientation() == LinearLayout.VERTICAL);
+		return layoutParams(container.getOrientation() == LinearLayout.HORIZONTAL);
 	}
 
 	private static int sDebugColorIndex;

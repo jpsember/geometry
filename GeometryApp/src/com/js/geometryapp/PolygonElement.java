@@ -13,6 +13,10 @@ class PolygonElement extends AlgorithmDisplayElement {
 
 	public PolygonElement(Polygon polygon, Style style) {
 		mPolygon = new Polygon(polygon);
+		// Always perturb polygons that are rendered, since we want to
+		// avoid geometry exceptions when displaying an algorithm (as
+		// opposed to those that occur during an algorithm execution)
+		mPolygon.perturb(random());
 		mStyle = style;
 	}
 
@@ -29,10 +33,6 @@ class PolygonElement extends AlgorithmDisplayElement {
 
 		if (mStyle == Style.FILLED) {
 			boolean useStrips = false;
-			if (false) {
-				warning("verifying strips still work");
-				useStrips = true;
-			}
 			PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon, useStrips);
 			PolygonProgram p = AlgorithmDisplayElement.polygonProgram();
 			p.setColor(color());

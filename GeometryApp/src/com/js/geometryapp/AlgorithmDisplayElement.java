@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -336,6 +337,10 @@ public abstract class AlgorithmDisplayElement {
 		return mIcons;
 	}
 
+	protected Random random() {
+		return mRandom;
+	}
+
 	private int mColor;
 	private float mLineWidth;
 
@@ -352,5 +357,5 @@ public abstract class AlgorithmDisplayElement {
 	private static int sElementsConstructed;
 	private static AlgorithmRenderer sRenderer;
 	private static SpriteSet mIcons;
-
+	private static Random mRandom = new Random(1);
 }

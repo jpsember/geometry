@@ -38,12 +38,11 @@ public class StarshapedDriver implements Algorithm {
 		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
 		mOptions.addCheckBox("Reversed");
 		mOptions.addCheckBox(USE_EDITOR_POLYGON);
-		mOptions.addSlider("Index", "min", 0, "max", 20);
 	}
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
-		mEditorPolygon = input.getPolygon(mOptions.getIntValue("Index"), null);
+		mEditorPolygon = input.getPolygon(null);
 	}
 
 	@Override
@@ -105,15 +104,16 @@ public class StarshapedDriver implements Algorithm {
 
 		if (mOptions.getBooleanValue(USE_EDITOR_POLYGON)) {
 			p = mEditorPolygon;
-		} else if (mOptions.getBooleanValue("Experiment")) {
-			p = buildExperimentalPolygon(nPoints);
+			if (p == null)
+				GeometryException.raise("No polygon");
 		} else {
-			p = Polygon.starshapedPolygon(bounds, nPoints, mRandom);
+			if (mOptions.getBooleanValue("Experiment")) {
+				p = buildExperimentalPolygon(nPoints);
+			} else {
+				p = Polygon.starshapedPolygon(bounds, nPoints, mRandom);
+			}
+			p.transformToFitRect(mStepper.algorithmRect(), true);
 		}
-		if (p == null)
-			GeometryException.raise("No polygon");
-		p.transformToFitRect(mStepper.algorithmRect(), true);
-
 		int baseVertex = p.embed(mMesh);
 		return baseVertex;
 	}

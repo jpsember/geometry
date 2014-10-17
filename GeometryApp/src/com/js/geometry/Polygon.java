@@ -41,8 +41,10 @@ public class Polygon {
 	}
 
 	public Polygon(Polygon polygon) {
-		for (int i = 0; i < polygon.numVertices(); i++)
-			add(polygon.vertex(i));
+		for (int i = 0; i < polygon.numVertices(); i++) {
+			// Create new points for the copy as well
+			add(new Point(polygon.vertex(i)));
+		}
 	}
 
 	public Polygon(Collection<Point> points) {

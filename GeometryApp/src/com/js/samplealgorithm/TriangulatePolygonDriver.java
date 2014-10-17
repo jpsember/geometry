@@ -69,10 +69,10 @@ public class TriangulatePolygonDriver implements Algorithm {
 			int polygonName = (Integer) w.getSelectedValue();
 			mPolygon = Polygon.testPolygon(polygonName);
 			mPolygon.rotateBy(16 * MyMath.M_DEG);
+			mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
 		}
 		if (mPolygon == null)
 			GeometryException.raise("no polygon");
-		mPolygon.transformToFitRect(mStepper.algorithmRect(), false);
 	}
 
 	private AlgorithmOptions mOptions;

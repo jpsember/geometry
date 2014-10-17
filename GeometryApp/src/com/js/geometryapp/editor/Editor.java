@@ -48,7 +48,6 @@ public class Editor implements EditorEventListener {
 
 	private static final boolean TRUNCATE_SAVED_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
-	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
@@ -522,7 +521,6 @@ public class Editor implements EditorEventListener {
 	}
 
 	void doUndo() {
-		final boolean db = DB_UNDO;
 		// Button enabling is delayed, so we can't assume this operation is
 		// possible
 		if (mCommandHistoryCursor == 0) {
@@ -530,21 +528,16 @@ public class Editor implements EditorEventListener {
 		}
 		mCommandHistoryCursor--;
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
-		if (db)
-			pr("Undoing " + command + getHistory());
 		command.getReverse().perform(this);
 	}
 
 	void doRedo() {
-		final boolean db = DB_UNDO;
 		// Button enabling is delayed, so we can't assume this operation is
 		// possible
 		if (mCommandHistoryCursor == mCommandHistory.size()) {
 			return;
 		}
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
-		if (db)
-			pr("Redoing " + command);
 		command.perform(this);
 		mCommandHistoryCursor++;
 	}
@@ -709,31 +702,17 @@ public class Editor implements EditorEventListener {
 		pushCommand(cmd);
 	}
 
-	private String getHistory() {
-		if (DEBUG_ONLY_FEATURES) {
-			return " (History size:" + mCommandHistory.size() + " cursor:"
-					+ mCommandHistoryCursor + ")";
-		}
-		return "";
-	}
-
 	/**
 	 * Add a command that has already been performed to the undo stack
 	 */
 	public void pushCommand(Command command) {
-		final boolean db = DB_UNDO;
-		if (db)
-			pr("pushCommand to undo stack: " + command + getHistory());
-
 		if (!command.valid()) {
 			warning("attempt to perform invalid command: " + command);
 			return;
 		}
 		// Throw out any older 'redoable' commands that will now be stale
 		while (mCommandHistory.size() > mCommandHistoryCursor) {
-			Command popped = pop(mCommandHistory);
-			if (db)
-				pr(" popped command " + popped + getHistory());
+			pop(mCommandHistory);
 		}
 
 		// Merge this command with its predecessor if possible
@@ -744,9 +723,6 @@ public class Editor implements EditorEventListener {
 			Command merged = prev.attemptMergeWith(command);
 			if (merged == null)
 				break;
-			if (db)
-				pr("Merging: " + prev + "\n with: " + command + "\n yields: "
-						+ merged);
 			pop(mCommandHistory);
 			mCommandHistoryCursor--;
 			command = merged;
@@ -754,27 +730,18 @@ public class Editor implements EditorEventListener {
 
 		mCommandHistory.add(command);
 		mCommandHistoryCursor++;
-		if (db)
-			pr(" added command" + getHistory());
 
 		// If this command is not reversible, throw out all commands, including
 		// this one
 		if (command.getReverse() == null) {
 			mCommandHistory.clear();
 			mCommandHistoryCursor = 0;
-			if (db)
-				pr(" command isn't reversible; throwing out all commands"
-						+ getHistory());
 		}
 
 		if (mCommandHistoryCursor > MAX_COMMAND_HISTORY_SIZE) {
 			int del = mCommandHistoryCursor - MAX_COMMAND_HISTORY_SIZE;
-			if (db)
-				pr(" history full, deleting first " + del + " items");
 			mCommandHistoryCursor -= del;
 			mCommandHistory.subList(0, del).clear();
-			if (db)
-				pr("  deleted first " + del + " items" + getHistory());
 		}
 	}
 

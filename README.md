@@ -13,3 +13,11 @@ Delaunay triangulation, a star-shaped polygon triangulation, and a general
 Here's a video of the algorithm stepper in action:
 
 [![ScreenShot](docs/screenshot.png)](http://youtu.be/WAO1ofoATNg)
+
+
+---
+
+Here's a video showing the editor component of the framework:
+
+[![ScreenShot](docs/polygonediting.jpg)](http://youtu.be/Mea1nwqbuT8)
+

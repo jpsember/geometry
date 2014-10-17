@@ -116,6 +116,9 @@ public class DefaultEventListener implements EditorEventListener {
 		// all objects; else cycle to next object and make it editable
 		List<Integer> pickSet = getPickSet(location);
 		if (pickSet.isEmpty()) {
+			if (mEditor.addMultiplePossible(location)) {
+				return;
+			}
 			unselectObjects(null);
 			return;
 		}
@@ -173,6 +176,11 @@ public class DefaultEventListener implements EditorEventListener {
 		 * 
 		 * else
 		 * 
+		 * If 'add multiple' is selected, and previous add object type defined, 
+		 * start adding another;
+		 * 
+		 * else
+		 * 
 		 * Drag a selection rectangle and select the items contained within it
 		 * 
 		 * </pre>
@@ -199,6 +207,7 @@ public class DefaultEventListener implements EditorEventListener {
 			mMoveObjectsOriginals = mEditor.objects().getSubset(selSlots);
 			mEditor.objects().replaceWithCopies(selSlots);
 			mPreviousMoveLocation = mInitialDownLocation;
+		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;
 			unselectObjects(null);

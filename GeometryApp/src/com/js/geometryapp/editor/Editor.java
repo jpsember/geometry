@@ -43,6 +43,9 @@ import static com.js.android.Tools.*;
  */
 public class Editor implements EditorEventListener {
 
+	public static final boolean ADD_MULTIPLE_SUPPORTED = true;
+	private static final String WIDGET_ID_ADD_MULTIPLE = "_repeat_";
+
 	private static final boolean TRUNCATE_SAVED_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_UNDO = false && DEBUG_ONLY_FEATURES;
@@ -160,6 +163,9 @@ public class Editor implements EditorEventListener {
 			});
 			i += 2;
 		}
+		if (ADD_MULTIPLE_SUPPORTED)
+			mAddRepeated = mOptions.addCheckBox(WIDGET_ID_ADD_MULTIPLE,
+					"label", "Repeat");
 		mOptions.popView();
 	}
 
@@ -877,6 +883,18 @@ public class Editor implements EditorEventListener {
 		return algorithmInput;
 	}
 
+	boolean addMultiplePossible(Point location) {
+		if (!ADD_MULTIPLE_SUPPORTED)
+			return false;
+		if (!mAddRepeated.getBooleanValue())
+			return false;
+		if (mLastAddObjectOperation == null)
+			return false;
+		startAddObjectOperation(mLastAddObjectOperation);
+		addNewObject(mPendingAddObjectOperation, location);
+		return true;
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
@@ -896,4 +914,5 @@ public class Editor implements EditorEventListener {
 	private EdObjectArray mClipboard = new EdObjectArray();
 	private QuiescentDelayOperation mPendingEnableOperation;
 	private CheckBoxWidget mRenderAlways;
+	private CheckBoxWidget mAddRepeated;
 }

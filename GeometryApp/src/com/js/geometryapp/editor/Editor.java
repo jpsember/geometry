@@ -19,6 +19,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
@@ -26,6 +27,7 @@ import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
+import com.js.geometryapp.widget.CheckBoxWidget;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -141,6 +143,8 @@ public class Editor implements EditorEventListener {
 			});
 		}
 		mOptions.popView();
+		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
+				"Always plot editor");
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
@@ -181,6 +185,10 @@ public class Editor implements EditorEventListener {
 	 * selection rectangle)
 	 */
 	public void render() {
+		if (!isActive() && !mRenderAlways.getBooleanValue())
+			return;
+		AlgorithmDisplayElement.setRendering(true);
+
 		for (int i = 0; i < mObjects.size(); i++) {
 			EdObject obj = mObjects.get(i);
 			if (DB_RENDER_OBJ_BOUNDS
@@ -196,6 +204,7 @@ public class Editor implements EditorEventListener {
 			mStepper.setColor(Color.BLACK);
 			mStepper.plotSprite(R.raw.crosshairicon, mTouchLocation);
 		}
+		AlgorithmDisplayElement.setRendering(false);
 	}
 
 	/**
@@ -886,5 +895,5 @@ public class Editor implements EditorEventListener {
 	private LinearLayout mAuxView;
 	private EdObjectArray mClipboard = new EdObjectArray();
 	private QuiescentDelayOperation mPendingEnableOperation;
-
+	private CheckBoxWidget mRenderAlways;
 }

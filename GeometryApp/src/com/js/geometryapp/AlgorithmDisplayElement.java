@@ -313,7 +313,7 @@ public abstract class AlgorithmDisplayElement {
 	 * display elements for later rendering; if true, render operations actually
 	 * perform the rendering
 	 */
-	static void setRendering(boolean f) {
+	public static void setRendering(boolean f) {
 		sRendering = f;
 	}
 

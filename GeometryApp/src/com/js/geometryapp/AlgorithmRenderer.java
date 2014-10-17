@@ -73,13 +73,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 			gl.glClearColor(1f, 1f, 1f, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
-			if (mEditor.isActive()) {
-				AlgorithmDisplayElement.setRendering(true);
-				mEditor.render();
-				AlgorithmDisplayElement.setRendering(false);
-			} else {
+			mEditor.render();
+			if (!mEditor.isActive())
 				mStepper.render();
-			}
 
 			// Call user method, now that synchronized
 			onDrawFrame();

@@ -513,8 +513,8 @@ public class Editor implements EditorEventListener {
 		mObjects.selectOnly(slots);
 
 		Command c = Command.constructForGeneralChanges(originalAll,
-				originalSelected, null, mObjects, slots, null, null);
-		c.setPairedWithNext(true);
+				originalSelected, null, mObjects, slots, null,
+				objectType.getTag());
 		pushCommand(c);
 
 		// Start operation for editing this one
@@ -533,19 +533,6 @@ public class Editor implements EditorEventListener {
 		if (db)
 			pr("Undoing " + command + getHistory());
 		command.getReverse().perform(this);
-		// While previous command exists, and is paired with the one we just
-		// undid, repeat undo
-		while (true) {
-			if (mCommandHistoryCursor == 0)
-				break;
-			command = mCommandHistory.get(mCommandHistoryCursor - 1);
-			if (!command.isPairedWithNext())
-				break;
-			mCommandHistoryCursor--;
-			if (db)
-				pr(" undoing paired previous: " + command);
-			command.getReverse().perform(this);
-		}
 	}
 
 	void doRedo() {
@@ -560,20 +547,6 @@ public class Editor implements EditorEventListener {
 			pr("Redoing " + command);
 		command.perform(this);
 		mCommandHistoryCursor++;
-
-		// While next command exists, and is paired with the one we just
-		// did, repeat redo
-		while (command.isPairedWithNext()) {
-			if (mCommandHistoryCursor == mCommandHistory.size()) {
-				warning("attempt to redo paired follower, none found");
-				break;
-			}
-			command = mCommandHistory.get(mCommandHistoryCursor);
-			mCommandHistoryCursor++;
-			if (db)
-				pr(" redoing paired follower: " + command);
-			command.perform(this);
-		}
 	}
 
 	void doCut() {
@@ -798,18 +771,6 @@ public class Editor implements EditorEventListener {
 			int del = mCommandHistoryCursor - MAX_COMMAND_HISTORY_SIZE;
 			if (db)
 				pr(" history full, deleting first " + del + " items");
-			// If last command to be deleted is paired with following, include
-			// following as well
-			while (true) {
-				if (del == mCommandHistoryCursor)
-					break;
-				Command last = mCommandHistory.get(del - 1);
-				if (!last.isPairedWithNext())
-					break;
-				del++;
-				if (db)
-					pr("  last element is paired, deleting extra one");
-			}
 			mCommandHistoryCursor -= del;
 			mCommandHistory.subList(0, del).clear();
 			if (db)

@@ -26,18 +26,6 @@ public abstract class Command {
 		return true;
 	}
 
-	public boolean isPairedWithNext() {
-		return mPairedWithNext;
-	}
-
-	/**
-	 * Set flag indicating this command and its follower should be considered an
-	 * atomic unit (see issue #116)
-	 */
-	public void setPairedWithNext(boolean f) {
-		mPairedWithNext = f;
-	}
-
 	/**
 	 * Merge this command with another that follows it, if possible. This
 	 * addresses issue #114: for instance, multiple 'move' commands involving
@@ -157,22 +145,13 @@ public abstract class Command {
 				if (!(follower instanceof CommandForGeneralChanges))
 					break;
 				CommandForGeneralChanges f = (CommandForGeneralChanges) follower;
+
 				if (!mMergeKey.equals(f.mMergeKey))
 					break;
 
-				if (mOriginalObjects.size() != mNewObjects.size())
-					break;
-
-				if (mNewObjects.size() != f.mOriginalObjects.size())
-					break;
-				if (f.mOriginalObjects.size() != f.mNewObjects.size())
-					break;
-
-				if (!mOriginalSelectedSlots.equals(f.mOriginalSelectedSlots))
-					break;
-				if (mOriginalClipboard != mNewClipboard
-						|| f.mOriginalClipboard != f.mOriginalClipboard
-						|| f.mOriginalClipboard != f.mNewClipboard)
+				// The selection after the first command was executed must equal
+				// the selection before the second command was.
+				if (!mNewSelectedSlots.equals(f.mOriginalSelectedSlots))
 					break;
 
 				// Merging is possible, so construct merged command
@@ -192,5 +171,4 @@ public abstract class Command {
 		private Command mReverse;
 	}
 
-	private boolean mPairedWithNext;
 }

@@ -46,8 +46,6 @@ public class Editor implements EditorEventListener {
 	public static final boolean ADD_MULTIPLE_SUPPORTED = false; // Issue #137
 	private static final String WIDGET_ID_ADD_MULTIPLE = "_repeat_";
 
-	private static final boolean TRUNCATE_SAVED_OBJECTS = false && DEBUG_ONLY_FEATURES;
-	private static final boolean DONT_RESTORE_OBJECTS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
@@ -321,8 +319,6 @@ public class Editor implements EditorEventListener {
 	 * Restore the editor state, including the EdObjects, from a JSON string
 	 */
 	public void restoreFromJSON(String script) {
-		if (DONT_RESTORE_OBJECTS)
-			script = null;
 		if (script == null)
 			return;
 		if (DB_JSON) {
@@ -358,14 +354,6 @@ public class Editor implements EditorEventListener {
 		if (map.has(key)) {
 			JSONArray array = map.getJSONArray(key);
 			for (int i = 0; i < array.length(); i++) {
-				if (TRUNCATE_SAVED_OBJECTS) {
-					if (key.equals(JSON_KEY_OBJECTS)) {
-						if (i < array.length() - 5) {
-							warning("omitting all but last n objects");
-							continue;
-						}
-					}
-				}
 				JSONObject objMap = array.getJSONObject(i);
 				String tag = objMap.getString(EdObjectFactory.JSON_KEY_TYPE);
 				EdObjectFactory factory = mObjectTypes.get(tag);

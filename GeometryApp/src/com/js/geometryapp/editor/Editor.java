@@ -706,10 +706,6 @@ public class Editor implements EditorEventListener {
 	 * Add a command that has already been performed to the undo stack
 	 */
 	public void pushCommand(Command command) {
-		if (!command.valid()) {
-			warning("attempt to perform invalid command: " + command);
-			return;
-		}
 		// Throw out any older 'redoable' commands that will now be stale
 		while (mCommandHistory.size() > mCommandHistoryCursor) {
 			pop(mCommandHistory);

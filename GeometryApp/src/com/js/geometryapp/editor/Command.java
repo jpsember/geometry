@@ -19,14 +19,6 @@ public abstract class Command {
 	public abstract void perform(Editor editor);
 
 	/**
-	 * Determine if operation is valid in current context; essentially whether a
-	 * menu item should be enabled or not
-	 */
-	public boolean valid() {
-		return true;
-	}
-
-	/**
 	 * Merge this command with another that follows it, if possible. This
 	 * addresses issue #114: for instance, multiple 'move' commands involving
 	 * the same set of objects should be merged into one
@@ -128,11 +120,6 @@ public abstract class Command {
 			if (mNewClipboard != null)
 				editor.setClipboard(mNewClipboard);
 			editor.objects().selectOnly(mNewSelectedSlots);
-		}
-
-		@Override
-		public boolean valid() {
-			return true;
 		}
 
 		@Override

@@ -311,10 +311,15 @@ public abstract class AlgorithmDisplayElement {
 	/**
 	 * Set rendering state. If false, any render operations will generate
 	 * display elements for later rendering; if true, render operations actually
-	 * perform the rendering
+	 * perform the rendering.
+	 * 
+	 * If the value is changing, resets the rendering state variables.
 	 */
 	public static void setRendering(boolean f) {
-		sRendering = f;
+		if (sRendering != f) {
+			sRendering = f;
+			resetRenderStateVars();
+		}
 	}
 
 	static boolean rendering() {

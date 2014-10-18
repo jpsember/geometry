@@ -1,7 +1,6 @@
 package com.js.geometryapp.editor;
 
 import java.util.List;
-import static com.js.basic.Tools.*;
 
 /**
  * Encapsulates the state of an editor, including all entities that are mutable
@@ -13,7 +12,7 @@ public class EditorState {
 		mObjects = e.objects().getFrozen();
 		mSelectedSlots = mObjects.getSelectedSlots();
 		mClipboard = e.getClipboard();
-		unimp("add DupAccumulator to this class");
+		mDupAccumulator = new DupAccumulator(e.getDupAccumulator());
 	}
 
 	public EdObjectArray getObjects() {
@@ -28,7 +27,12 @@ public class EditorState {
 		return mSelectedSlots;
 	}
 
+	public DupAccumulator getDupAccumulator() {
+		return mDupAccumulator;
+	}
+
 	private EdObjectArray mObjects;
 	private List<Integer> mSelectedSlots;
 	private EdObjectArray mClipboard;
+	private DupAccumulator mDupAccumulator;
 }

@@ -35,6 +35,13 @@ class DupAccumulator {
 
 	private static final boolean db = false && DEBUG_ONLY_FEATURES;
 
+	public DupAccumulator(DupAccumulator source) {
+		mPickRadius = source.mPickRadius;
+		mPreviousUserDirection = source.mPreviousUserDirection;
+		mAccumulator = new Point(source.mAccumulator);
+		mClipboardAdjustment = new Point(source.mClipboardAdjustment);
+	}
+
 	public DupAccumulator(float pickRadius) {
 		if (db)
 			pr("\n\nConstructed " + this);

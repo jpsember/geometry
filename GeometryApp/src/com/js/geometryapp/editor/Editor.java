@@ -514,7 +514,6 @@ public class Editor implements EditorEventListener {
 		mCommandHistoryCursor--;
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.getReverse().perform(this);
-		resetDuplicationOffset();
 	}
 
 	private void doRedo() {
@@ -526,7 +525,6 @@ public class Editor implements EditorEventListener {
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.perform(this);
 		mCommandHistoryCursor++;
-		resetDuplicationOffset();
 	}
 
 	private void doCut() {
@@ -801,6 +799,7 @@ public class Editor implements EditorEventListener {
 		setObjects(state.getObjects().getMutableCopy());
 		setClipboard(state.getClipboard());
 		objects().selectOnly(state.getSelectedSlots());
+		mDupAccumulator = new DupAccumulator(state.getDupAccumulator());
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;

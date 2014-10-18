@@ -44,7 +44,7 @@ import static com.js.android.Tools.*;
 public class Editor implements EditorEventListener {
 
 	public static final boolean ADD_MULTIPLE_SUPPORTED = false; // Issue #137
-	private static final boolean ZAP_SUPPORTED = (true && DEBUG_ONLY_FEATURES);
+	private static final boolean ZAP_SUPPORTED = (false && DEBUG_ONLY_FEATURES);
 	private static final String WIDGET_ID_ADD_MULTIPLE = "_repeat_";
 
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
@@ -120,6 +120,7 @@ public class Editor implements EditorEventListener {
 					refresh();
 				}
 			});
+			mOptions.addStaticText("   ");
 			mOptions.addButton("Dup").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doDup();

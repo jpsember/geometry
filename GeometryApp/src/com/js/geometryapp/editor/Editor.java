@@ -583,9 +583,7 @@ public class Editor implements EditorEventListener {
 		EdObjectArray originalObjects = objects().getFrozen();
 		List<Integer> newSelected = SlotList.build();
 
-		DupAccumulator dupAccumulator = getDupAccumulator();
-		Point offset = MyMath.add(dupAccumulator.getAccum(true),
-				dupAccumulator.getClipboardAdjust());
+		Point offset = getDupAccumulator().getOffsetForPaste();
 
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
@@ -604,9 +602,6 @@ public class Editor implements EditorEventListener {
 				mClipboard, // pasting doesn't change the clipboard contents
 				null);
 		pushCommand(command);
-		// add the dup accumulator to the clip adjust, to make clipboard
-		// represent newest instance.
-		dupAccumulator.updateClipboardAdjust();
 	}
 
 	DupAccumulator getDupAccumulator() {
@@ -616,7 +611,7 @@ public class Editor implements EditorEventListener {
 	}
 
 	void resetDuplicationOffset() {
-		mDupAccumulator = new DupAccumulator(this);
+		mDupAccumulator = new DupAccumulator(pickRadius());
 	}
 
 	private boolean unhidePossible() {

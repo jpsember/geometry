@@ -27,11 +27,10 @@ class DupAccumulator {
 
 	private static final boolean db = false && DEBUG_ONLY_FEATURES;
 
-	public DupAccumulator(Editor editor) {
+	public DupAccumulator(float pickRadius) {
 		if (db)
 			pr("\n\nConstructed " + this);
-		mEditor = editor;
-		mAccumulator = new Point(mEditor.pickRadius(), 0);
+		mAccumulator = new Point(pickRadius, 0);
 	}
 
 	/**
@@ -43,7 +42,7 @@ class DupAccumulator {
 	 *            offset
 	 * @return accumulator
 	 */
-	public Point getAccum(boolean filter) {
+	private Point getAccum(boolean filter) {
 		if (filter)
 			getFilteredAccum();
 		if (db)
@@ -54,7 +53,7 @@ class DupAccumulator {
 	/**
 	 * Get the clipboard adjust value
 	 */
-	public Point getClipboardAdjust() {
+	private Point getClipboardAdjust() {
 		if (db)
 			pr("getClipboardAdjust: " + mClipboardAdjustment);
 		return new Point(mClipboardAdjustment);
@@ -63,7 +62,7 @@ class DupAccumulator {
 	/**
 	 * Set accumulator
 	 */
-	public void setAccum(Point a) {
+	private void setAccum(Point a) {
 		if (db)
 			pr("setAccum from " + mAccumulator + " to " + a);
 		mAccumulator.setTo(a);
@@ -72,19 +71,10 @@ class DupAccumulator {
 	/**
 	 * Set the clipboard adjust value
 	 */
-	public void setClipboardAdjust(Point b) {
+	private void setClipboardAdjust(Point b) {
 		if (db)
 			pr("setClipboardAdjust from " + mClipboardAdjustment + " to " + b);
 		mClipboardAdjustment.setTo(b);
-	}
-
-	/**
-	 * Update the clipboard adjust value by adding the accumulator to it
-	 */
-	public void updateClipboardAdjust() {
-		mClipboardAdjustment.add(mAccumulator);
-		if (db)
-			pr("updateClipboardAdjust to " + mClipboardAdjustment);
 	}
 
 	/**
@@ -140,6 +130,32 @@ class DupAccumulator {
 		return mAccumulator;
 	}
 
+	/**
+	 * Determine translation for a paste operation
+	 */
+	public Point getOffsetForPaste() {
+		Point offset = MyMath.add(getAccum(true), getClipboardAdjust());
+		// add the dup accumulator to the clip adjust, to make clipboard
+		// represent newest instance.
+		mClipboardAdjustment.add(mAccumulator);
+		return offset;
+	}
+
+	/**
+	 * Update accumulator for a move operation
+	 * 
+	 * @param translation
+	 *            amount of move
+	 */
+	public void processMove(Point translation) {
+		Point origAccum = getAccum(false);
+		Point origClipboardAdjust = getClipboardAdjust();
+		Point a = MyMath.add(origAccum, translation);
+		Point b = MyMath.add(origClipboardAdjust, translation);
+		setAccum(a);
+		setClipboardAdjust(b);
+	}
+
 	@Override
 	public String toString() {
 		if (!DEBUG_ONLY_FEATURES)
@@ -166,5 +182,4 @@ class DupAccumulator {
 	// it reflects amounts added to dupAccum after clipboard last modified
 	private Point mClipboardAdjustment = new Point();
 
-	private Editor mEditor;
 }

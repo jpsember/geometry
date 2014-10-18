@@ -212,9 +212,6 @@ public class DefaultEventListener implements EditorEventListener {
 			// TODO: get rid of mPreviousMoveLocation, just use
 			// mInitialDownLocation
 			mPreviousMoveLocation = mInitialDownLocation;
-			DupAccumulator accum = mEditor.getDupAccumulator();
-			mOrigDupAccum = accum.getAccum(false);
-			mOrigDupClipAdjust = accum.getClipboardAdjust();
 		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;
@@ -258,12 +255,7 @@ public class DefaultEventListener implements EditorEventListener {
 			mEditor.pushCommand(cmd);
 
 			if (mTranslate != null) {
-				// TODO: once this is working, move into DupAccumulator class
-				Point a = MyMath.add(mOrigDupAccum, mTranslate);
-				Point b = MyMath.add(mOrigDupClipAdjust, mTranslate);
-				DupAccumulator accum = mEditor.getDupAccumulator();
-				accum.setAccum(a);
-				accum.setClipboardAdjust(b);
+				mEditor.getDupAccumulator().processMove(mTranslate);
 			}
 		}
 	}
@@ -371,6 +363,4 @@ public class DefaultEventListener implements EditorEventListener {
 	private EdObjectArray mMoveObjectsOriginalArray;
 	private Point mPreviousMoveLocation;
 	private Point mTranslate;
-	private Point mOrigDupAccum;
-	private Point mOrigDupClipAdjust;
 }

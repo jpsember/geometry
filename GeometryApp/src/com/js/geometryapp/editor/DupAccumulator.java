@@ -9,26 +9,13 @@ import static com.js.basic.Tools.*;
  * of the objects' positions.
  * 
  * This maintains two translation vectors: a 'duplication' translation vector D,
- * and a 'paste' translation vector P. Initially, D and P are both set to some
- * small value, e.g., D0 = (+x, 0).
+ * and a 'paste' translation vector P.
  * 
- * A duplication operation involves taking object(s) at X, duplicating them, and
- * placing them at location Y = X + D0. If user subsequently moves these objects
- * to location Y' = Y + D1, and duplicates them again, they will be placed at
- * location Y'' = Y' + (Y' - X) = Y' + (D1 + D0). This class maintains the
- * 'primary' translation vector D0 + D1 + ... + Dn, which is a sum of
- * (relatively small) adjustments whose total represents the desired offset of
- * one version of X from its immediate predecessor.
+ * D is the sum of a small default translation, plus whatever little adjustments
+ * the user has made.
  * 
- * A copy operation places copies of objects at X into the clipboard. Each
- * subsequent paste operation duplicates these objects and places them at
- * location Yn = Y(n-1) + P0 + P1 + ... + Pn, where Y0 = P0, and the sum P0 + P1
- * + ... + Pn represents approximately k multiples of the offset of an X' from
- * its predecessor X.
- * 
- * The simple result of all this is when a move operation occurs, we add the
- * move translation vector to both D and P; and when a paste operation occurs,
- * we paste the clipboard objects after translating them by P, then add D to P.
+ * P is equal to D, plus a correcting factor to move the clipboard contents
+ * (whose position does not change) to the most recently pasted location.
  * 
  */
 class DupAccumulator {
@@ -72,6 +59,8 @@ class DupAccumulator {
 				if (Math.abs(angDiff) > MyMath.M_DEG * 30) {
 					mPreviousUserDirection = null;
 					mAccumulator = constructDefaultTranslation();
+					if (db)
+						pr("applyFilter, direction is too different; resetting accum");
 				}
 			}
 		}
@@ -81,25 +70,30 @@ class DupAccumulator {
 	 * Determine translation for a paste operation
 	 */
 	public Point getOffsetForPaste() {
+		// apply filter to dup offset amount
 		applyFilterToAccumulator();
-		Point pasteOffset = MyMath.add(mAccumulator, mClipboardAdjustment);
-		// add the duplication adjustment to the clipboard adjustment, since
-		// we're now k generations advanced from the clipboard position
+
+		// pasted objects will be offset by this (filtered) duplication offset,
+		// plus the existing clipboard offset
 		mClipboardAdjustment.add(mAccumulator);
-		return pasteOffset;
+		return mClipboardAdjustment;
+	}
+
+	/**
+	 * Determine translation for a duplication operation
+	 */
+	public Point getOffsetForDup() {
+		applyFilterToAccumulator();
+		return mAccumulator;
 	}
 
 	/**
 	 * Update accumulator for a move operation
-	 * 
-	 * @param translation
-	 *            amount of move
 	 */
 	public void processMove(Point translation) {
 		mAccumulator.add(translation);
+		// add to clipboard offset as well
 		mClipboardAdjustment.add(translation);
-		if (db)
-			pr("processMove translation " + translation + ", now\n" + this);
 	}
 
 	@Override

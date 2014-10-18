@@ -44,6 +44,7 @@ import static com.js.android.Tools.*;
 public class Editor implements EditorEventListener {
 
 	public static final boolean ADD_MULTIPLE_SUPPORTED = false; // Issue #137
+	private static final boolean ZAP_SUPPORTED = (true && DEBUG_ONLY_FEATURES);
 	private static final String WIDGET_ID_ADD_MULTIPLE = "_repeat_";
 
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
@@ -119,6 +120,20 @@ public class Editor implements EditorEventListener {
 					refresh();
 				}
 			});
+			mOptions.addButton("Dup").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doDup();
+					refresh();
+				}
+			});
+			if (ZAP_SUPPORTED) {
+				mOptions.addButton("Zap").addListener(new Listener() {
+					public void valueChanged(AbstractWidget widget) {
+						doZap();
+						refresh();
+					}
+				});
+			}
 			mOptions.popView();
 		}
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
@@ -306,9 +321,9 @@ public class Editor implements EditorEventListener {
 							mOptions.setEnabled("Cut", !selected.isEmpty());
 							mOptions.setEnabled("Copy", !selected.isEmpty());
 							mOptions.setEnabled("Paste", !mClipboard.isEmpty());
-							mOptions.setEnabled("All", objects()
-									.getSelectedSlots().size() < objects()
-									.size());
+							mOptions.setEnabled("Dup", !selected.isEmpty());
+							mOptions.setEnabled("All",
+									selected.size() < objects().size());
 							mOptions.setEnabled("Unhide", unhidePossible());
 						}
 					});
@@ -570,6 +585,36 @@ public class Editor implements EditorEventListener {
 			EdObject copy = (EdObject) obj.clone();
 			copy.moveBy(obj, offset);
 			objects().add(copy);
+		}
+		objects().selectOnly(newSelected);
+
+		Command command = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), null);
+		pushCommand(command);
+	}
+
+	private void doZap() {
+		if (ZAP_SUPPORTED) {
+			objects().clear();
+			mClipboard = new EdObjectArray();
+			mCommandHistory.clear();
+			mCommandHistoryCursor = 0;
+		}
+	}
+
+	private void doDup() {
+		EditorState originalState = new EditorState(this);
+		if (originalState.getSelectedSlots().isEmpty())
+			return;
+		List<Integer> newSelected = SlotList.build();
+
+		Point offset = getDupAccumulator().getOffsetForDup();
+
+		for (int slot : originalState.getSelectedSlots()) {
+			EdObject obj = objects().get(slot);
+			EdObject copy = (EdObject) obj.clone();
+			copy.moveBy(obj, offset);
+			newSelected.add(objects().add(copy));
 		}
 		objects().selectOnly(newSelected);
 

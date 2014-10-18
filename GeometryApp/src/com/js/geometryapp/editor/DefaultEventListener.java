@@ -202,16 +202,14 @@ public class DefaultEventListener implements EditorEventListener {
 			// fall through to next...
 		}
 		if (!hlPickSet.isEmpty()) {
+			mOriginalState = new EditorState(mEditor);
 			// Get all selected objects, and store in a list since we
 			// will want access to their original positions; then replace the
 			// objects with copies that will be moved
-			List<Integer> selSlots = mEditor.objects().getSelectedSlots();
-			mMoveObjectsOriginalArray = mEditor.objects().getFrozen();
-			mMoveObjectsOriginals = mEditor.objects().getSubset(selSlots);
-			mEditor.objects().replaceWithCopies(selSlots);
-			// TODO: get rid of mPreviousMoveLocation, just use
-			// mInitialDownLocation
-			mPreviousMoveLocation = mInitialDownLocation;
+			mMoveObjectsOriginals = mOriginalState.getObjects().getSubset(
+					mOriginalState.getSelectedSlots());
+			mEditor.objects().replaceWithCopies(
+					mOriginalState.getSelectedSlots());
 		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;
@@ -224,7 +222,7 @@ public class DefaultEventListener implements EditorEventListener {
 		if (mDraggingRect) {
 			mDragCorner = location;
 		} else {
-			mTranslate = MyMath.subtract(location, mPreviousMoveLocation);
+			mTranslate = MyMath.subtract(location, mInitialDownLocation);
 			if (mTranslate.magnitude() == 0)
 				return;
 
@@ -247,16 +245,12 @@ public class DefaultEventListener implements EditorEventListener {
 						.getBounds(mEditor)));
 			}
 		} else if (mMoveObjectsOriginals != null) {
-			// Create command
-			Command cmd = Command.constructForGeneralChanges(
-					mMoveObjectsOriginalArray,
-					mMoveObjectsOriginals.getSlots(), null, mEditor.objects(),
-					null, null, "move");
-			mEditor.pushCommand(cmd);
-
 			if (mTranslate != null) {
 				mEditor.getDupAccumulator().processMove(mTranslate);
 			}
+			Command cmd = Command.constructForGeneralChanges(mOriginalState,
+					new EditorState(mEditor), "move");
+			mEditor.pushCommand(cmd);
 		}
 	}
 
@@ -360,7 +354,6 @@ public class DefaultEventListener implements EditorEventListener {
 	private boolean mDragStarted;
 	private boolean mDraggingRect;
 	private EdObjectArray mMoveObjectsOriginals;
-	private EdObjectArray mMoveObjectsOriginalArray;
-	private Point mPreviousMoveLocation;
+	private EditorState mOriginalState;
 	private Point mTranslate;
 }

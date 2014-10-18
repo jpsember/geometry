@@ -1,6 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.util.List;
 import static com.js.basic.Tools.*;
 
 /**
@@ -35,35 +34,18 @@ public abstract class Command {
 	 * Construct a Command for arbitrary objects having changed, including
 	 * selected states, and clipboard
 	 * 
-	 * @param originalObjects
-	 *            array containing all of the original objects
-	 * @param originalSelectedSlots
-	 *            slots of the items selected originally
-	 * @param originalClipboard
-	 *            original clipboard contents, or null if this command doesn't
-	 *            modify the clipboard
-	 * @param newObjects
-	 *            array containing all of the objects, including any
-	 *            modifications
-	 * @param newSelectedSlots
-	 *            slots of the selected items after the command, or null if same
-	 *            as originalSelectedSlots
-	 * @param newClipboard
-	 *            new clipboard contents, or null if this command doesn't modify
-	 *            the clipboard
+	 * @param originalState
+	 *            editor state before command performed
+	 * @param newState
+	 *            editor state after command performed
 	 * @param mergeKey
 	 *            if not null, a string that identifies whether this command can
 	 *            be merged with its neighbors; if the keys match, and their
 	 *            slots match, then merging will be performed
 	 */
-	public static Command constructForGeneralChanges(
-			EdObjectArray originalObjects, List<Integer> originalSelectedSlots,
-			EdObjectArray originalClipboard, EdObjectArray newObjects,
-			List<Integer> newSelectedSlots, EdObjectArray newClipboard,
-			String mergeKey) {
-		return new CommandForGeneralChanges(originalObjects,
-				originalSelectedSlots, originalClipboard, newObjects,
-				newSelectedSlots, newClipboard, mergeKey);
+	public static Command constructForGeneralChanges(EditorState originalState,
+			EditorState newState, String mergeKey) {
+		return new CommandForGeneralChanges(originalState, newState, mergeKey);
 	}
 
 	private static class CommandForGeneralChanges extends Command {
@@ -81,45 +63,32 @@ public abstract class Command {
 		public String toString() {
 			if (!DEBUG_ONLY_FEATURES)
 				return null;
-			StringBuilder sb = new StringBuilder("Command: general changes ");
-			sb.append(d(mOriginalObjects));
-			sb.append(d(mOriginalSelectedSlots));
-			sb.append("clipboard: " + d(mOriginalClipboard));
+			StringBuilder sb = new StringBuilder(
+					"Command: general changes;\n orig state: ");
+			sb.append(mOriginalState);
+			sb.append("\n  new state: " + mNewState);
 			return sb.toString();
 		}
 
-		public CommandForGeneralChanges(EdObjectArray originalObjects,
-				List<Integer> originalSelectedSlots,
-				EdObjectArray originalClipboard, EdObjectArray newObjects,
-				List<Integer> newSelectedSlots, EdObjectArray newClipboard,
-				String mergeKey) {
-			mOriginalObjects = originalObjects.getFrozen();
-			mOriginalSelectedSlots = originalSelectedSlots;
-			mOriginalClipboard = originalClipboard;
-			mNewObjects = newObjects.getFrozen();
-			mNewSelectedSlots = newSelectedSlots;
-			if (newSelectedSlots == null)
-				mNewSelectedSlots = mOriginalSelectedSlots;
-			mNewClipboard = newClipboard;
+		public CommandForGeneralChanges(EditorState originalState,
+				EditorState newState, String mergeKey) {
+			mOriginalState = originalState;
+			mNewState = newState;
 			mMergeKey = mergeKey;
 		}
 
 		@Override
 		public Command getReverse() {
 			if (mReverse == null) {
-				mReverse = new CommandForGeneralChanges(mNewObjects,
-						mNewSelectedSlots, mNewClipboard, mOriginalObjects,
-						mOriginalSelectedSlots, mOriginalClipboard, null);
+				mReverse = new CommandForGeneralChanges(mNewState,
+						mOriginalState, null);
 			}
 			return mReverse;
 		}
 
 		@Override
 		public void perform(Editor editor) {
-			editor.setObjects(mNewObjects.getMutableCopy());
-			if (mNewClipboard != null)
-				editor.setClipboard(mNewClipboard);
-			editor.objects().selectOnly(mNewSelectedSlots);
+			editor.setState(mNewState);
 		}
 
 		@Override
@@ -138,22 +107,20 @@ public abstract class Command {
 
 				// The selection after the first command was executed must equal
 				// the selection before the second command was.
-				if (!mNewSelectedSlots.equals(f.mOriginalSelectedSlots))
+				if (!mNewState.getSelectedSlots().equals(
+						f.mOriginalState.getSelectedSlots()))
 					break;
 
 				// Merging is possible, so construct merged command
-				merged = new CommandForGeneralChanges(mOriginalObjects,
-						mOriginalSelectedSlots, mOriginalClipboard,
-						f.mNewObjects, f.mNewSelectedSlots, f.mNewClipboard,
-						mMergeKey);
+				merged = new CommandForGeneralChanges(mOriginalState,
+						f.mNewState, mMergeKey);
 
 			} while (false);
 			return merged;
 		}
 
-		private EdObjectArray mOriginalObjects, mNewObjects,
-				mOriginalClipboard, mNewClipboard;
-		private List<Integer> mOriginalSelectedSlots, mNewSelectedSlots;
+		private EditorState mOriginalState;
+		private EditorState mNewState;
 		private String mMergeKey;
 		private Command mReverse;
 	}

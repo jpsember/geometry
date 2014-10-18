@@ -352,8 +352,8 @@ public class EdPolyline extends EdObject {
 			mEditor = editor;
 			mEditSlot = slot;
 			mReference = modified;
-			mSelectedSlots = SlotList.build(mEditSlot);
-			mOriginalAll = editor.objects().getFrozen();
+			warning("slot is redundant? ought there to be only one, found from selected state?");
+			mOriginalState = new EditorState(editor);
 			editor.objects().set(slot, mReference);
 		}
 
@@ -427,8 +427,7 @@ public class EdPolyline extends EdObject {
 					// the user may end up doing a lot of work on a single
 					// polygon and he should be able to undo individual steps
 					mEditor.pushCommand(Command.constructForGeneralChanges(
-							mOriginalAll, mSelectedSlots, null,
-							mEditor.objects(), null, null, null));
+							mOriginalState, new EditorState(mEditor), null));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;
@@ -531,8 +530,7 @@ public class EdPolyline extends EdObject {
 		// Index of object being edited
 		private Editor mEditor;
 		private int mEditSlot;
-		private EdObjectArray mOriginalAll;
-		private List<Integer> mSelectedSlots;
+		private EditorState mOriginalState;
 		// polyline when editing operation began
 		private EdPolyline mReference;
 		private boolean mChangesMade;

@@ -489,9 +489,7 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void addNewObject(EdObjectFactory objectType, Point location) {
-		EdObjectArray originalAll = mObjects.getFrozen();
-		List<Integer> originalSelected = originalAll.getSelectedSlots();
-
+		EditorState originalState = new EditorState(this);
 		EdObject newObject = objectType.construct(location);
 		newObject.setEditor(this);
 		newObject.setEditable(true);
@@ -499,9 +497,8 @@ public class Editor implements EditorEventListener {
 		List<Integer> slots = SlotList.build(slot);
 		mObjects.selectOnly(slots);
 
-		Command c = Command.constructForGeneralChanges(originalAll,
-				originalSelected, null, mObjects, slots, null,
-				objectType.getTag());
+		Command c = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), objectType.getTag());
 		pushCommand(c);
 
 		// Start operation for editing this one
@@ -533,45 +530,31 @@ public class Editor implements EditorEventListener {
 	}
 
 	void doCut() {
-		List<Integer> slots = objects().getSelectedSlots();
-		if (slots.isEmpty())
+		EditorState originalState = new EditorState(this);
+		if (originalState.getSelectedSlots().isEmpty())
 			return;
 
-		EdObjectArray originalObjects = objects().getFrozen();
-		EdObjectArray newClipboard = objects().getSubset(slots).freeze();
-		EdObjectArray origClipboard = mClipboard;
+		EdObjectArray newClipboard = objects().getSubset(
+				originalState.getSelectedSlots()).freeze();
 		setClipboard(newClipboard);
-		objects().remove(slots);
+		objects().remove(originalState.getSelectedSlots());
 
-		Command command = Command.constructForGeneralChanges(//
-				originalObjects,//
-				slots, //
-				origClipboard, //
-				objects(), //
-				SlotList.build(),// cutting all selected objects, so none remain
-				newClipboard, //
-				null);
+		Command command = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), null);
 		pushCommand(command);
 		resetDuplicationOffset();
 	}
 
 	void doCopy() {
-		List<Integer> slots = objects().getSelectedSlots();
-		if (slots.isEmpty())
+		EditorState originalState = new EditorState(this);
+		if (originalState.getSelectedSlots().isEmpty())
 			return;
-		EdObjectArray originalObjects = objects().getFrozen();
-		EdObjectArray newClipboard = objects().getSubset(slots).freeze();
-		EdObjectArray origClipboard = mClipboard;
+		EdObjectArray newClipboard = objects().getSubset(
+				originalState.getSelectedSlots()).freeze();
 		setClipboard(newClipboard);
 
-		Command command = Command.constructForGeneralChanges(//
-				originalObjects, //
-				slots,//
-				origClipboard, //
-				originalObjects, // copying doesn't change the current objects
-				null, // nor which are selected
-				newClipboard, //
-				null);
+		Command command = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), null);
 		pushCommand(command);
 		resetDuplicationOffset();
 	}
@@ -579,8 +562,7 @@ public class Editor implements EditorEventListener {
 	void doPaste() {
 		if (mClipboard.isEmpty())
 			return;
-		List<Integer> originalSlots = objects().getSelectedSlots();
-		EdObjectArray originalObjects = objects().getFrozen();
+		EditorState originalState = new EditorState(this);
 		List<Integer> newSelected = SlotList.build();
 
 		Point offset = getDupAccumulator().getOffsetForPaste();
@@ -593,14 +575,8 @@ public class Editor implements EditorEventListener {
 		}
 		objects().selectOnly(newSelected);
 
-		Command command = Command.constructForGeneralChanges(//
-				originalObjects, //
-				originalSlots,//
-				mClipboard, //
-				objects(), //
-				newSelected, //
-				mClipboard, // pasting doesn't change the clipboard contents
-				null);
+		Command command = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), null);
 		pushCommand(command);
 	}
 
@@ -689,8 +665,7 @@ public class Editor implements EditorEventListener {
 		if (slots.isEmpty())
 			return;
 
-		EdObjectArray originalObjects = objects().getFrozen();
-		List<Integer> selectedSlots = objects().getSelectedSlots();
+		EditorState originalState = new EditorState(this);
 
 		objects().selectOnly(slots);
 		objects().replaceWithCopies(slots);
@@ -700,9 +675,8 @@ public class Editor implements EditorEventListener {
 			obj.moveBy(null, translation);
 		}
 
-		// Create command
-		Command cmd = Command.constructForGeneralChanges(originalObjects,
-				selectedSlots, null, objects(), slots, null, "unhide");
+		Command cmd = Command.constructForGeneralChanges(originalState,
+				new EditorState(this), "unhide");
 		pushCommand(cmd);
 	}
 
@@ -771,11 +745,11 @@ public class Editor implements EditorEventListener {
 		return mClipboard;
 	}
 
-	public void setClipboard(EdObjectArray clipboard) {
+	private void setClipboard(EdObjectArray clipboard) {
 		mClipboard = clipboard.freeze();
 	}
 
-	public void setObjects(EdObjectArray objects) {
+	private void setObjects(EdObjectArray objects) {
 		mObjects = objects;
 	}
 
@@ -823,6 +797,12 @@ public class Editor implements EditorEventListener {
 		return true;
 	}
 
+	void setState(EditorState state) {
+		setObjects(state.getObjects().getMutableCopy());
+		setClipboard(state.getClipboard());
+		objects().selectOnly(state.getSelectedSlots());
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EdObjectFactory mLastAddObjectOperation;
@@ -844,4 +824,5 @@ public class Editor implements EditorEventListener {
 	private CheckBoxWidget mRenderAlways;
 	private CheckBoxWidget mAddRepeated;
 	private DupAccumulator mDupAccumulator;
+
 }

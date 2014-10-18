@@ -1,21 +1,17 @@
 package com.js.geometryapp.editor;
 
-import java.util.List;
-
 import android.graphics.Color;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometryapp.AlgorithmStepper;
 
-import static com.js.basic.Tools.*;
-
 public class EdPoint extends EdObject {
 
 	private EdPoint() {
 	}
 
-	public Point location() {
+	private Point location() {
 		return getPoint(0);
 	}
 
@@ -36,9 +32,10 @@ public class EdPoint extends EdObject {
 
 	@Override
 	public EditorEventListener buildEditOperation(int slot, Point location) {
-		int vertexIndex = closestVertex(location, editor().pickRadius());
-		if (vertexIndex >= 0)
-			return new EditorOperation(editor(), slot, vertexIndex);
+		// Points are special in that their entire object is represented by a
+		// single vertex; hence editing a point is equivalent to moving it
+		// around. No per-vertex editing is required, and should in fact
+		// be disallowed to keep the move and DupAccumulator logic simple.
 		return null;
 	}
 
@@ -63,88 +60,4 @@ public class EdPoint extends EdObject {
 
 	};
 
-	private static class EditorOperation implements EditorEventListener {
-		public EditorOperation(Editor editor, int slot, int vertexNumber) {
-			mEditor = editor;
-			mEditSlot = slot;
-		}
-
-		/**
-		 * Initialize the edit operation, if it hasn't already been
-		 */
-		private void initializeOperation(Point location) {
-			if (mSelectedSlots != null)
-				return;
-
-			EdPoint pt = mEditor.objects().get(mEditSlot);
-			mOriginalAll = mEditor.objects().getFrozen();
-			mSelectedSlots = SlotList.build(mEditSlot);
-
-			if (pt.nPoints() == 0) {
-				pt.addPoint(location);
-			}
-		}
-
-		@Override
-		public int processEvent(int eventCode, Point location) {
-
-			final boolean db = false && DEBUG_ONLY_FEATURES;
-			if (db)
-				pr("EdPoint processEvent " + Editor.editorEventName(eventCode));
-
-			if (location != null)
-				initializeOperation(location);
-
-			// By default, we'll be handling the event
-			int returnCode = EVENT_NONE;
-
-			switch (eventCode) {
-			default:
-				// we don't know how to handle this event, so pass it
-				// through
-				returnCode = eventCode;
-				break;
-
-			case EVENT_DOWN:
-				break;
-
-			case EVENT_DRAG: {
-				EdPoint pt = mEditor.objects().get(mEditSlot);
-				// Create a new copy of the point, with modified location
-				EdPoint pt2 = (EdPoint) pt.clone();
-				pt2.setPoint(0, location);
-				mEditor.objects().set(mEditSlot, pt2);
-				mModified = true;
-			}
-				break;
-
-			case EVENT_UP:
-				if (mModified) {
-					mEditor.pushCommand(Command.constructForGeneralChanges(
-							mOriginalAll, mSelectedSlots, null,
-							mEditor.objects(), null, null, FACTORY.getTag()));
-				}
-				// stop the operation on UP events
-				returnCode = EVENT_STOP;
-				break;
-
-			case EVENT_UP_MULTIPLE:
-				// stop the operation on UP events
-				returnCode = EVENT_STOP;
-				break;
-			}
-			return returnCode;
-		}
-
-		@Override
-		public void render(AlgorithmStepper s) {
-		}
-
-		// Index of object being edited
-		private int mEditSlot;
-		private boolean mModified;
-		private List<Integer> mSelectedSlots;
-		private EdObjectArray mOriginalAll;
-		private Editor mEditor;
-	}
 }

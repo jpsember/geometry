@@ -106,7 +106,7 @@ public class EdSegment extends EdObject {
 			case EVENT_DRAG: {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
-				EdSegment seg2 = (EdSegment) seg.clone();
+				EdSegment seg2 = seg.getCopy();
 				seg2.setPoint(mEditPointIndex, location);
 				if (db)
 					pr(" changed endpoint; " + seg2);

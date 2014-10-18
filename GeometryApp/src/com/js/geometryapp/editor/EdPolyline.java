@@ -113,7 +113,7 @@ public class EdPolyline extends EdObject {
 		Point[] tabLocations = calculateTabPositions(this);
 
 		if (targetWithinTab(location, tabLocations[TAB_INSERT_FORWARD])) {
-			EdPolyline mod = (EdPolyline) this.clone();
+			EdPolyline mod = getCopy();
 			// Insert a new vertex after the cursor
 			mod.mCursor++;
 			mod.addPoint(mod.mCursor, location);
@@ -125,7 +125,7 @@ public class EdPolyline extends EdObject {
 		}
 
 		if (targetWithinTab(location, tabLocations[TAB_INSERT_BACKWARD])) {
-			EdPolyline mod = (EdPolyline) this.clone();
+			EdPolyline mod = getCopy();
 			// Insert a new vertex before the cursor
 			mod.addPoint(mod.mCursor, location);
 			if (mod.closed()) {
@@ -138,7 +138,7 @@ public class EdPolyline extends EdObject {
 		int vertexIndex = closestVertex(location, editor().pickRadius());
 		if (vertexIndex >= 0) {
 			mCursor = vertexIndex;
-			EdPolyline mod = (EdPolyline) this.clone();
+			EdPolyline mod = getCopy();
 			mod.mCursor = vertexIndex;
 			return EditorOperation.buildMoveOperation(editor(), slot, mod);
 		}
@@ -400,7 +400,7 @@ public class EdPolyline extends EdObject {
 
 			case EVENT_DRAG: {
 				// Create a new copy of the polyline, with modified endpoint
-				EdPolyline polyline = (EdPolyline) mReference.clone();
+				EdPolyline polyline = mReference.getCopy();
 				mEditor.objects().set(mEditSlot, polyline);
 				polyline.setTabsHidden(true);
 				{

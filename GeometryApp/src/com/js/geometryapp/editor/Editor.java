@@ -582,7 +582,7 @@ public class Editor implements EditorEventListener {
 
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
-			EdObject copy = (EdObject) obj.clone();
+			EdObject copy = obj.getCopy();
 			copy.moveBy(obj, offset);
 			objects().add(copy);
 		}
@@ -612,7 +612,7 @@ public class Editor implements EditorEventListener {
 
 		for (int slot : originalState.getSelectedSlots()) {
 			EdObject obj = objects().get(slot);
-			EdObject copy = (EdObject) obj.clone();
+			EdObject copy = obj.getCopy();
 			copy.moveBy(obj, offset);
 			newSelected.add(objects().add(copy));
 		}

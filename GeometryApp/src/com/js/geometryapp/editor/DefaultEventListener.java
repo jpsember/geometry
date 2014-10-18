@@ -203,11 +203,7 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 		if (!hlPickSet.isEmpty()) {
 			mOriginalState = new EditorState(mEditor);
-			// Get all selected objects, and store in a list since we
-			// will want access to their original positions; then replace the
-			// objects with copies that will be moved
-			mMoveObjectsOriginals = mOriginalState.getObjects().getSubset(
-					mOriginalState.getSelectedSlots());
+			// Replace selected objects with copies in preparation for moving
 			mEditor.objects().replaceWithCopies(
 					mOriginalState.getSelectedSlots());
 		} else if (mEditor.addMultiplePossible(location)) {
@@ -226,10 +222,9 @@ public class DefaultEventListener implements EditorEventListener {
 			if (mTranslate.magnitude() == 0)
 				return;
 
-			for (int i = 0; i < mMoveObjectsOriginals.size(); i++) {
-				int slot = mMoveObjectsOriginals.getSlot(i);
+			for (int slot : mOriginalState.getSelectedSlots()) {
 				EdObject obj = mEditor.objects().get(slot);
-				EdObject orig = mMoveObjectsOriginals.get(i);
+				EdObject orig = mOriginalState.getObjects().get(slot);
 				obj.moveBy(orig, mTranslate);
 			}
 		}
@@ -244,7 +239,7 @@ public class DefaultEventListener implements EditorEventListener {
 				edObject.setSelected(dragRect.contains(edObject
 						.getBounds(mEditor)));
 			}
-		} else if (mMoveObjectsOriginals != null) {
+		} else if (mOriginalState != null) {
 			if (mTranslate != null) {
 				mEditor.getDupAccumulator().processMove(mTranslate);
 			}
@@ -353,7 +348,6 @@ public class DefaultEventListener implements EditorEventListener {
 	private Point mDragCorner;
 	private boolean mDragStarted;
 	private boolean mDraggingRect;
-	private EdObjectArray mMoveObjectsOriginals;
 	private EditorState mOriginalState;
 	private Point mTranslate;
 }

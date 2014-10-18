@@ -1,6 +1,7 @@
 package com.js.geometryapp.editor;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.graphics.Color;
 
@@ -47,26 +48,21 @@ public abstract class EdObject implements Cloneable {
 	public abstract EditorEventListener buildEditOperation(int slot,
 			Point location);
 
-	/**
-	 * Replace object's points with those of another object
-	 */
-	private void copyPointsFrom(EdObject src) {
-		// Both source and destination objects may have the same point array, so
-		// construct a new one
-		ArrayList<Point> newPts = new ArrayList();
-		for (Point pt : src.mPoints)
-			newPts.add(new Point(pt));
-		mPoints = newPts;
+	public <T extends EdObject> T getCopy() {
+		return (T) this.clone();
 	}
 
 	/**
 	 * Clone the object
 	 */
-	public Object clone() {
+	protected Object clone() {
 		try {
-			EdObject e = (EdObject) super.clone();
-			e.copyPointsFrom(this);
-			return e;
+			EdObject copy = (EdObject) super.clone();
+			// Give clone a fresh copy of all the vertices
+			copy.mPoints = new ArrayList();
+			for (Point pt : mPoints)
+				copy.mPoints.add(new Point(pt));
+			return copy;
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}
@@ -281,7 +277,7 @@ public abstract class EdObject implements Cloneable {
 		if (this == orig)
 			throw new IllegalArgumentException();
 		if (orig == null)
-			orig = (EdObject) this.clone();
+			orig = this.getCopy();
 		for (int i = 0; i < orig.nPoints(); i++) {
 			Point pt = orig.getPoint(i);
 			setPoint(i, MyMath.add(pt, delta));
@@ -397,7 +393,7 @@ public abstract class EdObject implements Cloneable {
 
 	private Editor mEditor;
 	private int mFlags;
-	private ArrayList<Point> mPoints = new ArrayList();
+	private List<Point> mPoints = new ArrayList();
 	// cached bounds of object, or null
 	private Rect mBounds;
 }

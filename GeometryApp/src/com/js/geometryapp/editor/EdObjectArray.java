@@ -62,10 +62,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.size();
 	}
 
-	public int getSlot(int index) {
-		return mSlots.get(index);
-	}
-
 	/**
 	 * Replace objects within particular slots
 	 * 
@@ -105,7 +101,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 			subset.add(get(slot));
 			prevSlot = slot;
 		}
-		subset.setSlots(slots);
 		return subset;
 	}
 
@@ -165,7 +160,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 
 	public void remove(List<Integer> slots) {
 		verifyMutable();
-		ArrayList<EdObject> newList = new ArrayList();
+		List<EdObject> newList = new ArrayList();
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
 			if (j < slots.size() && i == slots.get(j)) {
@@ -175,7 +170,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 			newList.add(mList.get(i));
 		}
 		mList = newList;
-		mSlots = null;
 	}
 
 	/**
@@ -188,33 +182,18 @@ public class EdObjectArray implements Iterable<EdObject> {
 		verifyMutable();
 		for (int slot : slots) {
 			EdObject obj = get(slot);
-			set(slot, (EdObject) obj.clone());
+			set(slot, obj.getCopy());
 		}
 	}
 
 	public void unselectAll() {
-		selectOnly(new ArrayList());
-	}
-
-	public void setSlots(List<Integer> slots) {
-		verifyMutable();
-		mSlots = slots;
-	}
-
-	public boolean hasSlots() {
-		return mSlots != null;
-	}
-
-	public List<Integer> getSlots() {
-		return mSlots;
+		selectOnly(SlotList.build());
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("EdObjectArray");
-		if (mSlots != null)
-			sb.append(" slots" + d(mSlots));
-		sb.append(" items[");
+		sb.append(" [");
 		for (EdObject obj : mList) {
 			sb.append(" " + obj.getFactory().getTag());
 		}
@@ -222,12 +201,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return sb.toString();
 	}
 
-	private ArrayList<EdObject> mList = new ArrayList();
-
-	// If not null, a list of slots corresponding to the objects in this array,
-	// indicating their positions within some other array
-	private List<Integer> mSlots;
-
+	private List<EdObject> mList = new ArrayList();
 	private boolean mFrozen;
 
 }

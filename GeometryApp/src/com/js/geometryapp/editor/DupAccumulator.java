@@ -30,67 +30,44 @@ class DupAccumulator {
 	public DupAccumulator(float pickRadius) {
 		if (db)
 			pr("\n\nConstructed " + this);
-		mAccumulator = new Point(pickRadius, 0);
+		mPickRadius = pickRadius;
+		mAccumulator = constructDefaultTranslation();
+	}
+
+	private Point constructDefaultTranslation() {
+		return new Point(mPickRadius, 0);
 	}
 
 	/**
-	 * Get dup accumulator amount. If user has changed direction abruptly,
+	 * Apply filter to accumulator. If user has changed direction abruptly,
 	 * resets it so things don't get too wild.
-	 * 
-	 * @return filtered dup accumulator
-	 * 
 	 */
-	private Point getFilteredAccum() {
-
+	private void applyFilterToAccumulator() {
 		float daLen = mAccumulator.magnitude();
-		float daMin = 20;
-
-		if (db)
-			pr("getDupAmount; dupAccum=" + mAccumulator + " len=" + d(daLen)
-					+ " min=" + d(daMin));
+		float daMin = mPickRadius;
 
 		if (daLen > daMin) {
-
 			float dir = MyMath.polarAngle(mAccumulator);
-			if (db)
-				pr(" dir=" + da(dir) + " previousUserDirection="
-						+ mPreviousUserDirection);
 
 			if (mPreviousUserDirection == null) {
 				mPreviousUserDirection = dir;
 			} else {
 				float angDiff = MyMath.normalizeAngle(mPreviousUserDirection
 						- dir);
-				if (db)
-					pr(" prevDir=" + da(mPreviousUserDirection) + " angDiff="
-							+ da(angDiff));
-
 				if (Math.abs(angDiff) > MyMath.M_DEG * 30) {
-					if (db)
-						pr("  resetting dup offset");
-
 					mPreviousUserDirection = null;
-					Point newAccum = new Point(1 - mAccumulator.x,
-							1 - mAccumulator.y);
-
-					mAccumulator.add(newAccum);
-					if (db)
-						pr(" added " + newAccum + " to dupAccum, now "
-								+ mAccumulator + " and dupClipAdjust, now "
-								+ mClipboardAdjustment);
-
+					mAccumulator = constructDefaultTranslation();
 				}
 			}
 		}
-
-		return mAccumulator;
 	}
 
 	/**
 	 * Determine translation for a paste operation
 	 */
 	public Point getOffsetForPaste() {
-		Point offset = MyMath.add(getFilteredAccum(), mClipboardAdjustment);
+		applyFilterToAccumulator();
+		Point offset = MyMath.add(mAccumulator, mClipboardAdjustment);
 		// add the dup accumulator to the clip adjust, to make clipboard
 		// represent newest instance.
 		mClipboardAdjustment.add(mAccumulator);
@@ -106,6 +83,8 @@ class DupAccumulator {
 	public void processMove(Point translation) {
 		mAccumulator.add(translation);
 		mClipboardAdjustment.add(translation);
+		if (db)
+			pr("processMove translation " + translation + ", now\n" + this);
 	}
 
 	@Override
@@ -134,4 +113,5 @@ class DupAccumulator {
 	// it reflects amounts added to dupAccum after clipboard last modified
 	private Point mClipboardAdjustment = new Point();
 
+	private float mPickRadius;
 }

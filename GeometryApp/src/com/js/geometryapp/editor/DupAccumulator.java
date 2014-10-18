@@ -34,50 +34,6 @@ class DupAccumulator {
 	}
 
 	/**
-	 * Get the accumulator.
-	 * 
-	 * @param filter
-	 *            if true, and accumulator has changed direction radically,
-	 *            reset the accumulator value so user has to re-specify this
-	 *            offset
-	 * @return accumulator
-	 */
-	private Point getAccum(boolean filter) {
-		if (filter)
-			getFilteredAccum();
-		if (db)
-			pr("getAccum (filter " + d(filter) + "): " + mAccumulator);
-		return new Point(mAccumulator);
-	}
-
-	/**
-	 * Get the clipboard adjust value
-	 */
-	private Point getClipboardAdjust() {
-		if (db)
-			pr("getClipboardAdjust: " + mClipboardAdjustment);
-		return new Point(mClipboardAdjustment);
-	}
-
-	/**
-	 * Set accumulator
-	 */
-	private void setAccum(Point a) {
-		if (db)
-			pr("setAccum from " + mAccumulator + " to " + a);
-		mAccumulator.setTo(a);
-	}
-
-	/**
-	 * Set the clipboard adjust value
-	 */
-	private void setClipboardAdjust(Point b) {
-		if (db)
-			pr("setClipboardAdjust from " + mClipboardAdjustment + " to " + b);
-		mClipboardAdjustment.setTo(b);
-	}
-
-	/**
 	 * Get dup accumulator amount. If user has changed direction abruptly,
 	 * resets it so things don't get too wild.
 	 * 
@@ -134,7 +90,7 @@ class DupAccumulator {
 	 * Determine translation for a paste operation
 	 */
 	public Point getOffsetForPaste() {
-		Point offset = MyMath.add(getAccum(true), getClipboardAdjust());
+		Point offset = MyMath.add(getFilteredAccum(), mClipboardAdjustment);
 		// add the dup accumulator to the clip adjust, to make clipboard
 		// represent newest instance.
 		mClipboardAdjustment.add(mAccumulator);
@@ -148,12 +104,8 @@ class DupAccumulator {
 	 *            amount of move
 	 */
 	public void processMove(Point translation) {
-		Point origAccum = getAccum(false);
-		Point origClipboardAdjust = getClipboardAdjust();
-		Point a = MyMath.add(origAccum, translation);
-		Point b = MyMath.add(origClipboardAdjust, translation);
-		setAccum(a);
-		setClipboardAdjust(b);
+		mAccumulator.add(translation);
+		mClipboardAdjustment.add(translation);
 	}
 
 	@Override

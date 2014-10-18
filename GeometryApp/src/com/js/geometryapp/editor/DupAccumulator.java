@@ -5,22 +5,30 @@ import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
 /**
- * Logic for offsetting multiple duplicated, pasted objects based on user's
- * adjustments.
+ * Logic for offsetting duplicated or pasted objects based on user's adjustments
+ * of the objects' positions.
  * 
- * Let A be the position of the new instance of an item, the result of a paste
- * or duplicate operation. Let B be the position of the last instance of this
- * item. Let C be the position of the second-to-last instance of this item.
+ * This maintains two translation vectors: a 'duplication' translation vector D,
+ * and a 'paste' translation vector P. Initially, D and P are both set to some
+ * small value, e.g., D0 = (+x, 0).
  * 
- * Let P be the position of the clipboard's instance of the item.
+ * A duplication operation involves taking object(s) at X, duplicating them, and
+ * placing them at location Y = X + D0. If user subsequently moves these objects
+ * to location Y' = Y + D1, and duplicates them again, they will be placed at
+ * location Y'' = Y' + (Y' - X) = Y' + (D1 + D0). This class maintains the
+ * 'primary' translation vector D0 + D1 + ... + Dn, which is a sum of
+ * (relatively small) adjustments whose total represents the desired offset of
+ * one version of X from its immediate predecessor.
  * 
- * We wish to determine the location of A given those of B and C.
+ * A copy operation places copies of objects at X into the clipboard. Each
+ * subsequent paste operation duplicates these objects and places them at
+ * location Yn = Y(n-1) + P0 + P1 + ... + Pn, where Y0 = P0, and the sum P0 + P1
+ * + ... + Pn represents approximately k multiples of the offset of an X' from
+ * its predecessor X.
  * 
- * There are two values manipulated:
- * 
- * 1) The accumulator represents the distance from C to B.
- * 
- * 2) The clipboard adjustment represents the distance from P to B.
+ * The simple result of all this is when a move operation occurs, we add the
+ * move translation vector to both D and P; and when a paste operation occurs,
+ * we paste the clipboard objects after translating them by P, then add D to P.
  * 
  */
 class DupAccumulator {
@@ -67,11 +75,11 @@ class DupAccumulator {
 	 */
 	public Point getOffsetForPaste() {
 		applyFilterToAccumulator();
-		Point offset = MyMath.add(mAccumulator, mClipboardAdjustment);
-		// add the dup accumulator to the clip adjust, to make clipboard
-		// represent newest instance.
+		Point pasteOffset = MyMath.add(mAccumulator, mClipboardAdjustment);
+		// add the duplication adjustment to the clipboard adjustment, since
+		// we're now k generations advanced from the clipboard position
 		mClipboardAdjustment.add(mAccumulator);
-		return offset;
+		return pasteOffset;
 	}
 
 	/**
@@ -106,11 +114,11 @@ class DupAccumulator {
 	// direction
 	private Float mPreviousUserDirection;
 
-	// dupAccum is the sum of the user's little adjustments
+	// The sum of the user's little adjustments, D0 + D1 + ... +Dn
 	private Point mAccumulator;
 
-	// dupClipAdjust is the translation that must be applied to the clipboard;
-	// it reflects amounts added to dupAccum after clipboard last modified
+	// This is the translation to move the clipboard objects to the last
+	// user-adjusted paste location
 	private Point mClipboardAdjustment = new Point();
 
 	private float mPickRadius;

@@ -2,7 +2,6 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import static com.js.basic.Tools.*;
 
 /**
  * Logic for offsetting duplicated or pasted objects based on user's adjustments
@@ -20,8 +19,9 @@ import static com.js.basic.Tools.*;
  */
 class DupAccumulator {
 
-	private static final boolean db = false && DEBUG_ONLY_FEATURES;
-
+	/**
+	 * Copy constructor
+	 */
 	public DupAccumulator(DupAccumulator source) {
 		mPickRadius = source.mPickRadius;
 		mPreviousUserDirection = source.mPreviousUserDirection;
@@ -30,8 +30,6 @@ class DupAccumulator {
 	}
 
 	public DupAccumulator(float pickRadius) {
-		if (db)
-			pr("\n\nConstructed " + this);
 		mPickRadius = pickRadius;
 		mAccumulator = constructDefaultTranslation();
 	}
@@ -41,14 +39,13 @@ class DupAccumulator {
 	}
 
 	/**
-	 * Apply filter to accumulator. If user has changed direction abruptly,
-	 * resets it so things don't get too wild.
+	 * Apply filter to accumulator. If user has changed direction abruptly, and
+	 * distance is large, resets it so things don't get too wild.
 	 */
 	private void applyFilterToAccumulator() {
-		float daLen = mAccumulator.magnitude();
-		float daMin = mPickRadius;
+		float largeDistance = mPickRadius * 5;
 
-		if (daLen > daMin) {
+		if (mAccumulator.magnitude() > largeDistance) {
 			float dir = MyMath.polarAngle(mAccumulator);
 
 			if (mPreviousUserDirection == null) {
@@ -59,8 +56,6 @@ class DupAccumulator {
 				if (Math.abs(angDiff) > MyMath.M_DEG * 30) {
 					mPreviousUserDirection = null;
 					mAccumulator = constructDefaultTranslation();
-					if (db)
-						pr("applyFilter, direction is too different; resetting accum");
 				}
 			}
 		}
@@ -76,7 +71,7 @@ class DupAccumulator {
 		// pasted objects will be offset by this (filtered) duplication offset,
 		// plus the existing clipboard offset
 		mClipboardAdjustment.add(mAccumulator);
-		return mClipboardAdjustment;
+		return new Point(mClipboardAdjustment);
 	}
 
 	/**
@@ -84,7 +79,7 @@ class DupAccumulator {
 	 */
 	public Point getOffsetForDup() {
 		applyFilterToAccumulator();
-		return mAccumulator;
+		return new Point(mAccumulator);
 	}
 
 	/**
@@ -94,20 +89,6 @@ class DupAccumulator {
 		mAccumulator.add(translation);
 		// add to clipboard offset as well
 		mClipboardAdjustment.add(translation);
-	}
-
-	@Override
-	public String toString() {
-		if (!DEBUG_ONLY_FEATURES)
-			return super.toString();
-
-		StringBuilder sb = new StringBuilder("DupAccumulator " + nameOf(this));
-		if (mPreviousUserDirection != null)
-			sb.append(" prevUserDir:" + da(mPreviousUserDirection));
-		sb.append(" accum:" + mAccumulator);
-		sb.append(" cb adj:" + mClipboardAdjustment);
-
-		return sb.toString();
 	}
 
 	// If not null, direction previous duplications were occurring within; used

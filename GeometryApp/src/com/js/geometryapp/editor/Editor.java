@@ -505,7 +505,7 @@ public class Editor implements EditorEventListener {
 		setOperation(newObject.buildEditOperation(slot, location));
 	}
 
-	void doUndo() {
+	private void doUndo() {
 		// Button enabling is delayed, so we can't assume this operation is
 		// possible
 		if (mCommandHistoryCursor == 0) {
@@ -517,7 +517,7 @@ public class Editor implements EditorEventListener {
 		resetDuplicationOffset();
 	}
 
-	void doRedo() {
+	private void doRedo() {
 		// Button enabling is delayed, so we can't assume this operation is
 		// possible
 		if (mCommandHistoryCursor == mCommandHistory.size()) {
@@ -529,7 +529,7 @@ public class Editor implements EditorEventListener {
 		resetDuplicationOffset();
 	}
 
-	void doCut() {
+	private void doCut() {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
@@ -545,7 +545,7 @@ public class Editor implements EditorEventListener {
 		resetDuplicationOffset();
 	}
 
-	void doCopy() {
+	private void doCopy() {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
@@ -559,7 +559,7 @@ public class Editor implements EditorEventListener {
 		resetDuplicationOffset();
 	}
 
-	void doPaste() {
+	private void doPaste() {
 		if (mClipboard.isEmpty())
 			return;
 		EditorState originalState = new EditorState(this);

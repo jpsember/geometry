@@ -517,6 +517,7 @@ public class Editor implements EditorEventListener {
 		mCommandHistoryCursor--;
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.getReverse().perform(this);
+		resetDuplicationOffset();
 	}
 
 	void doRedo() {
@@ -528,6 +529,7 @@ public class Editor implements EditorEventListener {
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.perform(this);
 		mCommandHistoryCursor++;
+		resetDuplicationOffset();
 	}
 
 	void doCut() {
@@ -550,6 +552,7 @@ public class Editor implements EditorEventListener {
 				newClipboard, //
 				null);
 		pushCommand(command);
+		resetDuplicationOffset();
 	}
 
 	void doCopy() {
@@ -570,6 +573,7 @@ public class Editor implements EditorEventListener {
 				newClipboard, //
 				null);
 		pushCommand(command);
+		resetDuplicationOffset();
 	}
 
 	void doPaste() {
@@ -578,14 +582,18 @@ public class Editor implements EditorEventListener {
 		List<Integer> originalSlots = objects().getSelectedSlots();
 		EdObjectArray originalObjects = objects().getFrozen();
 		List<Integer> newSelected = SlotList.build();
+
+		DupAccumulator dupAccumulator = getDupAccumulator();
+		Point offset = MyMath.add(dupAccumulator.getAccum(true),
+				dupAccumulator.getClipboardAdjust());
+
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
 			EdObject copy = (EdObject) obj.clone();
-			copy.moveBy(obj, new Point(20, 20));
+			copy.moveBy(obj, offset);
 			objects().add(copy);
 		}
 		objects().selectOnly(newSelected);
-		unimp("more sophisticated translation method");
 
 		Command command = Command.constructForGeneralChanges(//
 				originalObjects, //
@@ -596,6 +604,19 @@ public class Editor implements EditorEventListener {
 				mClipboard, // pasting doesn't change the clipboard contents
 				null);
 		pushCommand(command);
+		// add the dup accumulator to the clip adjust, to make clipboard
+		// represent newest instance.
+		dupAccumulator.updateClipboardAdjust();
+	}
+
+	DupAccumulator getDupAccumulator() {
+		if (mDupAccumulator == null)
+			resetDuplicationOffset();
+		return mDupAccumulator;
+	}
+
+	void resetDuplicationOffset() {
+		mDupAccumulator = new DupAccumulator(this);
 	}
 
 	private boolean unhidePossible() {
@@ -827,4 +848,5 @@ public class Editor implements EditorEventListener {
 	private QuiescentDelayOperation mPendingEnableOperation;
 	private CheckBoxWidget mRenderAlways;
 	private CheckBoxWidget mAddRepeated;
+	private DupAccumulator mDupAccumulator;
 }

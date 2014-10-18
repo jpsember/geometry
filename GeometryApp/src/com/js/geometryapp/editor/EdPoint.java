@@ -122,8 +122,7 @@ public class EdPoint extends EdObject {
 				if (mModified) {
 					mEditor.pushCommand(Command.constructForGeneralChanges(
 							mOriginalAll, mSelectedSlots, null,
-							mEditor.objects(), null, null,
-							FACTORY.getTag()));
+							mEditor.objects(), null, null, FACTORY.getTag()));
 				}
 				// stop the operation on UP events
 				returnCode = EVENT_STOP;

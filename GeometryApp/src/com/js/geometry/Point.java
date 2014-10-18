@@ -6,7 +6,7 @@ import android.graphics.Matrix;
 public class Point {
 
 	public static final Point ZERO = new Point();
-	
+
 	public Point() {
 	}
 
@@ -37,6 +37,10 @@ public class Point {
 	public final void setTo(float x, float y) {
 		this.x = x;
 		this.y = y;
+	}
+
+	public final void clear() {
+		setTo(0, 0);
 	}
 
 	public final void setTo(final Point source) {

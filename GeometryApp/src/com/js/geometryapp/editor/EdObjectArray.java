@@ -136,6 +136,15 @@ public class EdObjectArray implements Iterable<EdObject> {
 		}
 	}
 
+	public void setEditableSlot(int slot) {
+		prepareForChanges();
+		unselectAll();
+		if (slot >= 0) {
+			EdObject editObject = get(slot);
+			editObject.setEditable(true);
+		}
+	}
+
 	public void remove(List<Integer> slots) {
 		prepareForChanges();
 		List<EdObject> newList = new ArrayList();

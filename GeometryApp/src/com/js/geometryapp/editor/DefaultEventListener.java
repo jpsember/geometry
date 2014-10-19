@@ -103,11 +103,9 @@ public class DefaultEventListener implements EditorEventListener {
 				highestIndex = i;
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
-		mEditor.objects().unselectAll();
-		EdObject editObject = mEditor.objects().get(
-				pickSet.get(nextSelectedIndex));
-		editObject.setEditable(true);
-		editObject.selectedForEditing(location);
+		int slot = pickSet.get(nextSelectedIndex);
+		mEditor.objects().setEditableSlot(slot);
+		mEditor.objects().get(slot).selectedForEditing(location);
 		mEditor.resetDuplicationOffset();
 	}
 

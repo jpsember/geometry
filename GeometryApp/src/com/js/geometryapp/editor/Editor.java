@@ -284,10 +284,18 @@ public class Editor implements EditorEventListener {
 	 * editing operations
 	 */
 	private void updateEditableObjectStatus() {
+		int currentEditable = -1;
+		int newEditable = -1;
 		List<Integer> list = mObjects.getSelectedSlots();
 		for (int slot : list) {
 			EdObject obj = mObjects.get(slot);
-			obj.setEditable(list.size() == 1);
+			if (obj.isEditable())
+				currentEditable = slot;
+		}
+		if (list.size() == 1)
+			newEditable = list.get(0);
+		if (currentEditable != newEditable) {
+			objects().setEditableSlot(newEditable);
 		}
 	}
 
@@ -507,10 +515,8 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 		EdObject newObject = objectType.construct(location);
 		newObject.setEditor(this);
-		newObject.setEditable(true);
 		int slot = mObjects.add(newObject);
-		List<Integer> slots = SlotList.build(slot);
-		mObjects.selectOnly(slots);
+		mObjects.setEditableSlot(slot);
 
 		Command c = Command.constructForGeneralChanges(originalState,
 				new EditorState(this), objectType.getTag());

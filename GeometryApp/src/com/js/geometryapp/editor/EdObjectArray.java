@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.js.basic.Tools.*;
-
 /**
  * An array of EdObjects, including utility methods; also optionally contains
  * sequence of slot numbers indicating the objects' positions within some other
@@ -63,31 +61,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	/**
-	 * Replace objects within particular slots
-	 * 
-	 * @param slots
-	 *            slots of objects to replace
-	 * @param replacementObjects
-	 *            array of replacements; size must match slots
-	 * @param allowAppending
-	 *            if true, allows appending items to end of existing array
-	 */
-	public void replace(List<Integer> slots, EdObjectArray replacementObjects,
-			boolean allowAppending) {
-		verifyMutable();
-		if (slots.size() != replacementObjects.size())
-			throw new IllegalArgumentException();
-		for (int i = 0; i < slots.size(); i++) {
-			int slot = slots.get(i);
-			EdObject object = replacementObjects.get(i);
-			if (allowAppending && slot == size())
-				add(object);
-			else
-				set(slot, object);
-		}
-	}
-
-	/**
 	 * Construct subset of this array, using particular slots only
 	 * 
 	 * @param slots
@@ -95,11 +68,8 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 */
 	public EdObjectArray getSubset(List<Integer> slots) {
 		EdObjectArray subset = new EdObjectArray();
-		int prevSlot = -1;
 		for (int slot : slots) {
-			ASSERT(slot > prevSlot);
 			subset.add(get(slot));
-			prevSlot = slot;
 		}
 		return subset;
 	}
@@ -123,13 +93,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 
 	public boolean isFrozen() {
 		return mFrozen;
-	}
-
-	/**
-	 * Construct subset of this array that consists of a single slot
-	 */
-	public EdObjectArray getSubset(int slot) {
-		return getSubset(SlotList.build(slot));
 	}
 
 	/**

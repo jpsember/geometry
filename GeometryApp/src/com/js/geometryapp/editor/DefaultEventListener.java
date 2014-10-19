@@ -71,34 +71,6 @@ public class DefaultEventListener implements EditorEventListener {
 	}
 
 	/**
-	 * Unselect any currently selected objects within editor, optionally
-	 * omitting a subset
-	 * 
-	 * @param omit
-	 *            if not null, subset of objects whose selected state should not
-	 *            change; must be in back to front order
-	 */
-	private void unselectObjects(List<Integer> omit) {
-		int omitCursor = 0;
-		for (int i = 0; i < mEditor.objects().size(); i++) {
-			if (omit != null && omitCursor < omit.size()
-					&& i == omit.get(omitCursor)) {
-				omitCursor++;
-				continue;
-			}
-			editorObject(i).setSelected(false);
-		}
-	}
-
-	private void selectObjects(List<Integer> slots) {
-		EdObjectArray list = mEditor.objects();
-		for (int slot : slots) {
-			EdObject obj = list.get(slot);
-			obj.setSelected(true);
-		}
-	}
-
-	/**
 	 * User did a DOWN+UP without any dragging
 	 * 
 	 * @param location
@@ -119,7 +91,7 @@ public class DefaultEventListener implements EditorEventListener {
 			if (mEditor.addMultiplePossible(location)) {
 				return;
 			}
-			unselectObjects(null);
+			mEditor.objects().unselectAll();
 			mEditor.resetDuplicationOffset();
 			return;
 		}
@@ -131,7 +103,7 @@ public class DefaultEventListener implements EditorEventListener {
 				highestIndex = i;
 		}
 		int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
-		unselectObjects(null);
+		mEditor.objects().unselectAll();
 		EdObject editObject = mEditor.objects().get(
 				pickSet.get(nextSelectedIndex));
 		editObject.setEditable(true);
@@ -198,8 +170,7 @@ public class DefaultEventListener implements EditorEventListener {
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
 			hlPickSet = SlotList.build(last(pickSet));
-			unselectObjects(null);
-			selectObjects(hlPickSet);
+			mEditor.objects().selectOnly(hlPickSet);
 			mEditor.resetDuplicationOffset();
 			// fall through to next...
 		}
@@ -210,7 +181,7 @@ public class DefaultEventListener implements EditorEventListener {
 		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;
-			unselectObjects(null);
+			mEditor.objects().unselectAll();
 			mEditor.resetDuplicationOffset();
 		}
 	}

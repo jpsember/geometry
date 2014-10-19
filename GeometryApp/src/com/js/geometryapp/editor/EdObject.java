@@ -87,7 +87,7 @@ public abstract class EdObject implements Cloneable {
 	/**
 	 * Set object's selected state
 	 */
-	public void setSelected(boolean f) {
+	void setSelected(boolean f) {
 		int flags = FLAG_SELECTED;
 		if (!f)
 			flags |= FLAG_EDITABLE;

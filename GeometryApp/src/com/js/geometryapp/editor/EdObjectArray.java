@@ -125,7 +125,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	/**
 	 * Make specific slots selected, and others unselected
 	 */
-	public void selectOnly(List<Integer> slots) {
+	public void setSelected(List<Integer> slots) {
 		prepareForChanges();
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
@@ -134,6 +134,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 			if (sel)
 				j++;
 		}
+		mSelectedSlots = slots;
 	}
 
 	public void setEditableSlot(int slot) {
@@ -164,8 +165,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 */
 	public void replaceSelectedObjectsWithCopies() {
 		prepareForChanges();
-		List<Integer> slots = getSelectedSlots();
-		for (int slot : slots) {
+		for (int slot : getSelectedSlots()) {
 			EdObject obj = get(slot);
 			set(slot, obj.getCopy());
 		}
@@ -173,7 +173,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 
 	public void unselectAll() {
 		prepareForChanges();
-		selectOnly(SlotList.build());
+		setSelected(SlotList.build());
 	}
 
 	public void selectAll() {

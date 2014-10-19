@@ -592,7 +592,7 @@ public class Editor implements EditorEventListener {
 			copy.moveBy(obj, offset);
 			objects().add(copy);
 		}
-		objects().selectOnly(newSelected);
+		objects().setSelected(newSelected);
 
 		Command command = Command.constructForGeneralChanges(originalState,
 				new EditorState(this), null);
@@ -622,7 +622,7 @@ public class Editor implements EditorEventListener {
 			copy.moveBy(obj, offset);
 			newSelected.add(objects().add(copy));
 		}
-		objects().selectOnly(newSelected);
+		objects().setSelected(newSelected);
 
 		Command command = Command.constructForGeneralChanges(originalState,
 				new EditorState(this), null);
@@ -715,7 +715,7 @@ public class Editor implements EditorEventListener {
 
 		EditorState originalState = new EditorState(this);
 
-		objects().selectOnly(slots);
+		objects().setSelected(slots);
 		objects().replaceSelectedObjectsWithCopies();
 
 		for (int slot : slots) {
@@ -848,7 +848,7 @@ public class Editor implements EditorEventListener {
 	void setState(EditorState state) {
 		setObjects(state.getObjects().getMutableCopy());
 		setClipboard(state.getClipboard());
-		objects().selectOnly(state.getSelectedSlots());
+		objects().setSelected(state.getSelectedSlots());
 		mDupAccumulator = new DupAccumulator(state.getDupAccumulator());
 	}
 

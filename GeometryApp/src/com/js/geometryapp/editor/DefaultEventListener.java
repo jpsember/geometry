@@ -168,7 +168,7 @@ public class DefaultEventListener implements EditorEventListener {
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
 			hlPickSet = SlotList.build(last(pickSet));
-			mEditor.objects().selectOnly(hlPickSet);
+			mEditor.objects().setSelected(hlPickSet);
 			mEditor.resetDuplicationOffset();
 			// fall through to next...
 		}
@@ -211,7 +211,7 @@ public class DefaultEventListener implements EditorEventListener {
 				if (dragRect.contains(edObject.getBounds(mEditor)))
 					selectedList.add(slot);
 			}
-			mEditor.objects().selectOnly(selectedList);
+			mEditor.objects().setSelected(selectedList);
 		} else if (mOriginalState != null) {
 			if (mTranslate != null) {
 				mEditor.getDupAccumulator().processMove(mTranslate);

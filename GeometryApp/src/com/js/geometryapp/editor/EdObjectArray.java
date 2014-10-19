@@ -3,6 +3,7 @@ package com.js.geometryapp.editor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import static com.js.basic.Tools.*;
 
 /**
  * An array of EdObjects, including utility methods; also optionally contains
@@ -11,9 +12,15 @@ import java.util.List;
  */
 public class EdObjectArray implements Iterable<EdObject> {
 
-	private void verifyMutable() {
+	/**
+	 * Invalidate any cached information in preparation for changes being made
+	 * to this object
+	 */
+	private void prepareForChanges() {
 		if (mFrozen)
 			throw new IllegalStateException();
+		mFrozenVersion = null;
+		mSelectedSlots = null;
 	}
 
 	public boolean isEmpty() {
@@ -21,12 +28,15 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public EdObjectArray freeze() {
-		mFrozen = true;
+		if (!mFrozen) {
+			mFrozen = true;
+			mFrozenVersion = this;
+		}
 		return this;
 	}
 
 	public void clear() {
-		verifyMutable();
+		prepareForChanges();
 		mList.clear();
 	}
 
@@ -41,7 +51,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * @return the index of the object
 	 */
 	public int add(EdObject object) {
-		verifyMutable();
+		prepareForChanges();
 		int index = mList.size();
 		mList.add(object);
 		return index;
@@ -52,7 +62,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void set(int index, EdObject object) {
-		verifyMutable();
+		prepareForChanges();
 		mList.set(index, object);
 	}
 
@@ -78,6 +88,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 		EdObjectArray copy = new EdObjectArray();
 		for (EdObject obj : mList)
 			copy.add(obj);
+		copy.mFrozenVersion = this.mFrozenVersion;
 		return copy;
 	}
 
@@ -99,19 +110,23 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * Get slots of selected items
 	 */
 	public List<Integer> getSelectedSlots() {
-		List<Integer> slots = SlotList.build();
-		for (int i = 0; i < mList.size(); i++) {
-			if (mList.get(i).isSelected()) {
-				slots.add(i);
+		if (mSelectedSlots == null) {
+			List<Integer> slots = SlotList.build();
+			for (int i = 0; i < mList.size(); i++) {
+				if (mList.get(i).isSelected()) {
+					slots.add(i);
+				}
 			}
+			mSelectedSlots = slots;
 		}
-		return slots;
+		return mSelectedSlots;
 	}
 
 	/**
 	 * Make specific slots selected, and others unselected
 	 */
 	public void selectOnly(List<Integer> slots) {
+		prepareForChanges();
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
 			boolean sel = j < slots.size() && slots.get(j) == i;
@@ -122,7 +137,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void remove(List<Integer> slots) {
-		verifyMutable();
+		prepareForChanges();
 		List<EdObject> newList = new ArrayList();
 		int j = 0;
 		for (int i = 0; i < mList.size(); i++) {
@@ -139,7 +154,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * Replace selected objects with copies
 	 */
 	public void replaceSelectedObjectsWithCopies() {
-		verifyMutable();
+		prepareForChanges();
 		List<Integer> slots = getSelectedSlots();
 		for (int slot : slots) {
 			EdObject obj = get(slot);
@@ -148,21 +163,28 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void unselectAll() {
+		prepareForChanges();
 		selectOnly(SlotList.build());
 	}
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder("EdObjectArray");
-		sb.append(" [");
-		for (EdObject obj : mList) {
-			sb.append(" " + obj.getFactory().getTag());
+		if (!DEBUG_ONLY_FEATURES)
+			return null;
+		else {
+			doNothing();
+			StringBuilder sb = new StringBuilder("EdObjectArray");
+			sb.append(" [");
+			for (EdObject obj : mList) {
+				sb.append(" " + obj.getFactory().getTag());
+			}
+			sb.append("]");
+			return sb.toString();
 		}
-		sb.append("]");
-		return sb.toString();
 	}
 
 	private List<EdObject> mList = new ArrayList();
 	private boolean mFrozen;
-
+	private EdObjectArray mFrozenVersion;
+	private List<Integer> mSelectedSlots;
 }

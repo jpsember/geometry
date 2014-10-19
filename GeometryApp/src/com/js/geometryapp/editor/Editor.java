@@ -208,8 +208,7 @@ public class Editor implements EditorEventListener {
 			return;
 		AlgorithmDisplayElement.setRendering(true);
 
-		for (int i = 0; i < mObjects.size(); i++) {
-			EdObject obj = mObjects.get(i);
+		for (EdObject obj : mObjects) {
 			if (DB_RENDER_OBJ_BOUNDS
 					|| (DB_RENDER_EDITABLE && obj.isEditable())) {
 				mStepper.setColor(Color.GRAY);

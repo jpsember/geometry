@@ -712,7 +712,7 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 
 		objects().selectOnly(slots);
-		objects().replaceWithCopies(slots);
+		objects().replaceSelectedObjectsWithCopies();
 
 		for (int slot : slots) {
 			EdObject obj = objects().get(slot);

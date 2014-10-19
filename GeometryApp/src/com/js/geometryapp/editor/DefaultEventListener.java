@@ -191,7 +191,9 @@ public class DefaultEventListener implements EditorEventListener {
 		if (startEditableObjectOperation(location))
 			return;
 
+		// get 'pick set' for touch location
 		List<Integer> pickSet = getPickSet(location);
+		// get subset of pick set that are currently selected
 		List<Integer> hlPickSet = getSelectedObjects(pickSet);
 
 		if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
@@ -204,8 +206,7 @@ public class DefaultEventListener implements EditorEventListener {
 		if (!hlPickSet.isEmpty()) {
 			mOriginalState = new EditorState(mEditor);
 			// Replace selected objects with copies in preparation for moving
-			mEditor.objects().replaceWithCopies(
-					mOriginalState.getSelectedSlots());
+			mEditor.objects().replaceSelectedObjectsWithCopies();
 		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;

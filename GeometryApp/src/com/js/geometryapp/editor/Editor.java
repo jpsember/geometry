@@ -556,7 +556,7 @@ public class Editor implements EditorEventListener {
 		EdObjectArray newClipboard = objects().getSubset(
 				originalState.getSelectedSlots()).freeze();
 		setClipboard(newClipboard);
-		objects().remove(originalState.getSelectedSlots());
+		objects().removeSelected();
 
 		Command command = Command.constructForGeneralChanges(originalState,
 				new EditorState(this), null);

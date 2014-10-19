@@ -146,7 +146,8 @@ public class EdObjectArray implements Iterable<EdObject> {
 		}
 	}
 
-	public void remove(List<Integer> slots) {
+	public void removeSelected() {
+		List<Integer> slots = getSelectedSlots();
 		prepareForChanges();
 		List<EdObject> newList = new ArrayList();
 		int j = 0;

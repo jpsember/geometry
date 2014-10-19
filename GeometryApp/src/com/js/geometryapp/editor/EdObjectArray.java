@@ -167,6 +167,12 @@ public class EdObjectArray implements Iterable<EdObject> {
 		selectOnly(SlotList.build());
 	}
 
+	public void selectAll() {
+		prepareForChanges();
+		for (EdObject obj : mList)
+			obj.setSelected(true);
+	}
+
 	@Override
 	public String toString() {
 		if (!DEBUG_ONLY_FEATURES)

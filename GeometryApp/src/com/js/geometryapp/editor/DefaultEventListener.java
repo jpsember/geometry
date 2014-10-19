@@ -207,10 +207,13 @@ public class DefaultEventListener implements EditorEventListener {
 			Rect dragRect = getDragRect();
 			if (dragRect == null)
 				return;
-			for (EdObject edObject : mEditor.objects()) {
-				edObject.setSelected(dragRect.contains(edObject
-						.getBounds(mEditor)));
+			List<Integer> selectedList = SlotList.build();
+			for (int slot = 0; slot < mEditor.objects().size(); slot++) {
+				EdObject edObject = mEditor.objects().get(slot);
+				if (dragRect.contains(edObject.getBounds(mEditor)))
+					selectedList.add(slot);
 			}
+			mEditor.objects().selectOnly(selectedList);
 		} else if (mOriginalState != null) {
 			if (mTranslate != null) {
 				mEditor.getDupAccumulator().processMove(mTranslate);

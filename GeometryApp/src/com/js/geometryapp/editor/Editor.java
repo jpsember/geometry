@@ -697,8 +697,7 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void doSelectAll() {
-		for (EdObject obj : objects())
-			obj.setSelected(true);
+		objects().selectAll();
 		refresh();
 	}
 

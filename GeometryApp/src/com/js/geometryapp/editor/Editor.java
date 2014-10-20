@@ -324,8 +324,6 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void updateButtonEnableStatesAux() {
-		pr("...updating button enable states... " + System.currentTimeMillis());
-
 		List<Integer> selected = objects().getSelectedSlots();
 		mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
 		mOptions.setEnabled("Redo",

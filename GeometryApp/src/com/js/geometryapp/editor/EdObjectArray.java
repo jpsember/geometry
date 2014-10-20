@@ -6,9 +6,7 @@ import java.util.List;
 import static com.js.basic.Tools.*;
 
 /**
- * An array of EdObjects, including utility methods; also optionally contains
- * sequence of slot numbers indicating the objects' positions within some other
- * list
+ * An array of EdObjects
  */
 public class EdObjectArray implements Iterable<EdObject> {
 
@@ -27,6 +25,9 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return mList.isEmpty();
 	}
 
+	/**
+	 * Make this array immutable, if it's not already
+	 */
 	public EdObjectArray freeze() {
 		if (!mFrozen) {
 			mFrozen = true;
@@ -81,25 +82,37 @@ public class EdObjectArray implements Iterable<EdObject> {
 		return subset;
 	}
 
+	/**
+	 * Get a mutable copy of this array
+	 */
 	public EdObjectArray getMutableCopy() {
 		EdObjectArray copy = new EdObjectArray();
 		for (EdObject obj : mList)
 			copy.add(obj);
+		// Have the copy share this array's frozen version, if it has one
 		copy.mFrozenVersion = this.mFrozenVersion;
 		return copy;
 	}
 
+	/**
+	 * Construct an immutable (i.e. frozen) version of this array
+	 * 
+	 * @return frozen version, which may be this
+	 */
 	public EdObjectArray getFrozen() {
 		return getCopy().freeze();
 	}
 
+	/**
+	 * Get a copy of this array; if we're frozen, returns this
+	 */
 	public EdObjectArray getCopy() {
 		if (isFrozen())
 			return this;
 		return getMutableCopy();
 	}
 
-	public boolean isFrozen() {
+	private boolean isFrozen() {
 		return mFrozen;
 	}
 

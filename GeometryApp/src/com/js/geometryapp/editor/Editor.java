@@ -309,33 +309,33 @@ public class Editor implements EditorEventListener {
 	}
 
 	private void updateButtonEnableStates() {
-		// TODO: we could optimize this by e.g. caching the selected slots or
-		// something
 		if (!mOptions.isEditorActive())
 			return;
 
 		if (QuiescentDelayOperation.replaceExisting(mPendingEnableOperation)) {
-			final float ENABLE_DELAY = .2f;
+			final float ENABLE_DELAY = .1f;
 			mPendingEnableOperation = new QuiescentDelayOperation("enable",
 					ENABLE_DELAY, new Runnable() {
 						public void run() {
-							List<Integer> selected = objects()
-									.getSelectedSlots();
-							mOptions.setEnabled("Undo",
-									mCommandHistoryCursor > 0);
-							mOptions.setEnabled("Redo",
-									mCommandHistoryCursor < mCommandHistory
-											.size());
-							mOptions.setEnabled("Cut", !selected.isEmpty());
-							mOptions.setEnabled("Copy", !selected.isEmpty());
-							mOptions.setEnabled("Paste", !mClipboard.isEmpty());
-							mOptions.setEnabled("Dup", !selected.isEmpty());
-							mOptions.setEnabled("All",
-									selected.size() < objects().size());
-							mOptions.setEnabled("Unhide", unhidePossible());
+							updateButtonEnableStatesAux();
 						}
 					});
 		}
+	}
+
+	private void updateButtonEnableStatesAux() {
+		pr("...updating button enable states... " + System.currentTimeMillis());
+
+		List<Integer> selected = objects().getSelectedSlots();
+		mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
+		mOptions.setEnabled("Redo",
+				mCommandHistoryCursor < mCommandHistory.size());
+		mOptions.setEnabled("Cut", !selected.isEmpty());
+		mOptions.setEnabled("Copy", !selected.isEmpty());
+		mOptions.setEnabled("Paste", !mClipboard.isEmpty());
+		mOptions.setEnabled("Dup", !selected.isEmpty());
+		mOptions.setEnabled("All", selected.size() < objects().size());
+		mOptions.setEnabled("Unhide", unhidePossible());
 	}
 
 	/**

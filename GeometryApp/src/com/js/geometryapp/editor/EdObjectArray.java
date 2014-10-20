@@ -140,6 +140,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 		if (slot >= 0) {
 			EdObject editObject = get(slot);
 			editObject.setEditable(true);
+			mSelectedSlots = null;
 		}
 	}
 

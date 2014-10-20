@@ -112,11 +112,11 @@ public abstract class EdObject implements Cloneable {
 	 * 
 	 * @return FRect
 	 */
-	public Rect getBounds(Editor editor) {
+	public Rect getBounds() {
 		if (mBounds == null) {
 			mBounds = Rect.rectContainingPoints(mPoints);
 			if (isSelected()) {
-				float r = editor.pickRadius();
+				float r = mEditor.pickRadius();
 				mBounds.inset(-r, -r);
 			}
 		}

@@ -218,7 +218,7 @@ public class Editor implements EditorEventListener {
 			if (DB_RENDER_OBJ_BOUNDS
 					|| (DB_RENDER_EDITABLE && obj.isEditable())) {
 				mStepper.setColor(Color.GRAY);
-				EditorTools.plotRect(mStepper, obj.getBounds(this));
+				EditorTools.plotRect(mStepper, obj.getBounds());
 			}
 			obj.render(mStepper);
 		}

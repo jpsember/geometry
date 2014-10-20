@@ -172,7 +172,7 @@ public class DefaultEventListener implements EditorEventListener {
 			List<Integer> selectedList = SlotList.build();
 			for (int slot = 0; slot < mEditor.objects().size(); slot++) {
 				EdObject edObject = mEditor.objects().get(slot);
-				if (dragRect.contains(edObject.getBounds(mEditor)))
+				if (dragRect.contains(edObject.getBounds()))
 					selectedList.add(slot);
 			}
 			mEditor.objects().setSelected(selectedList);

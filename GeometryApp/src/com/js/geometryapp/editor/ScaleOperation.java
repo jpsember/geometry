@@ -115,7 +115,7 @@ public class ScaleOperation implements EditorEventListener {
 	private Rect boundsForObjects(EdObjectArray objects) {
 		Rect bounds = null;
 		for (EdObject obj : objects) {
-			Rect objBounds = obj.getBounds(mEditor);
+			Rect objBounds = obj.getBounds();
 			if (bounds == null)
 				bounds = objBounds;
 			else

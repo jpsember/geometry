@@ -352,7 +352,6 @@ public class EdPolyline extends EdObject {
 			mEditor = editor;
 			mEditSlot = slot;
 			mReference = modified;
-			warning("slot is redundant? ought there to be only one, found from selected state?");
 			mOriginalState = new EditorState(editor);
 			editor.objects().set(slot, mReference);
 		}

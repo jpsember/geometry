@@ -2,6 +2,8 @@ package com.js.geometry;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -10,7 +12,7 @@ import static com.js.geometry.MyMath.*;
 
 import android.graphics.Matrix;
 
-public class Polygon {
+public class Polygon implements Iterable<Point> {
 	public static final int TESTPOLY_SQUARE = 0;
 	public static final int TESTPOLY_DIAMOND = 1;
 	public static final int TESTPOLY_LARGE_RECTANGLE = 2;
@@ -41,9 +43,9 @@ public class Polygon {
 	}
 
 	public Polygon(Polygon polygon) {
-		for (int i = 0; i < polygon.numVertices(); i++) {
+		for (Point pt : polygon) {
 			// Create new points for the copy as well
-			add(new Point(polygon.vertex(i)));
+			add(new Point(pt));
 		}
 	}
 
@@ -130,7 +132,7 @@ public class Polygon {
 			poly = starshapedPolygon(new Rect(0, 0, 500, 500), index
 					- TESTPOLY_STARSHAPED_X + 2, new Random(5));
 		} else if (index == TESTPOLY_QUADRATIC_FILTER) {
-			poly = polygon();
+			poly = new Polygon();
 			int nv = 400;
 
 			float x, y, y2;
@@ -154,8 +156,7 @@ public class Polygon {
 
 			float sf = (index == TESTPOLY_SPIROGRAPH2) ? 3 : 1;
 
-			poly = polygon();
-			// [JSPolygon polygon];
+			poly = new Polygon();
 
 			float f1 = 19 / sf, f2 = 13 / sf, f3 = 17 / sf;
 
@@ -271,10 +272,6 @@ public class Polygon {
 		return p;
 	}
 
-	public static Polygon polygon() {
-		return new Polygon();
-	}
-
 	public static Polygon polygonWithScript(String script) {
 		return new Polygon(script);
 	}
@@ -296,32 +293,22 @@ public class Polygon {
 	 * Embed the polygon into its context's mesh; returns index of first vertex
 	 * within mesh
 	 */
-	public int embed(Mesh context) {
-		return embed(context, 0, 0);
-	}
-
-	public int embed(Mesh context, int vertexFlags, int edgeFlags) {
-		int baseVertex = embedVertices(context, vertexFlags);
-		Vertex prevVertex = context.vertex(baseVertex + numVertices() - 1);
+	public int embed(Mesh mesh) {
+		int baseVertex = embedVertices(mesh);
+		Vertex prevVertex = mesh.vertex(baseVertex + numVertices() - 1);
 		for (int i = 0; i < numVertices(); i++) {
-			Vertex currentVertex = context.vertex(baseVertex + i);
-			Edge edge = context.addEdge(prevVertex, currentVertex);
-			edge.addFlags(Edge.FLAG_POLYGON | edgeFlags);
-			edge.dual().addFlags(edgeFlags);
-
+			Vertex currentVertex = mesh.vertex(baseVertex + i);
+			Edge edge = mesh.addEdge(prevVertex, currentVertex);
+			edge.addFlags(Edge.FLAG_POLYGON);
 			prevVertex = currentVertex;
 		}
 		return baseVertex;
 	}
 
-	public int embedVertices(Mesh context, int vertexFlags) {
-
-		int embeddedVertexIndex = context.numVertices();
-
-		for (int i = 0; i < numVertices(); i++) {
-			Point pt = vertex(i);
-			Vertex v = context.addVertex(pt);
-			v.addFlags(vertexFlags);
+	private int embedVertices(Mesh mesh) {
+		int embeddedVertexIndex = mesh.numVertices();
+		for (Point pt : this) {
+			mesh.addVertex(pt);
 		}
 		return embeddedVertexIndex;
 	}
@@ -404,8 +391,7 @@ public class Polygon {
 		Point v1 = vertexMod(-1);
 		float angle01 = pseudoPolarAngleOfSegment(v0, v1);
 
-		for (int i = 0; i < numVertices(); i++) {
-			Point v2 = vertex(i);
+		for (Point v2 : this) {
 			float angle12 = pseudoPolarAngleOfSegment(v1, v2);
 			float subtendedAngle = normalizePseudoAngle(angle12 - angle01);
 			totalSwept += subtendedAngle;
@@ -430,21 +416,15 @@ public class Polygon {
 		return (orientation == 1);
 	}
 
-	public boolean neighbors(int i1, int i2) {
-		int diff = Math.abs(i1 - i2);
-		return diff == 1 || diff == numVertices() - 1;
-	}
-
 	public static Polygon circleWithOrigin(Point origin, float radius,
 			int numVertices) {
-		Polygon p = polygon();
+		Polygon p = new Polygon();
 		for (int i = 0; i < numVertices; i++) {
 			Point pt = MyMath.pointOnCircle(origin, (i * MyMath.PI * 2)
 					/ numVertices, radius);
 			p.add(pt);
 		}
 		return p;
-
 	}
 
 	// These methods mutate the polygon:
@@ -503,8 +483,7 @@ public class Polygon {
 	}
 
 	public void apply(Matrix transform) {
-		for (int i = 0; i < numVertices(); i++) {
-			Point v = vertex(i);
+		for (Point v : this) {
 			v.apply(transform);
 		}
 	}
@@ -532,6 +511,10 @@ public class Polygon {
 		return sb.toString();
 	}
 
-	private ArrayList<Point> mVertices = new ArrayList();
+	public Iterator<Point> iterator() {
+		return mVertices.iterator();
+	}
+
+	private List<Point> mVertices = new ArrayList();
 
 }

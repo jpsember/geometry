@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.graphics.Color;
+import android.graphics.Matrix;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -389,6 +390,18 @@ public abstract class EdObject implements Cloneable {
 
 	public Editor editor() {
 		return mEditor;
+	}
+
+	/**
+	 * Apply a transformation to this object. Default implementation transforms
+	 * each vertex
+	 */
+	public void applyTransform(Matrix m) {
+		for (int i = 0; i < nPoints(); i++) {
+			Point v = new Point(getPoint(i));
+			v.apply(m);
+			setPoint(i, v);
+		}
 	}
 
 	private Editor mEditor;

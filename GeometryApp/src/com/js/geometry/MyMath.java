@@ -230,7 +230,8 @@ public final class MyMath {
 	 * @param e1
 	 *            second point on line
 	 * @param closestPt
-	 *            if not null, closest point on line is stored here
+	 *            if not null, closest point on line is stored here; can be the
+	 *            same as one of the input points
 	 * @return distance
 	 */
 	public static float ptDistanceToLine(Point pt, Point e0, Point e1,

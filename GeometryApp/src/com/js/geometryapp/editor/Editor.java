@@ -157,6 +157,12 @@ public class Editor implements EditorEventListener {
 					refresh();
 				}
 			});
+			mOptions.addButton("Scale").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doScale();
+					refresh();
+				}
+			});
 		}
 		mOptions.popView();
 		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
@@ -334,6 +340,7 @@ public class Editor implements EditorEventListener {
 		mOptions.setEnabled("Dup", !selected.isEmpty());
 		mOptions.setEnabled("All", selected.size() < objects().size());
 		mOptions.setEnabled("Unhide", unhidePossible());
+		mOptions.setEnabled("Scale", !selected.isEmpty());
 	}
 
 	/**
@@ -530,6 +537,7 @@ public class Editor implements EditorEventListener {
 		if (mCommandHistoryCursor == 0) {
 			return;
 		}
+		clearOperation();
 		mCommandHistoryCursor--;
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.getReverse().perform(this);
@@ -541,6 +549,7 @@ public class Editor implements EditorEventListener {
 		if (mCommandHistoryCursor == mCommandHistory.size()) {
 			return;
 		}
+		clearOperation();
 		Command command = mCommandHistory.get(mCommandHistoryCursor);
 		command.perform(this);
 		mCommandHistoryCursor++;
@@ -633,6 +642,13 @@ public class Editor implements EditorEventListener {
 
 	void resetDuplicationOffset() {
 		mDupAccumulator = new DupAccumulator(pickRadius());
+	}
+
+	private void doScale() {
+		if (objects().getSelectedSlots().isEmpty())
+			return;
+
+		setOperation(new ScaleOperation(this));
 	}
 
 	private boolean unhidePossible() {

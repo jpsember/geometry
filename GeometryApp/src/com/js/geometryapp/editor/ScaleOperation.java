@@ -189,7 +189,7 @@ public class ScaleOperation implements EditorEventListener {
 
 		// Add some padding to stop the scaled rectangle from becoming
 		// degenerate
-		final float PADDING = 10;
+		final float PADDING = mEditor.pickRadius();
 		if (handle == 0 || handle == 1 || handle == 2)
 			y1 = mRect.midY() - PADDING;
 		if (handle == 2 || handle == 3 || handle == 4)

@@ -162,8 +162,9 @@ public class EdObjectArray implements Iterable<EdObject> {
 	 * Replace selected objects with copies
 	 */
 	public void replaceSelectedObjectsWithCopies() {
+		List<Integer> selectedSlots = getSelectedSlots();
 		prepareForChanges();
-		for (int slot : getSelectedSlots()) {
+		for (int slot : selectedSlots) {
 			EdObject obj = get(slot);
 			set(slot, obj.getCopy());
 		}

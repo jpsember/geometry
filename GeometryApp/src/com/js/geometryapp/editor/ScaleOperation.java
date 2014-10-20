@@ -19,7 +19,7 @@ public class ScaleOperation implements EditorEventListener {
 
 	public ScaleOperation(Editor editor) {
 		mEditor = editor;
-		prepareOperation();
+		prepareScaleOperation();
 	}
 
 	@Override
@@ -35,8 +35,7 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 
 		case EVENT_DOWN:
-			prepareOperation();
-			// mInitialDownLocation = location;
+			prepareScaleOperation();
 			// Find handle
 			{
 				float minDist = 0;
@@ -64,12 +63,12 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 
 		case EVENT_UP: {
-			if (mRect != null) {
+			if (mOperationPrepared) {
 				Command c = Command.constructForGeneralChanges(mOriginalState,
 						new EditorState(mEditor), "scale");
 				mEditor.pushCommand(c);
+				setUnprepared();
 			}
-			setUnprepared();
 		}
 			break;
 
@@ -118,18 +117,30 @@ public class ScaleOperation implements EditorEventListener {
 		return bounds;
 	}
 
-	private void prepareOperation() {
-		if (mRect == null) {
+	private void prepareScaleOperation() {
+		if (!mOperationPrepared) {
 			mOriginalState = new EditorState(mEditor);
 			mHandles = new ArrayList();
-			mRect = boundsForObjects(mEditor.objects().getSelectedObjects());
+			// Don't replace an existing bounding rectangle, since it may have
+			// been derived from a previous scale procedure involving these
+			// objects, and recalculating it may produce a different rectangle
+			// which can be disorienting to the user.
+			if (mRect == null)
+				mRect = boundsForObjects(mEditor.objects().getSelectedObjects());
 			mScaledRect = mRect;
 			calculateHandleBaseLocations(mRect, mHandles);
+			mOperationPrepared = true;
 		}
 	}
 
 	private void setUnprepared() {
-		mRect = null;
+		if (mOperationPrepared) {
+			// Set the original (unscaled) rect equal to the previous
+			// operation's scaled rect, so it doesn't get recalculated and
+			// change its appearance disconcertingly.
+			mRect = mScaledRect;
+			mOperationPrepared = false;
+		}
 	}
 
 	/**
@@ -257,6 +268,10 @@ public class ScaleOperation implements EditorEventListener {
 	}
 
 	private Editor mEditor;
+
+	// True if processing a down/drag/up scaling operation
+	private boolean mOperationPrepared;
+
 	private EditorState mOriginalState;
 	// Bounding rect of unscaled objects
 	private Rect mRect;

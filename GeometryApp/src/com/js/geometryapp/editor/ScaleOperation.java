@@ -35,6 +35,11 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 
 		case EVENT_DOWN:
+			// Check if user has pressed on a tab for some other operation to
+			// start (e.g., adjusting vertex location)
+			if (mEditor.startEditableObjectOperation(location))
+				break;
+
 			prepareScaleOperation();
 			// Find handle
 			{

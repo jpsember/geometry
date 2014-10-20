@@ -11,7 +11,6 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmStepper;
-import static com.js.basic.Tools.*;
 
 public class ScaleOperation implements EditorEventListener {
 
@@ -87,9 +86,12 @@ public class ScaleOperation implements EditorEventListener {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-
-		doNothing();
-		s.setColor(Color.argb(0x80, 0xff, 0x40, 0x40));
+		// Render with emphasis if scaled rect = original rect
+		boolean equalsOriginal = mRect.equals(mScaledRect);
+		if (equalsOriginal)
+			s.setColor(Color.argb(0xff, 0xff, 0x40, 0x40));
+		else
+			s.setColor(Color.argb(0x80, 0xff, 0x40, 0x40));
 
 		// Calculate handles corresponding to scaled rect
 		List<Point> handles = new ArrayList();
@@ -210,9 +212,10 @@ public class ScaleOperation implements EditorEventListener {
 		// Replace new handle location with its projection to the line between
 		// the handle and the midpoint
 		Point origin = mRect.midPoint();
-		MyMath.ptDistanceToLine(touchLocation, handleBaseLocation(handle),
-				origin, touchLocation);
-		return touchLocation;
+		Point filtered = new Point();
+		Point handleBase = handleBaseLocation(handle);
+		MyMath.ptDistanceToLine(touchLocation, handleBase, origin, filtered);
+		return filtered;
 	}
 
 	private Point handleBaseLocation(int handleIndex) {
@@ -234,9 +237,19 @@ public class ScaleOperation implements EditorEventListener {
 		return new Rect(origin.x - w, origin.y - h, w * 2, h * 2);
 	}
 
-	private void performScale(int handle, Point dl) {
-		dl = filteredHandle(handle, dl);
-		mScaledRect = calculateScaledRect(handle, dl);
+	private void performScale(int handle, Point touchLocation) {
+		touchLocation = filteredHandle(handle, touchLocation);
+		mScaledRect = calculateScaledRect(handle, touchLocation);
+
+		// Act as if there's a 'groove' at the original (unscaled) rectangle
+		// location: If scaled rectangle is very close to original, set it
+		// exactly equal to it. We don't want the groove to be too large,
+		// because this prevents small changes and is frustrating
+		float diff = Math.max(Math.abs(mScaledRect.width - mRect.width),
+				Math.abs(mScaledRect.height - mRect.height)) / 2;
+		if (diff < mEditor.pickRadius() * .05f) {
+			mScaledRect = mRect;
+		}
 		scaleObjects();
 	}
 

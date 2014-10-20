@@ -71,14 +71,11 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	/**
-	 * Construct subset of this array, using particular slots only
-	 * 
-	 * @param slots
-	 *            SlotList
+	 * Construct array containing only the selected objects from this array
 	 */
-	public EdObjectArray getSubset(List<Integer> slots) {
+	public EdObjectArray getSelectedObjects() {
 		EdObjectArray subset = new EdObjectArray();
-		for (int slot : slots) {
+		for (int slot : getSelectedSlots()) {
 			subset.add(get(slot));
 		}
 		return subset;

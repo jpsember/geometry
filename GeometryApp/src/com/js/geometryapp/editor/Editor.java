@@ -553,8 +553,7 @@ public class Editor implements EditorEventListener {
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
 
-		EdObjectArray newClipboard = objects().getSubset(
-				originalState.getSelectedSlots()).freeze();
+		EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
 		setClipboard(newClipboard);
 		objects().removeSelected();
 
@@ -568,8 +567,7 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
-		EdObjectArray newClipboard = objects().getSubset(
-				originalState.getSelectedSlots()).freeze();
+		EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
 		setClipboard(newClipboard);
 
 		Command command = Command.constructForGeneralChanges(originalState,

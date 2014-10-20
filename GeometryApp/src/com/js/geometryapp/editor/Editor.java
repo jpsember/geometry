@@ -644,6 +644,41 @@ public class Editor implements EditorEventListener {
 		mDupAccumulator = new DupAccumulator(pickRadius());
 	}
 
+	/**
+	 * Determine if there's an editable object which can construct an edit
+	 * operation for a particular location. If so, start the operation and
+	 * return true
+	 */
+	boolean startEditableObjectOperation(Point location) {
+		int editableSlot = getEditableSlot();
+		if (editableSlot >= 0) {
+			EdObject obj = objects().get(editableSlot);
+			EditorEventListener operation = obj.buildEditOperation(
+					editableSlot, location);
+
+			if (operation != null) {
+				setOperation(operation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Determine which slot, if any, holds the (at most one) editable object
+	 * 
+	 * @return slot if found, or -1
+	 */
+	private int getEditableSlot() {
+		for (int slot = 0; slot < objects().size(); slot++) {
+			EdObject src = objects().get(slot);
+			if (src.isEditable()) {
+				return slot;
+			}
+		}
+		return -1;
+	}
+
 	private void doScale() {
 		if (objects().getSelectedSlots().isEmpty())
 			return;

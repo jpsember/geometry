@@ -17,22 +17,6 @@ public class DefaultEventListener implements EditorEventListener {
 		mEditor = editor;
 	}
 
-	/**
-	 * Determine which slot, if any, holds the (at most one) editable object
-	 * 
-	 * @return slot if found, or -1
-	 */
-	private int getEditableSlot() {
-		EdObjectArray srcObjects = mEditor.objects();
-		for (int slot = 0; slot < srcObjects.size(); slot++) {
-			EdObject src = srcObjects.get(slot);
-			if (src.isEditable()) {
-				return slot;
-			}
-		}
-		return -1;
-	}
-
 	private List<Integer> getPickSet(Point location) {
 		List<Integer> slots = SlotList.build();
 		EdObjectArray srcObjects = mEditor.objects();
@@ -81,7 +65,7 @@ public class DefaultEventListener implements EditorEventListener {
 		// As we did for the drag logic, first check: if there is an editable
 		// object, and object can construct an edit operation for the location,
 		// start that operation
-		if (startEditableObjectOperation(location))
+		if (mEditor.startEditableObjectOperation(location))
 			return;
 
 		// Construct pick set of selected objects. If empty, unselect
@@ -107,26 +91,6 @@ public class DefaultEventListener implements EditorEventListener {
 		mEditor.objects().setEditableSlot(slot);
 		mEditor.objects().get(slot).selectedForEditing(location);
 		mEditor.resetDuplicationOffset();
-	}
-
-	/**
-	 * Determine if there's an editable object which can construct an edit
-	 * operation for a particular location. If so, start the operation and
-	 * return true
-	 */
-	private boolean startEditableObjectOperation(Point location) {
-		int editableSlot = getEditableSlot();
-		if (editableSlot >= 0) {
-			EdObject obj = editorObject(editableSlot);
-			EditorEventListener operation = obj.buildEditOperation(
-					editableSlot, location);
-
-			if (operation != null) {
-				mEditor.setOperation(operation);
-				return true;
-			}
-		}
-		return false;
 	}
 
 	private void doStartDrag(Point location) {
@@ -158,7 +122,7 @@ public class DefaultEventListener implements EditorEventListener {
 		 * </pre>
 		 */
 
-		if (startEditableObjectOperation(location))
+		if (mEditor.startEditableObjectOperation(location))
 			return;
 
 		// get 'pick set' for touch location

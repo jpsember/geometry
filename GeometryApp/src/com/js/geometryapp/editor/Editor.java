@@ -248,9 +248,8 @@ public class Editor {
 			// If multiple DOWN, start adding another object of the most recent
 			// type
 			if (event.isMultipleTouch()) {
-				warning("maybe instead of last added object, include last editable object as well");
-				if (mLastAddObjectOperation != null) {
-					doStartAddObjectOperation(mLastAddObjectOperation);
+				if (mLastEditableObjectType != null) {
+					doStartAddObjectOperation(mLastEditableObjectType);
 					return;
 				}
 			} else {
@@ -282,7 +281,8 @@ public class Editor {
 	 * Make an object editable if it is the only selected object. We perform
 	 * this operation with each refresh, since this is simpler than trying to
 	 * maintain the editable state while the editor objects undergo various
-	 * editing operations
+	 * editing operations. Also, update the last editable object type to reflect
+	 * the editable object (if one exists)
 	 */
 	private void updateEditableObjectStatus() {
 		int currentEditable = -1;
@@ -293,8 +293,10 @@ public class Editor {
 			if (obj.isEditable())
 				currentEditable = slot;
 		}
-		if (list.size() == 1)
+		if (list.size() == 1) {
 			newEditable = list.get(0);
+			mLastEditableObjectType = mObjects.get(newEditable).getFactory();
+		}
 		if (currentEditable != newEditable) {
 			objects().setEditableSlot(newEditable);
 		}
@@ -447,7 +449,6 @@ public class Editor {
 		objects().unselectAll();
 		clearOperation();
 		mPendingAddObjectOperation = objectType;
-		mLastAddObjectOperation = objectType;
 		if (false) // figure out a way to determine an appropriate toast message
 			toast(context(), "Add segment!");
 	}
@@ -890,7 +891,7 @@ public class Editor {
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EditorEventListener mDefaultOperation;
-	private EdObjectFactory mLastAddObjectOperation;
+	private EdObjectFactory mLastEditableObjectType;
 	// If not null, on next DOWN event, we create a new object and start
 	// operation to edit it
 	private EdObjectFactory mPendingAddObjectOperation;

@@ -99,10 +99,10 @@ public class EdSegment extends EdObject {
 				outputEvent = event;
 				break;
 
-			case EVENT_DOWN:
+			case EditorEvent.CODE_DOWN:
 				break;
 
-			case EVENT_DRAG: {
+			case EditorEvent.CODE_DRAG: {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = seg.getCopy();
@@ -114,7 +114,7 @@ public class EdSegment extends EdObject {
 			}
 				break;
 
-			case EVENT_UP:
+			case EditorEvent.CODE_UP:
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
@@ -126,7 +126,7 @@ public class EdSegment extends EdObject {
 				outputEvent = EditorEvent.STOP;
 				break;
 
-			case EVENT_UP_MULTIPLE:
+			case EditorEvent.CODE_UP_MULTIPLE:
 				// stop the operation on UP events
 				outputEvent = EditorEvent.STOP;
 				break;

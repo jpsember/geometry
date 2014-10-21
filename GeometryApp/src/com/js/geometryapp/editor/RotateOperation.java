@@ -36,7 +36,7 @@ public class RotateOperation implements EditorEventListener {
 			outputEvent = event;
 			break;
 
-		case EVENT_DOWN:
+		case EditorEvent.CODE_DOWN:
 			// Check if user has pressed on a tab for some other operation to
 			// start (e.g., adjusting vertex location)
 			if (mEditor.startEditableObjectOperation(event.getLocation()))
@@ -55,12 +55,12 @@ public class RotateOperation implements EditorEventListener {
 			mDragged = false;
 			break;
 
-		case EVENT_DRAG:
+		case EditorEvent.CODE_DRAG:
 			mDragged = true;
 			performRotate(event.getLocation());
 			break;
 
-		case EVENT_UP: {
+		case EditorEvent.CODE_UP: {
 			if (!mDragged) {
 				outputEvent = EditorEvent.STOP;
 				break;
@@ -74,7 +74,7 @@ public class RotateOperation implements EditorEventListener {
 		}
 			break;
 
-		case EVENT_UP_MULTIPLE:
+		case EditorEvent.CODE_UP_MULTIPLE:
 			outputEvent = EditorEvent.STOP;
 			break;
 		}

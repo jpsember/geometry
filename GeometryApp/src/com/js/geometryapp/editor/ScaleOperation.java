@@ -38,7 +38,7 @@ public class ScaleOperation implements EditorEventListener {
 			outputEvent = event;
 			break;
 
-		case EVENT_DOWN: {
+		case EditorEvent.CODE_DOWN: {
 			// Check if user has pressed on a tab for some other operation to
 			// start (e.g., adjusting vertex location)
 			if (mEditor.startEditableObjectOperation(event.getLocation()))
@@ -69,13 +69,13 @@ public class ScaleOperation implements EditorEventListener {
 		}
 			break;
 
-		case EVENT_DRAG:
+		case EditorEvent.CODE_DRAG:
 			if (!mPerformingDragSequence)
 				break;
 			performScale(mActiveHandle, event.getLocation());
 			break;
 
-		case EVENT_UP: {
+		case EditorEvent.CODE_UP: {
 			if (!mPerformingDragSequence)
 				break;
 			Command c = Command.constructForGeneralChanges(mOriginalState,

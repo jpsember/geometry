@@ -391,10 +391,10 @@ public class EdPolyline extends EdObject {
 				outputEvent = event;
 				break;
 
-			case EVENT_DOWN:
+			case EditorEvent.CODE_DOWN:
 				break;
 
-			case EVENT_DRAG: {
+			case EditorEvent.CODE_DRAG: {
 				// Create a new copy of the polyline, with modified endpoint
 				EdPolyline polyline = mReference.getCopy();
 				mEditor.objects().set(mEditSlot, polyline);
@@ -412,7 +412,7 @@ public class EdPolyline extends EdObject {
 			}
 				break;
 
-			case EVENT_UP:
+			case EditorEvent.CODE_UP:
 				if (mChangesMade) {
 					EdPolyline polyline = activePolyline();
 					int absVert = findAbsorbingVertex(polyline);
@@ -429,12 +429,12 @@ public class EdPolyline extends EdObject {
 				outputEvent = EditorEvent.STOP;
 				break;
 
-			case EVENT_UP_MULTIPLE:
+			case EditorEvent.CODE_UP_MULTIPLE:
 				// stop the operation on UP events
 				outputEvent = EditorEvent.STOP;
 				break;
 
-			case EVENT_STOP: {
+			case EditorEvent.CODE_STOP: {
 				activePolyline().setTabsHidden(false);
 
 				// Check if polyline has only two vertices very close together.

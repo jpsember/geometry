@@ -8,23 +8,23 @@ import static com.js.basic.Tools.*;
 
 public class EditorEvent {
 
-	public static final int EVENT_NONE = 0;
+	public static final int CODE_NONE = 0;
 
 	// single touch events
-	public static final int EVENT_DOWN = 1;
-	public static final int EVENT_DRAG = 2;
-	public static final int EVENT_UP = 3;
+	public static final int CODE_DOWN = 1;
+	public static final int CODE_DRAG = 2;
+	public static final int CODE_UP = 3;
 
 	// multiple touch events
-	public static final int EVENT_DOWN_MULTIPLE = 4;
-	public static final int EVENT_DRAG_MULTIPLE = 5;
-	public static final int EVENT_UP_MULTIPLE = 6;
+	public static final int CODE_DOWN_MULTIPLE = 4;
+	public static final int CODE_DRAG_MULTIPLE = 5;
+	public static final int CODE_UP_MULTIPLE = 6;
 
 	// stop existing operation, if one is occurring
-	public static final int EVENT_STOP = 7;
+	public static final int CODE_STOP = 7;
 
-	public static final EditorEvent NONE = new EditorEvent(EVENT_NONE);
-	public static final EditorEvent STOP = new EditorEvent(EVENT_STOP);
+	public static final EditorEvent NONE = new EditorEvent(CODE_NONE);
+	public static final EditorEvent STOP = new EditorEvent(CODE_STOP);
 
 	public EditorEvent(int code, Point location) {
 		mCode = code;
@@ -46,15 +46,15 @@ public class EditorEvent {
 	}
 
 	public boolean isDownVariant() {
-		return mCode == EVENT_DOWN || mCode == EVENT_DOWN_MULTIPLE;
+		return mCode == CODE_DOWN || mCode == CODE_DOWN_MULTIPLE;
 	}
 
 	public boolean isUpVariant() {
-		return mCode == EVENT_UP || mCode == EVENT_UP_MULTIPLE;
+		return mCode == CODE_UP || mCode == CODE_UP_MULTIPLE;
 	}
 
 	public boolean isDragVariant() {
-		return mCode == EVENT_DRAG || mCode == EVENT_DRAG_MULTIPLE;
+		return mCode == CODE_DRAG || mCode == CODE_DRAG_MULTIPLE;
 	}
 
 	public boolean hasLocation() {

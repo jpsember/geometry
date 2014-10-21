@@ -243,13 +243,13 @@ public class Editor implements EditorEventListener {
 
 		if (mPendingAddObjectOperation != null) {
 			switch (event.getCode()) {
-			case EVENT_DOWN:
+			case EditorEvent.CODE_DOWN:
 				addNewObject(mPendingAddObjectOperation, event.getLocation());
 				// Have the now activated object-specific handler process the
 				// DOWN event
 				mPendingAddObjectOperation = null;
 				break;
-			case EVENT_DOWN_MULTIPLE:
+			case EditorEvent.CODE_DOWN_MULTIPLE:
 				mPendingAddObjectOperation = null;
 				break;
 			}
@@ -271,7 +271,7 @@ public class Editor implements EditorEventListener {
 
 		if (mCurrentOperation != null) {
 			event = mCurrentOperation.processEvent(event);
-			if (event.getCode() == EVENT_STOP) {
+			if (event.getCode() == EditorEvent.CODE_STOP) {
 				clearOperation();
 			}
 		}
@@ -474,7 +474,7 @@ public class Editor implements EditorEventListener {
 	void setOperation(EditorEventListener operation) {
 		mPendingAddObjectOperation = null;
 		if (mCurrentOperation != null) {
-			mCurrentOperation.processEvent(new EditorEvent(EVENT_STOP));
+			mCurrentOperation.processEvent(EditorEvent.STOP);
 		}
 		mCurrentOperation = operation;
 	}

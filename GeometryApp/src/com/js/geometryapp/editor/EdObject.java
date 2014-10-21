@@ -109,18 +109,25 @@ public abstract class EdObject implements Cloneable {
 	/**
 	 * Get bounding rectangle of object. Default implementation calculates
 	 * minimum bounding rectangle of the object's points
-	 * 
-	 * @return FRect
 	 */
 	public Rect getBounds() {
-		if (mBounds == null) {
-			mBounds = Rect.rectContainingPoints(mPoints);
-			if (isSelected()) {
-				float r = mEditor.pickRadius();
-				mBounds.inset(-r, -r);
+		return getBounds(false);
+	}
+
+	public Rect getBounds(boolean ignoreSelectedFlag) {
+		// Only use cached value if we're not ignoring the selected flag
+		if (!ignoreSelectedFlag || !isSelected()) {
+			if (mBounds == null) {
+				mBounds = Rect.rectContainingPoints(mPoints);
+				if (!ignoreSelectedFlag && isSelected()) {
+					float r = mEditor.pickRadius();
+					mBounds.inset(-r, -r);
+				}
 			}
+			return mBounds;
+		} else {
+			return Rect.rectContainingPoints(mPoints);
 		}
-		return mBounds;
 	}
 
 	/**

@@ -11,6 +11,7 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmStepper;
+import static com.js.basic.Tools.*;
 
 public class ScaleOperation implements EditorEventListener {
 
@@ -19,6 +20,7 @@ public class ScaleOperation implements EditorEventListener {
 	public ScaleOperation(Editor editor) {
 		mEditor = editor;
 		prepareScaleOperation();
+		doNothing();
 	}
 
 	@Override
@@ -44,12 +46,14 @@ public class ScaleOperation implements EditorEventListener {
 			{
 				float minDist = 0;
 				int minHandle = -1;
+				Point minHandleLocation = null;
 				for (int i = 0; i < NUM_HANDLES; i++) {
-					float dist = MyMath.distanceBetween(location,
-							handleBaseLocation(i));
+					Point handleLoc = handleBaseLocation(i, true);
+					float dist = MyMath.distanceBetween(location, handleLoc);
 					if (minHandle < 0 || dist < minDist) {
 						minDist = dist;
 						minHandle = i;
+						minHandleLocation = handleLoc;
 					}
 				}
 				if (minDist > mEditor.pickRadius()) {
@@ -57,8 +61,8 @@ public class ScaleOperation implements EditorEventListener {
 					break;
 				}
 				mActiveHandle = minHandle;
-				mInitialHandleOffset = MyMath.subtract(
-						handleBaseLocation(mActiveHandle), location);
+				mInitialHandleOffset = MyMath.subtract(minHandleLocation,
+						location);
 			}
 			break;
 
@@ -99,8 +103,10 @@ public class ScaleOperation implements EditorEventListener {
 		for (int i = 0; i < sLinesBetweenHandles.length; i += 2)
 			s.plotLine(handles.get(sLinesBetweenHandles[i]),
 					handles.get(sLinesBetweenHandles[i + 1]));
-		for (int i = 0; i < NUM_HANDLES; i++)
-			s.plotSprite(R.raw.squareicon, handles.get(i));
+		for (int i = 0; i < NUM_HANDLES; i++) {
+			s.plotSprite(R.raw.squareicon,
+					applyHandleExternalPadding(handles.get(i), i, true));
+		}
 	}
 
 	private static final int[] sLinesBetweenHandles = { 0, 2, 2, 4, 4, 6, 6, 0,
@@ -115,7 +121,7 @@ public class ScaleOperation implements EditorEventListener {
 	private Rect boundsForObjects(EdObjectArray objects) {
 		Rect bounds = null;
 		for (EdObject obj : objects) {
-			Rect objBounds = obj.getBounds();
+			Rect objBounds = obj.getBounds(true);
 			if (bounds == null)
 				bounds = objBounds;
 			else
@@ -132,8 +138,20 @@ public class ScaleOperation implements EditorEventListener {
 			// been derived from a previous scale procedure involving these
 			// objects, and recalculating it may produce a different rectangle
 			// which can be disorienting to the user.
-			if (mRect == null)
+			if (mRect == null) {
 				mRect = boundsForObjects(mEditor.objects().getSelectedObjects());
+				// ensure rectangle isn't degenerate
+				final float MIN_DIM = 1;
+				Point mid = mRect.midPoint();
+				if (mRect.width <= MIN_DIM) {
+					mRect.x = mid.x - MIN_DIM;
+					mRect.width = MIN_DIM;
+				}
+				if (mRect.height <= MIN_DIM) {
+					mRect.y = mid.y - MIN_DIM;
+					mRect.height = MIN_DIM;
+				}
+			}
 			mScaledRect = mRect;
 			calculateHandleBaseLocations(mRect, mHandles);
 			mOperationPrepared = true;
@@ -179,6 +197,34 @@ public class ScaleOperation implements EditorEventListener {
 	}
 
 	/**
+	 * Adjust the location of a handle to move it between its actual location
+	 * (on the bounding rect boundary) and its displayed location (some small
+	 * distance outside the rect). This adjustment allows the handles to appear
+	 * well-separated even if bounding rect is small (or degenerate).
+	 * 
+	 * @param location
+	 *            location of handle (actual vs displayed)
+	 * @param handleIndex
+	 * @param addFlag
+	 *            true to adjust actual->displayed; false for displayed->actual
+	 */
+	private Point applyHandleExternalPadding(Point location, int handleIndex,
+			boolean addFlag) {
+		Point adjustedLocation = new Point(location);
+		float sign = addFlag ? 1 : -1;
+		float p = mEditor.pickRadius() * .5f * sign;
+		if (handleIndex <= 2)
+			adjustedLocation.y -= p;
+		else if (handleIndex >= 4 && handleIndex <= 6)
+			adjustedLocation.y += p;
+		if (handleIndex == 0 || handleIndex >= 6)
+			adjustedLocation.x -= p;
+		else if (handleIndex >= 2 && handleIndex <= 4)
+			adjustedLocation.x += p;
+		return adjustedLocation;
+	}
+
+	/**
 	 * Filter user's touch location to be a valid new location for a particular
 	 * handle
 	 * 
@@ -189,6 +235,8 @@ public class ScaleOperation implements EditorEventListener {
 	 */
 	private Point filteredHandle(int handle, Point touchLocation) {
 		touchLocation = MyMath.add(touchLocation, mInitialHandleOffset);
+		touchLocation = applyHandleExternalPadding(touchLocation, handle, false);
+
 		float x0 = touchLocation.x;
 		float x1 = touchLocation.x;
 		float y0 = touchLocation.y;
@@ -196,16 +244,16 @@ public class ScaleOperation implements EditorEventListener {
 
 		// Add some padding to stop the scaled rectangle from becoming
 		// degenerate
-		final float PADDING = mEditor.pickRadius();
+		float padding = Math
+				.min(mRect.minDim() / 2, mEditor.pickRadius() * .3f);
 		if (handle == 0 || handle == 1 || handle == 2)
-			y1 = mRect.midY() - PADDING;
+			y1 = mRect.midY() - padding;
 		if (handle == 2 || handle == 3 || handle == 4)
-			x0 = mRect.midX() + PADDING;
+			x0 = mRect.midX() + padding;
 		if (handle == 4 || handle == 5 || handle == 6)
-			y0 = mRect.midY() + PADDING;
+			y0 = mRect.midY() + padding;
 		if (handle == 6 || handle == 7 || handle == 0)
-			x1 = mRect.midX() - PADDING;
-
+			x1 = mRect.midX() - padding;
 		touchLocation.setTo(MyMath.clamp(touchLocation.x, x0, x1),
 				MyMath.clamp(touchLocation.y, y0, y1));
 
@@ -213,13 +261,17 @@ public class ScaleOperation implements EditorEventListener {
 		// the handle and the midpoint
 		Point origin = mRect.midPoint();
 		Point filtered = new Point();
-		Point handleBase = handleBaseLocation(handle);
+		Point handleBase = handleBaseLocation(handle, false);
 		MyMath.ptDistanceToLine(touchLocation, handleBase, origin, filtered);
 		return filtered;
 	}
 
-	private Point handleBaseLocation(int handleIndex) {
-		return mHandles.get(handleIndex);
+	private Point handleBaseLocation(int handleIndex,
+			boolean applyExternalPadding) {
+		Point loc = mHandles.get(handleIndex);
+		if (applyExternalPadding)
+			loc = applyHandleExternalPadding(loc, handleIndex, true);
+		return loc;
 	}
 
 	/**

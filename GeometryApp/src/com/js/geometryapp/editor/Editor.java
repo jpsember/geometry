@@ -484,13 +484,17 @@ public class Editor {
 		}
 	}
 
-	private JSONArray getEdObjectsArrayJSON(EdObjectArray objects) {
-		ArrayList values = new ArrayList();
+	private JSONArray getEdObjectsArrayJSON(EdObjectArray objects)
+			throws JSONException {
+		JSONArray values = new JSONArray();
+
 		for (EdObject obj : objects) {
-			Map m = obj.getFactory().write(obj);
-			values.add(m);
+			values.put(obj.getFactory().write(obj));
 		}
-		return new JSONArray(values);
+		if (DB_JSON) {
+			pr("constructed JSONArray " + values);
+		}
+		return values;
 	}
 
 	private String compileObjectsToJSON() throws JSONException {

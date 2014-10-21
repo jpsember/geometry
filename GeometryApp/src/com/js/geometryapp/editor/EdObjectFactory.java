@@ -1,9 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,17 +51,19 @@ public abstract class EdObjectFactory {
 	/**
 	 * Construct Map from EdObject. Default implementation construct a partial
 	 * map contiaining only JSON_KEY_TYPE and JSON_KEY_VERTICES key/value pairs
+	 * 
+	 * @throws JSONException
 	 */
-	public Map write(EdObject obj) {
-		Map map = new HashMap();
+	public JSONObject write(EdObject obj) throws JSONException {
+		JSONObject map = new JSONObject();
 		map.put(JSON_KEY_TYPE, getTag());
-		ArrayList<Integer> f = new ArrayList();
+		JSONArray vertexArray = new JSONArray();
 		for (int i = 0; i < obj.nPoints(); i++) {
 			Point pt = obj.getPoint(i);
-			f.add((int) pt.x);
-			f.add((int) pt.y);
+			vertexArray.put((int) pt.x);
+			vertexArray.put((int) pt.y);
 		}
-		map.put(JSON_KEY_VERTICES, f);
+		map.put(JSON_KEY_VERTICES, vertexArray);
 		return map;
 	}
 

@@ -3,6 +3,7 @@ package com.js.basic;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,6 +19,13 @@ public class JSONTools {
 	 */
 	public static Iterable<String> keys(JSONObject object) {
 		return toList((Iterator<String>) object.keys());
+	}
+
+	/**
+	 * @deprecated not used at present
+	 */
+	public static Iterable<String> keys(Map map) {
+		return toList((Iterator<String>) map.keySet());
 	}
 
 	public static JSONObject parseMap(String source) throws JSONException {

@@ -3,7 +3,6 @@ package com.js.geometryapp.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -191,9 +190,9 @@ public class EdPolyline extends EdObject {
 		}
 
 		@Override
-		public Map write(EdObject obj) {
+		public JSONObject write(EdObject obj) throws JSONException {
 			EdPolyline p = (EdPolyline) obj;
-			Map map = super.write(obj);
+			JSONObject map = super.write(obj);
 			map.put(JSON_KEY_CURSOR, p.cursor());
 			map.put(JSON_KEY_CLOSED, p.closed());
 			return map;

@@ -96,40 +96,6 @@ public class Editor {
 					refresh();
 				}
 			});
-			mOptions.addStaticText("   ");
-			mOptions.addButton("Cut").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doCut();
-					refresh();
-				}
-			});
-			mOptions.addButton("Copy").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doCopy();
-					refresh();
-				}
-			});
-			mOptions.addButton("Paste").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doPaste();
-					refresh();
-				}
-			});
-			mOptions.addStaticText("   ");
-			mOptions.addButton("Dup").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doDup();
-					refresh();
-				}
-			});
-			if (ZAP_SUPPORTED) {
-				mOptions.addButton("Zap").addListener(new Listener() {
-					public void valueChanged(AbstractWidget widget) {
-						doZap();
-						refresh();
-					}
-				});
-			}
 			mOptions.popView();
 		}
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
@@ -137,6 +103,10 @@ public class Editor {
 		mOptions.popView();
 
 		// put additional controls in the options window
+
+		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
+				"Always plot editor");
+		mOptions.addStaticText("");
 
 		mOptions.pushView(mOptions.addView(false));
 		{
@@ -152,6 +122,11 @@ public class Editor {
 					refresh();
 				}
 			});
+		}
+		mOptions.popView();
+
+		mOptions.pushView(mOptions.addView(false));
+		{
 			mOptions.addButton("Scale").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doScale();
@@ -166,8 +141,48 @@ public class Editor {
 			});
 		}
 		mOptions.popView();
-		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
-				"Always plot editor");
+
+		mOptions.pushView(mOptions.addView(false));
+		{
+			mOptions.addButton("Cut").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doCut();
+					refresh();
+				}
+			});
+			mOptions.addButton("Copy").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doCopy();
+					refresh();
+				}
+			});
+		}
+		mOptions.popView();
+
+		mOptions.pushView(mOptions.addView(false));
+		{
+			mOptions.addButton("Paste").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doPaste();
+					refresh();
+				}
+			});
+			mOptions.addButton("Dup").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doDup();
+					refresh();
+				}
+			});
+			if (ZAP_SUPPORTED) {
+				mOptions.addButton("Zap").addListener(new Listener() {
+					public void valueChanged(AbstractWidget widget) {
+						doZap();
+						refresh();
+					}
+				});
+			}
+		}
+		mOptions.popView();
 	}
 
 	private void prepareAddObjectButtons(Object... args) {

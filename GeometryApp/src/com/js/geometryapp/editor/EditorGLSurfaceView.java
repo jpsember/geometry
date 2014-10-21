@@ -206,7 +206,7 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 	}
 
 	/**
-	 * Send editor event to editor, with particular touch location
+	 * Send editor event to editor
 	 */
 	private void sendEvent(EditorEvent event) {
 		mEditor.processEvent(event);

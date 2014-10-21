@@ -211,7 +211,7 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_DRAG:
-			if (event.isMultipleTouch())
+			if (!processingSingleTouch())
 				break;
 			if (!mDragStarted) {
 				mDragStarted = true;
@@ -221,9 +221,9 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_UP:
-			outputEvent = EditorEvent.STOP;
-			if (event.isMultipleTouch())
+			if (!processingSingleTouch())
 				break;
+			outputEvent = EditorEvent.STOP;
 			if (!mDragStarted) {
 				doClick(mInitialDownLocation);
 			} else {
@@ -233,6 +233,15 @@ public class DefaultEventListener implements EditorEventListener {
 		}
 
 		return outputEvent;
+	}
+
+	/**
+	 * The DefaultEventListener, being a special type, may receive a DRAG or UP
+	 * event before it has received any DOWN events. Use this method as a guard
+	 * to ensure that a (single) DOWN event was received
+	 */
+	private boolean processingSingleTouch() {
+		return mInitialDownLocation != null;
 	}
 
 	@Override

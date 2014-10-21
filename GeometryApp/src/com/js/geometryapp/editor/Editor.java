@@ -270,21 +270,9 @@ public class Editor {
 			}
 		}
 
-		// If there's no current operation, and we have a DOWN event, start a
-		// default event listener
-		if (mCurrentOperation == null) {
-			if (event.isDownVariant()) {
-				setOperation(new DefaultEventListener(this));
-			}
-		}
-
-		// If there's a current operation, handle the event
-		if (mCurrentOperation != null) {
-			event = mCurrentOperation.processEvent(event);
-			if (event.getCode() == EditorEvent.CODE_STOP) {
-				clearOperation();
-			}
-		}
+		event = mCurrentOperation.processEvent(event);
+		if (event.getCode() == EditorEvent.CODE_STOP)
+			clearOperation();
 
 		// Request a refresh of the editor view after any event
 		refresh();
@@ -856,8 +844,6 @@ public class Editor {
 		objects().setSelected(state.getSelectedSlots());
 		mDupAccumulator = new DupAccumulator(state.getDupAccumulator());
 	}
-
-	// ----------- event listener - related
 
 	private void setOperation(EditorEventListener operation) {
 		if (operation == null) {

@@ -262,11 +262,9 @@ public class Editor {
 					// fall through to let the new operation handle the touch
 					// event
 				} else {
-					// If no current operation exists (or it's the default),
-					// check if this is a press on an editable object vertex or
-					// such
-					if (mCurrentOperation == null
-							|| mCurrentOperation instanceof DefaultEventListener)
+					// If current operation is the default, check if this is a
+					// press that starts editing an existing object
+					if (mCurrentOperation == mDefaultOperation)
 						startEditableObjectOperation(event);
 				}
 			}
@@ -372,6 +370,7 @@ public class Editor {
 	}
 
 	public void begin() {
+		clearOperation();
 		updateButtonEnableStates();
 	}
 
@@ -647,11 +646,12 @@ public class Editor {
 	 * @return slot if found, or -1
 	 */
 	private int getEditableSlot() {
-		for (int slot = 0; slot < objects().size(); slot++) {
-			EdObject src = objects().get(slot);
-			if (src.isEditable()) {
-				return slot;
-			}
+		if (objects().getSelectedSlots().size() != 1)
+			return -1;
+		int slot = objects().getSelectedSlots().get(0);
+		EdObject src = objects().get(slot);
+		if (src.isEditable()) {
+			return slot;
 		}
 		return -1;
 	}
@@ -860,6 +860,11 @@ public class Editor {
 	// ----------- event listener - related
 
 	private void setOperation(EditorEventListener operation) {
+		if (operation == null) {
+			mDefaultOperation = new DefaultEventListener(this);
+			operation = mDefaultOperation;
+		}
+
 		// Clear any pending 'add' operation (which was waiting for a DOWN event
 		// to activate it)
 		mPendingAddObjectOperation = null;
@@ -898,6 +903,7 @@ public class Editor {
 
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
+	private EditorEventListener mDefaultOperation;
 	private EdObjectFactory mLastAddObjectOperation;
 	// If not null, on next DOWN event, we create a new object and start
 	// operation to edit it

@@ -191,13 +191,12 @@ public class DefaultEventListener implements EditorEventListener {
 	 */
 	@Override
 	public EditorEvent processEvent(EditorEvent event) {
-
-		// By default, we'll be handling this event; so clear return code
-		EditorEvent outputEvent = EditorEvent.NONE;
-
 		final boolean db = false && DEBUG_ONLY_FEATURES;
 		if (db)
 			event.printProcessingMessage("DefaultEventListener");
+
+		// By default, we'll be handling this event; so clear return code
+		EditorEvent outputEvent = EditorEvent.NONE;
 
 		switch (event.getCode()) {
 		default:

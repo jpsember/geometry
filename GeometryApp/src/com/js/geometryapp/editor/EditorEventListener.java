@@ -4,6 +4,11 @@ import com.js.geometryapp.AlgorithmStepper;
 
 public interface EditorEventListener {
 
+	/**
+	 * Process an event, if possible
+	 * 
+	 * @param event
+	 */
 	public EditorEvent processEvent(EditorEvent event);
 
 	// Perform any rendering specific to this operation

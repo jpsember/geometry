@@ -72,9 +72,6 @@ public class DefaultEventListener implements EditorEventListener {
 		// all objects; else cycle to next object and make it editable
 		List<Integer> pickSet = getPickSet(location);
 		if (pickSet.isEmpty()) {
-			if (mEditor.addMultiplePossible(location)) {
-				return;
-			}
 			mEditor.objects().unselectAll();
 			mEditor.resetDuplicationOffset();
 			return;
@@ -140,7 +137,6 @@ public class DefaultEventListener implements EditorEventListener {
 			mOriginalState = new EditorState(mEditor);
 			// Replace selected objects with copies in preparation for moving
 			mEditor.objects().replaceSelectedObjectsWithCopies();
-		} else if (mEditor.addMultiplePossible(location)) {
 		} else {
 			mDraggingRect = true;
 			mEditor.objects().unselectAll();
@@ -225,6 +221,7 @@ public class DefaultEventListener implements EditorEventListener {
 
 		case EditorEvent.CODE_DOWN:
 			// A double tap will add another object of the last type added
+			warning("this check for multiple touch should be in a separate event listener, called before the default one?");
 			if (event.isMultipleTouch())
 				mEditor.startAddAnotherOperation();
 			else

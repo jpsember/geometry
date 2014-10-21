@@ -43,9 +43,7 @@ import static com.js.android.Tools.*;
  */
 public class Editor implements EditorEventListener {
 
-	public static final boolean ADD_MULTIPLE_SUPPORTED = false; // Issue #137
 	private static final boolean ZAP_SUPPORTED = (false && DEBUG_ONLY_FEATURES);
-	private static final String WIDGET_ID_ADD_MULTIPLE = "_repeat_";
 
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;
@@ -186,9 +184,6 @@ public class Editor implements EditorEventListener {
 			});
 			i += 2;
 		}
-		if (ADD_MULTIPLE_SUPPORTED)
-			mAddRepeated = mOptions.addCheckBox(WIDGET_ID_ADD_MULTIPLE,
-					"label", "Repeat");
 		mOptions.popView();
 	}
 
@@ -244,10 +239,11 @@ public class Editor implements EditorEventListener {
 		if (mPendingAddObjectOperation != null) {
 			switch (event.getCode()) {
 			case EditorEvent.CODE_DOWN:
+				EdObjectFactory pendingAddObjectOperation = mPendingAddObjectOperation;
 				mPendingAddObjectOperation = null;
 				if (event.isMultipleTouch())
 					break;
-				addNewObject(mPendingAddObjectOperation, event.getLocation());
+				addNewObject(pendingAddObjectOperation, event.getLocation());
 				// Have the now activated object-specific handler process the
 				// DOWN event
 				break;
@@ -431,19 +427,6 @@ public class Editor implements EditorEventListener {
 	}
 
 	/**
-	 * Invoke a repeat of the last 'add object' operation
-	 */
-	void startAddAnotherOperation() {
-		if (mLastAddObjectOperation != null) {
-			startAddObjectOperation(mLastAddObjectOperation);
-		}
-	}
-
-	EditorEventListener currentOperation() {
-		return mCurrentOperation;
-	}
-
-	/**
 	 * Get the EdObjectArray being edited
 	 */
 	EdObjectArray objects() {
@@ -468,14 +451,6 @@ public class Editor implements EditorEventListener {
 		mLastAddObjectOperation = objectType;
 		if (false) // figure out a way to determine an appropriate toast message
 			toast(context(), "Add segment!");
-	}
-
-	void setOperation(EditorEventListener operation) {
-		mPendingAddObjectOperation = null;
-		if (mCurrentOperation != null) {
-			mCurrentOperation.processEvent(EditorEvent.STOP);
-		}
-		mCurrentOperation = operation;
 	}
 
 	private void persistEditorStateAux() {
@@ -652,26 +627,6 @@ public class Editor implements EditorEventListener {
 
 	void resetDuplicationOffset() {
 		mDupAccumulator = new DupAccumulator(pickRadius());
-	}
-
-	/**
-	 * Determine if there's an editable object which can construct an edit
-	 * operation for a particular location. If so, start the operation and
-	 * return true
-	 */
-	boolean startEditableObjectOperation(Point location) {
-		int editableSlot = getEditableSlot();
-		if (editableSlot >= 0) {
-			EdObject obj = objects().get(editableSlot);
-			EditorEventListener operation = obj.buildEditOperation(
-					editableSlot, location);
-
-			if (operation != null) {
-				setOperation(operation);
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -884,23 +839,54 @@ public class Editor implements EditorEventListener {
 		return algorithmInput;
 	}
 
-	boolean addMultiplePossible(Point location) {
-		if (!ADD_MULTIPLE_SUPPORTED)
-			return false;
-		if (!mAddRepeated.getBooleanValue())
-			return false;
-		if (mLastAddObjectOperation == null)
-			return false;
-		startAddObjectOperation(mLastAddObjectOperation);
-		addNewObject(mPendingAddObjectOperation, location);
-		return true;
-	}
-
 	void setState(EditorState state) {
 		setObjects(state.getObjects().getMutableCopy());
 		setClipboard(state.getClipboard());
 		objects().setSelected(state.getSelectedSlots());
 		mDupAccumulator = new DupAccumulator(state.getDupAccumulator());
+	}
+
+	// ----------- event listener - related
+
+	/**
+	 * Invoke a repeat of the last 'add object' operation
+	 */
+	void startAddAnotherOperation() {
+		if (mLastAddObjectOperation != null) {
+			startAddObjectOperation(mLastAddObjectOperation);
+		}
+	}
+
+	EditorEventListener currentOperation() {
+		return mCurrentOperation;
+	}
+
+	void setOperation(EditorEventListener operation) {
+		mPendingAddObjectOperation = null;
+		if (mCurrentOperation != null) {
+			mCurrentOperation.processEvent(EditorEvent.STOP);
+		}
+		mCurrentOperation = operation;
+	}
+
+	/**
+	 * Determine if there's an editable object which can construct an edit
+	 * operation for a particular location. If so, start the operation and
+	 * return true
+	 */
+	boolean startEditableObjectOperation(Point location) {
+		int editableSlot = getEditableSlot();
+		if (editableSlot >= 0) {
+			EdObject obj = objects().get(editableSlot);
+			EditorEventListener operation = obj.buildEditOperation(
+					editableSlot, location);
+
+			if (operation != null) {
+				setOperation(operation);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
@@ -922,7 +908,6 @@ public class Editor implements EditorEventListener {
 	private EdObjectArray mClipboard = new EdObjectArray();
 	private QuiescentDelayOperation mPendingEnableOperation;
 	private CheckBoxWidget mRenderAlways;
-	private CheckBoxWidget mAddRepeated;
 	private DupAccumulator mDupAccumulator;
 
 }

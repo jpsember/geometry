@@ -62,8 +62,8 @@ public class AlgorithmOptions {
 	 */
 	void prepareViews(ViewGroup containingView) {
 		mContainingView = containingView;
-		mPrimaryWidgetGroup = new WidgetGroup(getContext());
-		mContainingView.addView(mPrimaryWidgetGroup.container());
+		mPrimaryWidgetGroup = new WidgetGroup(getContext(), false);
+		mContainingView.addView(mPrimaryWidgetGroup.getOuterContainer());
 	}
 
 	private void addPrimaryWidgets() {
@@ -100,7 +100,7 @@ public class AlgorithmOptions {
 	private void prepareEditorOperationRecord() {
 		ActiveOperationRecord algorithmRecord = new ActiveOperationRecord();
 		mAlgorithms.add(algorithmRecord);
-		algorithmRecord.setWidgetGroup(new WidgetGroup(getContext()));
+		algorithmRecord.setWidgetGroup(new WidgetGroup(getContext(), true));
 		activateSecondaryWidgetGroup(algorithmRecord);
 		mEditor.prepareOptions();
 	}
@@ -245,8 +245,8 @@ public class AlgorithmOptions {
 	 */
 	public void pushView(LinearLayout container) {
 		WidgetGroup w = currentWidgetGroup();
-		mWidgetContainerStack.add(w.getContainer());
-		w.setContainer(container);
+		mWidgetContainerStack.add(w.getInnerContainer());
+		w.setInnerContainer(container);
 	}
 
 	/**
@@ -274,7 +274,7 @@ public class AlgorithmOptions {
 	public void popView() {
 		WidgetGroup w = currentWidgetGroup();
 		LinearLayout v = pop(mWidgetContainerStack);
-		w.setContainer(v);
+		w.setInnerContainer(v);
 	}
 
 	void addWidget(AbstractWidget w) {
@@ -407,10 +407,11 @@ public class AlgorithmOptions {
 
 		activateSecondaryWidgetGroup(ar);
 		if (mActiveAlgorithm != null)
-			mContainingView.removeView(mActiveAlgorithm.widgets().container());
+			mContainingView.removeView(mActiveAlgorithm.widgets()
+					.getOuterContainer());
 		mActiveAlgorithm = ar;
-		mContainingView.addView(mActiveAlgorithm.widgets().container(),
-				UITools.layoutParams(false));
+
+		mContainingView.addView(mActiveAlgorithm.widgets().getOuterContainer());
 
 		if (mActiveAlgorithm.isAlgorithm()) {
 			// Copy total, target steps from algorithm-specific versions
@@ -585,7 +586,7 @@ public class AlgorithmOptions {
 			mAlgorithms.add(algorithmRecord);
 
 			algorithmRecord.setDelegate(algorithm);
-			algorithmRecord.setWidgetGroup(new WidgetGroup(mContext));
+			algorithmRecord.setWidgetGroup(new WidgetGroup(mContext, true));
 			activateSecondaryWidgetGroup(algorithmRecord);
 			// Add hidden values to represent total, target steps; these will be
 			// copied to/from the main slider as the algorithm becomes

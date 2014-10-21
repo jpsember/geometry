@@ -64,8 +64,6 @@ public class Editor implements EditorEventListener {
 	}
 
 	/**
-	 * Constructor
-	 * 
 	 * @param contentView
 	 *            view displaying objects being edited; probably a GLSurfaceView
 	 */

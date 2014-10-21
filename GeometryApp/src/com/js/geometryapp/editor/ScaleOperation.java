@@ -57,8 +57,8 @@ public class ScaleOperation implements EditorEventListener {
 					}
 				}
 				if (minDist > mEditor.pickRadius()) {
-					returnCode = EVENT_STOP;
-					break;
+					mOperationPrepared = false;
+					return EVENT_STOP;
 				}
 				mActiveHandle = minHandle;
 				mInitialHandleOffset = MyMath.subtract(minHandleLocation,
@@ -67,16 +67,18 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 
 		case EVENT_DRAG:
+			if (!mOperationPrepared)
+				break;
 			performScale(mActiveHandle, location);
 			break;
 
 		case EVENT_UP: {
-			if (mOperationPrepared) {
-				Command c = Command.constructForGeneralChanges(mOriginalState,
-						new EditorState(mEditor), "scale");
-				mEditor.pushCommand(c);
-				setUnprepared();
-			}
+			if (!mOperationPrepared)
+				break;
+			Command c = Command.constructForGeneralChanges(mOriginalState,
+					new EditorState(mEditor), "scale");
+			mEditor.pushCommand(c);
+			setUnprepared();
 		}
 			break;
 

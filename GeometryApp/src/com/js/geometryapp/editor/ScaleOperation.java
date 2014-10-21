@@ -109,8 +109,7 @@ public class ScaleOperation implements EditorEventListener {
 		}
 	}
 
-	private static final int[] sLinesBetweenHandles = { 0, 2, 2, 4, 4, 6, 6, 0,
-			1, 5, 3, 7, };
+	private static final int[] sLinesBetweenHandles = { 0, 2, 2, 4, 4, 6, 6, 0, };
 
 	/**
 	 * Calculate the bounding rectangle for a set of objects

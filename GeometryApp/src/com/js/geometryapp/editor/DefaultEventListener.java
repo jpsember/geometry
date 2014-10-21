@@ -208,23 +208,23 @@ public class DefaultEventListener implements EditorEventListener {
 	 * </pre>
 	 */
 	@Override
-	public int processEvent(int eventCode, Point location) {
+	public EditorEvent processEvent(EditorEvent event) {
+
 		// By default, we'll be handling this event; so clear return code
-		int returnCode = EVENT_NONE;
+		EditorEvent outputEvent = EditorEvent.NONE;
 
 		final boolean db = false && DEBUG_ONLY_FEATURES;
 		if (db)
-			pr("DefaultEventListener " + Editor.editorEventName(eventCode)
-					+ " at " + location);
+			event.printProcessingMessage("DefaultEventListener");
 
-		switch (eventCode) {
+		switch (event.getCode()) {
 		default:
 			// Don't know how to handle this event, so restore return code
-			returnCode = eventCode;
+			outputEvent = event;
 			break;
 
 		case EVENT_DOWN:
-			mInitialDownLocation = location;
+			mInitialDownLocation = event.getLocation();
 			break;
 
 		case EVENT_DRAG:
@@ -234,7 +234,7 @@ public class DefaultEventListener implements EditorEventListener {
 				if (mEditor.currentOperation() != this)
 					break;
 			}
-			doContinueDrag(location);
+			doContinueDrag(event.getLocation());
 			break;
 
 		case EVENT_UP:
@@ -243,7 +243,7 @@ public class DefaultEventListener implements EditorEventListener {
 			} else {
 				doFinishDrag();
 			}
-			returnCode = EVENT_STOP;
+			outputEvent = EditorEvent.STOP;
 			break;
 
 		// A double tap will add another object of the last type added
@@ -252,11 +252,11 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EVENT_UP_MULTIPLE:
-			returnCode = EVENT_STOP;
+			outputEvent = EditorEvent.STOP;
 			break;
 		}
 
-		return returnCode;
+		return outputEvent;
 	}
 
 	@Override

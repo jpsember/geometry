@@ -25,44 +25,44 @@ public class RotateOperation implements EditorEventListener {
 	}
 
 	@Override
-	public int processEvent(int eventCode, Point location) {
+	public EditorEvent processEvent(EditorEvent event) {
 
 		// By default, we'll be handling this event; so clear return code
-		int returnCode = EVENT_NONE;
+		EditorEvent outputEvent = EditorEvent.NONE;
 
-		switch (eventCode) {
+		switch (event.getCode()) {
 		default:
 			// Don't know how to handle this event, so restore return code
-			returnCode = eventCode;
+			outputEvent = event;
 			break;
 
 		case EVENT_DOWN:
 			// Check if user has pressed on a tab for some other operation to
 			// start (e.g., adjusting vertex location)
-			if (mEditor.startEditableObjectOperation(location))
+			if (mEditor.startEditableObjectOperation(event.getLocation()))
 				break;
 
 			prepareRotateOperation();
 			// Get location of press within rotated space
-			Point rotLoc = new Point(location);
+			Point rotLoc = new Point(event.getLocation());
 			rotLoc.apply(calcTotalRotateInvTransform());
 			if (!mRect.contains(rotLoc)
-					|| !touchReasonableDistanceFromOrigin(location)) {
-				returnCode = EVENT_STOP;
+					|| !touchReasonableDistanceFromOrigin(event.getLocation())) {
+				outputEvent = EditorEvent.STOP;
 				break;
 			}
-			mInitialTouchLocation = location;
+			mInitialTouchLocation = event.getLocation();
 			mDragged = false;
 			break;
 
 		case EVENT_DRAG:
 			mDragged = true;
-			performRotate(location);
+			performRotate(event.getLocation());
 			break;
 
 		case EVENT_UP: {
 			if (!mDragged) {
-				returnCode = EVENT_STOP;
+				outputEvent = EditorEvent.STOP;
 				break;
 			}
 			if (mOperationPrepared) {
@@ -75,11 +75,11 @@ public class RotateOperation implements EditorEventListener {
 			break;
 
 		case EVENT_UP_MULTIPLE:
-			returnCode = EVENT_STOP;
+			outputEvent = EditorEvent.STOP;
 			break;
 		}
 
-		return returnCode;
+		return outputEvent;
 	}
 
 	@Override

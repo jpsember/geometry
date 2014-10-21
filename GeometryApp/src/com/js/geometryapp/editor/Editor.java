@@ -239,12 +239,12 @@ public class Editor implements EditorEventListener {
 	 * EditEventListener interface
 	 */
 	@Override
-	public int processEvent(int eventCode, Point location) {
+	public EditorEvent processEvent(EditorEvent event) {
 
 		if (mPendingAddObjectOperation != null) {
-			switch (eventCode) {
+			switch (event.getCode()) {
 			case EVENT_DOWN:
-				addNewObject(mPendingAddObjectOperation, location);
+				addNewObject(mPendingAddObjectOperation, event.getLocation());
 				// Have the now activated object-specific handler process the
 				// DOWN event
 				mPendingAddObjectOperation = null;
@@ -258,20 +258,20 @@ public class Editor implements EditorEventListener {
 		// If there's no current operation, and we have a DOWN event, start a
 		// default event listener
 		if (mCurrentOperation == null) {
-			if (eventCode == EVENT_DOWN || eventCode == EVENT_DOWN_MULTIPLE) {
+			if (event.isDownVariant()) {
 				setOperation(new DefaultEventListener(this));
 			}
 		}
 
-		if (eventCode == EVENT_UP || eventCode == EVENT_UP_MULTIPLE) {
+		if (event.isUpVariant()) {
 			mTouchLocation = null;
-		} else if (location != null) {
-			mTouchLocation = location;
+		} else if (event.hasLocation()) {
+			mTouchLocation = event.getLocation();
 		}
 
 		if (mCurrentOperation != null) {
-			eventCode = mCurrentOperation.processEvent(eventCode, location);
-			if (eventCode == EVENT_STOP) {
+			event = mCurrentOperation.processEvent(event);
+			if (event.getCode() == EVENT_STOP) {
 				clearOperation();
 			}
 		}
@@ -279,7 +279,8 @@ public class Editor implements EditorEventListener {
 		// Request a refresh of the editor view after any event
 		refresh();
 
-		return eventCode;
+		warning("not sure we're supposed to return this event here");
+		return event;
 	}
 
 	@Override
@@ -473,7 +474,7 @@ public class Editor implements EditorEventListener {
 	void setOperation(EditorEventListener operation) {
 		mPendingAddObjectOperation = null;
 		if (mCurrentOperation != null) {
-			mCurrentOperation.processEvent(EVENT_STOP, null);
+			mCurrentOperation.processEvent(new EditorEvent(EVENT_STOP));
 		}
 		mCurrentOperation = operation;
 	}
@@ -827,17 +828,6 @@ public class Editor implements EditorEventListener {
 			mCommandHistoryCursor -= del;
 			mCommandHistory.subList(0, del).clear();
 		}
-	}
-
-	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG", "UP",
-			"DOWN_M", "DRAG_M", "UP_M", "STOP", };
-
-	public static String editorEventName(int eventCode) {
-		if (!DEBUG_ONLY_FEATURES)
-			return null;
-		if (eventCode < 0 || eventCode >= sEditorEventNames.length)
-			return "??#" + eventCode + "??";
-		return sEditorEventNames[eventCode];
 	}
 
 	public float pickRadius() {

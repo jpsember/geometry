@@ -80,24 +80,23 @@ public class EdSegment extends EdObject {
 		}
 
 		@Override
-		public int processEvent(int eventCode, Point location) {
+		public EditorEvent processEvent(EditorEvent event) {
 
 			final boolean db = false && DEBUG_ONLY_FEATURES;
 			if (db)
-				pr("EdSegment processEvent "
-						+ Editor.editorEventName(eventCode));
+				event.printProcessingMessage("EdSegment");
 
-			if (location != null)
-				initializeOperation(location);
+			if (event.hasLocation())
+				initializeOperation(event.getLocation());
 
 			// By default, we'll be handling the event
-			int returnCode = EVENT_NONE;
+			EditorEvent outputEvent = EditorEvent.NONE;
 
-			switch (eventCode) {
+			switch (event.getCode()) {
 			default:
 				// we don't know how to handle this event, so pass it
 				// through
-				returnCode = eventCode;
+				outputEvent = event;
 				break;
 
 			case EVENT_DOWN:
@@ -107,7 +106,7 @@ public class EdSegment extends EdObject {
 				EdSegment seg = mEditor.objects().get(mEditSlot);
 				// Create a new copy of the segment, with modified endpoint
 				EdSegment seg2 = seg.getCopy();
-				seg2.setPoint(mEditPointIndex, location);
+				seg2.setPoint(mEditPointIndex, event.getLocation());
 				if (db)
 					pr(" changed endpoint; " + seg2);
 				mEditor.objects().set(mEditSlot, seg2);
@@ -124,15 +123,15 @@ public class EdSegment extends EdObject {
 							FACTORY.getTag()));
 				}
 				// stop the operation on UP events
-				returnCode = EVENT_STOP;
+				outputEvent = EditorEvent.STOP;
 				break;
 
 			case EVENT_UP_MULTIPLE:
 				// stop the operation on UP events
-				returnCode = EVENT_STOP;
+				outputEvent = EditorEvent.STOP;
 				break;
 			}
-			return returnCode;
+			return outputEvent;
 		}
 
 		@Override

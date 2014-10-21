@@ -24,25 +24,24 @@ public class ScaleOperation implements EditorEventListener {
 	}
 
 	@Override
-	public int processEvent(int eventCode, Point location) {
+	public EditorEvent processEvent(EditorEvent event) {
 		final boolean db = true && DEBUG_ONLY_FEATURES;
 		if (db)
-			pr("ScaleOperation.processEvent "
-					+ Editor.editorEventName(eventCode));
+			event.printProcessingMessage("ScaleOperation");
 
 		// By default, we'll be handling this event; so clear return code
-		int returnCode = EVENT_NONE;
+		EditorEvent outputEvent = EditorEvent.NONE;
 
-		switch (eventCode) {
+		switch (event.getCode()) {
 		default:
 			// Don't know how to handle this event, so restore return code
-			returnCode = eventCode;
+			outputEvent = event;
 			break;
 
 		case EVENT_DOWN: {
 			// Check if user has pressed on a tab for some other operation to
 			// start (e.g., adjusting vertex location)
-			if (mEditor.startEditableObjectOperation(location))
+			if (mEditor.startEditableObjectOperation(event.getLocation()))
 				break;
 
 			prepareScaleOperation();
@@ -52,7 +51,8 @@ public class ScaleOperation implements EditorEventListener {
 			Point minHandleLocation = null;
 			for (int i = 0; i < NUM_HANDLES; i++) {
 				Point handleLoc = handleBaseLocation(i, true);
-				float dist = MyMath.distanceBetween(location, handleLoc);
+				float dist = MyMath.distanceBetween(event.getLocation(),
+						handleLoc);
 				if (minHandle < 0 || dist < minDist) {
 					minDist = dist;
 					minHandle = i;
@@ -61,17 +61,18 @@ public class ScaleOperation implements EditorEventListener {
 			}
 			if (minDist > mEditor.pickRadius()) {
 				mPerformingDragSequence = false;
-				return EVENT_STOP;
+				return EditorEvent.STOP;
 			}
 			mActiveHandle = minHandle;
-			mInitialHandleOffset = MyMath.subtract(minHandleLocation, location);
+			mInitialHandleOffset = MyMath.subtract(minHandleLocation,
+					event.getLocation());
 		}
 			break;
 
 		case EVENT_DRAG:
 			if (!mPerformingDragSequence)
 				break;
-			performScale(mActiveHandle, location);
+			performScale(mActiveHandle, event.getLocation());
 			break;
 
 		case EVENT_UP: {
@@ -85,7 +86,7 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 		}
 
-		return returnCode;
+		return outputEvent;
 	}
 
 	@Override

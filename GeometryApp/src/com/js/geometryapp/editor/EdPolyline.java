@@ -375,23 +375,20 @@ public class EdPolyline extends EdObject {
 		}
 
 		@Override
-		public int processEvent(int eventCode, Point location) {
+		public EditorEvent processEvent(EditorEvent event) {
 
 			final boolean db = false && DEBUG_ONLY_FEATURES;
-			if (db && eventCode != mPreviousEventProcessed)
-				pr("EdPolyline processEvent "
-						+ Editor.editorEventName(eventCode) + " loc "
-						+ location);
-			mPreviousEventProcessed = eventCode;
+			if (db)
+				event.printProcessingMessage("EdPolyline");
 
 			// By default, we'll be handling the event
-			int returnCode = EVENT_NONE;
+			EditorEvent outputEvent = EditorEvent.NONE;
 
-			switch (eventCode) {
+			switch (event.getCode()) {
 			default:
 				// we don't know how to handle this event, so pass it
 				// through
-				returnCode = eventCode;
+				outputEvent = event;
 				break;
 
 			case EVENT_DOWN:
@@ -404,7 +401,7 @@ public class EdPolyline extends EdObject {
 				polyline.setTabsHidden(true);
 				{
 					mChangesMade = true;
-					polyline.setPoint(polyline.cursor(), location);
+					polyline.setPoint(polyline.cursor(), event.getLocation());
 					int absorbVertex = findAbsorbingVertex(polyline);
 					mSignal = (absorbVertex >= 0);
 					if (mSignal) {
@@ -429,12 +426,12 @@ public class EdPolyline extends EdObject {
 							mOriginalState, new EditorState(mEditor), null));
 				}
 				// stop the operation on UP events
-				returnCode = EVENT_STOP;
+				outputEvent = EditorEvent.STOP;
 				break;
 
 			case EVENT_UP_MULTIPLE:
 				// stop the operation on UP events
-				returnCode = EVENT_STOP;
+				outputEvent = EditorEvent.STOP;
 				break;
 
 			case EVENT_STOP: {
@@ -455,7 +452,7 @@ public class EdPolyline extends EdObject {
 			}
 				break;
 			}
-			return returnCode;
+			return outputEvent;
 		}
 
 		/**
@@ -535,8 +532,6 @@ public class EdPolyline extends EdObject {
 		private boolean mChangesMade;
 		private boolean mSignal;
 		private int mOperType;
-		// To filter some debug printing only
-		private int mPreviousEventProcessed;
 	}
 
 }

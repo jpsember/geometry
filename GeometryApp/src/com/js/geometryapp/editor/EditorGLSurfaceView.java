@@ -106,8 +106,8 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 						// If we're still in the WAIT state, switch to TOUCH
 						if (mTouchState == STATE_WAIT) {
 							setTouchState(STATE_TOUCH);
-							sendEvent(EditorEventListener.EVENT_DOWN,
-									mInitialTouchLocation);
+							sendEvent(new EditorEvent(EditorEvent.EVENT_DOWN,
+									mInitialTouchLocation));
 						}
 					}
 				}, MULTITOUCH_TIMEOUT_MS);
@@ -199,14 +199,14 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 	 * Send editor event to editor, with current touch location
 	 */
 	private void sendEvent(int code) {
-		sendEvent(code, mCurrentTouchLocation);
+		sendEvent(new EditorEvent(code, mCurrentTouchLocation));
 	}
 
 	/**
 	 * Send editor event to editor, with particular touch location
 	 */
-	private void sendEvent(int code, Point location) {
-		mEditor.processEvent(code, location);
+	private void sendEvent(EditorEvent event) {
+		mEditor.processEvent(event);
 	}
 
 	@Override

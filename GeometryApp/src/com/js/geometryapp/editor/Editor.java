@@ -566,6 +566,7 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
+		clearOperation();
 
 		EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
 		setClipboard(newClipboard);
@@ -581,6 +582,7 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
+		clearOperation();
 		EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
 		setClipboard(newClipboard);
 
@@ -593,6 +595,7 @@ public class Editor implements EditorEventListener {
 	private void doPaste() {
 		if (mClipboard.isEmpty())
 			return;
+		clearOperation();
 		EditorState originalState = new EditorState(this);
 		List<Integer> newSelected = SlotList.build();
 
@@ -613,6 +616,7 @@ public class Editor implements EditorEventListener {
 
 	private void doZap() {
 		if (ZAP_SUPPORTED) {
+			clearOperation();
 			objects().clear();
 			mClipboard = new EdObjectArray();
 			mCommandHistory.clear();
@@ -624,6 +628,7 @@ public class Editor implements EditorEventListener {
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
+		clearOperation();
 		List<Integer> newSelected = SlotList.build();
 
 		Point offset = getDupAccumulator().getOffsetForDup();

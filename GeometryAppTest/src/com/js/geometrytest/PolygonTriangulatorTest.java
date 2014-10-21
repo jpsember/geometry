@@ -51,7 +51,7 @@ public class PolygonTriangulatorTest extends MyTestCase {
 	}
 
 	public void testTriangulateLargePolygon() {
-		IOSnapshot.open(true);
+		IOSnapshot.open();
 		buildTestPolygon(Polygon.TESTPOLY_DRAGON_X + 6);
 
 		pr(mPolygon);

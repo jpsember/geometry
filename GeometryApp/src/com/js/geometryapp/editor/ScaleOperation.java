@@ -25,7 +25,7 @@ public class ScaleOperation implements EditorEventListener {
 
 	@Override
 	public EditorEvent processEvent(EditorEvent event) {
-		final boolean db = true && DEBUG_ONLY_FEATURES;
+		final boolean db = false && DEBUG_ONLY_FEATURES;
 		if (db)
 			event.printProcessingMessage("ScaleOperation");
 
@@ -39,11 +39,6 @@ public class ScaleOperation implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_DOWN: {
-			// Check if user has pressed on a tab for some other operation to
-			// start (e.g., adjusting vertex location)
-			if (mEditor.startEditableObjectOperation(event.getLocation()))
-				break;
-
 			prepareScaleOperation();
 			// Find handle
 			float minDist = 0;

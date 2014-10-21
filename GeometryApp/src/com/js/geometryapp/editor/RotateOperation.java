@@ -37,11 +37,6 @@ public class RotateOperation implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_DOWN:
-			// Check if user has pressed on a tab for some other operation to
-			// start (e.g., adjusting vertex location)
-			if (mEditor.startEditableObjectOperation(event.getLocation()))
-				break;
-
 			prepareRotateOperation();
 			// Get location of press within rotated space
 			Point rotLoc = new Point(event.getLocation());

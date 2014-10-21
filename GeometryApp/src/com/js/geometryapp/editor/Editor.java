@@ -261,6 +261,13 @@ public class Editor {
 					addNewObject(factory, event.getLocation());
 					// fall through to let the new operation handle the touch
 					// event
+				} else {
+					// If no current operation exists (or it's the default),
+					// check if this is a press on an editable object vertex or
+					// such
+					if (mCurrentOperation == null
+							|| mCurrentOperation instanceof DefaultEventListener)
+						startEditableObjectOperation(event);
 				}
 			}
 		}
@@ -868,13 +875,18 @@ public class Editor {
 	 * Determine if there's an editable object which can construct an edit
 	 * operation for a particular location. If so, start the operation and
 	 * return true
+	 * 
+	 * @param event
+	 *            EditorEvent; if not (single) DOWN event, always returns false
 	 */
-	boolean startEditableObjectOperation(Point location) {
+	private boolean startEditableObjectOperation(EditorEvent event) {
+		if (!(event.isDownVariant() && !event.isMultipleTouch()))
+			return false;
 		int editableSlot = getEditableSlot();
 		if (editableSlot >= 0) {
 			EdObject obj = objects().get(editableSlot);
 			EditorEventListener operation = obj.buildEditOperation(
-					editableSlot, location);
+					editableSlot, event.getLocation());
 
 			if (operation != null) {
 				setOperation(operation);

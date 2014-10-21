@@ -62,12 +62,6 @@ public class DefaultEventListener implements EditorEventListener {
 	 */
 	private void doClick(Point location) {
 
-		// As we did for the drag logic, first check: if there is an editable
-		// object, and object can construct an edit operation for the location,
-		// start that operation
-		if (mEditor.startEditableObjectOperation(location))
-			return;
-
 		// Construct pick set of selected objects. If empty, unselect
 		// all objects; else cycle to next object and make it editable
 		List<Integer> pickSet = getPickSet(location);
@@ -95,11 +89,6 @@ public class DefaultEventListener implements EditorEventListener {
 		/**
 		 * <pre>
 		 * 
-		 * If there is an editable object, and object can construct an edit operation
-		 * for the location, start that operation;
-		 * 
-		 * else
-		 * 
 		 * If initial press pickset contains any selected objects, move all 
 		 * selected objects;
 		 * 
@@ -118,9 +107,6 @@ public class DefaultEventListener implements EditorEventListener {
 		 * 
 		 * </pre>
 		 */
-
-		if (mEditor.startEditableObjectOperation(location))
-			return;
 
 		// get 'pick set' for touch location
 		List<Integer> pickSet = getPickSet(location);

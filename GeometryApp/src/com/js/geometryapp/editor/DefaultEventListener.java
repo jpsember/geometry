@@ -231,8 +231,6 @@ public class DefaultEventListener implements EditorEventListener {
 			if (!mDragStarted) {
 				mDragStarted = true;
 				doStartDrag(mInitialDownLocation);
-				if (mEditor.currentOperation() != this)
-					break;
 			}
 			doContinueDrag(event.getLocation());
 			break;

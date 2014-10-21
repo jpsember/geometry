@@ -40,14 +40,14 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 		super.setRenderer(renderer);
 	}
 
-	public void setEditor(Editor editor) {
+	public void setEditor(Editor editor, ConcreteStepper stepper) {
 		mEditor = editor;
+		mStepper = stepper;
 	}
 
 	@Override
 	public boolean onTouchEvent(final MotionEvent e) {
 		// Make sure we're synchronized with the OpenGL thread
-		ConcreteStepper mStepper = mEditor.getStepper();
 		// We need to have a bogus call to performClick() to prevent compile
 		// warnings
 		boolean mAlwaysFalse = db;
@@ -228,5 +228,6 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 	private Point mInitialTouchLocation;
 	private Point mCurrentTouchLocation;
 	private Editor mEditor;
+	private ConcreteStepper mStepper;
 	private AlgorithmRenderer mRenderer;
 }

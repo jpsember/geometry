@@ -187,10 +187,6 @@ public class Editor {
 		mOptions.popView();
 	}
 
-	public ConcreteStepper getStepper() {
-		return mStepper;
-	}
-
 	/**
 	 * Get the view displaying the editor; construct if necessary. This contains
 	 * the contentView
@@ -252,6 +248,7 @@ public class Editor {
 			// If multiple DOWN, start adding another object of the most recent
 			// type
 			if (event.isMultipleTouch()) {
+				warning("maybe instead of last added object, include last editable object as well");
 				if (mLastAddObjectOperation != null) {
 					doStartAddObjectOperation(mLastAddObjectOperation);
 					return;
@@ -855,11 +852,7 @@ public class Editor {
 
 	// ----------- event listener - related
 
-	EditorEventListener currentOperation() {
-		return mCurrentOperation;
-	}
-
-	void setOperation(EditorEventListener operation) {
+	private void setOperation(EditorEventListener operation) {
 		// Clear any pending 'add' operation (which was waiting for a DOWN event
 		// to activate it)
 		mPendingAddObjectOperation = null;

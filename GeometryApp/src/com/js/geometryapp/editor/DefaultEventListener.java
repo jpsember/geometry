@@ -220,15 +220,14 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_DOWN:
-			// A double tap will add another object of the last type added
-			warning("this check for multiple touch should be in a separate event listener, called before the default one?");
 			if (event.isMultipleTouch())
-				mEditor.startAddAnotherOperation();
-			else
-				mInitialDownLocation = event.getLocation();
+				break;
+			mInitialDownLocation = event.getLocation();
 			break;
 
 		case EditorEvent.CODE_DRAG:
+			if (event.isMultipleTouch())
+				break;
 			if (!mDragStarted) {
 				mDragStarted = true;
 				doStartDrag(mInitialDownLocation);

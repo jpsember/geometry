@@ -25,6 +25,10 @@ public class ScaleOperation implements EditorEventListener {
 
 	@Override
 	public int processEvent(int eventCode, Point location) {
+		final boolean db = true && DEBUG_ONLY_FEATURES;
+		if (db)
+			pr("ScaleOperation.processEvent "
+					+ Editor.editorEventName(eventCode));
 
 		// By default, we'll be handling this event; so clear return code
 		int returnCode = EVENT_NONE;
@@ -35,7 +39,7 @@ public class ScaleOperation implements EditorEventListener {
 			returnCode = eventCode;
 			break;
 
-		case EVENT_DOWN:
+		case EVENT_DOWN: {
 			// Check if user has pressed on a tab for some other operation to
 			// start (e.g., adjusting vertex location)
 			if (mEditor.startEditableObjectOperation(location))
@@ -43,47 +47,41 @@ public class ScaleOperation implements EditorEventListener {
 
 			prepareScaleOperation();
 			// Find handle
-			{
-				float minDist = 0;
-				int minHandle = -1;
-				Point minHandleLocation = null;
-				for (int i = 0; i < NUM_HANDLES; i++) {
-					Point handleLoc = handleBaseLocation(i, true);
-					float dist = MyMath.distanceBetween(location, handleLoc);
-					if (minHandle < 0 || dist < minDist) {
-						minDist = dist;
-						minHandle = i;
-						minHandleLocation = handleLoc;
-					}
+			float minDist = 0;
+			int minHandle = -1;
+			Point minHandleLocation = null;
+			for (int i = 0; i < NUM_HANDLES; i++) {
+				Point handleLoc = handleBaseLocation(i, true);
+				float dist = MyMath.distanceBetween(location, handleLoc);
+				if (minHandle < 0 || dist < minDist) {
+					minDist = dist;
+					minHandle = i;
+					minHandleLocation = handleLoc;
 				}
-				if (minDist > mEditor.pickRadius()) {
-					mOperationPrepared = false;
-					return EVENT_STOP;
-				}
-				mActiveHandle = minHandle;
-				mInitialHandleOffset = MyMath.subtract(minHandleLocation,
-						location);
 			}
+			if (minDist > mEditor.pickRadius()) {
+				mPerformingDragSequence = false;
+				return EVENT_STOP;
+			}
+			mActiveHandle = minHandle;
+			mInitialHandleOffset = MyMath.subtract(minHandleLocation, location);
+		}
 			break;
 
 		case EVENT_DRAG:
-			if (!mOperationPrepared)
+			if (!mPerformingDragSequence)
 				break;
 			performScale(mActiveHandle, location);
 			break;
 
 		case EVENT_UP: {
-			if (!mOperationPrepared)
+			if (!mPerformingDragSequence)
 				break;
 			Command c = Command.constructForGeneralChanges(mOriginalState,
 					new EditorState(mEditor), "scale");
 			mEditor.pushCommand(c);
 			setUnprepared();
 		}
-			break;
-
-		case EVENT_UP_MULTIPLE:
-			returnCode = EVENT_STOP;
 			break;
 		}
 
@@ -132,7 +130,7 @@ public class ScaleOperation implements EditorEventListener {
 	}
 
 	private void prepareScaleOperation() {
-		if (!mOperationPrepared) {
+		if (!mPerformingDragSequence) {
 			mOriginalState = new EditorState(mEditor);
 			mHandles = new ArrayList();
 			// Don't replace an existing bounding rectangle, since it may have
@@ -155,17 +153,17 @@ public class ScaleOperation implements EditorEventListener {
 			}
 			mScaledRect = mRect;
 			calculateHandleBaseLocations(mRect, mHandles);
-			mOperationPrepared = true;
+			mPerformingDragSequence = true;
 		}
 	}
 
 	private void setUnprepared() {
-		if (mOperationPrepared) {
+		if (mPerformingDragSequence) {
 			// Set the original (unscaled) rect equal to the previous
 			// operation's scaled rect, so it doesn't get recalculated and
 			// change its appearance disconcertingly.
 			mRect = mScaledRect;
-			mOperationPrepared = false;
+			mPerformingDragSequence = false;
 		}
 	}
 
@@ -341,7 +339,7 @@ public class ScaleOperation implements EditorEventListener {
 	private Editor mEditor;
 
 	// True if processing a down/drag/up scaling operation
-	private boolean mOperationPrepared;
+	private boolean mPerformingDragSequence;
 
 	private EditorState mOriginalState;
 	// Bounding rect of unscaled objects

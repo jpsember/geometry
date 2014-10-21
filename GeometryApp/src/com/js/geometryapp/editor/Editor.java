@@ -163,6 +163,12 @@ public class Editor implements EditorEventListener {
 					refresh();
 				}
 			});
+			mOptions.addButton("Rotate").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doRotate();
+					refresh();
+				}
+			});
 		}
 		mOptions.popView();
 		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
@@ -341,6 +347,7 @@ public class Editor implements EditorEventListener {
 		mOptions.setEnabled("All", selected.size() < objects().size());
 		mOptions.setEnabled("Unhide", unhidePossible());
 		mOptions.setEnabled("Scale", !selected.isEmpty());
+		mOptions.setEnabled("Rotate", !selected.isEmpty());
 	}
 
 	/**
@@ -682,8 +689,13 @@ public class Editor implements EditorEventListener {
 	private void doScale() {
 		if (objects().getSelectedSlots().isEmpty())
 			return;
-
 		setOperation(new ScaleOperation(this));
+	}
+
+	private void doRotate() {
+		if (objects().getSelectedSlots().isEmpty())
+			return;
+		setOperation(new RotateOperation(this));
 	}
 
 	private boolean unhidePossible() {

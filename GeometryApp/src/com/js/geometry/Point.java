@@ -13,8 +13,10 @@ public class Point {
 	public final void apply(Matrix m) {
 		float[] f = new float[9];
 		m.getValues(f);
-		x = f[0] * x + f[1] * y + f[2];
-		y = f[3] * x + f[4] * y + f[5];
+		float newX = f[0] * x + f[1] * y + f[2];
+		float newY = f[3] * x + f[4] * y + f[5];
+		this.x = newX;
+		this.y = newY;
 	}
 
 	public Point(float x, float y) {

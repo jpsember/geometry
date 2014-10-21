@@ -244,13 +244,12 @@ public class Editor implements EditorEventListener {
 		if (mPendingAddObjectOperation != null) {
 			switch (event.getCode()) {
 			case EditorEvent.CODE_DOWN:
+				mPendingAddObjectOperation = null;
+				if (event.isMultipleTouch())
+					break;
 				addNewObject(mPendingAddObjectOperation, event.getLocation());
 				// Have the now activated object-specific handler process the
 				// DOWN event
-				mPendingAddObjectOperation = null;
-				break;
-			case EditorEvent.CODE_DOWN_MULTIPLE:
-				mPendingAddObjectOperation = null;
 				break;
 			}
 		}

@@ -1,8 +1,5 @@
 package com.js.geometryapp.editor;
 
-import static com.js.basic.Tools.DEBUG_ONLY_FEATURES;
-import static com.js.basic.Tools.pr;
-
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
@@ -15,16 +12,17 @@ public class EditorEvent {
 	public static final int CODE_DRAG = 2;
 	public static final int CODE_UP = 3;
 
-	// multiple touch events
-	public static final int CODE_DOWN_MULTIPLE = 4;
-	public static final int CODE_DRAG_MULTIPLE = 5;
-	public static final int CODE_UP_MULTIPLE = 6;
-
 	// stop existing operation, if one is occurring
-	public static final int CODE_STOP = 7;
+	public static final int CODE_STOP = 4;
 
 	public static final EditorEvent NONE = new EditorEvent(CODE_NONE);
 	public static final EditorEvent STOP = new EditorEvent(CODE_STOP);
+
+	public EditorEvent(int code, Point location, boolean multipleTouchFlag) {
+		mCode = code;
+		mLocation = location;
+		mMultipleTouchFlag = multipleTouchFlag;
+	}
 
 	public EditorEvent(int code, Point location) {
 		mCode = code;
@@ -32,7 +30,7 @@ public class EditorEvent {
 	}
 
 	public EditorEvent(int code) {
-		this(code, null);
+		this(code, null, false);
 	}
 
 	public int getCode() {
@@ -46,19 +44,25 @@ public class EditorEvent {
 	}
 
 	public boolean isDownVariant() {
-		return mCode == CODE_DOWN || mCode == CODE_DOWN_MULTIPLE;
+		return mCode == CODE_DOWN;
 	}
 
 	public boolean isUpVariant() {
-		return mCode == CODE_UP || mCode == CODE_UP_MULTIPLE;
+		return mCode == CODE_UP;
 	}
 
 	public boolean isDragVariant() {
-		return mCode == CODE_DRAG || mCode == CODE_DRAG_MULTIPLE;
+		return mCode == CODE_DRAG;
 	}
 
 	public boolean hasLocation() {
 		return mLocation != null;
+	}
+
+	public boolean isMultipleTouch() {
+		if (!hasLocation())
+			throw new IllegalStateException();
+		return mMultipleTouchFlag;
 	}
 
 	public void printProcessingMessage(String message) {
@@ -74,8 +78,8 @@ public class EditorEvent {
 		}
 	}
 
-	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG", "UP",
-			"DOWN_M", "DRAG_M", "UP_M", "STOP", };
+	private static String sEditorEventNames[] = { "NONE", "DOWN", "DRAG",
+			"UP  ", "STOP", };
 
 	public static String editorEventName(int eventCode) {
 		if (!DEBUG_ONLY_FEATURES)
@@ -95,7 +99,6 @@ public class EditorEvent {
 		} else {
 			sb.append(sEditorEventNames[mCode]);
 		}
-		tab(sb, 10);
 		if (hasLocation()) {
 			sb.append(" ");
 			sb.append(getLocation());
@@ -108,5 +111,5 @@ public class EditorEvent {
 
 	private int mCode;
 	private Point mLocation;
-
+	private boolean mMultipleTouchFlag;
 }

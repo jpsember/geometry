@@ -224,7 +224,11 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_DOWN:
-			mInitialDownLocation = event.getLocation();
+			// A double tap will add another object of the last type added
+			if (event.isMultipleTouch())
+				mEditor.startAddAnotherOperation();
+			else
+				mInitialDownLocation = event.getLocation();
 			break;
 
 		case EditorEvent.CODE_DRAG:
@@ -238,21 +242,14 @@ public class DefaultEventListener implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_UP:
+			outputEvent = EditorEvent.STOP;
+			if (event.isMultipleTouch())
+				break;
 			if (!mDragStarted) {
 				doClick(mInitialDownLocation);
 			} else {
 				doFinishDrag();
 			}
-			outputEvent = EditorEvent.STOP;
-			break;
-
-		// A double tap will add another object of the last type added
-		case EditorEvent.CODE_DOWN_MULTIPLE:
-			mEditor.startAddAnotherOperation();
-			break;
-
-		case EditorEvent.CODE_UP_MULTIPLE:
-			outputEvent = EditorEvent.STOP;
 			break;
 		}
 

@@ -115,6 +115,10 @@ public class EdSegment extends EdObject {
 				break;
 
 			case EditorEvent.CODE_UP:
+				// stop the operation on UP events
+				outputEvent = EditorEvent.STOP;
+				if (event.isMultipleTouch())
+					break;
 				if (db)
 					pr(" modified " + mModified);
 				if (mModified) {
@@ -122,13 +126,6 @@ public class EdSegment extends EdObject {
 							mOriginalState, new EditorState(mEditor),
 							FACTORY.getTag()));
 				}
-				// stop the operation on UP events
-				outputEvent = EditorEvent.STOP;
-				break;
-
-			case EditorEvent.CODE_UP_MULTIPLE:
-				// stop the operation on UP events
-				outputEvent = EditorEvent.STOP;
 				break;
 			}
 			return outputEvent;

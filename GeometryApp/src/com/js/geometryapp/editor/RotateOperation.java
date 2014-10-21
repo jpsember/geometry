@@ -61,6 +61,10 @@ public class RotateOperation implements EditorEventListener {
 			break;
 
 		case EditorEvent.CODE_UP: {
+			if (event.isMultipleTouch()) {
+				outputEvent = EditorEvent.STOP;
+				break;
+			}
 			if (!mDragged) {
 				outputEvent = EditorEvent.STOP;
 				break;
@@ -72,10 +76,6 @@ public class RotateOperation implements EditorEventListener {
 				setUnprepared();
 			}
 		}
-			break;
-
-		case EditorEvent.CODE_UP_MULTIPLE:
-			outputEvent = EditorEvent.STOP;
 			break;
 		}
 

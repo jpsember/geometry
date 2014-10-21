@@ -125,7 +125,8 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 				break;
 			case MotionEvent.ACTION_POINTER_DOWN:
 				setTouchState(STATE_MULTITOUCH);
-				sendEvent(EditorEvent.CODE_DOWN_MULTIPLE);
+				sendEvent(new EditorEvent(EditorEvent.CODE_DOWN,
+						mCurrentTouchLocation, true));
 				break;
 			case MotionEvent.ACTION_UP:
 				setTouchState(STATE_TOUCH);
@@ -153,10 +154,12 @@ public class EditorGLSurfaceView extends GLSurfaceView {
 		case STATE_MULTITOUCH: {
 			switch (action) {
 			case MotionEvent.ACTION_MOVE:
-				sendEvent(EditorEvent.CODE_DRAG_MULTIPLE);
+				sendEvent(new EditorEvent(EditorEvent.CODE_DRAG,
+						mCurrentTouchLocation, true));
 				break;
 			case MotionEvent.ACTION_UP:
-				sendEvent(EditorEvent.CODE_UP_MULTIPLE);
+				sendEvent(new EditorEvent(EditorEvent.CODE_UP,
+						mCurrentTouchLocation, true));
 				setTouchState(STATE_START);
 				performClick();
 				break;

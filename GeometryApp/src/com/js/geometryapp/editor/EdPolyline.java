@@ -413,6 +413,10 @@ public class EdPolyline extends EdObject {
 				break;
 
 			case EditorEvent.CODE_UP:
+				// stop the operation on UP events
+				outputEvent = EditorEvent.STOP;
+				if (event.isMultipleTouch())
+					break;
 				if (mChangesMade) {
 					EdPolyline polyline = activePolyline();
 					int absVert = findAbsorbingVertex(polyline);
@@ -425,13 +429,6 @@ public class EdPolyline extends EdObject {
 					mEditor.pushCommand(Command.constructForGeneralChanges(
 							mOriginalState, new EditorState(mEditor), null));
 				}
-				// stop the operation on UP events
-				outputEvent = EditorEvent.STOP;
-				break;
-
-			case EditorEvent.CODE_UP_MULTIPLE:
-				// stop the operation on UP events
-				outputEvent = EditorEvent.STOP;
 				break;
 
 			case EditorEvent.CODE_STOP: {

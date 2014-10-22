@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.js.geometry.Point;
+import com.js.geometry.R;
+import static com.js.basic.Tools.*;
 
 public abstract class EdObjectFactory {
 
@@ -26,6 +28,20 @@ public abstract class EdObjectFactory {
 	 */
 	public String getTag() {
 		return mTag;
+	}
+
+	/**
+	 * Get resource for icon to display within ButtonWidget corresponding to
+	 * this type of object; default implementation returns -1
+	 * 
+	 * @return resource id, or -1 if none
+	 */
+	public int getIconResource() {
+		if (true && DEBUG_ONLY_FEATURES) {
+			warning("returning sample icon");
+			return R.raw.sampleicon;
+		}
+		return -1;
 	}
 
 	/**

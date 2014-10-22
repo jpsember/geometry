@@ -2,6 +2,7 @@ package com.js.geometryapp;
 
 import com.js.android.AppPreferences;
 import com.js.android.UITools;
+import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorGLSurfaceView;
 
@@ -33,6 +34,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		setTheme(R.style.AppTheme);
 		super.onCreate(savedInstanceState);
 		addAlgorithms(mStepper);
 		mStepper.begin();

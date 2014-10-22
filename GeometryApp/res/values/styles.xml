@@ -5,7 +5,12 @@
       <item name="android:textSize">16sp</item>
       <item name="android:layout_marginLeft">2dip</item>
       <item name="android:layout_marginRight">2dip</item>
-    </style>
+  </style>
+  <style name="CompactImageButton" parent="android:style/Widget.ImageButton">
+      <item name="android:layout_marginLeft">2dip</item>
+      <item name="android:layout_marginRight">2dip</item>
+      <item name="android:background">@android:color/transparent</item>
+  </style>
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -24,6 +29,7 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
 
         <item name="android:buttonStyle">@style/CompactButton</item>
+        <item name="android:imageButtonStyle">@style/CompactImageButton</item>
     </style>
 
 

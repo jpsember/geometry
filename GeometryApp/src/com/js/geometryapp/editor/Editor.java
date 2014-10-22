@@ -26,6 +26,7 @@ import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
+import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 
 import android.content.Context;
@@ -83,13 +84,13 @@ public class Editor {
 		// Add a horizontal row of buttons for undo, redo
 		{
 			mOptions.pushView(mOptions.addView(false));
-			// mOptions.addLabel("");
-			mOptions.addButton("Undo").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doUndo();
-					refresh();
-				}
-			});
+			mOptions.addButton("Undo", "icon", R.raw.staricon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doUndo();
+							refresh();
+						}
+					});
 			mOptions.addButton("Redo").addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doRedo();
@@ -191,7 +192,13 @@ public class Editor {
 		while (i < args.length) {
 			String label = (String) args[i];
 			final EdObjectFactory factory = (EdObjectFactory) args[i + 1];
-			mOptions.addButton(label).addListener(new Listener() {
+
+			ButtonWidget w;
+			if (label.equals("Poly"))
+				w = mOptions.addButton(label, "icon", R.raw.polylineicon);
+			else
+				w = mOptions.addButton(label);
+			w.addListener(new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doStartAddObjectOperation(factory);
 					refresh();

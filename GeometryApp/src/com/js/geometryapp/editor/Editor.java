@@ -26,7 +26,6 @@ import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
-import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 
 import android.content.Context;
@@ -193,17 +192,13 @@ public class Editor {
 			String label = (String) args[i];
 			final EdObjectFactory factory = (EdObjectFactory) args[i + 1];
 
-			ButtonWidget w;
-			if (label.equals("Poly"))
-				w = mOptions.addButton(label, "icon", R.raw.polylineicon);
-			else
-				w = mOptions.addButton(label);
-			w.addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doStartAddObjectOperation(factory);
-					refresh();
-				}
-			});
+			mOptions.addButton(label, "icon", factory.getIconResource())
+					.addListener(new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doStartAddObjectOperation(factory);
+							refresh();
+						}
+					});
 			i += 2;
 		}
 		mOptions.popView();

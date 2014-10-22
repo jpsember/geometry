@@ -207,6 +207,10 @@ public class EdPolyline extends EdObject {
 			return p;
 		};
 
+		@Override
+		public int getIconResource() {
+			return R.raw.polylineicon;
+		};
 	};
 
 	private void setCursor(int c) {

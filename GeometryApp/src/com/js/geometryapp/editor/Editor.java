@@ -111,13 +111,15 @@ public class Editor {
 
 		mOptions.pushView(mOptions.addView(false));
 		{
-			mOptions.addButton("All").addListener(new Listener() {
+			mOptions.addButton("All", "icon", R.raw.allicon).addListener(
+					new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doSelectAll();
 					refresh();
 				}
 			});
-			mOptions.addButton("Unhide").addListener(new Listener() {
+			mOptions.addButton("Unhide", "icon", R.raw.unhideicon).addListener(
+					new Listener() {
 				public void valueChanged(AbstractWidget widget) {
 					doUnhide();
 					refresh();
@@ -128,18 +130,20 @@ public class Editor {
 
 		mOptions.pushView(mOptions.addView(false));
 		{
-			mOptions.addButton("Scale").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doScale();
-					refresh();
-				}
-			});
-			mOptions.addButton("Rotate").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doRotate();
-					refresh();
-				}
-			});
+			mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doScale();
+							refresh();
+						}
+					});
+			mOptions.addButton("Rotate", "icon", R.raw.rotateicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doRotate();
+							refresh();
+						}
+					});
 		}
 		mOptions.popView();
 

@@ -1,42 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.js.geometry"
+    android:allowBackup="true"
     android:versionCode="1"
     android:versionName="1.0" >
 
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="20"/>
+    <uses-sdk
+        android:minSdkVersion="14"
+        android:targetSdkVersion="20" />
 
-    <!--  This seems to be required for the unit tests; otherwise getExternalFilesDir returns null -->
+    <!-- This seems to be required for the unit tests; otherwise getExternalFilesDir returns null -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
-    <!-- for an online icon generator, see http://romannurik.github.io/AndroidAssetStudio/icons-launcher.html -->
     <application
         android:allowBackup="true"
+        android:icon="@drawable/ic_algorithm"
         android:label="@string/app_name" >
-
-        <activity
-            android:name="com.js.samplealgorithm.SampleGeometryActivity"
-            android:label="Algorithm"
-            android:icon="@drawable/ic_algorithm"
-            android:taskAffinity="com.js.samplealgorithm.SampleGeometryActivity" >
-        <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name="com.js.sampleanimation.SampleAnimationActivity"
-            android:label="Animation"
-            android:icon="@drawable/ic_animation"
-            android:taskAffinity="com.js.sampleanimation.SampleAnimationActivity" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
     </application>
 
 </manifest>

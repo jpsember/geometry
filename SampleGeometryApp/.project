@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>GeometryAppTest</name>
+	<name>SampleGeometryApp</name>
 	<comment></comment>
 	<projects>
-    <project>GeometryApp</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

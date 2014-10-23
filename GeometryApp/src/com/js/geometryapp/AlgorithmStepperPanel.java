@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import com.js.android.UITools;
+import com.js.geometry.R;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.SliderWidget;
@@ -18,8 +19,8 @@ class AlgorithmStepperPanel {
 		mOptions = options;
 	}
 
-	private void addButton(ViewGroup parent, String label) {
-		ButtonWidget w = mOptions.addButton(label,
+	private void addButton(ViewGroup parent, String label, int iconId) {
+		ButtonWidget w = mOptions.addButton(label, "icon", iconId,
 				AbstractWidget.OPTION_DETACHED, true,
 				AbstractWidget.OPTION_REFRESH_ALGORITHM, false);
 		parent.addView(w.getView(), buildLayoutParams(true));
@@ -58,14 +59,14 @@ class AlgorithmStepperPanel {
 		layout.addView(v1, buildLayoutParams(false));
 		{
 			LinearLayout v2 = linearLayout(true);
-			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_BWD);
-			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_FWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_BWD, R.raw.jumpbwdicon);
+			addButton(v2, ConcreteStepper.WIDGET_ID_JUMP_FWD, R.raw.jumpfwdicon);
 			v1.addView(v2);
 		}
 		{
 			LinearLayout v2 = linearLayout(true);
-			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_BWD);
-			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_FWD);
+			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_BWD, R.raw.stepbwdicon);
+			addButton(v2, ConcreteStepper.WIDGET_ID_STEP_FWD, R.raw.stepfwdicon);
 			v1.addView(v2);
 		}
 

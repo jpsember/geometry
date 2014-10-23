@@ -80,7 +80,7 @@ class Commit
       end
 
       if !@options[:omit_graphics]
-        runcmd("updategraf")
+        runcmd("buildgraphics")
       end
 
       perform_tests ||= @options[:testonly]

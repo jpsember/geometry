@@ -4,6 +4,7 @@ import android.graphics.Color;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.basic.Tools.*;
@@ -44,6 +45,7 @@ public class EdSegment extends EdObject {
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
+		@Override
 		public EdObject construct(Point defaultLocation) {
 			EdSegment s = new EdSegment();
 			if (defaultLocation != null) {
@@ -51,6 +53,11 @@ public class EdSegment extends EdObject {
 				s.addPoint(defaultLocation);
 			}
 			return s;
+		}
+
+		@Override
+		public int getIconResource() {
+			return R.raw.segmenticon;
 		}
 	};
 

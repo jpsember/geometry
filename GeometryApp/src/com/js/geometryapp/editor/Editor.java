@@ -83,19 +83,20 @@ public class Editor {
 		// Add a horizontal row of buttons for undo, redo
 		{
 			mOptions.pushView(mOptions.addView(false));
-			mOptions.addButton("Undo", "icon", R.raw.staricon).addListener(
+			mOptions.addButton("Undo", "icon", R.raw.undoicon).addListener(
 					new Listener() {
 						public void valueChanged(AbstractWidget widget) {
 							doUndo();
 							refresh();
 						}
 					});
-			mOptions.addButton("Redo").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doRedo();
-					refresh();
-				}
-			});
+			mOptions.addButton("Redo", "icon", R.raw.redoicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doRedo();
+							refresh();
+						}
+					});
 			mOptions.popView();
 		}
 		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
@@ -144,35 +145,39 @@ public class Editor {
 
 		mOptions.pushView(mOptions.addView(false));
 		{
-			mOptions.addButton("Cut").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doCut();
-					refresh();
-				}
-			});
-			mOptions.addButton("Copy").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doCopy();
-					refresh();
-				}
-			});
+			mOptions.addButton("Cut", "icon", R.raw.cuticon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doCut();
+							refresh();
+						}
+					});
+			mOptions.addButton("Copy", "icon", R.raw.copyicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doCopy();
+							refresh();
+						}
+					});
 		}
 		mOptions.popView();
 
 		mOptions.pushView(mOptions.addView(false));
 		{
-			mOptions.addButton("Paste").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doPaste();
-					refresh();
-				}
-			});
-			mOptions.addButton("Dup").addListener(new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doDup();
-					refresh();
-				}
-			});
+			mOptions.addButton("Paste", "icon", R.raw.pasteicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doPaste();
+							refresh();
+						}
+					});
+			mOptions.addButton("Dup", "icon", R.raw.duplicateicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doDup();
+							refresh();
+						}
+					});
 			if (ZAP_SUPPORTED) {
 				mOptions.addButton("Zap").addListener(new Listener() {
 					public void valueChanged(AbstractWidget widget) {

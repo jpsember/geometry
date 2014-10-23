@@ -80,7 +80,7 @@ class Commit
       end
 
       if !@options[:omit_graphics]
-        runcmd("buildgraphics")
+        runcmd("rake")
       end
 
       perform_tests ||= @options[:testonly]
@@ -209,7 +209,7 @@ class Commit
       opt :detail, "display lots of detail"
       opt :verbose, "display progress"
       opt :omit_tests,"omit tests"
-      opt :omit_graphics,"omit updating graphics"
+      opt :omit_rake,"omit running rake (builds graphics)"
       opt :testonly,"perform unit tests only, without generating commit"
     end
 

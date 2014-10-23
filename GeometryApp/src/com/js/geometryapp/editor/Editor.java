@@ -80,7 +80,7 @@ public class Editor {
 		// Place these controls in the aux controls view
 		mOptions.pushView(getAuxControlsView());
 
-		// Add a horizontal row of buttons for undo, redo
+		// Add a horizontal row of buttons
 		{
 			mOptions.pushView(mOptions.addView(false));
 			mOptions.addButton("Undo", "icon", R.raw.undoicon).addListener(
@@ -97,58 +97,6 @@ public class Editor {
 							refresh();
 						}
 					});
-			mOptions.popView();
-		}
-		prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
-				EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
-		mOptions.popView();
-
-		// put additional controls in the options window
-
-		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
-				"Always plot editor");
-		mOptions.addStaticText("");
-
-		mOptions.pushView(mOptions.addView(false));
-		{
-			mOptions.addButton("All", "icon", R.raw.allicon).addListener(
-					new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doSelectAll();
-					refresh();
-				}
-			});
-			mOptions.addButton("Unhide", "icon", R.raw.unhideicon).addListener(
-					new Listener() {
-				public void valueChanged(AbstractWidget widget) {
-					doUnhide();
-					refresh();
-				}
-			});
-		}
-		mOptions.popView();
-
-		mOptions.pushView(mOptions.addView(false));
-		{
-			mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
-					new Listener() {
-						public void valueChanged(AbstractWidget widget) {
-							doScale();
-							refresh();
-						}
-					});
-			mOptions.addButton("Rotate", "icon", R.raw.rotateicon).addListener(
-					new Listener() {
-						public void valueChanged(AbstractWidget widget) {
-							doRotate();
-							refresh();
-						}
-					});
-		}
-		mOptions.popView();
-
-		mOptions.pushView(mOptions.addView(false));
-		{
 			mOptions.addButton("Cut", "icon", R.raw.cuticon).addListener(
 					new Listener() {
 						public void valueChanged(AbstractWidget widget) {
@@ -163,11 +111,7 @@ public class Editor {
 							refresh();
 						}
 					});
-		}
-		mOptions.popView();
 
-		mOptions.pushView(mOptions.addView(false));
-		{
 			mOptions.addButton("Paste", "icon", R.raw.pasteicon).addListener(
 					new Listener() {
 						public void valueChanged(AbstractWidget widget) {
@@ -179,6 +123,55 @@ public class Editor {
 					new Listener() {
 						public void valueChanged(AbstractWidget widget) {
 							doDup();
+							refresh();
+						}
+					});
+			mOptions.popView();
+		}
+		{
+			mOptions.pushView(mOptions.addView(false));
+
+			prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
+					EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
+
+			mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doScale();
+							refresh();
+						}
+					});
+			mOptions.addButton("Rotate", "icon", R.raw.rotateicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doRotate();
+							refresh();
+						}
+					});
+
+			mOptions.popView();
+		}
+		mOptions.popView();
+
+		// put additional controls in the options window
+
+		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
+				"Always plot editor");
+		mOptions.addStaticText("");
+
+		mOptions.pushView(mOptions.addView(false));
+		{
+			mOptions.addButton("All", "icon", R.raw.allicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doSelectAll();
+							refresh();
+						}
+					});
+			mOptions.addButton("Unhide", "icon", R.raw.unhideicon).addListener(
+					new Listener() {
+						public void valueChanged(AbstractWidget widget) {
+							doUnhide();
 							refresh();
 						}
 					});
@@ -195,7 +188,6 @@ public class Editor {
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
-		mOptions.pushView(mOptions.addView(false));
 		int i = 0;
 		while (i < args.length) {
 			String label = (String) args[i];
@@ -210,7 +202,6 @@ public class Editor {
 					});
 			i += 2;
 		}
-		mOptions.popView();
 	}
 
 	/**

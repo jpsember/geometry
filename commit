@@ -220,9 +220,9 @@ class Commit
 
   def run_unit_tests
 
-    # This seems to help with the Eclipse ADT / android cmd line conflict.
+    # This seems to help with Issue #152 (the Eclipse ADT / android cmd line
+    # race conditions)
     #
-    # remove_dir("../adt/sdk/extras/google/google_play_services/libproject/google-play-services_lib/bin/res/crunch")
     remove_dir("#{PROJECT_NAME}/bin/res/crunch")
     remove_dir("#{PROJECT_NAME}Test/bin/res/crunch")
 

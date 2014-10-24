@@ -6,6 +6,7 @@ import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorGLSurfaceView;
 
+import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
@@ -34,6 +35,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		// Set the theme to appply to the entire application.
+		// AppTheme is defined in res/values/styles.xml:
 		setTheme(R.style.AppTheme);
 		super.onCreate(savedInstanceState);
 		addAlgorithms(mStepper);
@@ -79,7 +82,18 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			// overlay it with an editing toolbar
 			mEditor.prepare(surfaceView);
 			surfaceView.setEditor(mEditor, mStepper);
-			mainView.addView(mEditor.getView(), p);
+
+			View editorView = mEditor.getView();
+			// Place editor view within a container with a black background
+			// to emphasize boundary between the editor and the neighbors
+			{
+				LinearLayout borderView = UITools.linearLayout(this, true);
+				borderView.setPadding(2, 2, 2, 2);
+				borderView.setBackgroundColor(Color.rgb(128, 128, 128));
+				borderView.addView(editorView);
+				editorView = borderView;
+			}
+			mainView.addView(editorView, p);
 
 			// Restore previous items
 			String script = AppPreferences.getString(

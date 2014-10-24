@@ -1,18 +1,17 @@
 <resources>
 
-
-  <style name="CompactImageButton" parent="android:style/Widget.ImageButton">
-    <item name="android:layout_margin">2dp</item>
-    <item name="android:layout_width">36dp</item>
-    <item name="android:layout_height">36dp</item>
-    <item name="android:background">@drawable/compactimagebutton_selector</item>
-</style>
+    <style name="CompactImageButton" parent="android:style/Widget.ImageButton">
+        <item name="android:layout_margin">1dp</item>
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/compactimagebutton_selector</item> 
+    </style>
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppBaseTheme" parent="android:Theme">
+    <style name="AppBaseTheme" parent="android:Theme.Holo.Light">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to

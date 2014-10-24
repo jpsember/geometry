@@ -1,4 +1,4 @@
-package com.js.samplegeometryapp;
+package com.js.starshaped;
 
 import java.util.ArrayList;
 

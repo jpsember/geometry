@@ -1,4 +1,4 @@
-package com.js.samplegeometryapp;
+package com.js.starshaped;
 
 import java.util.Random;
 
@@ -18,7 +18,7 @@ import com.js.geometryapp.GeometryStepperActivity;
 public class SampleGeometryActivity extends GeometryStepperActivity implements
 		Algorithm {
 
-	private static final String USE_EDITOR_POLYGON = "Use editor polygon";
+	private static final String WIDGET_ID_USE_EDITOR = "Use editor polygon";
 
 	@Override
 	public void addAlgorithms(AlgorithmStepper s) {
@@ -42,7 +42,7 @@ public class SampleGeometryActivity extends GeometryStepperActivity implements
 		mOptions.addSlider("Length", "min", 2, "max", 150, "value", 95);
 		mOptions.addSlider("Cutoff", "min", 10, "max", 100, "value", 69);
 		mOptions.addCheckBox("Reversed");
-		mOptions.addCheckBox(USE_EDITOR_POLYGON);
+		mOptions.addCheckBox(WIDGET_ID_USE_EDITOR);
 	}
 
 	@Override
@@ -107,7 +107,7 @@ public class SampleGeometryActivity extends GeometryStepperActivity implements
 		mKernelPoint = bounds.midPoint();
 		Polygon p;
 
-		if (mOptions.getBooleanValue(USE_EDITOR_POLYGON)) {
+		if (mOptions.getBooleanValue(WIDGET_ID_USE_EDITOR)) {
 			p = mEditorPolygon;
 			if (p == null)
 				GeometryException.raise("No polygon");

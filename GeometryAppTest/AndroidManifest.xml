@@ -5,13 +5,13 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
-   <uses-sdk
+    <uses-sdk
         android:minSdkVersion="14"
         android:targetSdkVersion="20" />
 
-   <instrumentation
-                android:targetPackage="com.js.geometryapptest"
-        android:name="android.test.InstrumentationTestRunner" />
+    <instrumentation
+        android:name="android.test.InstrumentationTestRunner"
+        android:targetPackage="com.js.geometryapptest" />
 
     <application
         android:allowBackup="true"

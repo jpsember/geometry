@@ -247,7 +247,7 @@ public abstract class AbstractWidget {
 		container.setOrientation(LinearLayout.VERTICAL);
 
 		LinearLayout.LayoutParams p = UITools.layoutParams(false);
-		p.width = MyActivity.inchesToPixels(.8f);
+		p.width = MyActivity.getResolutionInfo().inchesToPixelsUI(.8f);
 		p.gravity = Gravity.BOTTOM;
 		container.setLayoutParams(p);
 

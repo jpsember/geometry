@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import android.graphics.Color;
 
+import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
@@ -271,7 +272,7 @@ public class EdPolyline extends EdObject {
 		Point[] tabLocations = new Point[TAB_TOTAL];
 		int c = polyline.cursor();
 
-		float tabDistance = polyline.editor().pickRadius() * 2f;
+		float tabDistance = polyline.editor().pickRadius() * 1.2f;
 
 		float a1 = 0, a2 = 0;
 		boolean convex = true;

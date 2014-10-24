@@ -17,6 +17,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import com.js.android.MyActivity;
+import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
@@ -60,7 +61,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 	@Override
 	public Rect algorithmRect() {
 		if (mAlgorithmRect == null) {
-			DisplayMetrics m = MyActivity.displayMetrics();
+			ResolutionInfo mResolutionInfo = MyActivity.getResolutionInfo();
+			DisplayMetrics m = mResolutionInfo.getDisplayMetrics();
 			if (m.widthPixels > m.heightPixels) {
 				mAlgorithmRect = new Rect(0, 0, 1200, 1000);
 			} else {

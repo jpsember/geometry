@@ -20,10 +20,10 @@ public class DefaultEventListener implements EditorEventListener {
 	private List<Integer> getPickSet(Point location) {
 		List<Integer> slots = SlotList.build();
 		EdObjectArray srcObjects = mEditor.objects();
+		float pickRadius = mEditor.pickRadius();
 		for (int slot = 0; slot < srcObjects.size(); slot++) {
 			EdObject src = srcObjects.get(slot);
 			float dist = src.distFrom(location);
-			float pickRadius = mEditor.pickRadius();
 			if (src.isSelected())
 				pickRadius *= 2f;
 			if (dist > pickRadius)

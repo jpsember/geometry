@@ -66,7 +66,6 @@ public class Editor {
 	 */
 	public void prepare(View contentView) {
 		mEditorView = contentView;
-		mPickRadius = MyActivity.inchesToPixels(.28f);
 		prepareObjectTypes();
 	}
 
@@ -226,6 +225,8 @@ public class Editor {
 			return;
 		AlgorithmDisplayElement.setRendering(true);
 
+		mPickRadius = MyActivity.getResolutionInfo().inchesToPixelsAlgorithm(
+				.14f);
 		for (EdObject obj : mObjects) {
 			if (DB_RENDER_OBJ_BOUNDS
 					|| (DB_RENDER_EDITABLE && obj.isEditable())) {
@@ -806,6 +807,8 @@ public class Editor {
 	}
 
 	public float pickRadius() {
+		if (mPickRadius == 0)
+			throw new IllegalStateException();
 		return mPickRadius;
 	}
 

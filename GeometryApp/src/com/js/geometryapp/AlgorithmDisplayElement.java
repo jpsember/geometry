@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 
 import com.js.android.MyActivity;
+import com.js.android.ResolutionInfo;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -125,6 +126,10 @@ public abstract class AlgorithmDisplayElement {
 		sPolygonProgram.render(sPointMesh, translation, matrix);
 	}
 
+	private static ResolutionInfo resolutionInfo() {
+		return MyActivity.getResolutionInfo();
+	}
+
 	/**
 	 * Have the algorithm stepper display elements prepare to use an OpenGL
 	 * renderer; i.e. setting up shaders and fonts. Should be called within
@@ -148,8 +153,10 @@ public abstract class AlgorithmDisplayElement {
 			titleFontSize = 35;
 			elementFontSize = 30;
 		}
-		sTitleFont = new Font((int) (titleFontSize * MyActivity.density()));
-		sElementFont = new Font((int) (elementFontSize * MyActivity.density()));
+		sTitleFont = new Font(
+				(int) (titleFontSize * resolutionInfo().density()));
+		sElementFont = new Font((int) (elementFontSize * resolutionInfo()
+				.density()));
 
 		resetRenderStateVars();
 	}
@@ -277,7 +284,7 @@ public abstract class AlgorithmDisplayElement {
 	}
 
 	private static void buildArrowheads() {
-		sArrowheadLength = AlgorithmRenderer.algorithmToDensityPixels() * 18;
+		sArrowheadLength = resolutionInfo().inchesToPixelsAlgorithm(.15f);
 
 		Polygon p = Polygon.polygonWithScript("0 0 -1 .4 -1 -.4");
 		p.apply(buildScaleMatrix(sArrowheadLength));
@@ -286,9 +293,8 @@ public abstract class AlgorithmDisplayElement {
 
 	private static void buildPoints() {
 		int POINT_VERTICES = 10;
-		Polygon p = Polygon.circleWithOrigin(Point.ZERO,
-				4.0f * AlgorithmRenderer.algorithmToDensityPixels(),
-				POINT_VERTICES);
+		Polygon p = Polygon.circleWithOrigin(Point.ZERO, resolutionInfo()
+				.inchesToPixelsAlgorithm(.025f), POINT_VERTICES);
 		sPointMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 

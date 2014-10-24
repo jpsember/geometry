@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import com.js.geometry.Point;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -126,61 +124,9 @@ public abstract class MyActivity extends Activity {
 	}
 
 	private void prepareDisplayMetrics() {
-		final boolean db = false && DEBUG_ONLY_FEATURES;
 		DisplayMetrics m = new DisplayMetrics();
-		sDisplayMetrics = m;
 		getWindowManager().getDefaultDisplay().getMetrics(m);
-		sDensity = m.density;
-
-		if (db) {
-			pr("\nMyActivity, constructed DisplayMetrics:");
-			pr(" dpi        " + new Point(m.xdpi, m.ydpi));
-			pr(" pixels     " + new Point(m.widthPixels, m.heightPixels));
-			Point ps = new Point(m.widthPixels / m.xdpi, m.heightPixels
-					/ m.ydpi);
-			pr(" phys sz    " + ps);
-			pr(" densityDPI   " + m.densityDpi);
-			pr(" density      " + m.density);
-			pr("\nOur calculations:\n");
-			pr(" sDensity     " + sDensity);
-			pr("\n\n");
-		}
-		/**
-		 * <pre>
-		 * 
-		 * For reference, my Google Nexus S phone:
-		 * 
-		 *  dpi 		      234.462   236.279 
-		 * 	pixels 	      800.000   480.000 
-		 * 	phys sz 		    3.412     2.031
-		 * 	densityDPI   240 
-		 *  density      1.5
-		 * 
-		 * My Samsung Tablet:
-		 * 
-		 *  dpi           188.148    189.023
-		 *  pixels       1280.000    800.000
-		 *  phys sz         6.803      4.232
-		 *  densityDPI   213 
-		 *  density      1.3312501
-		 * 
-		 * </pre>
-		 */
-	}
-
-	public static DisplayMetrics displayMetrics() {
-		return sDisplayMetrics;
-	}
-
-	/**
-	 * Get the the DisplayMetrics.density value
-	 */
-	public static float density() {
-		return sDensity;
-	}
-
-	public static int inchesToPixels(float inches) {
-		return (int) (inches * sDisplayMetrics.xdpi);
+		sResolutionInfo = new ResolutionInfo(m);
 	}
 
 	private void addResourceMappings() {
@@ -189,10 +135,12 @@ public abstract class MyActivity extends Activity {
 		addResource("search", android.R.drawable.ic_menu_search);
 	}
 
+	public static ResolutionInfo getResolutionInfo() {
+		return sResolutionInfo;
+	}
+
 	private boolean mLogging;
 	private Map<String, Integer> mResourceMap = new HashMap();
-
+	private static ResolutionInfo sResolutionInfo;
 	private static boolean sConsoleGreetingPrinted;
-	private static DisplayMetrics sDisplayMetrics;
-	private static float sDensity;
 }

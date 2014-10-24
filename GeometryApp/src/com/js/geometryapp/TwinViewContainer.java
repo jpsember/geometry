@@ -50,7 +50,7 @@ class TwinViewContainer {
 	private void buildAuxilliaryView() {
 		LinearLayout view = new LinearLayout(getContext());
 		view.setOrientation(LinearLayout.VERTICAL);
-		int padding = MyActivity.inchesToPixels(.06f);
+		int padding = MyActivity.getResolutionInfo().inchesToPixelsUI(.06f);
 		view.setPadding(padding, padding, padding, padding);
 		mAuxilliaryView = view;
 	}
@@ -72,7 +72,8 @@ class TwinViewContainer {
 		final float PREFERRED_AUX_WIDTH_INCHES = 1.6f;
 		final float TOTAL_WIDTH_INCHES = (PREFERRED_MAIN_WIDTH_INCHES + PREFERRED_AUX_WIDTH_INCHES);
 
-		DisplayMetrics displayMetrics = MyActivity.displayMetrics();
+		DisplayMetrics displayMetrics = MyActivity.getResolutionInfo()
+				.getDisplayMetrics();
 		float mainWidth;
 		float auxWidth;
 

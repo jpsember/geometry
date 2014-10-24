@@ -164,7 +164,7 @@ public class AlgorithmOptions {
 	public void addLabel(String label) {
 		WidgetGroup w = currentWidgetGroup();
 		LinearLayout.LayoutParams p = w.layoutParamsForCurrentContainer();
-		p.width = MyActivity.inchesToPixels(.8f);
+		p.width = MyActivity.getResolutionInfo().inchesToPixelsUI(.8f);
 		p.gravity = Gravity.BOTTOM;
 		// TODO: is vertical centering being attempted elsewhere, e.g., within
 		// buildLabelView?

@@ -36,7 +36,9 @@ public class CheckBoxWidget extends AbstractWidget {
 		{
 			label = new TextView(context());
 			label.setText(getLabel(false));
-			label.setPadding(MyActivity.inchesToPixels(.08f), 0, 0, 0);
+			label.setPadding(
+					MyActivity.getResolutionInfo().inchesToPixelsUI(.08f), 0,
+					0, 0);
 			LinearLayout.LayoutParams labelParams = UITools.layoutParams(false);
 			labelParams.gravity = Gravity.BOTTOM;
 			label.setLayoutParams(labelParams);

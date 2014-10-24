@@ -6,6 +6,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import com.js.android.MyActivity;
+import com.js.android.ResolutionInfo;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
@@ -100,9 +101,11 @@ public class AlgorithmRenderer extends OurGLRenderer {
 	protected void constructTransforms() {
 		super.constructTransforms();
 
+		ResolutionInfo resolutionInfo = MyActivity.getResolutionInfo();
+
 		// Add a bit of padding to the device rectangle
-		float paddingInset = MyActivity.density() * 10;
-		float titleInset = MyActivity.density() * 30;
+		float paddingInset = resolutionInfo.density() * 10;
+		float titleInset = resolutionInfo.density() * 30;
 
 		Rect paddedDeviceRect = new Rect(Point.ZERO, deviceSize());
 		paddedDeviceRect.x += paddingInset;
@@ -114,7 +117,10 @@ public class AlgorithmRenderer extends OurGLRenderer {
 				mStepper.algorithmRect(), paddedDeviceRect);
 		float[] v = new float[9];
 		mAlgorithmToDeviceTransform.getValues(v);
-		sAlgorithmToDensityPixels = (1.0f / v[0]) * MyActivity.density();
+		float scaleDeviceToAlgorithm = (1.0f / v[0]);
+
+		resolutionInfo.setInchesToPixelsAlgorithm(scaleDeviceToAlgorithm
+				* resolutionInfo.inchesToPixelsUI(1.0f));
 
 		Matrix mAlgorithmToNDCTransform = new Matrix(
 				mAlgorithmToDeviceTransform);
@@ -160,16 +166,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		addTransform(TRANSFORM_NAME_DEVICE_TO_ALGORITHM,
 				mDeviceToAlgorithmTransform);
 	}
-
-	/**
-	 * Determine multiplicative factor for converting from algorithm pixels to
-	 * density pixels
-	 */
-	public static float algorithmToDensityPixels() {
-		return sAlgorithmToDensityPixels;
-	}
-
-	private static float sAlgorithmToDensityPixels;
 
 	private ConcreteStepper mStepper;
 	private Editor mEditor;

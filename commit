@@ -14,6 +14,7 @@ end
 
 class Commit
 
+  DELETE_CRUNCH = true
   PROJECT_NAME = "GeometryApp"
   ANDROID_PROJECTS = "#{PROJECT_NAME}"
   GIT_STATE_FILENAME = ".commit_state"
@@ -220,12 +221,6 @@ class Commit
 
   def run_unit_tests
 
-    # This seems to help with Issue #152 (the Eclipse ADT / android cmd line
-    # race conditions)
-    #
-    remove_dir("#{PROJECT_NAME}/bin/res/crunch")
-    remove_dir("#{PROJECT_NAME}Test/bin/res/crunch")
-
     ANDROID_PROJECTS.split.each do |project_root|
       proj_main = File.join(@saved_directory,project_root)
       proj_test = proj_main + "Test"
@@ -234,7 +229,39 @@ class Commit
       Dir.chdir(proj_test)
 
       runcmd("ant clean","...cleaning") if @options[:clean]
-      output,_ = runcmd("ant debug install test","...building, installing, and testing")
+
+      attempt = 0
+
+      repeat = true
+      while repeat
+        attempt += 1
+        begin
+
+          if DELETE_CRUNCH
+            crunch_dir = "../#{PROJECT_NAME}/bin/res/crunch"
+            if File.directory?(crunch_dir)
+              puts "removing #{crunch_dir}" if @verbose
+              remove_dir(crunch_dir)
+            end
+          end
+
+          command = "ant debug install test"
+          puts "Retrying command '#{command}', attempt #{attempt}" if attempt > 1
+          output,_ = runcmd(command,"...building, installing, and testing")
+
+          # If we made it without an exception, stop repeating
+          repeat = false
+
+        rescue ProgramException => e
+          if DELETE_CRUNCH
+            if e.message.include?('invalid resource directory name') && attempt < 4
+                e = nil
+            end
+          end
+          raise e unless e.nil?
+        end
+      end
+
       Dir.chdir(@saved_directory)
 
       if output.include?("FAILURES!!!")
@@ -255,12 +282,12 @@ class Commit
       echo(sprintf("%-40s (%s)",filt_message,cmd))
     end
     output,success = scall(cmd,false)
-    if @detail || !success
+    if !success
+      raise ProgramException,"Problem executing command: (#{filt_message}) #{cmd};\n#{output}"
+    end
+    if @detail
       puts output
       puts
-    end
-    if !success
-      raise ProgramException,"Problem executing command: (#{filt_message}) #{cmd}"
     end
     [output,success]
   end

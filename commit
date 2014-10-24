@@ -14,9 +14,9 @@ end
 
 class Commit
 
-  DELETE_CRUNCH = true
   PROJECT_NAME = "GeometryApp"
-  ANDROID_PROJECTS = "#{PROJECT_NAME}"
+  DELETE_CRUNCH = true
+
   GIT_STATE_FILENAME = ".commit_state"
   GIT_MESSAGE_FILENAME = ".commit_git_message"
   COMMIT_MESSAGE_FILENAME = ".commit_editor_message"
@@ -221,56 +221,52 @@ class Commit
 
   def run_unit_tests
 
-    ANDROID_PROJECTS.split.each do |project_root|
-      proj_main = File.join(@saved_directory,project_root)
-      proj_test = proj_main + "Test"
-      echo "...Android project: #{project_root}"
+    proj_main = File.join(@saved_directory,PROJECT_NAME)
+    proj_test = proj_main + "Test"
 
-      Dir.chdir(proj_test)
+    Dir.chdir(proj_test)
 
-      runcmd("ant clean","...cleaning") if @options[:clean]
+    runcmd("ant clean","...cleaning") if @options[:clean]
 
-      attempt = 0
+    attempt = 0
 
-      repeat = true
-      while repeat
-        attempt += 1
-        begin
+    repeat = true
+    while repeat
+      attempt += 1
+      begin
 
-          if DELETE_CRUNCH
-            crunch_dir = "../#{PROJECT_NAME}/bin/res/crunch"
-            if File.directory?(crunch_dir)
-              puts "removing #{crunch_dir}" if @verbose
-              remove_dir(crunch_dir)
-            end
+        if DELETE_CRUNCH
+          crunch_dir = "../#{PROJECT_NAME}/bin/res/crunch"
+          if File.directory?(crunch_dir)
+            puts "removing #{crunch_dir}" if @verbose
+            remove_dir(crunch_dir)
           end
-
-          command = "ant debug install test"
-          puts "Retrying command '#{command}', attempt #{attempt}" if attempt > 1
-          output,_ = runcmd(command,"...building, installing, and testing")
-
-          # If we made it without an exception, stop repeating
-          repeat = false
-
-        rescue ProgramException => e
-          if DELETE_CRUNCH
-            if e.message.include?('invalid resource directory name') && attempt < 4
-                e = nil
-            end
-          end
-          raise e unless e.nil?
         end
+
+        command = "ant debug install test"
+        puts "Retrying command '#{command}', attempt #{attempt}" if attempt > 1
+        output,_ = runcmd(command,"...building, installing, and testing")
+
+        # If we made it without an exception, stop repeating
+        repeat = false
+
+      rescue ProgramException => e
+        if DELETE_CRUNCH
+          if e.message.include?('invalid resource directory name') && attempt < 4
+            e = nil
+          end
+        end
+        raise e unless e.nil?
       end
+    end
 
-      Dir.chdir(@saved_directory)
+    Dir.chdir(@saved_directory)
 
-      if output.include?("FAILURES!!!")
-        puts "\n\n\n-----------------------------------------"
-        puts output
-        puts "-----------------------------------------"
-        raise ProgramException,"Problem performing unit tests"
-      end
-
+    if output.include?("FAILURES!!!")
+      puts "\n\n\n-----------------------------------------"
+      puts output
+      puts "-----------------------------------------"
+      raise ProgramException,"Problem performing unit tests"
     end
   end
 

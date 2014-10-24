@@ -236,10 +236,13 @@ class Commit
       begin
 
         if DELETE_CRUNCH
-          crunch_dir = "../#{PROJECT_NAME}/bin/res/crunch"
-          if File.directory?(crunch_dir)
-            puts "removing #{crunch_dir}" if @verbose
-            remove_dir(crunch_dir)
+          projects = [PROJECT_NAME,"#{PROJECT_NAME}Test"]
+          projects.each do |proj|
+            crunch_dir = "../#{proj}/bin/res/crunch"
+            if File.directory?(crunch_dir)
+              puts "removing #{crunch_dir}" if @verbose
+              remove_dir(crunch_dir)
+            end
           end
         end
 

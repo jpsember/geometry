@@ -14,6 +14,7 @@ import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.UITools;
 import com.js.basic.JSONTools;
+import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -838,6 +839,7 @@ public class Editor {
 		AlgorithmInput algorithmInput = new AlgorithmInput();
 		List<Point> pointList = new ArrayList();
 		List<Polygon> polygonList = new ArrayList();
+		List<Disc> discList = new ArrayList();
 
 		for (EdObject obj : objects()) {
 			if (obj instanceof EdPoint) {
@@ -859,10 +861,14 @@ public class Editor {
 					polygon.reverse();
 
 				polygonList.add(polygon);
+			} else if (obj instanceof EdDisc) {
+				EdDisc disc = (EdDisc) obj;
+				discList.add(new Disc(disc.getOrigin(), disc.getRadius()));
 			}
 		}
 		algorithmInput.points = pointList.toArray(new Point[0]);
 		algorithmInput.polygons = polygonList.toArray(new Polygon[0]);
+		algorithmInput.discs = discList.toArray(new Disc[0]);
 		return algorithmInput;
 	}
 

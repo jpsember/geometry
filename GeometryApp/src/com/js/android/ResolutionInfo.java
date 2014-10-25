@@ -12,7 +12,7 @@ import static com.js.basic.Tools.*;
  */
 public class ResolutionInfo {
 
-	private static final boolean db = true && DEBUG_ONLY_FEATURES;
+	private static final boolean db = false && DEBUG_ONLY_FEATURES;
 
 	public ResolutionInfo(DisplayMetrics displayMetrics) {
 		/**

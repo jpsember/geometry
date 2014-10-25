@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import android.graphics.Color;
 
-import com.js.android.MyActivity;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
@@ -357,6 +356,7 @@ public class EdPolyline extends EdObject {
 			mEditSlot = slot;
 			mReference = modified;
 			mOriginalState = new EditorState(editor);
+			mOriginalPolyline = mOriginalState.getObjects().get(mEditSlot);
 			editor.objects().set(slot, mReference);
 		}
 
@@ -469,21 +469,20 @@ public class EdPolyline extends EdObject {
 			if (p.nPoints() <= 1)
 				return -1;
 
-			float factor = absorptionFactor();
 			Point cp = p.getPoint(p.cursor());
 			for (int pass = 0; pass < 2; pass++) {
 				int delta = (pass == 0) ? -1 : 1;
 				int neighbor = MyMath.myMod(p.cursor() + delta, p.nPoints());
 				Point c2 = p.getPoint(neighbor);
 				float dist = MyMath.distanceBetween(cp, c2);
-				float factor2 = factor;
-				if (false) {
-					// Special case if polygon is open and we're
-					// considering closing the polygon; then use larger factor.
-					if (!p.closed() && Math.abs(neighbor - p.cursor()) > 1)
-						factor2 = ABSORBTION_FACTOR_NORMAL;
-				}
-				if (dist >= mEditor.pickRadius() * factor2)
+				// If we just split a closed polyline, don't assume he wants to
+				// close it again; use smaller radius
+				boolean closingVertex = !p.closed()
+						&& !mOriginalPolyline.closed()
+						&& Math.abs(neighbor - p.cursor()) > 1;
+				float factor = absorptionFactor(!closingVertex
+						&& mOperType == OPER_INSERT);
+				if (dist >= mEditor.pickRadius() * factor)
 					continue;
 				return neighbor;
 			}
@@ -512,23 +511,21 @@ public class EdPolyline extends EdObject {
 			}
 		}
 
-		private float absorptionFactor() {
+		private float absorptionFactor(boolean small) {
 			// The 'absorbing' vertices factor is much smaller when inserting;
 			// this allows the user to place vertices very close together if
 			// they desire.
-			switch (mOperType) {
-			case OPER_INSERT:
-				return ABSORBTION_FACTOR_WHILE_INSERTING;
-			default:
-				return ABSORBTION_FACTOR_NORMAL;
-			}
+			return small ? ABSORBTION_FACTOR_WHILE_INSERTING
+					: ABSORBTION_FACTOR_NORMAL;
 		}
 
 		// Index of object being edited
 		private Editor mEditor;
 		private int mEditSlot;
 		private EditorState mOriginalState;
-		// polyline when editing operation began
+		// polyline before editing operation began
+		private EdPolyline mOriginalPolyline;
+		// polyline just after editing operation began
 		private EdPolyline mReference;
 		private boolean mChangesMade;
 		private boolean mSignal;

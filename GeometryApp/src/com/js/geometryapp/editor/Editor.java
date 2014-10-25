@@ -130,8 +130,10 @@ public class Editor {
 		{
 			mOptions.pushView(mOptions.addView(false));
 
-			prepareAddObjectButtons("Pt", EdPoint.FACTORY, "Seg",
-					EdSegment.FACTORY, "Poly", EdPolyline.FACTORY);
+			prepareAddObjectButtons("Pt", EdPoint.FACTORY, //
+					"Seg", EdSegment.FACTORY, //
+					"Disc", EdDisc.FACTORY,//
+					"Poly", EdPolyline.FACTORY);
 
 			mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
 					new Listener() {
@@ -515,6 +517,7 @@ public class Editor {
 		mObjectTypes = new HashMap();
 		addObjectType(EdPoint.FACTORY);
 		addObjectType(EdSegment.FACTORY);
+		addObjectType(EdDisc.FACTORY);
 		addObjectType(EdPolyline.FACTORY);
 	}
 

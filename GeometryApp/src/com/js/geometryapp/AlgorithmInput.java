@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -54,6 +55,31 @@ public class AlgorithmInput {
 		return points[MyMath.myMod(index, points.length)];
 	}
 
+	/**
+	 * Get (first) disc from the input
+	 * 
+	 * @param defaultIfNone
+	 *            if array is empty, returns this instead
+	 */
+	public Disc getDisc(Disc defaultIfNone) {
+		return getDisc(0, defaultIfNone);
+	}
+
+	/**
+	 * Get a disc from the input
+	 * 
+	 * @param index
+	 *            index to use; taken modulo the array size
+	 * @param defaultIfNone
+	 *            if array is empty, returns this instead
+	 */
+	public Disc getDisc(int index, Disc defaultIfNone) {
+		if (discs.length == 0)
+			return defaultIfNone;
+		return discs[MyMath.myMod(index, discs.length)];
+	}
+
 	public Point[] points;
 	public Polygon[] polygons;
+	public Disc[] discs;
 }

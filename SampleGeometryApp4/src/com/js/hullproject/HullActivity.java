@@ -17,13 +17,10 @@ import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
-import static com.js.basic.Tools.*;
 
 public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
-	private static final String STEP_THROUGH_BITANGENTS = "Show Bitangent Calculations";
-	private static final String ALTERNATE_BITANGENT_CALC = "Alternative Bitangent Calc";
-	private static final String INCLUDE_LOWER_HULL = "Lower Hull";
+	private static final String INCLUDE_LOWER_HULL = "Include lower hull";
 
 	private static final String BGND_ELEMENT_BITANGENTS = "10";
 	private static final String BGND_ELEMENT_CURRENTDISC = "20";
@@ -41,8 +38,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	@Override
 	public void prepareOptions(AlgorithmOptions options) {
-		options.addCheckBox(STEP_THROUGH_BITANGENTS);
-		options.addCheckBox(ALTERNATE_BITANGENT_CALC);
 		options.addCheckBox(INCLUDE_LOWER_HULL);
 		mOptions = options;
 	}
@@ -76,7 +71,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 						for (Disc d : hullDiscs) {
 							s.plot(d);
 							if (prevDisc != null) {
-								Bitangent b = calcBitangent2(prevDisc, d);
+								Bitangent b = constructBitangent(prevDisc, d);
 								if (b != null) {
 									s.plotRay(b.maPoint, b.mbPoint);
 								}
@@ -169,24 +164,14 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	 * Calculate bitangent, a directed ray tangent to discs da and db, with both
 	 * discs lying to its left
 	 * 
-	 * Solves using analytical geometry
-	 * 
 	 * @return bitangent, two points on a directed line; or null if no bitangent
 	 *         exists
 	 */
-	private Bitangent calcBitangent(Disc da, Disc db) {
-
-		Bitangent bitangent = null;
-
+	private Bitangent constructBitangent(Disc da, Disc db) {
 		boolean exchangeDiscs = false;
 
-		// If disc A is larger, we shrink both discs until B becomes a
-		// point. Then we will calculate the bitangent of the shrunken A
-		// with the origin of B.
+		// Proceed assuming da is the larger of the two
 		exchangeDiscs = (da.getRadius() < db.getRadius());
-		// Let r be the radius of the shrunken A.
-		float r = Math.abs(da.getRadius() - db.getRadius());
-
 		if (exchangeDiscs) {
 			Disc tmp = da;
 			da = db;
@@ -196,165 +181,32 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		Point aOrigin = da.getOrigin();
 		Point bOrigin = db.getOrigin();
 
-		// To simplify the calculations, translate both (shrunken) discs so
-		// B is at the origin
-		Point bTranslated = MyMath.subtract(bOrigin, aOrigin);
-
+		float abDist = MyMath.distanceBetween(aOrigin, bOrigin);
 		// If disc a contains disc b, there is no bitangent.
-		float bDistance = bTranslated.magnitude();
-		if (bDistance + db.getRadius() <= da.getRadius())
+		if (abDist + db.getRadius() <= da.getRadius())
 			return null;
 
-		/**
-		 * <pre>
-		 * 
-		 * Let B' be the origin of the translated B.
-		 * Let T be the point of tangency of the bisector with (shrunken) A.
-		 * 
-		 * We have:
-		 * 
-		 * Tx^2 + Ty^2 = r^2
-		 * 
-		 * T . (B' - C) = 0
-		 * 
-		 * Algebra yields:
-		 * 
-		 * Tx^2(B'y^2 + B'x^2) + Tx(-2*r^2*B'x) + (r^4 - r^2 * B'y^2) = 0
-		 * 
-		 * which is a quadratic equation in one variable, Tx.  We solve for that,
-		 * then solve for Ty as
-		 * 
-		 * Ty = (r^2 - B'x*Tx) / B'y
-		 * 
-		 * </pre>
-		 */
-
-		float rSquared = r * r;
-		float qa = (bTranslated.y * bTranslated.y + bTranslated.x
-				* bTranslated.x);
-		float qb = -2 * bTranslated.x * rSquared;
-		float qc = rSquared * (rSquared - bTranslated.y * bTranslated.y);
-
-		float[] roots = MyMath.solveQuadratic(qa, qb, qc, null);
-
-		Point tangent = new Point(roots[0],
-				(rSquared - (bTranslated.x * roots[0])) / bTranslated.y);
-
-		// Determine if this is the correct root by seeing which side of the
-		// radial (0-->T) A' lies upon.
-		// If we exchanged discs, invert this test.
-		boolean switchRoots = (MyMath.sideOfLine(Point.ZERO, tangent,
-				bTranslated) < 0);
-		switchRoots ^= exchangeDiscs;
-
-		if (switchRoots)
-			tangent.setTo(roots[1], (rSquared - (bTranslated.x * roots[1]))
-					/ bTranslated.y);
-
-		// Figure out the translation to apply to the bitangent to undo
-		// the effect of shrinking the discs initially
-		Point radialAdjust;
-		if (r == 0) {
-			// Both discs were the same size, and shrunk to points;
-			// rotate the B vector 90 degrees CCW and scale appropriately to
-			// find tangent point
-			float rScale = da.getRadius() / bDistance;
-			radialAdjust = new Point(bTranslated.y * rScale, -bTranslated.x
-					* rScale);
+		float theta = MyMath.polarAngle(bOrigin.x - aOrigin.x, bOrigin.y
+				- aOrigin.y);
+		float phi = MyMath.M_DEG * 90
+				- (float) Math.asin((da.getRadius() - db.getRadius()) / abDist);
+		float alpha;
+		if (!exchangeDiscs) {
+			alpha = theta - phi;
 		} else {
-			float rScale = db.getRadius() / r;
-			radialAdjust = new Point(rScale * tangent.x, rScale * tangent.y);
+			alpha = theta + phi;
 		}
 
-		Point aTangentPoint = new Point(aOrigin);
-		aTangentPoint.add(tangent);
-		aTangentPoint.add(radialAdjust);
-		Point bTangentPoint = new Point(bOrigin);
-		bTangentPoint.add(radialAdjust);
+		Point aTangentPoint, bTangentPoint;
+		aTangentPoint = MyMath.pointOnCircle(aOrigin, alpha, da.getRadius());
+		bTangentPoint = MyMath.pointOnCircle(bOrigin, alpha, db.getRadius());
 
+		Bitangent bitangent = null;
 		if (!exchangeDiscs) {
 			bitangent = new Bitangent(aTangentPoint, bTangentPoint);
 		} else {
 			bitangent = new Bitangent(bTangentPoint, aTangentPoint);
 		}
-
-		return bitangent;
-	}
-
-	/**
-	 * Calculate bitangent, a directed ray tangent to discs da and db, with both
-	 * discs lying to its left
-	 * 
-	 * Solves using trigonometry (simpler and probably more robust)
-	 * 
-	 * @return bitangent, two points on a directed line; or null if no bitangent
-	 *         exists
-	 */
-	private Bitangent calcBitangent2(Disc da, Disc db) {
-		Bitangent bitangent = null;
-		s.pushActive(mOptions.getBooleanValue(STEP_THROUGH_BITANGENTS));
-		do {
-			if (mOptions.getBooleanValue(ALTERNATE_BITANGENT_CALC)) {
-				bitangent = calcBitangent(da, db);
-				break;
-			}
-			boolean exchangeDiscs = false;
-
-			if (s.step())
-				s.show("Calc bitangent from" + s.highlight(da));
-			if (s.step())
-				s.show("Calc bitangent to" + s.highlight(db));
-
-			// Proceed assuming da is the larger of the two
-			exchangeDiscs = (da.getRadius() < db.getRadius());
-			if (s.step())
-				s.show(" exchangeDiscs " + d(exchangeDiscs));
-
-			if (exchangeDiscs) {
-				Disc tmp = da;
-				da = db;
-				db = tmp;
-			}
-
-			Point aOrigin = da.getOrigin();
-			Point bOrigin = db.getOrigin();
-
-			float abDist = MyMath.distanceBetween(aOrigin, bOrigin);
-			// If disc a contains disc b, there is no bitangent.
-			if (abDist + db.getRadius() <= da.getRadius())
-				break;
-
-			float theta = MyMath.polarAngle(bOrigin.x - aOrigin.x, bOrigin.y
-					- aOrigin.y);
-			float phi = MyMath.M_DEG
-					* 90
-					- (float) Math.asin((da.getRadius() - db.getRadius())
-							/ abDist);
-			float alpha;
-			if (!exchangeDiscs) {
-				alpha = theta - phi;
-			} else {
-				alpha = theta + phi;
-			}
-			if (s.step())
-				s.show(" theta=" + da(theta) + " phi=" + da(phi) + " alpha="
-						+ da(alpha));
-
-			Point aTangentPoint, bTangentPoint;
-			aTangentPoint = MyMath
-					.pointOnCircle(aOrigin, alpha, da.getRadius());
-			bTangentPoint = MyMath
-					.pointOnCircle(bOrigin, alpha, db.getRadius());
-
-			if (!exchangeDiscs) {
-				bitangent = new Bitangent(aTangentPoint, bTangentPoint);
-			} else {
-				bitangent = new Bitangent(bTangentPoint, aTangentPoint);
-			}
-			if (s.step())
-				s.show("Bitangent" + highlight(bitangent));
-		} while (false);
-		s.popActive();
 		return bitangent;
 	}
 
@@ -373,7 +225,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		int i, j;
 		for (i = 0; i < mHullDiscs.size(); i++) {
 			uDisc = mHullDiscs.get(i);
-			ux = calcBitangent2(uDisc, xDisc);
+			ux = constructBitangent(uDisc, xDisc);
 			if (s.step())
 				s.show("Looking for hull bitangent UX" + s.highlight(uDisc));
 			if (ux == null) {
@@ -391,7 +243,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			float angle;
 			if (i + 1 < mHullDiscs.size()) {
 				Disc vDisc = mHullDiscs.get(i + 1);
-				Bitangent uv = calcBitangent2(uDisc, vDisc);
+				Bitangent uv = constructBitangent(uDisc, vDisc);
 				angle = uv.angle();
 			} else {
 				// U is the last hull disc, so treat as if it supports a
@@ -413,7 +265,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			if (s.step())
 				s.show("Looking for hull bitangent XV" + s.highlight(vDisc));
 
-			xv = calcBitangent2(xDisc, vDisc);
+			xv = constructBitangent(xDisc, vDisc);
 			if (xv == null) {
 				if (s.step())
 					s.show("no bitangent exists with " + s.highlight(vDisc));
@@ -429,7 +281,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			float angle;
 			if (j - 1 >= 0) {
 				Disc uDisc2 = mHullDiscs.get(j - 1);
-				Bitangent uv = calcBitangent2(uDisc2, vDisc);
+				Bitangent uv = constructBitangent(uDisc2, vDisc);
 				angle = uv.angle();
 			} else {
 				// V is the first hull disc, so treat as if it supports a
@@ -498,11 +350,13 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		public Point maPoint, mbPoint;
 	}
 
-	private List<Disc> mDiscs = new ArrayList();
-	private List<Disc> mHullDiscs;
-	private List<Disc> mHullDiscLists[];
 	private AlgorithmOptions mOptions;
 	private AlgorithmStepper s;
-	private Disc mCurrentDiscForRendering;
+	private List<Disc> mDiscs = new ArrayList();
+	// Two lists, one for upper, one for lower hull
+	private List<Disc> mHullDiscLists[];
 	private boolean mLowerHullFlag;
+	// Active list (i.e. either upper or lower hull)
+	private List<Disc> mHullDiscs;
+	private Disc mCurrentDiscForRendering;
 }

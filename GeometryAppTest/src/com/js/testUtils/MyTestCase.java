@@ -40,6 +40,16 @@ public class MyTestCase extends AndroidTestCase {
 		assertEquals(expected, got, epsilon);
 	}
 
+	public static void assertEqualsFloatWithRelativePrecision(double expected,
+			double got) {
+		assertEqualsFloatWithRelativePrecision(expected, got, 1e-6);
+	}
+
+	public static void assertEqualsFloatWithRelativePrecision(double expected,
+			double got, double relativePrecision) {
+		double epsilon = Math.abs(expected) * relativePrecision;
+		assertEquals(expected, got, epsilon);
+	}
 
 	public static void assertStringsMatch(Object s1, Object s2) {
 		if (s1 == null)

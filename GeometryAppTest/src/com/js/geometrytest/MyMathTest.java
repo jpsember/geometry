@@ -2,6 +2,7 @@ package com.js.geometrytest;
 
 import android.graphics.Matrix;
 
+import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
@@ -96,6 +97,52 @@ public class MyMathTest extends MyTestCase {
 			a2 += MyMath.PI * 6;
 			got = MyMath.interpolateBetweenAngles(a1, a2, t);
 			assertEqualsFloat(exp, got, 1e-5);
+		}
+	}
+
+	public void testQuadraticSolver() {
+		float r[] = new float[2];
+		float d[] = { 5, -15, -140, -4, 7,//
+				0, 3, 21, -7, -7,//
+		};
+		for (int i = 0; i < d.length; i += 5) {
+			MyMath.solveQuadratic(d[i], d[i + 1], d[i + 2], r);
+			assertEqualsFloatWithRelativePrecision(d[i + 3], r[0]);
+			assertEqualsFloatWithRelativePrecision(d[i + 4], r[1]);
+		}
+	}
+
+	public void testQuadraticSolverEdgeCases() {
+		float r[] = new float[2];
+		float x[] = { 1e-4f, 1e2f,//
+				1e-4f, 1e3f,//
+				1e-4f, 1e4f,//
+				1e-4f, 1e5f,//
+		};
+		for (int i = 0; i < x.length; i += 2) {
+			float x1 = Math.min(x[i], x[i + 1]);
+			float x2 = Math.max(x[i], x[i + 1]);
+			float a = 7;
+			float b = (-x1 - x2) * a;
+			float c = x1 * x2 * a;
+			try {
+				MyMath.solveQuadratic(a, b, c, r);
+				assertEqualsFloatWithRelativePrecision(x1, r[0]);
+				assertEqualsFloatWithRelativePrecision(x2, r[1]);
+			} catch (GeometryException e) {
+			}
+		}
+	}
+
+	public void testQuadraticSolverFails() {
+		float d[] = { 3, 0, 2, //
+		};
+		for (int i = 0; i < d.length; i += 3) {
+			try {
+				MyMath.solveQuadratic(d[i], d[i + 1], d[i + 2], null);
+				fail();
+			} catch (GeometryException e) {
+			}
 		}
 	}
 }

@@ -605,4 +605,99 @@ public final class MyMath {
 		return pointOnCircle(origin, random.nextFloat() * PI * 2, val);
 	}
 
+	public static float[] solveQuadratic(float a, float b, float c,
+			float[] output) {
+		if (output == null)
+			output = new float[2];
+
+		final float EPS = 1e-10f;
+
+		boolean found = false;
+		do {
+			if (db)
+				pr("SolveQuadratic a=" + a + " b=" + b + " c=" + c);
+
+			// Normalize the coefficients so largest has unit magnitude
+			float mag = Math.max(Math.max(Math.abs(a), Math.abs(b)),
+					Math.abs(c));
+			if (mag == 0)
+				break;
+			a /= mag;
+			b /= mag;
+			c /= mag;
+			if (db)
+				pr(" normalized a=" + a + " b=" + b + " c=" + c);
+
+			// Special case: a = 0
+			if (Math.abs(a) < EPS) {
+				if (Math.abs(b) < EPS)
+					break;
+
+				found = true;
+				float x = -c / b;
+				output[0] = x;
+				output[1] = x;
+				break;
+			}
+
+			float discriminant = b * b - 4 * a * c;
+			// Special case: discriminant is not real
+			if (discriminant < 0)
+				break;
+
+			float root = (float) Math.sqrt(discriminant);
+
+			float rootPos = -b + root;
+			float rootNeg = -b - root;
+
+			float recip = 1 / (2 * a);
+			float x0, x1;
+
+			// Special case: the discriminant has the same magnitude as b
+			float discriminantEpsilon = Math.abs(b) * 1e-4f;
+			if (db)
+				pr(" radical=" + discriminant + " b*b=" + (b * b) + " root="
+						+ root + "\n z0=" + rootPos + " z1=" + rootNeg
+						+ " near_zero " + discriminantEpsilon);
+			if (Math.abs(rootPos) < discriminantEpsilon) {
+				x1 = recip * rootNeg;
+				x0 = (c / a) / x1;
+				if (db)
+					pr("plus is near zero");
+			} else if (Math.abs(rootNeg) < discriminantEpsilon) {
+				x0 = recip * rootPos;
+				x1 = (c / a) / x0;
+				if (db)
+					pr("minus is near zero");
+			} else {
+				x0 = recip * rootPos;
+				x1 = recip * rootNeg;
+				if (db)
+					pr("calc both plus and minus");
+			}
+
+			if (Float.isNaN(x0) || Float.isInfinite(x0))
+				break;
+			if (Float.isNaN(x1) || Float.isInfinite(x1))
+				break;
+
+			// Sort the two roots into ascending order
+			if (x0 > x1) {
+				output[0] = x1;
+				output[1] = x0;
+			} else {
+				output[0] = x0;
+				output[1] = x1;
+			}
+			found = true;
+		} while (false);
+
+		if (!found)
+			GeometryException.raise("quadratic system has no roots: " + a + " "
+					+ b + " " + c);
+		if (db)
+			pr(" returning " + output[0] + " and " + output[1]);
+		return output;
+	}
+
 }

@@ -1,13 +1,10 @@
 package com.js.geometryapp.editor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.graphics.Color;
 
+import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometryapp.AlgorithmStepper;
@@ -53,34 +50,7 @@ public class EdDisc extends EdObject {
 	@Override
 	public void render(AlgorithmStepper s) {
 		s.setColor(Color.BLUE);
-		Point origin = getOrigin();
-		float radius = getRadius();
-		final float SIDES_FACTOR = .06f;
-		final int SIDES_MIN = 4;
-		final int SIDES_MAX = 50;
-
-		// Construct a polygonal approximation to this disc, one that
-		// is smooth yet doesn't have more edges than are necessary
-
-		// Get physical size of disc, and take its cube root (approx)
-		float scaledRadius = (float) Math.pow(radius / editor().pickRadius(),
-				.3f);
-		// Scale this by a constant to get the number of polygonal edges
-		int numberOfSides = (int) (scaledRadius / SIDES_FACTOR);
-		int numberOfSidesClamped = MyMath.clamp(numberOfSides, SIDES_MIN,
-				SIDES_MAX);
-		if (db)
-			pr("scaledRadius=" + d(scaledRadius) + " numberOfSides="
-					+ numberOfSides + " clamped=" + numberOfSidesClamped);
-
-		float angleSep = ((360 * MyMath.M_DEG) / numberOfSidesClamped);
-		List<Point> pts = new ArrayList();
-		for (int i = 0; i < numberOfSidesClamped; i++) {
-			pts.add(MyMath.pointOnCircle(origin, i * angleSep, radius));
-		}
-		Polygon p = new Polygon(pts);
-		s.plot(p, false);
-
+		s.plot(buildDisc());
 		super.render(s);
 	}
 
@@ -90,6 +60,10 @@ public class EdDisc extends EdObject {
 		if (vertexIndex >= 0)
 			return new EditorOperation(editor(), slot, vertexIndex);
 		return null;
+	}
+
+	public Disc buildDisc() {
+		return new Disc(getOrigin(), getRadius());
 	}
 
 	public float distFrom(Point pt) {

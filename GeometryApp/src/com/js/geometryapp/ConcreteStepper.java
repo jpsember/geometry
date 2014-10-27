@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
+import com.js.geometry.Disc;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
@@ -325,6 +326,17 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public String highlightLine(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotLine(p1, p2) + setNormal();
+	}
+
+	@Override
+	public String plot(Disc disc) {
+		return plot(new DiscElement(disc));
+	}
+
+	@Override
+	public String highlight(Disc disc) {
+		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
+				+ plot(disc) + setNormal();
 	}
 
 	@Override

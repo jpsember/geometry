@@ -2,6 +2,7 @@ package com.js.geometryapp;
 
 import java.util.Collection;
 
+import com.js.geometry.Disc;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.Point;
@@ -150,6 +151,10 @@ public interface AlgorithmStepper {
 	public String plotLine(Point p1, Point p2);
 
 	public String highlightLine(Point p1, Point p2);
+
+	public String plot(Disc disc);
+
+	public String highlight(Disc disc);
 
 	public String plot(Polygon polygon);
 

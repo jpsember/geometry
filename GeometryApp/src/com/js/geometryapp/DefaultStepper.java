@@ -131,6 +131,16 @@ class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
+	public String plot(Disc disc) {
+		return "";
+	}
+
+	@Override
+	public String highlight(Disc disc) {
+		return "";
+	}
+
+	@Override
 	public String plot(Polygon polygon) {
 		return "";
 	}

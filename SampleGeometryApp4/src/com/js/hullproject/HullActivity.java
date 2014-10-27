@@ -23,6 +23,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private static final String STEP_THROUGH_BITANGENTS = "Show Bitangent Calculations";
 	private static final String ALTERNATE_BITANGENT_CALC = "Alternative Bitangent Calc";
+	private static final String INCLUDE_LOWER_HULL = "Lower Hull";
 
 	private static final String BGND_ELEMENT_BITANGENTS = "10";
 	private static final String BGND_ELEMENT_CURRENTDISC = "20";
@@ -42,6 +43,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	public void prepareOptions(AlgorithmOptions options) {
 		options.addCheckBox(STEP_THROUGH_BITANGENTS);
 		options.addCheckBox(ALTERNATE_BITANGENT_CALC);
+		options.addCheckBox(INCLUDE_LOWER_HULL);
 		mOptions = options;
 	}
 
@@ -50,6 +52,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mDiscs.clear();
 		for (Disc d : input.discs)
 			mDiscs.add(d);
+
+		mHullDiscLists = new List[2];
+		mHullDiscLists[0] = new ArrayList();
+		mHullDiscLists[1] = new ArrayList();
 	}
 
 	@Override
@@ -64,16 +70,19 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				@Override
 				public void render() {
 					s.setColor(COLOR_DARKGREEN);
-					Disc prevDisc = null;
-					for (Disc d : mHullDiscs) {
-						s.plot(d);
-						if (prevDisc != null) {
-							Bitangent b = calcBitangent2(prevDisc, d);
-							if (b != null) {
-								s.plotRay(b.maPoint, b.mbPoint);
+					for (int pass = 0; pass < 2; pass++) {
+						List<Disc> hullDiscs = mHullDiscLists[pass];
+						Disc prevDisc = null;
+						for (Disc d : hullDiscs) {
+							s.plot(d);
+							if (prevDisc != null) {
+								Bitangent b = calcBitangent2(prevDisc, d);
+								if (b != null) {
+									s.plotRay(b.maPoint, b.mbPoint);
+								}
 							}
+							prevDisc = d;
 						}
-						prevDisc = d;
 					}
 				}
 			});
@@ -81,55 +90,79 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		}
 
 		sortDiscsBySize();
-		initializeBitangents();
-		if (s.openLayer(BGND_ELEMENT_CURRENTDISC)) {
-			if (mCurrentDisc != null) {
-				s.setColor(COLOR_DARKGREEN);
-				s.plot(mCurrentDisc);
-			}
-			s.closeLayer();
-		}
+		for (int pass = 0; pass < 2; pass++) {
+			mLowerHullFlag = (pass == 1);
+			if (mLowerHullFlag && !mOptions.getBooleanValue(INCLUDE_LOWER_HULL))
+				continue;
+			if (s.bigStep())
+				s.show("Constructing " + (mLowerHullFlag ? "lower" : "upper")
+						+ " hull");
+			mHullDiscs = mHullDiscLists[pass];
+			initializeHullDiscList();
 
-		for (int i = mDiscs.size() - 1; i >= 0; i--) {
-			Disc d = mDiscs.get(i);
-			mCurrentDisc = d;
-			processDisc(d);
-			mCurrentDisc = null;
+			if (s.openLayer(BGND_ELEMENT_CURRENTDISC)) {
+				if (mCurrentDiscForRendering != null) {
+					s.setColor(COLOR_DARKGREEN);
+					s.plot(mCurrentDiscForRendering);
+				}
+				s.closeLayer();
+			}
+
+			for (int i = mDiscs.size() - 1; i >= 0; i--) {
+				Disc d = mDiscs.get(i);
+				mCurrentDiscForRendering = d;
+				processDisc(d);
+				mCurrentDiscForRendering = null;
+			}
+			s.removeLayer(BGND_ELEMENT_CURRENTDISC);
 		}
-		s.removeLayer(BGND_ELEMENT_CURRENTDISC);
 	}
 
 	private void sortDiscsBySize() {
 		Collections.sort(mDiscs, new Comparator() {
-			@Override
 			public int compare(Object lhs, Object rhs) {
 				return (int) Math.signum(((Disc) lhs).getRadius()
 						- ((Disc) rhs).getRadius());
 			}
 		});
-
 	}
 
-	private void initializeBitangents() {
+	/**
+	 * Calculate leftmost point on disc
+	 */
+	private float leftmostPoint(Disc d) {
+		return d.getOrigin().x - d.getRadius();
+	}
+
+	/**
+	 * Calculate rightmost point on disc
+	 */
+	private float rightmostPoint(Disc d) {
+		return d.getOrigin().x + d.getRadius();
+	}
+
+	private void initializeHullDiscList() {
 		mHullDiscs.clear();
 
-		Disc leftmostDisc = mDiscs.get(0);
-		Disc rightmostDisc = mDiscs.get(0);
-		for (Disc d : mDiscs) {
-			if (d.getOrigin().x - d.getRadius() < leftmostDisc.getOrigin().x
-					- leftmostDisc.getRadius())
-				leftmostDisc = d;
-			if (d.getOrigin().x + d.getRadius() > rightmostDisc.getOrigin().x
-					+ rightmostDisc.getRadius())
-				rightmostDisc = d;
+		Disc discLeft = mDiscs.get(0);
+		Disc discRight = discLeft;
+		for (Disc disc : mDiscs) {
+			if (leftmostPoint(disc) < leftmostPoint(discLeft))
+				discLeft = disc;
+			if (rightmostPoint(disc) > rightmostPoint(discRight))
+				discRight = disc;
 		}
 		if (s.step())
-			s.show("Leftmost and rightmost discs" + s.highlight(leftmostDisc)
-					+ s.highlight(rightmostDisc));
-
-		mHullDiscs.add(rightmostDisc);
-		if (leftmostDisc != rightmostDisc)
-			mHullDiscs.add(leftmostDisc);
+			s.show("Extremal discs" + s.highlight(discLeft)
+					+ s.highlight(discRight));
+		if (mLowerHullFlag) {
+			Disc temp = discLeft;
+			discLeft = discRight;
+			discRight = temp;
+		}
+		mHullDiscs.add(discRight);
+		if (discLeft != discRight)
+			mHullDiscs.add(discLeft);
 	}
 
 	/**
@@ -334,8 +367,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 		// Find first adjacent pair of discs UV such that bitangent UX exists,
 		// is an upper hull candidate, and is cw of UV's bitangent.
-		// If U is the last hull disc, treat as if it supports a bitangent
-		// pointing downward
 
 		Bitangent ux = null;
 		Disc uDisc = null;
@@ -361,9 +392,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			if (i + 1 < mHullDiscs.size()) {
 				Disc vDisc = mHullDiscs.get(i + 1);
 				Bitangent uv = calcBitangent2(uDisc, vDisc);
-				ASSERT(uv != null);
 				angle = uv.angle();
 			} else {
+				// U is the last hull disc, so treat as if it supports a
+				// bitangent with the maximum hull angle
 				angle = maxHullAngle();
 			}
 			if (MyMath.angleIsConvex(ux.angle(), angle)) {
@@ -398,9 +430,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			if (j - 1 >= 0) {
 				Disc uDisc2 = mHullDiscs.get(j - 1);
 				Bitangent uv = calcBitangent2(uDisc2, vDisc);
-				ASSERT(uv != null);
 				angle = uv.angle();
 			} else {
+				// V is the first hull disc, so treat as if it supports a
+				// bitangent with the minimum hull angle
 				angle = minHullAngle();
 			}
 			if (MyMath.angleIsConvex(angle, xv.angle()))
@@ -421,6 +454,9 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mHullDiscs.add(i + 1, xDisc);
 	}
 
+	/**
+	 * Utility method to highlight a bitangent as a ray
+	 */
 	private String highlight(Bitangent bitangent) {
 		s.highlightRay(bitangent.maPoint, bitangent.mbPoint);
 		return "";
@@ -428,20 +464,16 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	/**
 	 * Get minimum (normalized) angle of an upper hull bitangent
-	 * 
-	 * @return
 	 */
 	private float minHullAngle() {
-		return MyMath.M_DEG * 90;
+		return mLowerHullFlag ? MyMath.M_DEG * -90 : MyMath.M_DEG * 90;
 	}
 
 	/**
 	 * Get minimum (normalized) angle of an upper hull bitangent
-	 * 
-	 * @return
 	 */
 	private float maxHullAngle() {
-		return -MyMath.M_DEG * 90;
+		return mLowerHullFlag ? MyMath.M_DEG * 90 : MyMath.M_DEG * -90;
 	}
 
 	/**
@@ -467,8 +499,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	}
 
 	private List<Disc> mDiscs = new ArrayList();
-	private ArrayList<Disc> mHullDiscs = new ArrayList();
+	private List<Disc> mHullDiscs;
+	private List<Disc> mHullDiscLists[];
 	private AlgorithmOptions mOptions;
 	private AlgorithmStepper s;
-	private Disc mCurrentDisc;
+	private Disc mCurrentDiscForRendering;
+	private boolean mLowerHullFlag;
 }

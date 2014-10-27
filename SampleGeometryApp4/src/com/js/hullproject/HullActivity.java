@@ -350,11 +350,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists with " + s.highlight(uDisc));
 				return;
 			}
-			if (!hullAngle(ux.pseudoAngle())) {
+			if (!hullAngle(ux.angle())) {
 				if (s.step())
-					s.show("ux, not a hull disc, dominated "
-							+ da(ux.pseudoAngle()) + highlight(ux)
-							+ s.highlight(uDisc));
+					s.show("not a hull bitangent candidate"
+							+ s.highlight(uDisc) + highlight(ux));
 				return;
 			}
 
@@ -363,11 +362,11 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				Disc vDisc = mHullDiscs.get(i + 1);
 				Bitangent uv = calcBitangent2(uDisc, vDisc);
 				ASSERT(uv != null);
-				angle = uv.pseudoAngle();
+				angle = uv.angle();
 			} else {
-				angle = -MyMath.PSEUDO_ANGLE_RANGE_14;
+				angle = -MyMath.M_DEG * 90;
 			}
-			if (MyMath.pseudoAngleIsConvex(ux.pseudoAngle(), angle)) {
+			if (MyMath.angleIsConvex(ux.angle(), angle)) {
 				break;
 			}
 		}
@@ -388,10 +387,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists with " + s.highlight(vDisc));
 				return;
 			}
-			if (!hullAngle(xv.pseudoAngle())) {
+			if (!hullAngle(xv.angle())) {
 				if (s.step())
-					s.show("not a hull disc, dominated" + da(xv.pseudoAngle())
-							+ highlight(xv) + s.highlight(vDisc));
+					s.show("not a hull bitangent candidate"
+							+ s.highlight(vDisc) + highlight(xv));
 				return;
 			}
 
@@ -400,11 +399,11 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				Disc uDisc2 = mHullDiscs.get(j - 1);
 				Bitangent uv = calcBitangent2(uDisc2, vDisc);
 				ASSERT(uv != null);
-				angle = uv.pseudoAngle();
+				angle = uv.angle();
 			} else {
-				angle = MyMath.PSEUDO_ANGLE_RANGE_14;
+				angle = MyMath.M_DEG * 90;
 			}
-			if (MyMath.pseudoAngleIsConvex(angle, xv.pseudoAngle()))
+			if (MyMath.angleIsConvex(angle, xv.angle()))
 				break;
 		}
 		if (j < 0)
@@ -428,22 +427,20 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	}
 
 	/**
-	 * Determine if a (normalized) bitangent pseudoangle is an upper hull
-	 * candidate
+	 * Determine if a (normalized) bitangent angle is an upper hull candidate
 	 */
-	private boolean hullAngle(float pseudoAngle) {
-		return pseudoAngle >= MyMath.PSEUDO_ANGLE_RANGE_14
-				|| pseudoAngle <= -MyMath.PSEUDO_ANGLE_RANGE_14;
+	private boolean hullAngle(float angle) {
+		return angle >= MyMath.M_DEG * 90 || angle <= -MyMath.M_DEG * 90;
 	}
 
 	private static class Bitangent {
 		public Bitangent(Point aTangent, Point bTangent) {
 			maPoint = aTangent;
 			mbPoint = bTangent;
-			mAngle = MyMath.pseudoPolarAngle(MyMath.subtract(mbPoint, maPoint));
+			mAngle = MyMath.polarAngle(MyMath.subtract(mbPoint, maPoint));
 		}
 
-		public float pseudoAngle() {
+		public float angle() {
 			return mAngle;
 		}
 

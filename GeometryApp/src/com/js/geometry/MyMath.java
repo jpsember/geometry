@@ -583,6 +583,14 @@ public final class MyMath {
 		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
 	}
 
+	public static boolean angleIsConvex(float angle) {
+		return angle > 0;
+	}
+
+	public static boolean angleIsConvex(float startAngle, float endAngle) {
+		return angleIsConvex(normalizeAngle(endAngle - startAngle));
+	}
+
 	public static float perturb(Random random, float val) {
 		final float GRID = PERTURB_AMOUNT_DEFAULT;
 		final float NOISE = GRID * .8f;

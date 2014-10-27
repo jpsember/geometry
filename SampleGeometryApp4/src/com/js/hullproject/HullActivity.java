@@ -22,6 +22,7 @@ import static com.js.basic.Tools.*;
 public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private static final String STEP_THROUGH_BITANGENTS = "Show Bitangent Calculations";
+	private static final String ALTERNATE_BITANGENT_CALC = "Alternative Bitangent Calc";
 
 	private static final String BGND_ELEMENT_BITANGENTS = "10";
 	private static final String BGND_ELEMENT_CURRENTDISC = "20";
@@ -40,6 +41,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	@Override
 	public void prepareOptions(AlgorithmOptions options) {
 		options.addCheckBox(STEP_THROUGH_BITANGENTS);
+		options.addCheckBox(ALTERNATE_BITANGENT_CALC);
 		mOptions = options;
 	}
 
@@ -145,12 +147,12 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 		boolean exchangeDiscs = false;
 
-		// If disc B is larger, we shrink both discs until A becomes a
-		// point. Then we will calculate the bitangent of the shrunken B
-		// with the origin of A.
-		exchangeDiscs = (db.getRadius() < da.getRadius());
-		// Let r be the radius of the shrunken B.
-		float r = Math.abs(db.getRadius() - da.getRadius());
+		// If disc A is larger, we shrink both discs until B becomes a
+		// point. Then we will calculate the bitangent of the shrunken A
+		// with the origin of B.
+		exchangeDiscs = (da.getRadius() < db.getRadius());
+		// Let r be the radius of the shrunken A.
+		float r = Math.abs(da.getRadius() - db.getRadius());
 
 		if (exchangeDiscs) {
 			Disc tmp = da;
@@ -163,84 +165,84 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 		// To simplify the calculations, translate both (shrunken) discs so
 		// B is at the origin
-		Point aTranslated = MyMath.subtract(aOrigin, bOrigin);
+		Point bTranslated = MyMath.subtract(bOrigin, aOrigin);
 
-		// If disc b contains disc a, there is no bitangent.
-		float aDistance = aTranslated.magnitude();
-		if (aDistance + da.getRadius() <= db.getRadius())
+		// If disc a contains disc b, there is no bitangent.
+		float bDistance = bTranslated.magnitude();
+		if (bDistance + db.getRadius() <= da.getRadius())
 			return null;
 
 		/**
 		 * <pre>
 		 * 
-		 * Let A' be the origin of the translated A.
-		 * Let T be the point of tangency of the bisector with (shrunken) B.
+		 * Let B' be the origin of the translated B.
+		 * Let T be the point of tangency of the bisector with (shrunken) A.
 		 * 
 		 * We have:
 		 * 
 		 * Tx^2 + Ty^2 = r^2
 		 * 
-		 * T . (A' - C) = 0
+		 * T . (B' - C) = 0
 		 * 
 		 * Algebra yields:
 		 * 
-		 * Tx^2(A'y^2 + A'x^2) + Tx(-2*r^2*A'x) + (r^4 - r^2 * A'y^2) = 0
+		 * Tx^2(B'y^2 + B'x^2) + Tx(-2*r^2*B'x) + (r^4 - r^2 * B'y^2) = 0
 		 * 
 		 * which is a quadratic equation in one variable, Tx.  We solve for that,
 		 * then solve for Ty as
 		 * 
-		 * Ty = (r^2 - A'x*Tx) / A'y
+		 * Ty = (r^2 - B'x*Tx) / B'y
 		 * 
 		 * </pre>
 		 */
 
 		float rSquared = r * r;
-		float qa = (aTranslated.y * aTranslated.y + aTranslated.x
-				* aTranslated.x);
-		float qb = -2 * aTranslated.x * rSquared;
-		float qc = rSquared * (rSquared - aTranslated.y * aTranslated.y);
+		float qa = (bTranslated.y * bTranslated.y + bTranslated.x
+				* bTranslated.x);
+		float qb = -2 * bTranslated.x * rSquared;
+		float qc = rSquared * (rSquared - bTranslated.y * bTranslated.y);
 
 		float[] roots = MyMath.solveQuadratic(qa, qb, qc, null);
 
 		Point tangent = new Point(roots[0],
-				(rSquared - (aTranslated.x * roots[0])) / aTranslated.y);
+				(rSquared - (bTranslated.x * roots[0])) / bTranslated.y);
 
 		// Determine if this is the correct root by seeing which side of the
 		// radial (0-->T) A' lies upon.
 		// If we exchanged discs, invert this test.
 		boolean switchRoots = (MyMath.sideOfLine(Point.ZERO, tangent,
-				aTranslated) < 0);
+				bTranslated) < 0);
 		switchRoots ^= exchangeDiscs;
 
 		if (switchRoots)
-			tangent.setTo(roots[1], (rSquared - (aTranslated.x * roots[1]))
-					/ aTranslated.y);
+			tangent.setTo(roots[1], (rSquared - (bTranslated.x * roots[1]))
+					/ bTranslated.y);
 
 		// Figure out the translation to apply to the bitangent to undo
 		// the effect of shrinking the discs initially
 		Point radialAdjust;
 		if (r == 0) {
 			// Both discs were the same size, and shrunk to points;
-			// rotate the A vector 90 degrees CCW and scale appropriately to
+			// rotate the B vector 90 degrees CCW and scale appropriately to
 			// find tangent point
-			float rScale = db.getRadius() / aDistance;
-			radialAdjust = new Point(aTranslated.y * rScale, -aTranslated.x
+			float rScale = da.getRadius() / bDistance;
+			radialAdjust = new Point(bTranslated.y * rScale, -bTranslated.x
 					* rScale);
 		} else {
-			float rScale = da.getRadius() / r;
+			float rScale = db.getRadius() / r;
 			radialAdjust = new Point(rScale * tangent.x, rScale * tangent.y);
 		}
 
-		Point bTangentPoint = new Point(bOrigin);
-		bTangentPoint.add(tangent);
-		bTangentPoint.add(radialAdjust);
 		Point aTangentPoint = new Point(aOrigin);
+		aTangentPoint.add(tangent);
 		aTangentPoint.add(radialAdjust);
+		Point bTangentPoint = new Point(bOrigin);
+		bTangentPoint.add(radialAdjust);
 
 		if (!exchangeDiscs) {
-			bitangent = new Bitangent(bTangentPoint, aTangentPoint);
-		} else {
 			bitangent = new Bitangent(aTangentPoint, bTangentPoint);
+		} else {
+			bitangent = new Bitangent(bTangentPoint, aTangentPoint);
 		}
 
 		return bitangent;
@@ -259,6 +261,10 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		Bitangent bitangent = null;
 		s.pushActive(mOptions.getBooleanValue(STEP_THROUGH_BITANGENTS));
 		do {
+			if (mOptions.getBooleanValue(ALTERNATE_BITANGENT_CALC)) {
+				bitangent = calcBitangent(da, db);
+				break;
+			}
 			boolean exchangeDiscs = false;
 
 			if (s.step())

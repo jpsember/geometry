@@ -224,12 +224,14 @@ public class Editor {
 	 * selection rectangle)
 	 */
 	public void render() {
+		// Calculate the pick radius always, because we may use it even if the
+		// editor is not active
+		mPickRadius = MyActivity.getResolutionInfo().inchesToPixelsAlgorithm(
+				.14f);
 		if (!isActive() && !mRenderAlways.getBooleanValue())
 			return;
 		AlgorithmDisplayElement.setRendering(true);
 
-		mPickRadius = MyActivity.getResolutionInfo().inchesToPixelsAlgorithm(
-				.14f);
 		for (EdObject obj : mObjects) {
 			if (DB_RENDER_OBJ_BOUNDS
 					|| (DB_RENDER_EDITABLE && obj.isEditable())) {

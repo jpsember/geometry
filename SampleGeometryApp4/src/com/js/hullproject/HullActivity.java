@@ -350,7 +350,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists with " + s.highlight(uDisc));
 				return;
 			}
-			if (!hullAngle(ux.angle())) {
+			if (!isHullAngle(ux.angle())) {
 				if (s.step())
 					s.show("not a hull bitangent candidate"
 							+ s.highlight(uDisc) + highlight(ux));
@@ -364,7 +364,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				ASSERT(uv != null);
 				angle = uv.angle();
 			} else {
-				angle = -MyMath.M_DEG * 90;
+				angle = maxHullAngle();
 			}
 			if (MyMath.angleIsConvex(ux.angle(), angle)) {
 				break;
@@ -387,7 +387,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists with " + s.highlight(vDisc));
 				return;
 			}
-			if (!hullAngle(xv.angle())) {
+			if (!isHullAngle(xv.angle())) {
 				if (s.step())
 					s.show("not a hull bitangent candidate"
 							+ s.highlight(vDisc) + highlight(xv));
@@ -401,7 +401,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				ASSERT(uv != null);
 				angle = uv.angle();
 			} else {
-				angle = MyMath.M_DEG * 90;
+				angle = minHullAngle();
 			}
 			if (MyMath.angleIsConvex(angle, xv.angle()))
 				break;
@@ -427,10 +427,28 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	}
 
 	/**
+	 * Get minimum (normalized) angle of an upper hull bitangent
+	 * 
+	 * @return
+	 */
+	private float minHullAngle() {
+		return MyMath.M_DEG * 90;
+	}
+
+	/**
+	 * Get minimum (normalized) angle of an upper hull bitangent
+	 * 
+	 * @return
+	 */
+	private float maxHullAngle() {
+		return -MyMath.M_DEG * 90;
+	}
+
+	/**
 	 * Determine if a (normalized) bitangent angle is an upper hull candidate
 	 */
-	private boolean hullAngle(float angle) {
-		return angle >= MyMath.M_DEG * 90 || angle <= -MyMath.M_DEG * 90;
+	private boolean isHullAngle(float angle) {
+		return MyMath.angleIsConvex(minHullAngle(), angle);
 	}
 
 	private static class Bitangent {
@@ -450,7 +468,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private List<Disc> mDiscs = new ArrayList();
 	private ArrayList<Disc> mHullDiscs = new ArrayList();
-
 	private AlgorithmOptions mOptions;
 	private AlgorithmStepper s;
 	private Disc mCurrentDisc;

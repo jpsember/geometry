@@ -10,6 +10,6 @@ public class EditorTools {
 		Polygon p = new Polygon();
 		for (int i = 0; i < 4; i++)
 			p.add(r.corner(i));
-		s.plot(p, false);
+		s.plot(p);
 	}
 }

@@ -136,7 +136,7 @@ public class DelaunayDriver implements Algorithm {
 							Vertex v = mDelaunay.site(i);
 							s.plot(v);
 							Polygon p = mDelaunay.constructVoronoiPolygon(i);
-							s.plot(p, false);
+							s.plot(p);
 						}
 					}
 				});

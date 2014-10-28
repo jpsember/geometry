@@ -524,6 +524,15 @@ public class Polygon implements Iterable<Point>, Renderable {
 		elem.render(stepper);
 	}
 
+	/**
+	 * Construct a Renderable that renders this polygon as a filled polygon
+	 */
+	public Renderable renderFilled() {
+		PolygonElement elem = new PolygonElement(this,
+				PolygonElement.Style.FILLED);
+		return elem;
+	}
+
 	private List<Point> mVertices = new ArrayList();
 
 }

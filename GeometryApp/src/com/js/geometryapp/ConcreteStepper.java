@@ -359,19 +359,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Polygon polygon, boolean filled) {
-		return plot(new PolygonElement(polygon,
-				filled ? PolygonElement.Style.FILLED
-						: PolygonElement.Style.BOUNDARY));
-	}
-
-	@Override
-	public String highlight(Polygon polygon, boolean filled) {
-		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
-				+ plot(polygon, filled) + setNormal();
-	}
-
-	@Override
 	public String plotPolyline(Collection<Point> endpoints) {
 		return plot(new PolygonElement(new Polygon(endpoints),
 				PolygonElement.Style.POLYLINE));

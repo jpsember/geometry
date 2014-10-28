@@ -96,7 +96,7 @@ public class RotateOperation implements EditorEventListener {
 			corner.apply(calcTotalRotateTransform());
 			p.add(corner);
 		}
-		s.plot(p, false);
+		s.plot(p);
 		s.plotSprite(R.raw.crosshairicon, mRect.midPoint());
 	}
 

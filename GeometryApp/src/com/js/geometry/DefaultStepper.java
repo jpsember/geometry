@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.js.geometryapp.Algorithm;
 
-
 /**
  * An AlgorithmStepper implementation that does nothing
  */
@@ -130,16 +129,6 @@ public class DefaultStepper implements AlgorithmStepper {
 
 	@Override
 	public String highlightLine(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String plot(Polygon polygon, boolean filled) {
-		return "";
-	}
-
-	@Override
-	public String highlight(Polygon polygon, boolean filled) {
 		return "";
 	}
 

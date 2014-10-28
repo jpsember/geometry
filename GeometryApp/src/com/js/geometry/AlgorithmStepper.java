@@ -153,10 +153,6 @@ public interface AlgorithmStepper {
 
 	public String highlightLine(Point p1, Point p2);
 
-	public String plot(Polygon polygon, boolean filled);
-
-	public String highlight(Polygon polygon, boolean filled);
-
 	public String plotPolyline(Collection<Point> endpoints);
 
 	public String highlightPolyline(Collection<Point> endpoints);

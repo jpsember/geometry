@@ -48,7 +48,7 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		extendPolyline(point);
 	}
 
-	static void extendPolyline(Point point) {
+	public static void extendPolyline(Point point) {
 		if (sPolyline == null)
 			startPolyline(point);
 		sPolyline.add(point);
@@ -58,11 +58,11 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		extendPolyline(new Point(x, y));
 	}
 
-	static void closePolyline() {
+	public static void closePolyline() {
 		sPolyline.close();
 	}
 
-	static void renderPolyline() {
+	public static void renderPolyline() {
 		sPolyline.render();
 		sPolyline = null;
 	}
@@ -309,8 +309,12 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		sColor = Color.BLUE;
 	}
 
-	static int getRenderColor() {
+	public static int getRenderColor() {
 		return sColor;
+	}
+
+	public static float getRenderLineWidth() {
+		return sLineWidth;
 	}
 
 	private static final int[] sSpriteIds = { //

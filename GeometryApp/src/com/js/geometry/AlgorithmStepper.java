@@ -111,6 +111,11 @@ public interface AlgorithmStepper {
 	public String plot(Renderable element);
 
 	/**
+	 * Like plot(), but renders in a highlighted state
+	 */
+	public String highlight(Renderable element);
+
+	/**
 	 * Plot a point
 	 */
 	public String plot(Point point);
@@ -147,10 +152,6 @@ public interface AlgorithmStepper {
 	public String plotLine(Point p1, Point p2);
 
 	public String highlightLine(Point p1, Point p2);
-
-	public String plot(Disc disc);
-
-	public String highlight(Disc disc);
 
 	public String plot(Polygon polygon);
 

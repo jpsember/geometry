@@ -20,7 +20,6 @@ import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.Disc;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
@@ -268,8 +267,41 @@ public class ConcreteStepper implements AlgorithmStepper {
 			Layer targetLayer = mActiveBackgroundLayer;
 			if (targetLayer == null)
 				targetLayer = mForegroundLayer;
-			targetLayer.add(element);
+
+			// Wrap the renderable in an object that also stores the current
+			// render state (color, line width)
+			Renderable wrapper = new RenderableStateWrapper(element,
+					AlgorithmDisplayElement.getRenderColor(),
+					AlgorithmDisplayElement.getRenderLineWidth());
+			targetLayer.add(wrapper);
 		}
+		return "";
+	}
+
+	private static class RenderableStateWrapper implements Renderable {
+		public RenderableStateWrapper(Renderable r, int color, float lineWidth) {
+			mRenderable = r;
+			mColor = color;
+			mLineWidth = lineWidth;
+		}
+
+		@Override
+		public void render(AlgorithmStepper stepper) {
+			stepper.setColor(mColor);
+			stepper.setLineWidth(mLineWidth);
+			mRenderable.render(stepper);
+		}
+
+		private Renderable mRenderable;
+		private int mColor;
+		private float mLineWidth;
+	}
+
+	@Override
+	public String highlight(Renderable element) {
+		setColor(Color.RED);
+		plot(element);
+		setNormal();
 		return "";
 	}
 
@@ -324,17 +356,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public String highlightLine(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotLine(p1, p2) + setNormal();
-	}
-
-	@Override
-	public String plot(Disc disc) {
-		return plot(new DiscElement(disc));
-	}
-
-	@Override
-	public String highlight(Disc disc) {
-		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
-				+ plot(disc) + setNormal();
 	}
 
 	@Override

@@ -78,6 +78,11 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
+	public String highlight(Renderable element) {
+		return "";
+	}
+
+	@Override
 	public String plot(Point point) {
 		return "";
 	}
@@ -125,16 +130,6 @@ public class DefaultStepper implements AlgorithmStepper {
 
 	@Override
 	public String highlightLine(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String plot(Disc disc) {
-		return "";
-	}
-
-	@Override
-	public String highlight(Disc disc) {
 		return "";
 	}
 

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 
 /**
@@ -75,7 +74,7 @@ class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(AlgorithmDisplayElement element) {
+	public String plot(Renderable element) {
 		return "";
 	}
 

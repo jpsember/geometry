@@ -26,6 +26,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
+import com.js.geometry.Renderable;
 import com.js.geometryapp.widget.AbstractWidget;
 
 public class ConcreteStepper implements AlgorithmStepper {
@@ -258,20 +259,16 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(AlgorithmDisplayElement element) {
-		do {
-			if (rendering()) {
-				element.render();
-				break;
-			}
-
+	public String plot(Renderable element) {
+		if (rendering()) {
+			element.render(this);
+		} else {
 			// If there's an active background layer, add it to that instead
 			Layer targetLayer = mActiveBackgroundLayer;
 			if (targetLayer == null)
 				targetLayer = mForegroundLayer;
 			targetLayer.add(element);
-
-		} while (false);
+		}
 		return "";
 	}
 
@@ -778,7 +775,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 		}
 	}
 
-	private static class Layer {
+	private class Layer {
 		public Layer(String name) {
 		}
 
@@ -786,20 +783,20 @@ public class ConcreteStepper implements AlgorithmStepper {
 			mElements.clear();
 		}
 
-		public ArrayList<AlgorithmDisplayElement> elements() {
+		public ArrayList<Renderable> elements() {
 			return mElements;
 		}
 
-		public void add(AlgorithmDisplayElement element) {
+		public void add(Renderable element) {
 			mElements.add(element);
 		}
 
 		public void render() {
-			for (AlgorithmDisplayElement element : elements())
-				element.render();
+			for (Renderable element : elements())
+				element.render(ConcreteStepper.this);
 		}
 
-		private ArrayList<AlgorithmDisplayElement> mElements = new ArrayList();
+		private ArrayList<Renderable> mElements = new ArrayList();
 	}
 
 	void begin() {

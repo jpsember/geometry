@@ -10,7 +10,7 @@ class RayElement extends AlgorithmDisplayElement {
 	}
 
 	@Override
-	public void render() {
+	public void render(AlgorithmStepper s) {
 		setColorState(color());
 		setLineWidthState(lineWidth());
 		renderRay(mPoint1, mPoint2);

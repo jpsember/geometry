@@ -8,7 +8,6 @@ import android.graphics.Color;
 
 import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
@@ -129,9 +128,9 @@ public class DelaunayDriver implements Algorithm {
 			s.setDoneMessage("Removed all vertices");
 		} else if (mOptions.getBooleanValue("Voronoi cells")) {
 			if (s.openLayer(BGND_ELEMENT_VORONOI_CELLS)) {
-				s.plot(new AlgorithmDisplayElement() {
+				s.plot(new Renderable() {
 					@Override
-					public void render() {
+					public void render(AlgorithmStepper s) {
 						s.setLineWidth(2);
 						s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 						for (int i = 0; i < mDelaunay.nSites(); i++) {

@@ -10,7 +10,7 @@ class SpriteElement extends AlgorithmDisplayElement {
 	}
 
 	@Override
-	public void render() {
+	public void render(AlgorithmStepper s) {
 		iconSet().plot(mSpriteResourceId, mLocation,
 				AlgorithmDisplayElement.getRenderColor());
 	}

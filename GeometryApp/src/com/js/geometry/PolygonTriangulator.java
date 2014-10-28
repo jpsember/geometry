@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import android.graphics.Color;
 
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 
 /**
@@ -117,10 +116,9 @@ public class PolygonTriangulator {
 		mSweepLineVisible = false;
 
 		if (s.openLayer(BGND_ELEMENT_SWEEPSTATUS)) {
-			s.plot(new AlgorithmDisplayElement() {
-
+			s.plot(new Renderable() {
 				@Override
-				public void render() {
+				public void render(AlgorithmStepper s) {
 					if (!mSweepLineVisible)
 						return;
 					s.setColor(COLOR_DARKGREEN);

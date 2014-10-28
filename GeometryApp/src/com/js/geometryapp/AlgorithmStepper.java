@@ -8,6 +8,7 @@ import com.js.geometry.Mesh;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
+import com.js.geometry.Renderable;
 
 public interface AlgorithmStepper {
 
@@ -106,13 +107,13 @@ public interface AlgorithmStepper {
 	public void removeLayer(String key);
 
 	/**
-	 * Add an element to be displayed with this algorithm frame
+	 * Add a Renderable element to be displayed with this algorithm frame
 	 * 
 	 * @param element
 	 * @return an empty string, as a convenience so elements can be added as a
 	 *         side effect of constructing show(...) message arguments
 	 */
-	public String plot(AlgorithmDisplayElement element);
+	public String plot(Renderable element);
 
 	/**
 	 * Plot a point

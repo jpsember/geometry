@@ -12,8 +12,8 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
+import com.js.geometry.Renderable;
 import com.js.geometry.Vertex;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.geometry.MyMath.*;
@@ -203,9 +203,9 @@ public class Delaunay {
 				break;
 		}
 		if (s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY)) {
-			s.plot(new AlgorithmDisplayElement() {
+			s.plot(new Renderable() {
 				@Override
-				public void render() {
+				public void render(AlgorithmStepper s) {
 					s.setLineWidth(1);
 					s.setColor(COLOR_DARKGREEN);
 					for (Edge edge : mHoleEdges) {
@@ -455,10 +455,9 @@ public class Delaunay {
 		Edge initialEdge = edge;
 		if (s.step())
 			s.show("Closest sample and initial edge" + s.highlight(initialEdge)
-					+ s.highlight(closestSample)
-					+ s.plot(new AlgorithmDisplayElement() {
+					+ s.highlight(closestSample) + s.plot(new Renderable() {
 						@Override
-						public void render() {
+						public void render(AlgorithmStepper s) {
 							s.setColor(COLOR_DARKGREEN);
 							for (Vertex v : mSamples) {
 								s.plot(v);
@@ -478,10 +477,9 @@ public class Delaunay {
 
 		mSearchHistory.clear();
 		if (s.openLayer(BGND_ELEMENT_SEARCH_HISTORY)) {
-			s.plot(new AlgorithmDisplayElement() {
-
+			s.plot(new Renderable() {
 				@Override
-				public void render() {
+				public void render(AlgorithmStepper s) {
 					s.setColor(COLOR_DARKGREEN);
 					s.setLineWidth(2);
 					Edge prevEdge = null;

@@ -12,7 +12,7 @@ class DiscElement extends AlgorithmDisplayElement {
 	}
 
 	@Override
-	public void render() {
+	public void render(AlgorithmStepper s) {
 		setColorState(color());
 		setLineWidthState(lineWidth());
 

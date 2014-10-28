@@ -13,13 +13,14 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
+import com.js.geometry.Renderable;
 import com.js.opengl.Font;
 import com.js.opengl.GLTools;
 import com.js.opengl.SpriteSet;
 
 import static com.js.basic.Tools.*;
 
-public abstract class AlgorithmDisplayElement {
+public abstract class AlgorithmDisplayElement implements Renderable {
 
 	public AlgorithmDisplayElement() {
 		mLineWidth = sLineWidth;
@@ -33,8 +34,6 @@ public abstract class AlgorithmDisplayElement {
 	public int color() {
 		return mColor;
 	}
-
-	public abstract void render();
 
 	static int getElementCount() {
 		int r = sElementsConstructed;

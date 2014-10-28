@@ -11,8 +11,8 @@ import com.js.geometry.Disc;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Renderable;
 import com.js.geometryapp.Algorithm;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.AlgorithmStepper;
@@ -61,9 +61,9 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			s.show("Not enough discs");
 
 		if (s.openLayer(BGND_ELEMENT_BITANGENTS)) {
-			s.plot(new AlgorithmDisplayElement() {
+			s.plot(new Renderable() {
 				@Override
-				public void render() {
+				public void render(AlgorithmStepper s) {
 					s.setColor(COLOR_DARKGREEN);
 					for (int pass = 0; pass < 2; pass++) {
 						List<Disc> hullDiscs = mHullDiscLists[pass];

@@ -21,7 +21,7 @@ class PolygonElement extends AlgorithmDisplayElement {
 	}
 
 	@Override
-	public void render() {
+	public void render(AlgorithmStepper s) {
 
 		if (mStyle == Style.FILLED) {
 			int orientation = mPolygon.orientation();

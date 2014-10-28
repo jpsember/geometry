@@ -9,8 +9,8 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Renderable;
 import com.js.geometry.Vertex;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmStepper;
 import static com.js.basic.Tools.*;
 
@@ -60,9 +60,9 @@ public class StarshapedHoleTriangulator {
 
 	public void run() {
 		if (s.openLayer(BGND_ELEMENT_HOLE_POLYGON)) {
-			s.plot(new AlgorithmDisplayElement() {
+			s.plot(new Renderable() {
 				@Override
-				public void render() {
+				public void render(AlgorithmStepper s) {
 					s.setColor(COLOR_DARKGREEN);
 					Edge edge = mStartEdge;
 					while (true) {

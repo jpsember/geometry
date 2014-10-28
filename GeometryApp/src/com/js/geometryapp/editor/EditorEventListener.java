@@ -1,6 +1,6 @@
 package com.js.geometryapp.editor;
 
-import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometry.AlgorithmStepper;
 
 public interface EditorEventListener {
 

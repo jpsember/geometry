@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 

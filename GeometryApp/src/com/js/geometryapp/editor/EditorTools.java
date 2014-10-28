@@ -1,8 +1,8 @@
 package com.js.geometryapp.editor;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgorithmStepper;
 
 public class EditorTools {
 

@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
 
 class PointElement extends AlgorithmDisplayElement {

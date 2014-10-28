@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;

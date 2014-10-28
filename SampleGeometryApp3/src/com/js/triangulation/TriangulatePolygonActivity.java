@@ -1,6 +1,6 @@
 package com.js.triangulation;
 
-import com.js.geometryapp.AlgorithmStepper;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 
 public class TriangulatePolygonActivity extends GeometryStepperActivity {

@@ -1,17 +1,16 @@
-package com.js.geometryapp;
+package com.js.geometry;
 
 import java.util.Collection;
 
-import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
-import com.js.geometryapp.AlgorithmStepper;
+
 
 /**
  * An AlgorithmStepper implementation that does nothing
  */
-class DefaultStepper implements AlgorithmStepper {
+public class DefaultStepper implements AlgorithmStepper {
 
-	DefaultStepper() {
+	public DefaultStepper() {
 	}
 
 	@Override

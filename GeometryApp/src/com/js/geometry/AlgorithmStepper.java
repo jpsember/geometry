@@ -1,14 +1,9 @@
-package com.js.geometryapp;
+package com.js.geometry;
 
 import java.util.Collection;
 
-import com.js.geometry.Disc;
-import com.js.geometry.Edge;
-import com.js.geometry.Mesh;
-import com.js.geometry.Point;
-import com.js.geometry.Polygon;
-import com.js.geometry.Rect;
-import com.js.geometry.Renderable;
+// TODO: consider using a marker interface for Algorithm, to avoid referencing geometryapp package here
+import com.js.geometryapp.Algorithm;
 
 public interface AlgorithmStepper {
 

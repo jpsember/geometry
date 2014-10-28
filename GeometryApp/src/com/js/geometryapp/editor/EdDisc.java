@@ -2,12 +2,12 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.basic.Tools.*;
 

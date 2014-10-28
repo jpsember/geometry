@@ -1,5 +1,7 @@
 package com.js.geometryapp;
 
+import com.js.geometry.AlgorithmStepper;
+
 public interface Algorithm {
 
 	/**

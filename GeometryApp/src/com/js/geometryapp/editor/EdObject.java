@@ -6,10 +6,10 @@ import java.util.List;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgorithmStepper;
 import static com.js.basic.Tools.*;
 
 public abstract class EdObject implements Cloneable {

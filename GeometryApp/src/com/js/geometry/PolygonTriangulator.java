@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import android.graphics.Color;
 
-import com.js.geometryapp.AlgorithmStepper;
 
 /**
  * Triangulates a polygon.

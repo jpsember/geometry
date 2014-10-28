@@ -2,6 +2,7 @@ package com.js.starshaped;
 
 import java.util.Random;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryException;
 import com.js.geometry.Mesh;
@@ -11,7 +12,6 @@ import com.js.geometry.Rect;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 
 public class SampleGeometryActivity extends GeometryStepperActivity implements

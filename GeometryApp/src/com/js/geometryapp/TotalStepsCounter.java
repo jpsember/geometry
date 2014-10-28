@@ -4,6 +4,7 @@ import static com.js.basic.Tools.*;
 
 import java.util.ArrayList;
 
+import com.js.geometry.DefaultStepper;
 import com.js.geometry.Rect;
 
 class TotalStepsCounter extends DefaultStepper {

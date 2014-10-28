@@ -5,6 +5,7 @@ import java.util.Random;
 
 import android.graphics.Color;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.GeometryException;
@@ -14,7 +15,6 @@ import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Vertex;
-import com.js.geometryapp.AlgorithmStepper;
 
 import static com.js.geometry.MyMath.*;
 import static com.js.basic.Tools.*;

@@ -10,7 +10,6 @@ import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;

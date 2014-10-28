@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import com.js.android.MyActivity;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;

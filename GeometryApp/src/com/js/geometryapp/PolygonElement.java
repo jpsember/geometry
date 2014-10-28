@@ -1,5 +1,6 @@
 package com.js.geometryapp;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonMesh;
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import android.graphics.Color;
 
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
@@ -15,7 +16,6 @@ import com.js.geometry.Renderable;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.AlgorithmStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 
 public class HullActivity extends GeometryStepperActivity implements Algorithm {

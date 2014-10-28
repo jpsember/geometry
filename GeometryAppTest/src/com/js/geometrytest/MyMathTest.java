@@ -100,6 +100,41 @@ public class MyMathTest extends MyTestCase {
 		}
 	}
 
+	public void testAngleConvex() {
+		float d[] = { 0, 90, 1,//
+				0, 180, 0,//
+				10, 100, 1,//
+				10, 190, 0,//
+				10, 189, 1,//
+				170, -140, 1,//
+		};
+		for (int i = 0; i < d.length; i += 3) {
+			float a1 = MyMath.M_DEG * d[i];
+			float a2 = MyMath.M_DEG * d[i + 1];
+			boolean exp = d[i + 2] != 0;
+			assertEquals(exp, MyMath.angleIsConvex(a1, a2));
+			assertEquals(exp, MyMath.angleIsConvex(a1 + MyMath.PI * 2, a2));
+			assertEquals(exp, MyMath.angleIsConvex(a1 - MyMath.PI * 2, a2
+					+ MyMath.PI * 6));
+		}
+	}
+
+	public void testPseudoAngleConvex() {
+		float d[] = { 0, 2, 1,//
+				0, 4, 0,//
+				.1f, 2.1f, 1,//
+				.1f, 4.1f, 0,//
+				.1f, 2.09f, 1,//
+				3.9f, -3.8f, 1,//
+		};
+		for (int i = 0; i < d.length; i += 3) {
+			float a1 = d[i];
+			float a2 = d[i + 1];
+			boolean exp = d[i + 2] != 0;
+			assertEquals(exp, MyMath.pseudoAngleIsConvex(a1, a2));
+		}
+	}
+
 	public void testQuadraticSolver() {
 		float r[] = new float[2];
 		float d[] = { 5, -15, -140, -4, 7,//

@@ -575,20 +575,32 @@ public final class MyMath {
 		return b;
 	}
 
-	public static boolean pseudoAngleIsConvex(float angle) {
-		return angle > 0;
-	}
-
+	/**
+	 * Determine if the pseudoangle defined by two rays is convex
+	 * 
+	 * @param startAngle
+	 *            pseudoangle of first ray
+	 * @param endAngle
+	 *            pseudoangle of second ray
+	 * @return true iff the ccw angle from startAngle to endAngle is greater
+	 *         than zero and less than pi
+	 */
 	public static boolean pseudoAngleIsConvex(float startAngle, float endAngle) {
-		return pseudoAngleIsConvex(normalizePseudoAngle(endAngle - startAngle));
+		return normalizePseudoAngle(endAngle - startAngle) > 0;
 	}
 
-	public static boolean angleIsConvex(float angle) {
-		return angle > 0;
-	}
-
+	/**
+	 * Determine if the angle defined by two rays is convex
+	 * 
+	 * @param startAngle
+	 *            angle of first ray
+	 * @param endAngle
+	 *            angle of second ray
+	 * @return true iff the ccw angle from startAngle to endAngle is greater
+	 *         than zero and less than pi
+	 */
 	public static boolean angleIsConvex(float startAngle, float endAngle) {
-		return angleIsConvex(normalizeAngle(endAngle - startAngle));
+		return normalizeAngle(endAngle - startAngle) > 0;
 	}
 
 	public static float perturb(Random random, float val) {

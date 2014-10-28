@@ -20,7 +20,6 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
-import com.js.geometryapp.AlgorithmDisplayElement;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.ConcreteStepper;
@@ -230,7 +229,7 @@ public class Editor {
 				.14f);
 		if (!isActive() && !mRenderAlways.getBooleanValue())
 			return;
-		AlgorithmDisplayElement.setRendering(true);
+		mStepper.setRendering(true);
 
 		for (EdObject obj : mObjects) {
 			if (DB_RENDER_OBJ_BOUNDS
@@ -246,7 +245,7 @@ public class Editor {
 			mStepper.setColor(Color.BLACK);
 			mStepper.plotSprite(R.raw.crosshairicon, mPlotTouchLocation);
 		}
-		AlgorithmDisplayElement.setRendering(false);
+		mStepper.setRendering(false);
 	}
 
 	private void updatePlotTouchLocation(EditorEvent event) {

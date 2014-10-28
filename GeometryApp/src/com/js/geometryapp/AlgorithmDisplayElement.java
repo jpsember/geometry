@@ -314,24 +314,6 @@ public abstract class AlgorithmDisplayElement {
 		return sColor;
 	}
 
-	/**
-	 * Set rendering state. If false, any render operations will generate
-	 * display elements for later rendering; if true, render operations actually
-	 * perform the rendering.
-	 * 
-	 * If the value is changing, resets the rendering state variables.
-	 */
-	public static void setRendering(boolean f) {
-		if (sRendering != f) {
-			sRendering = f;
-			resetRenderStateVars();
-		}
-	}
-
-	static boolean rendering() {
-		return sRendering;
-	}
-
 	private static final int[] sSpriteIds = { //
 	//
 			R.raw.crosshairicon, //
@@ -364,7 +346,6 @@ public abstract class AlgorithmDisplayElement {
 	private static Polyline sPolyline;
 	private static float sLineWidth;
 	private static int sColor;
-	private static boolean sRendering;
 	private static int sElementsConstructed;
 	private static AlgorithmRenderer sRenderer;
 	private static SpriteSet mIcons;

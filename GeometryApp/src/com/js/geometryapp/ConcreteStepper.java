@@ -260,7 +260,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	@Override
 	public String plot(AlgorithmDisplayElement element) {
 		do {
-			if (AlgorithmDisplayElement.rendering()) {
+			if (rendering()) {
 				element.render();
 				break;
 			}
@@ -818,6 +818,24 @@ public class ConcreteStepper implements AlgorithmStepper {
 		refresh();
 	}
 
+	/**
+	 * Set rendering state. If false, any render operations will generate
+	 * display elements for later rendering; if true, render operations actually
+	 * perform the rendering.
+	 * 
+	 * If the value is changing, resets the rendering state variables.
+	 */
+	public void setRendering(boolean f) {
+		if (mRendering != f) {
+			mRendering = f;
+			AlgorithmDisplayElement.resetRenderStateVars();
+		}
+	}
+
+	boolean rendering() {
+		return mRendering;
+	}
+
 	private Object aSynchronizationLock = new Object();
 	private int aLockCounter;
 	private Thread aLockActiveThread;
@@ -838,6 +856,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;
 	private GLSurfaceView mglSurfaceView;
+	private boolean mRendering;
 
 	// True if jumping forward to next milestone;
 	private boolean mJumpToNextMilestoneFlag;

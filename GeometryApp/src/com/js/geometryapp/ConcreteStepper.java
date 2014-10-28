@@ -359,11 +359,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Polygon polygon) {
-		return plot(polygon, false);
-	}
-
-	@Override
 	public String plot(Polygon polygon, boolean filled) {
 		return plot(new PolygonElement(polygon,
 				filled ? PolygonElement.Style.FILLED

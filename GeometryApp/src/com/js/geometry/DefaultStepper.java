@@ -134,11 +134,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Polygon polygon) {
-		return "";
-	}
-
-	@Override
 	public String plot(Polygon polygon, boolean filled) {
 		return "";
 	}

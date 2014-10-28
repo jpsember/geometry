@@ -7,12 +7,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
+import com.js.geometryapp.PolygonElement;
+
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 
 import android.graphics.Matrix;
 
-public class Polygon implements Iterable<Point> {
+public class Polygon implements Iterable<Point>, Renderable {
 	public static final int TESTPOLY_SQUARE = 0;
 	public static final int TESTPOLY_DIAMOND = 1;
 	public static final int TESTPOLY_LARGE_RECTANGLE = 2;
@@ -513,6 +515,13 @@ public class Polygon implements Iterable<Point> {
 
 	public Iterator<Point> iterator() {
 		return mVertices.iterator();
+	}
+
+	@Override
+	public void render(AlgorithmStepper stepper) {
+		PolygonElement elem = new PolygonElement(this,
+				PolygonElement.Style.BOUNDARY);
+		elem.render(stepper);
 	}
 
 	private List<Point> mVertices = new ArrayList();

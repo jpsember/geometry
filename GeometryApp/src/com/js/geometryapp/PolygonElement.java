@@ -6,7 +6,8 @@ import com.js.geometry.PolygonMesh;
 
 import static com.js.basic.Tools.*;
 
-class PolygonElement extends AlgorithmDisplayElement {
+// TODO: should this be made a package-vis class of js.geometry?
+public class PolygonElement extends AlgorithmDisplayElement {
 
 	public static enum Style {
 		FILLED, BOUNDARY, POLYLINE,

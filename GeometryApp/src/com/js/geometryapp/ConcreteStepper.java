@@ -267,8 +267,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			// Wrap the renderable in an object that also stores the current
 			// render state (color, line width)
-			targetLayer.add(RenderTools
-					.wrapRenderableWithState(element));
+			targetLayer.add(RenderTools.wrapRenderableWithState(element));
 		}
 		return "";
 	}
@@ -290,16 +289,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public String highlightLine(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotLine(p1, p2) + setNormal();
-	}
-
-	@Override
-	public String plot(String text, Point location) {
-		return plot(new TextElement(text, location));
-	}
-
-	@Override
-	public String highlight(String text, Point location) {
-		return setColor(Color.RED) + plot(text, location) + setNormal();
 	}
 
 	@Override

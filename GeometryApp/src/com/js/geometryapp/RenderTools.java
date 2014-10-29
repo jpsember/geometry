@@ -150,8 +150,8 @@ public class RenderTools {
 		resetRenderStateVars();
 	}
 
-	static void renderText(Point location, String text) {
-		Point p = new Point(location.x, location.y);
+	public static void renderText(Point location, String text) {
+		Point p = new Point(location);
 
 		// Convert location from algorithm space to view space
 		Matrix matrix = sRenderer

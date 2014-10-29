@@ -117,10 +117,6 @@ public interface AlgorithmStepper {
 
 	public String highlightLine(Point p1, Point p2);
 
-	public String plot(String text, Point location);
-
-	public String highlight(String text, Point location);
-
 	public String plotSprite(int spriteResourceId, Point location);
 
 	public String highlightSprite(int spriteResourceId, Point location);

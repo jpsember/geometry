@@ -533,6 +533,14 @@ public class Polygon implements Iterable<Point>, Renderable {
 		return elem;
 	}
 
+	/**
+	 * Construct a Renderable for rendering a polyline
+	 */
+	public static Renderable renderPolyline(Collection<Point> vertices) {
+		return new PolygonElement(new Polygon(vertices),
+				PolygonElement.Style.POLYLINE);
+	}
+
 	private List<Point> mVertices = new ArrayList();
 
 }

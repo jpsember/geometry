@@ -37,11 +37,13 @@ public class PolygonElement extends AlgorithmDisplayElement {
 			boolean useStrips = false;
 			PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon, useStrips);
 			PolygonProgram p = AlgorithmDisplayElement.polygonProgram();
-			p.setColor(color());
+			p.setColor(getRenderColor()); // color());
 			p.render(mesh);
 		} else {
-			setColorState(color());
-			setLineWidthState(lineWidth());
+			if (mPolygon.numVertices() == 0) {
+				warning("rendering PolygonElement with no vertices");
+				return;
+			}
 			for (int i = 0; i < mPolygon.numVertices(); i++)
 				extendPolyline(mPolygon.vertex(i));
 			if (mStyle == Style.BOUNDARY)

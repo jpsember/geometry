@@ -12,7 +12,6 @@ import java.util.TreeSet;
 
 import android.graphics.Color;
 
-
 /**
  * Triangulates a polygon.
  * 

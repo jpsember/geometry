@@ -12,8 +12,6 @@ class MeshElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		setColorState(color());
-		setLineWidthState(lineWidth());
 		for (Edge e : mMesh.constructListOfEdges(true)) {
 			renderLine(e.sourceVertex(), e.destVertex());
 		}

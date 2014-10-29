@@ -8,6 +8,7 @@ import android.graphics.Matrix;
 
 import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
@@ -21,19 +22,6 @@ import com.js.opengl.SpriteSet;
 import static com.js.basic.Tools.*;
 
 public abstract class AlgorithmDisplayElement implements Renderable {
-
-	public AlgorithmDisplayElement() {
-		mLineWidth = sLineWidth;
-		mColor = sColor;
-	}
-
-	public float lineWidth() {
-		return mLineWidth;
-	}
-
-	public int color() {
-		return mColor;
-	}
 
 	static int getElementCount() {
 		int r = sElementsConstructed;
@@ -337,8 +325,36 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		return mRandom;
 	}
 
-	private int mColor;
-	private float mLineWidth;
+	/**
+	 * Wrap a Renderable in an object that also stores the current render state
+	 * (color, line width)
+	 */
+	public static Renderable wrapRenderableWithState(Renderable r) {
+		// If already wrapped, leave unchanged
+		if (r instanceof RenderableStateWrapper)
+			return r;
+		return new RenderableStateWrapper(r, getRenderColor(),
+				getRenderLineWidth());
+	}
+
+	private static class RenderableStateWrapper implements Renderable {
+		public RenderableStateWrapper(Renderable r, int color, float lineWidth) {
+			mRenderable = r;
+			mColor = color;
+			mLineWidth = lineWidth;
+		}
+
+		@Override
+		public void render(AlgorithmStepper stepper) {
+			stepper.setColor(mColor);
+			stepper.setLineWidth(mLineWidth);
+			mRenderable.render(stepper);
+		}
+
+		private Renderable mRenderable;
+		private int mColor;
+		private float mLineWidth;
+	}
 
 	private static float sArrowheadLength;
 	private static PolygonProgram sPolygonProgram;

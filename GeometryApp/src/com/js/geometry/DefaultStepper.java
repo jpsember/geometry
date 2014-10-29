@@ -1,7 +1,5 @@
 package com.js.geometry;
 
-import java.util.Collection;
-
 import com.js.geometryapp.Algorithm;
 
 /**
@@ -129,16 +127,6 @@ public class DefaultStepper implements AlgorithmStepper {
 
 	@Override
 	public String highlightLine(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String plotPolyline(Collection<Point> endpoints) {
-		return "";
-	}
-
-	@Override
-	public String highlightPolyline(Collection<Point> endpoints) {
 		return "";
 	}
 

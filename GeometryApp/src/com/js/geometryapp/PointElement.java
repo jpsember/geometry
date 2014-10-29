@@ -12,7 +12,6 @@ class PointElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		setColorState(color());
 		renderPoint(mPoint, mRadius);
 	}
 

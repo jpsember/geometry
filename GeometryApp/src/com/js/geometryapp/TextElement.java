@@ -12,7 +12,6 @@ class TextElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		setColorState(color());
 		renderText(mLocation, mText);
 	}
 

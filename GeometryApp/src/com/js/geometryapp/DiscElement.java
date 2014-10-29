@@ -14,8 +14,6 @@ class DiscElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		setColorState(color());
-		setLineWidthState(lineWidth());
 
 		Point origin = mDisc.getOrigin();
 		float radius = mDisc.getRadius();

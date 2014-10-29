@@ -3,7 +3,6 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,7 +23,6 @@ import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometryapp.widget.AbstractWidget;
@@ -270,31 +268,10 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			// Wrap the renderable in an object that also stores the current
 			// render state (color, line width)
-			Renderable wrapper = new RenderableStateWrapper(element,
-					AlgorithmDisplayElement.getRenderColor(),
-					AlgorithmDisplayElement.getRenderLineWidth());
-			targetLayer.add(wrapper);
+			targetLayer.add(AlgorithmDisplayElement
+					.wrapRenderableWithState(element));
 		}
 		return "";
-	}
-
-	private static class RenderableStateWrapper implements Renderable {
-		public RenderableStateWrapper(Renderable r, int color, float lineWidth) {
-			mRenderable = r;
-			mColor = color;
-			mLineWidth = lineWidth;
-		}
-
-		@Override
-		public void render(AlgorithmStepper stepper) {
-			stepper.setColor(mColor);
-			stepper.setLineWidth(mLineWidth);
-			mRenderable.render(stepper);
-		}
-
-		private Renderable mRenderable;
-		private int mColor;
-		private float mLineWidth;
 	}
 
 	@Override
@@ -356,18 +333,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public String highlightLine(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotLine(p1, p2) + setNormal();
-	}
-
-	@Override
-	public String plotPolyline(Collection<Point> endpoints) {
-		return plot(new PolygonElement(new Polygon(endpoints),
-				PolygonElement.Style.POLYLINE));
-	}
-
-	@Override
-	public String highlightPolyline(Collection<Point> endpoints) {
-		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
-				+ plotPolyline(endpoints) + setNormal();
 	}
 
 	@Override

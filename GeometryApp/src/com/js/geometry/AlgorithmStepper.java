@@ -1,7 +1,5 @@
 package com.js.geometry;
 
-import java.util.Collection;
-
 // TODO: consider using a marker interface for Algorithm, to avoid referencing geometryapp package here
 import com.js.geometryapp.Algorithm;
 
@@ -152,10 +150,6 @@ public interface AlgorithmStepper {
 	public String plotLine(Point p1, Point p2);
 
 	public String highlightLine(Point p1, Point p2);
-
-	public String plotPolyline(Collection<Point> endpoints);
-
-	public String highlightPolyline(Collection<Point> endpoints);
 
 	public String plot(String text, Point location);
 

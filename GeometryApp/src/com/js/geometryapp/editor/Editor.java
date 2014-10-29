@@ -839,7 +839,8 @@ public class Editor {
 	}
 
 	public AlgorithmInput constructAlgorithmInput() {
-		AlgorithmInput algorithmInput = new AlgorithmInput();
+		AlgorithmInput algorithmInput = new AlgorithmInput(
+				mStepper.algorithmRect());
 		List<Point> pointList = new ArrayList();
 		List<Polygon> polygonList = new ArrayList();
 		List<Disc> discList = new ArrayList();

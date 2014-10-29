@@ -15,6 +15,7 @@ import com.js.geometry.Disc;
 import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
 import com.js.geometryapp.Algorithm;
@@ -36,8 +37,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	@Override
 	public void addAlgorithms(AlgorithmStepper stepper) {
-		this.s = stepper;
-		s.addAlgorithm(this);
+		stepper.addAlgorithm(this);
 	}
 
 	@Override
@@ -58,6 +58,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
+		mAlgBounds = input.algorithmRect;
 		mDiscs.clear();
 		if (mOptions.getBooleanValue(USE_EDITOR_DISCS)) {
 			for (Disc d : input.discs)
@@ -66,26 +67,26 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			// Generate some random discs
 			Random r = new Random(mOptions.getIntValue(RANDOM_SEED));
 			float pow = (100 - (float) mOptions.getIntValue(DISC_SIZE)) / 8;
-
 			for (int i = mOptions.getIntValue(NUMBER_OF_DISCS); i >= 0; i--) {
-				Point origin = MyMath.randomPointInDisc(r, s.algorithmRect()
-						.midPoint(), s.algorithmRect().maxDim() * .4f);
+				Point origin = MyMath.randomPointInDisc(r,
+						mAlgBounds.midPoint(), mAlgBounds.maxDim() * .4f);
 				mDiscs.add(new Disc(origin,
 						(float) Math.pow(r.nextFloat(), pow)
-								* s.algorithmRect().minDim() * .4f));
+								* mAlgBounds.minDim() * .4f));
 			}
 		}
-
-		mHullDiscLists = new List[2];
-		mHullDiscLists[0] = new ArrayList();
-		mHullDiscLists[1] = new ArrayList();
-		mDiscsExamined = new HashSet();
 	}
 
 	@Override
 	public void run(AlgorithmStepper stepper) {
-		if (mDiscs.size() < 2)
+		s = stepper;
+		if (mDiscs.size() < 2) {
 			s.show("Not enough discs");
+		}
+		mHullDiscLists = new List[2];
+		mHullDiscLists[0] = new ArrayList();
+		mHullDiscLists[1] = new ArrayList();
+		mDiscsExamined = new HashSet();
 
 		if (s.openLayer(BGND_ELEMENT_BITANGENTS)) {
 			s.plot(new Renderable() {
@@ -401,6 +402,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	}
 
 	private AlgorithmOptions mOptions;
+	private Rect mAlgBounds;
 	private AlgorithmStepper s;
 	private List<Disc> mDiscs = new ArrayList();
 	// Two lists, one for upper, one for lower hull

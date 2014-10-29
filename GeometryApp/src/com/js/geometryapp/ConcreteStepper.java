@@ -427,6 +427,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 		int totalSteps;
 		synchronized (getLock()) {
 			acquireLock();
+			mOptions.prepareAlgorithmInput();
 			totalSteps = s.countSteps();
 			// If the current target step is equal to its maximum, change it to
 			// stick to the new maximum

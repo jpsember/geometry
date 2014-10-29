@@ -85,6 +85,7 @@ class TotalStepsCounter extends DefaultStepper {
 			// milestone at this point
 			mCurrentStep++;
 		} catch (RuntimeException t) {
+			warning("TotalStepsCounter caught: "+t);
 		}
 		return mCurrentStep;
 	}

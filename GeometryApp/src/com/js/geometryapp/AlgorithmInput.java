@@ -4,8 +4,17 @@ import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.Rect;
 
+/**
+ * Instances of this class should be considered immutable (once constructed by
+ * the stepper framework)
+ */
 public class AlgorithmInput {
+
+	public AlgorithmInput(Rect algorithmRect) {
+		this.algorithmRect = algorithmRect;
+	}
 
 	/**
 	 * Get (first) polygon from the input
@@ -79,6 +88,7 @@ public class AlgorithmInput {
 		return discs[MyMath.myMod(index, discs.length)];
 	}
 
+	public Rect algorithmRect;
 	public Point[] points;
 	public Polygon[] polygons;
 	public Disc[] discs;

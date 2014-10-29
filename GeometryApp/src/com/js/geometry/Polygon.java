@@ -7,7 +7,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.StringTokenizer;
 
-import com.js.geometryapp.PolygonElement;
+import com.js.geometryapp.PolygonProgram;
+import com.js.geometryapp.RenderTools;
 
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
@@ -519,8 +520,7 @@ public class Polygon implements Iterable<Point>, Renderable {
 
 	@Override
 	public void render(AlgorithmStepper stepper) {
-		PolygonElement elem = new PolygonElement(this,
-				PolygonElement.Style.BOUNDARY);
+		Renderer elem = new Renderer(this, Renderer.Style.BOUNDARY);
 		elem.render(stepper);
 	}
 
@@ -528,8 +528,7 @@ public class Polygon implements Iterable<Point>, Renderable {
 	 * Construct a Renderable that renders this polygon as a filled polygon
 	 */
 	public Renderable renderFilled() {
-		PolygonElement elem = new PolygonElement(this,
-				PolygonElement.Style.FILLED);
+		Renderer elem = new Renderer(this, Renderer.Style.FILLED);
 		return elem;
 	}
 
@@ -537,8 +536,57 @@ public class Polygon implements Iterable<Point>, Renderable {
 	 * Construct a Renderable for rendering a polyline
 	 */
 	public static Renderable renderPolyline(Collection<Point> vertices) {
-		return new PolygonElement(new Polygon(vertices),
-				PolygonElement.Style.POLYLINE);
+		return new Renderer(new Polygon(vertices), Renderer.Style.POLYLINE);
+	}
+
+	private static class Renderer implements Renderable {
+		public static enum Style {
+			FILLED, BOUNDARY, POLYLINE,
+		};
+
+		public Renderer(Polygon polygon, Style style) {
+			mPolygon = new Polygon(polygon);
+			// Always perturb polygons that are rendered, since we want to
+			// avoid geometry exceptions when displaying an algorithm (as
+			// opposed to those that occur during an algorithm execution)
+			mPolygon.perturb(new Random(1));
+			mStyle = style;
+		}
+
+		@Override
+		public void render(AlgorithmStepper s) {
+
+			if (mStyle == Style.FILLED) {
+				int orientation = mPolygon.orientation();
+				if (orientation != 1) {
+					pr("polygon isn't ccw orientation=" + orientation);
+					mStyle = Style.BOUNDARY;
+				}
+			}
+
+			if (mStyle == Style.FILLED) {
+				boolean useStrips = false;
+				PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon,
+						useStrips);
+				PolygonProgram p = RenderTools.polygonProgram();
+				p.setColor(RenderTools.getRenderColor()); // color());
+				p.render(mesh);
+			} else {
+				if (mPolygon.numVertices() == 0) {
+					warning("rendering PolygonElement with no vertices");
+					return;
+				}
+				for (int i = 0; i < mPolygon.numVertices(); i++)
+					RenderTools.extendPolyline(mPolygon.vertex(i));
+				if (mStyle == Style.BOUNDARY)
+					RenderTools.closePolyline();
+				RenderTools.renderPolyline();
+			}
+		}
+
+		private Polygon mPolygon;
+		private Style mStyle;
+
 	}
 
 	private List<Point> mVertices = new ArrayList();

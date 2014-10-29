@@ -287,7 +287,7 @@ public class RenderTools {
 		sPointMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
-	static PolygonProgram polygonProgram() {
+	public static PolygonProgram polygonProgram() {
 		return sPolygonProgram;
 	}
 
@@ -299,7 +299,7 @@ public class RenderTools {
 		sColor = Color.BLUE;
 	}
 
-	static int getRenderColor() {
+	public static int getRenderColor() {
 		return sColor;
 	}
 

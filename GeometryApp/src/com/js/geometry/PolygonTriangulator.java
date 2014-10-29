@@ -65,7 +65,7 @@ public class PolygonTriangulator {
 	public void triangulate() {
 		if (s.openLayer(BGND_ELEMENT_POLYGON_FILLED)) {
 			s.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
-			s.plot(mPolygon.renderFilled());
+			s.plot(mPolygon.renderable(true));
 			s.closeLayer();
 		}
 
@@ -400,7 +400,7 @@ public class PolygonTriangulator {
 			while (!points.isEmpty())
 				facePolygon.add(points.removeFirst());
 			s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
-			s.plot(facePolygon.renderFilled());
+			s.plot(facePolygon.renderable(true));
 			s.closeLayer();
 		}
 

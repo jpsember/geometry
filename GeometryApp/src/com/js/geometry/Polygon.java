@@ -525,11 +525,16 @@ public class Polygon implements Iterable<Point>, Renderable {
 	}
 
 	/**
-	 * Construct a Renderable that renders this polygon as a filled polygon
+	 * Get a renderable for this polygon
+	 * 
+	 * @param filled
+	 *            true to fill vs just plotting its boundary
 	 */
-	public Renderable renderFilled() {
-		Renderer elem = new Renderer(this, Renderer.Style.FILLED);
-		return elem;
+	public Renderable renderable(boolean filled) {
+		if (!filled)
+			return new Renderer(this, Renderer.Style.BOUNDARY);
+		else
+			return new Renderer(this, Renderer.Style.FILLED);
 	}
 
 	/**

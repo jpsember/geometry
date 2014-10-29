@@ -1,13 +1,16 @@
 package com.js.geometryapp;
 
+import java.util.Random;
+
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonMesh;
+import com.js.geometry.Renderable;
 
 import static com.js.basic.Tools.*;
 
 // TODO: should this be made a package-vis class of js.geometry?
-public class PolygonElement extends AlgorithmDisplayElement {
+public class PolygonElement implements Renderable {
 
 	public static enum Style {
 		FILLED, BOUNDARY, POLYLINE,
@@ -18,7 +21,7 @@ public class PolygonElement extends AlgorithmDisplayElement {
 		// Always perturb polygons that are rendered, since we want to
 		// avoid geometry exceptions when displaying an algorithm (as
 		// opposed to those that occur during an algorithm execution)
-		mPolygon.perturb(random());
+		mPolygon.perturb(new Random(1));
 		mStyle = style;
 	}
 
@@ -37,7 +40,7 @@ public class PolygonElement extends AlgorithmDisplayElement {
 			boolean useStrips = false;
 			PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon, useStrips);
 			PolygonProgram p = AlgorithmDisplayElement.polygonProgram();
-			p.setColor(getRenderColor()); // color());
+			p.setColor(AlgorithmDisplayElement.getRenderColor()); // color());
 			p.render(mesh);
 		} else {
 			if (mPolygon.numVertices() == 0) {
@@ -45,10 +48,10 @@ public class PolygonElement extends AlgorithmDisplayElement {
 				return;
 			}
 			for (int i = 0; i < mPolygon.numVertices(); i++)
-				extendPolyline(mPolygon.vertex(i));
+				AlgorithmDisplayElement.extendPolyline(mPolygon.vertex(i));
 			if (mStyle == Style.BOUNDARY)
-				closePolyline();
-			renderPolyline();
+				AlgorithmDisplayElement.closePolyline();
+			AlgorithmDisplayElement.renderPolyline();
 		}
 	}
 

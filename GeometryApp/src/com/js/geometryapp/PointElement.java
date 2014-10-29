@@ -2,8 +2,9 @@ package com.js.geometryapp;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
+import com.js.geometry.Renderable;
 
-public class PointElement extends AlgorithmDisplayElement {
+public class PointElement implements Renderable {
 
 	public PointElement(Point point, float radius) {
 		mPoint = new Point(point);
@@ -12,7 +13,7 @@ public class PointElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		renderPoint(mPoint, mRadius);
+		AlgorithmDisplayElement.renderPoint(mPoint, mRadius);
 	}
 
 	private Point mPoint;

@@ -2,8 +2,9 @@ package com.js.geometryapp;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
+import com.js.geometry.Renderable;
 
-class TextElement extends AlgorithmDisplayElement {
+class TextElement implements Renderable {
 
 	public TextElement(String text, Point location) {
 		mText = text;
@@ -12,7 +13,7 @@ class TextElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		renderText(mLocation, mText);
+		AlgorithmDisplayElement.renderText(mLocation, mText);
 	}
 
 	private Point mLocation;

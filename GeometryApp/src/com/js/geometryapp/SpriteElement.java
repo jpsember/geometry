@@ -2,8 +2,9 @@ package com.js.geometryapp;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
+import com.js.geometry.Renderable;
 
-class SpriteElement extends AlgorithmDisplayElement {
+class SpriteElement implements Renderable {
 
 	public SpriteElement(int spriteResourceId, Point location) {
 		mSpriteResourceId = spriteResourceId;
@@ -12,7 +13,7 @@ class SpriteElement extends AlgorithmDisplayElement {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		iconSet().plot(mSpriteResourceId, mLocation,
+		AlgorithmDisplayElement.iconSet().plot(mSpriteResourceId, mLocation,
 				AlgorithmDisplayElement.getRenderColor());
 	}
 

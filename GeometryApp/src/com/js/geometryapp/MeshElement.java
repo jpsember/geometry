@@ -3,8 +3,9 @@ package com.js.geometryapp;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
+import com.js.geometry.Renderable;
 
-class MeshElement extends AlgorithmDisplayElement {
+class MeshElement implements Renderable {
 
 	public MeshElement(Mesh mesh) {
 		mMesh = mesh;
@@ -13,7 +14,8 @@ class MeshElement extends AlgorithmDisplayElement {
 	@Override
 	public void render(AlgorithmStepper s) {
 		for (Edge e : mMesh.constructListOfEdges(true)) {
-			renderLine(e.sourceVertex(), e.destVertex());
+			AlgorithmDisplayElement
+					.renderLine(e.sourceVertex(), e.destVertex());
 		}
 	}
 

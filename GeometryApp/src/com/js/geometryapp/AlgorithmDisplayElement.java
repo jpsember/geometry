@@ -1,7 +1,6 @@
 package com.js.geometryapp;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -21,7 +20,7 @@ import com.js.opengl.SpriteSet;
 
 import static com.js.basic.Tools.*;
 
-public abstract class AlgorithmDisplayElement implements Renderable {
+public abstract class AlgorithmDisplayElement {
 
 	static int getElementCount() {
 		int r = sElementsConstructed;
@@ -42,7 +41,7 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		sPolyline.add(point);
 	}
 
-	static void extendPolyline(float x, float y) {
+	public static void extendPolyline(float x, float y) {
 		extendPolyline(new Point(x, y));
 	}
 
@@ -55,13 +54,13 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		sPolyline = null;
 	}
 
-	static void renderLine(float x1, float y1, float x2, float y2) {
+	public static void renderLine(float x1, float y1, float x2, float y2) {
 		extendPolyline(x1, y1);
 		extendPolyline(x2, y2);
 		renderPolyline();
 	}
 
-	static void renderLine(Point p1, Point p2) {
+	public static void renderLine(Point p1, Point p2) {
 		renderLine(p1.x, p1.y, p2.x, p2.y);
 	}
 
@@ -297,11 +296,11 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		sColor = Color.BLUE;
 	}
 
-	public static int getRenderColor() {
+	static int getRenderColor() {
 		return sColor;
 	}
 
-	public static float getRenderLineWidth() {
+	private static float getRenderLineWidth() {
 		return sLineWidth;
 	}
 
@@ -321,15 +320,11 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 		return mIcons;
 	}
 
-	protected Random random() {
-		return mRandom;
-	}
-
 	/**
 	 * Wrap a Renderable in an object that also stores the current render state
 	 * (color, line width)
 	 */
-	public static Renderable wrapRenderableWithState(Renderable r) {
+	static Renderable wrapRenderableWithState(Renderable r) {
 		// If already wrapped, leave unchanged
 		if (r instanceof RenderableStateWrapper)
 			return r;
@@ -368,5 +363,4 @@ public abstract class AlgorithmDisplayElement implements Renderable {
 	private static int sElementsConstructed;
 	private static AlgorithmRenderer sRenderer;
 	private static SpriteSet mIcons;
-	private static Random mRandom = new Random(1);
 }

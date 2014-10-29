@@ -6,6 +6,7 @@ import java.util.List;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
 import com.js.geometry.Renderable;
+import com.js.geometryapp.PolylineProgram;
 import com.js.geometryapp.RenderTools;
 
 public class Polyline implements Renderable {
@@ -27,13 +28,8 @@ public class Polyline implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		RenderTools.startPolyline();
-		for (Point v : mVertices) {
-			RenderTools.extendPolyline(v);
-		}
-		if (mClosed)
-			RenderTools.closePolyline();
-		RenderTools.renderPolyline();
+		PolylineProgram p = RenderTools.polylineProgram();
+		p.render(mVertices, null, mClosed);
 	}
 
 	public List<Point> vertices() {

@@ -32,37 +32,16 @@ public class RenderTools {
 		return r;
 	}
 
-	public static void startPolyline() {
-		sPolylineClosed = false;
-		sPolylineVertices.clear();
-	}
-
-	public static void extendPolyline(Point point) {
-		sPolylineVertices.add(point);
-	}
-
-	public static void extendPolyline(float x, float y) {
-		extendPolyline(new Point(x, y));
-	}
-
-	public static void closePolyline() {
-		sPolylineClosed = true;
-	}
-
-	public static void renderPolyline() {
-		sPolylineProgram.setColor(getRenderColor());
-		sPolylineProgram.render(sPolylineVertices, null, sPolylineClosed);
-		sPolylineVertices.clear();
-	}
-
 	public static void renderLine(float x1, float y1, float x2, float y2) {
-		extendPolyline(x1, y1);
-		extendPolyline(x2, y2);
-		renderPolyline();
+		renderLine(new Point(x1, y1), new Point(x2, y2));
 	}
 
 	public static void renderLine(Point p1, Point p2) {
-		renderLine(p1.x, p1.y, p2.x, p2.y);
+		sPolylineProgram.setColor(getRenderColor());
+		sPolylineVertices.clear();
+		sPolylineVertices.add(p1);
+		sPolylineVertices.add(p2);
+		sPolylineProgram.render(sPolylineVertices, null, false);
 	}
 
 	public static void renderRay(Point p1, Point p2) {
@@ -81,9 +60,7 @@ public class RenderTools {
 			sPolygonProgram.setColor(sColor);
 			sPolygonProgram.render(sArrowheadMesh, null, m);
 		}
-		extendPolyline(p1);
-		extendPolyline(p2b);
-		renderPolyline();
+		renderLine(p1, p2b);
 	}
 
 	static void setLineWidthState(float lineWidth) {
@@ -289,6 +266,10 @@ public class RenderTools {
 		return sPolygonProgram;
 	}
 
+	public static PolylineProgram polylineProgram() {
+		return sPolylineProgram;
+	}
+
 	/**
 	 * Reset the global render attributes to their default values
 	 */
@@ -359,10 +340,7 @@ public class RenderTools {
 	private static PolygonMesh sPointMesh;
 	private static Font sTitleFont;
 	private static Font sElementFont;
-
 	private static List<Point> sPolylineVertices = new ArrayList();
-	private static boolean sPolylineClosed;
-
 	private static float sLineWidth;
 	private static int sColor;
 	private static int sElementsConstructed;

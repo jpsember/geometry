@@ -569,6 +569,11 @@ public class Polygon implements Iterable<Point>, Renderable {
 				}
 			}
 
+			if (mPolygon.numVertices() == 0) {
+				warning("rendering Polygon with no vertices");
+				return;
+			}
+
 			if (mStyle == Style.FILLED) {
 				boolean useStrips = false;
 				PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon,
@@ -577,15 +582,12 @@ public class Polygon implements Iterable<Point>, Renderable {
 				p.setColor(RenderTools.getRenderColor());
 				p.render(mesh);
 			} else {
-				if (mPolygon.numVertices() == 0) {
-					warning("rendering PolygonElement with no vertices");
-					return;
-				}
-				for (int i = 0; i < mPolygon.numVertices(); i++)
-					RenderTools.extendPolyline(mPolygon.vertex(i));
+				Polyline polyline = new Polyline();
+				for (Point v : mPolygon)
+					polyline.add(v);
 				if (mStyle == Style.BOUNDARY)
-					RenderTools.closePolyline();
-				RenderTools.renderPolyline();
+					polyline.close();
+				polyline.render(s);
 			}
 		}
 

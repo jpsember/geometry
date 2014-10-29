@@ -52,12 +52,12 @@ public class Disc implements Renderable {
 				SIDES_MAX);
 
 		float angleSep = ((360 * MyMath.M_DEG) / numberOfSidesClamped);
+		Polyline p = new Polyline();
 		for (int i = 0; i < numberOfSidesClamped; i++) {
-			RenderTools.extendPolyline(MyMath.pointOnCircle(origin, i
-					* angleSep, radius));
+			p.add(MyMath.pointOnCircle(origin, i * angleSep, radius));
 		}
-		RenderTools.closePolyline();
-		RenderTools.renderPolyline();
+		p.close();
+		p.render(s);
 	}
 
 	/**

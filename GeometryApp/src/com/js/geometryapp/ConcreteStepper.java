@@ -283,16 +283,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Point point) {
-		return plot(point, 1);
-	}
-
-	@Override
-	public String highlight(Point point) {
-		return setColor(Color.RED) + plot(point) + setNormal();
-	}
-
-	@Override
 	public String plot(Point point, float radius) {
 		return plot(new PointElement(point, radius));
 	}

@@ -80,16 +80,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Point point) {
-		return "";
-	}
-
-	@Override
-	public String highlight(Point point) {
-		return "";
-	}
-
-	@Override
 	public String plot(Point point, float radius) {
 		// TODO Auto-generated method stub
 		return "";

@@ -1,9 +1,12 @@
 package com.js.geometry;
 
 import static com.js.basic.Tools.*;
+
+import com.js.geometryapp.PointElement;
+
 import android.graphics.Matrix;
 
-public class Point {
+public class Point implements Renderable {
 
 	public static final Point ZERO = new Point();
 
@@ -84,6 +87,13 @@ public class Point {
 		return sb.toString();
 	}
 
+	@Override
+	public void render(AlgorithmStepper stepper) {
+		PointElement elem = new PointElement(this, 1);
+		elem.render(stepper);
+	}
+
 	public float x;
 	public float y;
+
 }

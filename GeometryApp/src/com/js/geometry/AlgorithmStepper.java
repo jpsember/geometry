@@ -114,16 +114,6 @@ public interface AlgorithmStepper {
 	public String highlight(Renderable element);
 
 	/**
-	 * Plot a point
-	 */
-	public String plot(Point point);
-
-	/**
-	 * Highlight a point
-	 */
-	public String highlight(Point point);
-
-	/**
 	 * Plot a disc with a particular radius (1 = standard point size)
 	 */
 	public String plot(Point point, float radius);

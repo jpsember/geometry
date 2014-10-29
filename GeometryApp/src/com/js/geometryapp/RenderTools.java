@@ -293,13 +293,13 @@ public class RenderTools {
 	};
 
 	private static void prepareSprites() {
-		mIcons = new SpriteSet(sRenderer.context(), sSpriteIds);
-		mIcons.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		mIcons.compile();
+		sIcons = new SpriteSet(sRenderer.context(), sSpriteIds);
+		sIcons.setTransformName(AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		sIcons.compile();
 	}
 
 	static SpriteSet iconSet() {
-		return mIcons;
+		return sIcons;
 	}
 
 	/**
@@ -345,5 +345,5 @@ public class RenderTools {
 	private static int sColor;
 	private static int sElementsConstructed;
 	private static AlgorithmRenderer sRenderer;
-	private static SpriteSet mIcons;
+	private static SpriteSet sIcons;
 }

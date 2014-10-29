@@ -41,16 +41,16 @@ public class PolylineProgram {
 				R.raw.polyline_vertex_shader);
 		GLShader fragmentShader = GLShader.readFragmentShader(
 				renderer.context(), R.raw.polyline_fragment_shader);
-		sProgram = new GLProgram(renderer, vertexShader, fragmentShader);
-		sProgram.setTransformName(transformName);
+		mProgram = new GLProgram(renderer, vertexShader, fragmentShader);
+		mProgram.setTransformName(transformName);
 		prepareAttributes();
 	}
 
 	private void prepareAttributes() {
-		GLTools.setProgram(sProgram.getId());
-		sPositionLocation = GLTools.getProgramLocation("a_Position");
-		sColorLocation = GLTools.getProgramLocation("u_InputColor");
-		sMatrixLocation = GLTools.getProgramLocation("u_Matrix");
+		GLTools.setProgram(mProgram.getId());
+		mPositionLocation = GLTools.getProgramLocation("a_Position");
+		mColorLocation = GLTools.getProgramLocation("u_InputColor");
+		mMatrixLocation = GLTools.getProgramLocation("u_Matrix");
 	}
 
 	/**
@@ -78,22 +78,22 @@ public class PolylineProgram {
 	 */
 	public void render(Collection<Point> vertices, Matrix additionalTransform,
 			boolean closed) {
-		glUseProgram(sProgram.getId());
+		glUseProgram(mProgram.getId());
 
 		// We only need to send color when it changes
 		if (!mColorValid) {
-			glUniform4fv(sColorLocation, 1, mColor, 0);
+			glUniform4fv(mColorLocation, 1, mColor, 0);
 			mColorValid = true;
 		}
-		sProgram.prepareMatrix(additionalTransform, sMatrixLocation);
+		mProgram.prepareMatrix(additionalTransform, mMatrixLocation);
 
 		FloatBuffer fb = compileVertices(vertices);
 		fb.position(0);
 		int stride = (POSITION_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
-		glVertexAttribPointer(sPositionLocation, POSITION_COMPONENT_COUNT,
+		glVertexAttribPointer(mPositionLocation, POSITION_COMPONENT_COUNT,
 				GL_FLOAT, false, stride, fb);
-		glEnableVertexAttribArray(sPositionLocation);
+		glEnableVertexAttribArray(mPositionLocation);
 
 		float lineScaleFactor = MyActivity.getResolutionInfo()
 				.inchesToPixelsAlgorithm(.01f);
@@ -101,10 +101,10 @@ public class PolylineProgram {
 		glDrawArrays(closed ? GL_LINE_LOOP : GL_LINE_STRIP, 0, vertices.size());
 	}
 
-	private GLProgram sProgram;
-	private int sPositionLocation;
-	private int sColorLocation;
-	private int sMatrixLocation;
+	private GLProgram mProgram;
+	private int mPositionLocation;
+	private int mColorLocation;
+	private int mMatrixLocation;
 	private float[] mColor = new float[4];
 	private boolean mColorValid;
 

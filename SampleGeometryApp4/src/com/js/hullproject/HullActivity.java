@@ -3,7 +3,10 @@ package com.js.hullproject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import android.graphics.Color;
 
@@ -22,13 +25,18 @@ import com.js.geometryapp.GeometryStepperActivity;
 public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private static final String INCLUDE_LOWER_HULL = "Include lower hull";
+	private static final String USE_EDITOR_DISCS = "Use editor discs";
+	private static final String NUMBER_OF_DISCS = "# discs";
+	private static final String DISC_SIZE = "Radius";
+	private static final String RANDOM_SEED = "Seed";
 
 	private static final String BGND_ELEMENT_BITANGENTS = "10";
 	private static final String BGND_ELEMENT_CURRENTDISC = "20";
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	@Override
-	public void addAlgorithms(AlgorithmStepper s) {
+	public void addAlgorithms(AlgorithmStepper stepper) {
+		this.s = stepper;
 		s.addAlgorithm(this);
 	}
 
@@ -39,25 +47,43 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	@Override
 	public void prepareOptions(AlgorithmOptions options) {
+		options.addCheckBox(USE_EDITOR_DISCS);
 		options.addCheckBox(INCLUDE_LOWER_HULL);
+		options.addSlider(NUMBER_OF_DISCS, "min", 2, "max", 150, "value", 25);
+		options.addSlider(RANDOM_SEED, "min", 1, "max", 100);
+		options.addSlider(DISC_SIZE, "min", 0, "max", 100, "value", 20);
+
 		mOptions = options;
 	}
 
 	@Override
 	public void prepareInput(AlgorithmInput input) {
 		mDiscs.clear();
-		for (Disc d : input.discs)
-			mDiscs.add(d);
+		if (mOptions.getBooleanValue(USE_EDITOR_DISCS)) {
+			for (Disc d : input.discs)
+				mDiscs.add(d);
+		} else {
+			// Generate some random discs
+			Random r = new Random(mOptions.getIntValue(RANDOM_SEED));
+			float pow = (100 - (float) mOptions.getIntValue(DISC_SIZE)) / 8;
+
+			for (int i = mOptions.getIntValue(NUMBER_OF_DISCS); i >= 0; i--) {
+				Point origin = MyMath.randomPointInDisc(r, s.algorithmRect()
+						.midPoint(), s.algorithmRect().maxDim() * .4f);
+				mDiscs.add(new Disc(origin,
+						(float) Math.pow(r.nextFloat(), pow)
+								* s.algorithmRect().minDim() * .4f));
+			}
+		}
 
 		mHullDiscLists = new List[2];
 		mHullDiscLists[0] = new ArrayList();
 		mHullDiscLists[1] = new ArrayList();
+		mDiscsExamined = new HashSet();
 	}
 
 	@Override
 	public void run(AlgorithmStepper stepper) {
-		this.s = stepper;
-
 		if (mDiscs.size() < 2)
 			s.show("Not enough discs");
 
@@ -65,20 +91,38 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			s.plot(new Renderable() {
 				@Override
 				public void render(AlgorithmStepper s) {
+					// Keep track of which discs appeared as hull discs
+					Set<Disc> hullDiscsFound = new HashSet();
+					List<Bitangent> bitangentsFound = new ArrayList();
 					s.setColor(COLOR_DARKGREEN);
 					for (int pass = 0; pass < 2; pass++) {
-						List<Disc> hullDiscs = mHullDiscLists[pass];
+						List<Disc> hullDiscList = mHullDiscLists[pass];
 						Disc prevDisc = null;
-						for (Disc d : hullDiscs) {
+						for (Disc d : hullDiscList) {
+							hullDiscsFound.add(d);
 							s.plot(d);
 							if (prevDisc != null) {
 								Bitangent b = constructBitangent(prevDisc, d);
 								if (b != null)
-									s.plot(b);
+									bitangentsFound.add(b);
 							}
 							prevDisc = d;
 						}
 					}
+					// Plot in light gray those discs that have been examined
+					// and are NOT on the hull
+					s.setColor(Color.LTGRAY);
+					for (Disc d : mDiscsExamined) {
+						if (!hullDiscsFound.contains(d))
+							s.plot(d);
+					}
+					// Plot hull discs and bitangents
+					s.setColor(COLOR_DARKGREEN);
+					for (Disc d : hullDiscsFound) {
+						s.plot(d);
+					}
+					for (Bitangent b : bitangentsFound)
+						s.plot(b);
 				}
 			});
 			s.closeLayer();
@@ -106,6 +150,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			for (int i = mDiscs.size() - 1; i >= 0; i--) {
 				Disc d = mDiscs.get(i);
 				mCurrentDiscForRendering = d;
+				mDiscsExamined.add(d);
 				processDisc(d);
 				mCurrentDiscForRendering = null;
 			}
@@ -363,5 +408,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	private boolean mLowerHullFlag;
 	// Active list (i.e. either upper or lower hull)
 	private List<Disc> mHullDiscs;
+	// For rendering purposes only, set of discs examined (for either hull)
+	private Set<Disc> mDiscsExamined;
 	private Disc mCurrentDiscForRendering;
 }

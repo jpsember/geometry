@@ -96,11 +96,11 @@ public class RenderTools {
 		sColor = color;
 	}
 
-	static void renderPoint(Point point) {
+	public static void renderPoint(Point point) {
 		renderPoint(point, 1);
 	}
 
-	static void renderPoint(Point point, float radius) {
+	public static void renderPoint(Point point, float radius) {
 		Matrix matrix = null;
 		Point translation = null;
 		// If no scaling required, we can just use a translation vector

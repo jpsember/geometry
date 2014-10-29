@@ -14,8 +14,7 @@ class MeshElement implements Renderable {
 	@Override
 	public void render(AlgorithmStepper s) {
 		for (Edge e : mMesh.constructListOfEdges(true)) {
-			RenderTools
-					.renderLine(e.sourceVertex(), e.destVertex());
+			RenderTools.renderLine(e.sourceVertex(), e.destVertex());
 		}
 	}
 

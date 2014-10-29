@@ -2,7 +2,7 @@ package com.js.geometry;
 
 import static com.js.basic.Tools.*;
 
-import com.js.geometryapp.PointElement;
+import com.js.geometryapp.RenderTools;
 
 import android.graphics.Matrix;
 
@@ -89,11 +89,11 @@ public class Point implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper stepper) {
-		renderWithRadius(1).render(stepper);
+		RenderTools.renderPoint(this, 1);
 	}
 
-	public Renderable renderWithRadius(float radius) {
-		return new PointElement(this, radius);
+	public void renderWithRadius(float radius) {
+		RenderTools.renderPoint(this, radius);
 	}
 
 	public float x;

@@ -53,13 +53,47 @@ public class Disc implements Renderable {
 
 		float angleSep = ((360 * MyMath.M_DEG) / numberOfSidesClamped);
 		for (int i = 0; i < numberOfSidesClamped; i++) {
-			RenderTools.extendPolyline(MyMath.pointOnCircle(origin,
-					i * angleSep, radius));
+			RenderTools.extendPolyline(MyMath.pointOnCircle(origin, i
+					* angleSep, radius));
 		}
 		RenderTools.closePolyline();
 		RenderTools.renderPolyline();
 	}
 
+	/**
+	 * Get a renderable for this disc
+	 * 
+	 * @param filled
+	 *            true to plot a solid disc vs just its boundary
+	 */
+	public Renderable renderable(boolean filled) {
+		if (!filled)
+			return this;
+		return new Rendered(this, true);
+	}
+
+	/**
+	 * Wrapper class for rendering with additional attributes (e.g. filled flag)
+	 */
+	private static class Rendered implements Renderable {
+		public Rendered(Disc disc, boolean filled) {
+			mDisc = disc;
+			mFilled = filled;
+		}
+
+		@Override
+		public void render(AlgorithmStepper s) {
+			if (!mFilled)
+				mDisc.render(s);
+			else
+				RenderTools.renderPoint(mDisc.getOrigin(), mDisc.getRadius());
+		}
+
+		private Disc mDisc;
+		private boolean mFilled;
+	}
+
 	private Point mOrigin;
 	private float mRadius;
+
 }

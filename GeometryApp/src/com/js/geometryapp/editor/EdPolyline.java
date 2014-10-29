@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import android.graphics.Color;
 
 import com.js.geometry.AlgorithmStepper;
+import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
@@ -507,7 +508,7 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = activePolyline();
 				Point signalLocation = polyline.getPoint(polyline.cursor());
 				s.setColor(COLOR_SIGNAL_GREEN);
-				s.plot(signalLocation.renderWithRadius(15));
+				s.plot(new Disc(signalLocation, 15).renderable(true));
 			}
 		}
 

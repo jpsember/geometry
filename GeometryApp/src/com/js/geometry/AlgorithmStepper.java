@@ -1,6 +1,5 @@
 package com.js.geometry;
 
-// TODO: consider using a marker interface for Algorithm, to avoid referencing geometryapp package here
 import com.js.geometryapp.Algorithm;
 
 public interface AlgorithmStepper {
@@ -10,8 +9,15 @@ public interface AlgorithmStepper {
 	 */
 	public static final AlgorithmStepper DEFAULT_STEPPER = new DefaultStepper();
 
+	/**
+	 * Add an algorithm. Each algorithm will appear in its own options panel
+	 */
 	public void addAlgorithm(Algorithm delegate);
 
+	/**
+	 * Get rectangle defining the algorithm's logical bounds. Elements outside
+	 * of this rectangle may not be visible within the algorithm view
+	 */
 	public Rect algorithmRect();
 
 	/**
@@ -26,8 +32,6 @@ public interface AlgorithmStepper {
 	 */
 	public void pushActive(boolean active);
 
-	public void popActive();
-
 	/**
 	 * Push active state to value of checkbox widget
 	 * 
@@ -35,6 +39,11 @@ public interface AlgorithmStepper {
 	 *            id of checkbox widget to read
 	 */
 	public void pushActive(String widgetId);
+
+	/**
+	 * Pop stepper active state previously pushed via a pushActive call
+	 */
+	public void popActive();
 
 	/**
 	 * Determine if we should stop and display this frame of the current
@@ -94,36 +103,49 @@ public interface AlgorithmStepper {
 
 	/**
 	 * Remove a layer, so it will no longer be plotted
-	 * 
-	 * @param key
 	 */
 	public void removeLayer(String key);
+
+	/**
+	 * Set color for subsequent render operations
+	 * 
+	 * @return an empty string, as a convenience so calls to this class's
+	 *         methods can be chained together to form a single show() method
+	 *         argument
+	 */
+	public String setColor(int color);
+
+	/**
+	 * Set line width for subsequent render operations
+	 */
+	public String setLineWidth(float lineWidth);
 
 	/**
 	 * Add a Renderable element to be displayed with this algorithm frame
 	 * 
 	 * @param element
-	 * @return an empty string, as a convenience so elements can be added as a
-	 *         side effect of constructing show(...) message arguments
 	 */
 	public String plot(Renderable element);
 
 	/**
-	 * Like plot(), but renders in a highlighted state
+	 * Like plot(), but renders in a highlighted state. The render state (color,
+	 * line width) is reset to default values after this call
 	 */
 	public String highlight(Renderable element);
 
+	/**
+	 * Convenience method equivalent to plot(new Segment(p1,p2))
+	 */
 	public String plotLine(Point p1, Point p2);
 
+	/**
+	 * Convenience method equivalent to highlight(new Segment(p1,p2))
+	 */
 	public String highlightLine(Point p1, Point p2);
 
 	public String plotSprite(int spriteResourceId, Point location);
 
 	public String highlightSprite(int spriteResourceId, Point location);
-
-	public String setColor(int color);
-
-	public String setLineWidth(float lineWidth);
 
 	/**
 	 * Restore default rendering attributes: color = BLUE, line width = 1

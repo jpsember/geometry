@@ -79,7 +79,7 @@ public class PolygonTriangulator {
 		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setLineWidth(1);
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plotMesh(mMesh);
+			s.plot(mMesh);
 			s.closeLayer();
 		}
 

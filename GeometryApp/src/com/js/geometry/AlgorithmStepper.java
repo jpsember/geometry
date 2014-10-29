@@ -125,8 +125,6 @@ public interface AlgorithmStepper {
 
 	public String highlightSprite(int spriteResourceId, Point location);
 
-	public String plotMesh(Mesh mesh);
-
 	public String setColor(int color);
 
 	public String setLineWidth(float lineWidth);

@@ -110,11 +110,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plotMesh(Mesh meshContext) {
-		return "";
-	}
-
-	@Override
 	public String setColor(int color) {
 		return "";
 	}

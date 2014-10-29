@@ -1,10 +1,14 @@
 package com.js.geometry;
 
 import java.util.ArrayList;
+import java.util.List;
+
+import com.js.geometryapp.RenderTools;
+
 import static com.js.basic.Tools.*;
 import static com.js.geometry.MyMath.*;
 
-public final class Mesh {
+public final class Mesh implements Renderable {
 
 	/**
 	 * Construct a list of all the edges
@@ -245,6 +249,13 @@ public final class Mesh {
 		return sb.toString();
 	}
 
+	@Override
+	public void render(AlgorithmStepper s) {
+		for (Edge e : constructListOfEdges(true)) {
+			RenderTools.renderLine(e.sourceVertex(), e.destVertex());
+		}
+	}
+
 	private void addEdgeToVertex(Edge edge, Vertex vertex) {
 		if (vertex.edges() == null) {
 			vertex.setEdges(edge);
@@ -317,5 +328,5 @@ public final class Mesh {
 				- kMinSeparation);
 	}
 
-	private ArrayList<Vertex> mVertexBuffer = new ArrayList();
+	private List<Vertex> mVertexBuffer = new ArrayList();
 }

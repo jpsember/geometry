@@ -78,7 +78,7 @@ public class StarshapedHoleTriangulator {
 
 		if (s.openLayer(BGND_ELEMENT_MESH)) {
 			s.setColor(COLOR_LIGHTBLUE);
-			s.plotMesh(mMesh);
+			s.plot(mMesh);
 			s.closeLayer();
 		}
 

@@ -19,7 +19,6 @@ import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
@@ -301,11 +300,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	@Override
 	public String highlight(String text, Point location) {
 		return setColor(Color.RED) + plot(text, location) + setNormal();
-	}
-
-	@Override
-	public String plotMesh(Mesh meshContext) {
-		return plot(new MeshElement(meshContext));
 	}
 
 	@Override

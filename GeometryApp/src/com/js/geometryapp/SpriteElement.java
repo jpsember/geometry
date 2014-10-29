@@ -13,8 +13,8 @@ class SpriteElement implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		AlgorithmDisplayElement.iconSet().plot(mSpriteResourceId, mLocation,
-				AlgorithmDisplayElement.getRenderColor());
+		RenderTools.iconSet().plot(mSpriteResourceId, mLocation,
+				RenderTools.getRenderColor());
 	}
 
 	private int mSpriteResourceId;

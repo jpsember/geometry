@@ -199,7 +199,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 			}
 		}
 
-		AlgorithmDisplayElement.resetRenderStateVars();
+		RenderTools.resetRenderStateVars();
 		mActiveBackgroundLayer = new Layer(key);
 		mBackgroundLayers.put(getScopedBackgroundLayerKey(key),
 				mActiveBackgroundLayer);
@@ -221,7 +221,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public void closeLayer() {
 		if (!isActive())
 			throw new IllegalStateException("stepper must be active");
-		AlgorithmDisplayElement.resetRenderStateVars();
+		RenderTools.resetRenderStateVars();
 		mActiveBackgroundLayer = null;
 	}
 
@@ -268,7 +268,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			// Wrap the renderable in an object that also stores the current
 			// render state (color, line width)
-			targetLayer.add(AlgorithmDisplayElement
+			targetLayer.add(RenderTools
 					.wrapRenderableWithState(element));
 		}
 		return "";
@@ -310,13 +310,13 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String setColor(int color) {
-		AlgorithmDisplayElement.setColorState(color);
+		RenderTools.setColorState(color);
 		return "";
 	}
 
 	@Override
 	public String setLineWidth(float lineWidth) {
-		AlgorithmDisplayElement.setLineWidthState(lineWidth);
+		RenderTools.setLineWidthState(lineWidth);
 		return "";
 	}
 
@@ -423,7 +423,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 				title = renderMessage;
 		}
 		if (title != null) {
-			AlgorithmDisplayElement.renderFrameTitle(title);
+			RenderTools.renderFrameTitle(title);
 		}
 	}
 
@@ -484,7 +484,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 			mFrameTitle = null;
 			mDoneMessage = "Done";
 
-			AlgorithmDisplayElement.resetRenderStateVars();
+			RenderTools.resetRenderStateVars();
 
 			mMilestones.clear();
 			addMilestone(mCurrentStep);
@@ -752,7 +752,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	public void setRendering(boolean f) {
 		if (mRendering != f) {
 			mRendering = f;
-			AlgorithmDisplayElement.resetRenderStateVars();
+			RenderTools.resetRenderStateVars();
 		}
 	}
 

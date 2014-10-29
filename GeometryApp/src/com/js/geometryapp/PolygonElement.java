@@ -39,8 +39,8 @@ public class PolygonElement implements Renderable {
 		if (mStyle == Style.FILLED) {
 			boolean useStrips = false;
 			PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon, useStrips);
-			PolygonProgram p = AlgorithmDisplayElement.polygonProgram();
-			p.setColor(AlgorithmDisplayElement.getRenderColor()); // color());
+			PolygonProgram p = RenderTools.polygonProgram();
+			p.setColor(RenderTools.getRenderColor()); // color());
 			p.render(mesh);
 		} else {
 			if (mPolygon.numVertices() == 0) {
@@ -48,10 +48,10 @@ public class PolygonElement implements Renderable {
 				return;
 			}
 			for (int i = 0; i < mPolygon.numVertices(); i++)
-				AlgorithmDisplayElement.extendPolyline(mPolygon.vertex(i));
+				RenderTools.extendPolyline(mPolygon.vertex(i));
 			if (mStyle == Style.BOUNDARY)
-				AlgorithmDisplayElement.closePolyline();
-			AlgorithmDisplayElement.renderPolyline();
+				RenderTools.closePolyline();
+			RenderTools.renderPolyline();
 		}
 	}
 

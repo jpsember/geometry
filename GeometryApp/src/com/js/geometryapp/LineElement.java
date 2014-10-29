@@ -15,9 +15,9 @@ public class LineElement implements Renderable {
 	@Override
 	public void render(AlgorithmStepper s) {
 		if (!mDirected)
-			AlgorithmDisplayElement.renderLine(mPoint1, mPoint2);
+			RenderTools.renderLine(mPoint1, mPoint2);
 		else
-			AlgorithmDisplayElement.renderRay(mPoint1, mPoint2);
+			RenderTools.renderRay(mPoint1, mPoint2);
 	}
 
 	private Point mPoint1, mPoint2;

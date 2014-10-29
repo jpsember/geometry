@@ -13,7 +13,7 @@ class TextElement implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		AlgorithmDisplayElement.renderText(mLocation, mText);
+		RenderTools.renderText(mLocation, mText);
 	}
 
 	private Point mLocation;

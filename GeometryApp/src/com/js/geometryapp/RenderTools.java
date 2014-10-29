@@ -20,7 +20,10 @@ import com.js.opengl.SpriteSet;
 
 import static com.js.basic.Tools.*;
 
-public abstract class AlgorithmDisplayElement {
+/**
+ * Utility methods and global state for algorithm-related rendering in OpenGL
+ */
+public class RenderTools {
 
 	static int getElementCount() {
 		int r = sElementsConstructed;

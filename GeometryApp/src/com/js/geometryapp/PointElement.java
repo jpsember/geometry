@@ -13,7 +13,7 @@ public class PointElement implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper s) {
-		AlgorithmDisplayElement.renderPoint(mPoint, mRadius);
+		RenderTools.renderPoint(mPoint, mRadius);
 	}
 
 	private Point mPoint;

@@ -3,7 +3,7 @@ package com.js.geometry;
 import static com.js.basic.Tools.*;
 
 import com.js.android.MyActivity;
-import com.js.geometryapp.AlgorithmDisplayElement;
+import com.js.geometryapp.RenderTools;
 
 public class Disc implements Renderable {
 
@@ -53,11 +53,11 @@ public class Disc implements Renderable {
 
 		float angleSep = ((360 * MyMath.M_DEG) / numberOfSidesClamped);
 		for (int i = 0; i < numberOfSidesClamped; i++) {
-			AlgorithmDisplayElement.extendPolyline(MyMath.pointOnCircle(origin,
+			RenderTools.extendPolyline(MyMath.pointOnCircle(origin,
 					i * angleSep, radius));
 		}
-		AlgorithmDisplayElement.closePolyline();
-		AlgorithmDisplayElement.renderPolyline();
+		RenderTools.closePolyline();
+		RenderTools.renderPolyline();
 	}
 
 	private Point mOrigin;

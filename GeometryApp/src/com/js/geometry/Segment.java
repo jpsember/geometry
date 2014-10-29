@@ -1,6 +1,6 @@
 package com.js.geometry;
 
-import com.js.geometryapp.LineElement;
+import com.js.geometryapp.RenderTools;
 
 public class Segment implements Renderable {
 
@@ -25,8 +25,10 @@ public class Segment implements Renderable {
 	}
 
 	public void render(AlgorithmStepper s) {
-		Renderable r = new LineElement(mPoint1, mPoint2, mDirected);
-		r.render(s);
+		if (!mDirected)
+			RenderTools.renderLine(mPoint1, mPoint2);
+		else
+			RenderTools.renderRay(mPoint1, mPoint2);
 	}
 
 	private Point mPoint1, mPoint2;

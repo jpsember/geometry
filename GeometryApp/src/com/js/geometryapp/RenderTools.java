@@ -67,7 +67,7 @@ public class RenderTools {
 		renderLine(p1.x, p1.y, p2.x, p2.y);
 	}
 
-	static void renderRay(Point p1, Point p2) {
+	public static void renderRay(Point p1, Point p2) {
 		float length = MyMath.distanceBetween(p1, p2);
 		if (length < .2f)
 			return;

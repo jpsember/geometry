@@ -113,16 +113,6 @@ public interface AlgorithmStepper {
 	 */
 	public String highlight(Renderable element);
 
-	/**
-	 * Plot a disc with a particular radius (1 = standard point size)
-	 */
-	public String plot(Point point, float radius);
-
-	/**
-	 * Highlight a disc
-	 */
-	public String highlight(Point point, float radius);
-
 	public String plotRay(Point p1, Point p2);
 
 	/**

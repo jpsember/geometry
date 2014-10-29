@@ -507,7 +507,7 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = activePolyline();
 				Point signalLocation = polyline.getPoint(polyline.cursor());
 				s.setColor(COLOR_SIGNAL_GREEN);
-				s.plot(signalLocation, 15);
+				s.plot(signalLocation.renderWithRadius(15));
 			}
 		}
 

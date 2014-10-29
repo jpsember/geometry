@@ -89,8 +89,11 @@ public class Point implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper stepper) {
-		PointElement elem = new PointElement(this, 1);
-		elem.render(stepper);
+		renderWithRadius(1).render(stepper);
+	}
+
+	public Renderable renderWithRadius(float radius) {
+		return new PointElement(this, radius);
 	}
 
 	public float x;

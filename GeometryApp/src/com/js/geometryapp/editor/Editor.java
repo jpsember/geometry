@@ -33,6 +33,7 @@ import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
 
@@ -51,6 +52,7 @@ public class Editor {
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
 	private static final String JSON_KEY_CLIPBOARD = "cb";
+	private static final int MAX_OBJECTS_IN_FILE = 500;
 
 	public Editor() {
 	}
@@ -280,9 +282,13 @@ public class Editor {
 				EdObjectFactory factory = mPendingAddObjectOperation;
 				if (factory != null) {
 					mPendingAddObjectOperation = null;
-					addNewObject(factory, event.getLocation());
-					// fall through to let the new operation handle the touch
-					// event
+					if (!verifyObjectsAllowed(objects().size() + 1))
+						event = EditorEvent.NONE;
+					else {
+						addNewObject(factory, event.getLocation());
+						// fall through to let the new operation handle the
+						// touch event
+					}
 				} else {
 					// If current operation is the default, check if this is a
 					// press that starts editing an existing object
@@ -403,7 +409,13 @@ public class Editor {
 		objectsArray.clear();
 		if (map.has(key)) {
 			JSONArray array = map.getJSONArray(key);
-			for (int i = 0; i < array.length(); i++) {
+			int effectiveArrayLength = array.length();
+			if (!verifyObjectsAllowed(effectiveArrayLength)) {
+				effectiveArrayLength = Math.min(effectiveArrayLength,
+						MAX_OBJECTS_IN_FILE);
+			}
+
+			for (int i = 0; i < effectiveArrayLength; i++) {
 				JSONObject objMap = array.getJSONObject(i);
 				String tag = objMap.getString(EdObjectFactory.JSON_KEY_TYPE);
 				EdObjectFactory factory = mObjectTypes.get(tag);
@@ -594,10 +606,29 @@ public class Editor {
 		resetDuplicationOffset();
 	}
 
+	/**
+	 * Determine if the current file can contain a particular number of objects.
+	 * If not, display a warning to the user and return false
+	 * 
+	 * @param requestedCapacity
+	 *            desired number of objects after user's operation is to be
+	 *            performed
+	 * 
+	 * @return true if requested capacity can be satisfied
+	 */
+	private boolean verifyObjectsAllowed(int requestedCapacity) {
+		if (requestedCapacity <= MAX_OBJECTS_IN_FILE)
+			return true;
+		toast(context(), "Too many objects!", Toast.LENGTH_LONG);
+		return false;
+	}
+
 	private void doPaste() {
 		if (mClipboard.isEmpty())
 			return;
 		clearOperation();
+		if (!verifyObjectsAllowed(objects().size() + mClipboard.size()))
+			return;
 		EditorState originalState = new EditorState(this);
 		List<Integer> newSelected = SlotList.build();
 
@@ -631,6 +662,10 @@ public class Editor {
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
 		clearOperation();
+		if (!verifyObjectsAllowed(objects().size()
+				+ originalState.getSelectedSlots().size()))
+			return;
+
 		List<Integer> newSelected = SlotList.build();
 
 		Point offset = getDupAccumulator().getOffsetForDup();

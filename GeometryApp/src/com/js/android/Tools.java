@@ -16,15 +16,18 @@ public final class Tools {
 	}
 
 	/**
-	 * Display a toast message of short duration
-	 * 
-	 * @param context
-	 * @param message
+	 * Display a toast message
 	 */
-	public static void toast(Context context, String message) {
-		int duration = Toast.LENGTH_SHORT;
+	public static void toast(Context context, String message, int duration) {
 		Toast toast = Toast.makeText(context, message, duration);
 		toast.show();
+	}
+
+	/**
+	 * Display a toast message of short duration
+	 */
+	public static void toast(Context context, String message) {
+		toast(context, message, Toast.LENGTH_SHORT);
 	}
 
 	public static String readTextFileResource(Context context, int resourceId) {

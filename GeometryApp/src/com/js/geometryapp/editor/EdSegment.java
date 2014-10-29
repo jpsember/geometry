@@ -44,7 +44,7 @@ public class EdSegment extends EdObject {
 		return FACTORY;
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("s") {
 		@Override
 		public EdObject construct(Point defaultLocation) {
 			EdSegment s = new EdSegment();

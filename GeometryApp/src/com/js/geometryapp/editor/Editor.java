@@ -472,8 +472,9 @@ public class Editor {
 		objects().unselectAll();
 		clearOperation();
 		mPendingAddObjectOperation = objectType;
-		if (false) // figure out a way to determine an appropriate toast message
-			toast(context(), "Add segment!");
+		if (false) {
+			toast(context(), "Add " + objectType.getTag());
+		}
 	}
 
 	private void persistEditorStateAux() {

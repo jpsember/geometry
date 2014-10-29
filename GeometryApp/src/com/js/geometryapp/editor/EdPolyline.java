@@ -177,7 +177,7 @@ public class EdPolyline extends EdObject {
 		return FACTORY;
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("pl") {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("P") {
 
 		private static final String JSON_KEY_CURSOR = "c";
 		private static final String JSON_KEY_CLOSED = "cl";

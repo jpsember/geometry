@@ -95,7 +95,7 @@ public class EdDisc extends EdObject {
 		return FACTORY;
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("seg") {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("d") {
 		@Override
 		public EdObject construct(Point defaultLocation) {
 			EdDisc s = new EdDisc();

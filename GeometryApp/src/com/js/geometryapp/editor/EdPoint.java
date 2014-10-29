@@ -50,7 +50,7 @@ public class EdPoint extends EdObject {
 		}
 	}
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("pt") {
+	public static EdObjectFactory FACTORY = new EdObjectFactory("p") {
 		@Override
 		public EdObject construct(Point defaultLocation) {
 			EdPoint pt = new EdPoint();

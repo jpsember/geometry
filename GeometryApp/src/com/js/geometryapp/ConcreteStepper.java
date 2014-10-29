@@ -283,7 +283,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String plotRay(Point p1, Point p2) {
-		return plot(new RayElement(p1, p2));
+		return plot(new LineElement(p1, p2, true));
 	}
 
 	@Override
@@ -294,7 +294,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String plotLine(Point p1, Point p2) {
-		return plot(new LineElement(p1, p2));
+		return plot(new LineElement(p1, p2, false));
 	}
 
 	@Override

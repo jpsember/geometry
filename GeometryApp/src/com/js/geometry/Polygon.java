@@ -574,7 +574,7 @@ public class Polygon implements Iterable<Point>, Renderable {
 				PolygonMesh mesh = PolygonMesh.meshForPolygon(mPolygon,
 						useStrips);
 				PolygonProgram p = RenderTools.polygonProgram();
-				p.setColor(RenderTools.getRenderColor()); // color());
+				p.setColor(RenderTools.getRenderColor());
 				p.render(mesh);
 			} else {
 				if (mPolygon.numVertices() == 0) {

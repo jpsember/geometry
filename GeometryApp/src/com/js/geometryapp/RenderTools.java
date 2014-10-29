@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -31,17 +32,13 @@ public class RenderTools {
 		return r;
 	}
 
-	static void startPolyline(Point point) {
-		sPolyline = new Polyline();
-		sPolyline.setColor(sColor);
-		sPolyline.setLineWidth(sLineWidth);
-		extendPolyline(point);
+	public static void startPolyline() {
+		sPolylineClosed = false;
+		sPolylineVertices.clear();
 	}
 
 	public static void extendPolyline(Point point) {
-		if (sPolyline == null)
-			startPolyline(point);
-		sPolyline.add(point);
+		sPolylineVertices.add(point);
 	}
 
 	public static void extendPolyline(float x, float y) {
@@ -49,12 +46,13 @@ public class RenderTools {
 	}
 
 	public static void closePolyline() {
-		sPolyline.close();
+		sPolylineClosed = true;
 	}
 
 	public static void renderPolyline() {
-		sPolyline.render();
-		sPolyline = null;
+		sPolylineProgram.setColor(getRenderColor());
+		sPolylineProgram.render(sPolylineVertices, null, sPolylineClosed);
+		sPolylineVertices.clear();
 	}
 
 	public static void renderLine(float x1, float y1, float x2, float y2) {
@@ -127,7 +125,7 @@ public class RenderTools {
 	static void setRenderer(AlgorithmRenderer renderer) {
 		GLTools.ensureRenderThread();
 		sRenderer = renderer;
-		Polyline.prepareRenderer(renderer,
+		sPolylineProgram = new PolylineProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sPolygonProgram = new PolygonProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
@@ -303,7 +301,7 @@ public class RenderTools {
 		return sColor;
 	}
 
-	private static float getRenderLineWidth() {
+	static float getRenderLineWidth() {
 		return sLineWidth;
 	}
 
@@ -356,11 +354,15 @@ public class RenderTools {
 
 	private static float sArrowheadLength;
 	private static PolygonProgram sPolygonProgram;
+	private static PolylineProgram sPolylineProgram;
 	private static PolygonMesh sArrowheadMesh;
 	private static PolygonMesh sPointMesh;
 	private static Font sTitleFont;
 	private static Font sElementFont;
-	private static Polyline sPolyline;
+
+	private static List<Point> sPolylineVertices = new ArrayList();
+	private static boolean sPolylineClosed;
+
 	private static float sLineWidth;
 	private static int sColor;
 	private static int sElementsConstructed;

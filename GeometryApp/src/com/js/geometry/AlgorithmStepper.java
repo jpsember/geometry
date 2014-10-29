@@ -143,10 +143,6 @@ public interface AlgorithmStepper {
 	 */
 	public String highlightLine(Point p1, Point p2);
 
-	public String plotSprite(int spriteResourceId, Point location);
-
-	public String highlightSprite(int spriteResourceId, Point location);
-
 	/**
 	 * Restore default rendering attributes: color = BLUE, line width = 1
 	 */

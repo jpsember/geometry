@@ -11,6 +11,8 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometry.Sprite;
+
 import static com.js.basic.Tools.*;
 
 public class ScaleOperation implements EditorEventListener {
@@ -100,8 +102,8 @@ public class ScaleOperation implements EditorEventListener {
 			s.plotLine(handles.get(sLinesBetweenHandles[i]),
 					handles.get(sLinesBetweenHandles[i + 1]));
 		for (int i = 0; i < NUM_HANDLES; i++) {
-			s.plotSprite(R.raw.squareicon,
-					applyHandleExternalPadding(handles.get(i), i, true));
+			s.plot(new Sprite(R.raw.squareicon, applyHandleExternalPadding(
+					handles.get(i), i, true)));
 		}
 	}
 

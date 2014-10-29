@@ -9,6 +9,8 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometry.Sprite;
+
 import static com.js.basic.Tools.*;
 
 public class RotateOperation implements EditorEventListener {
@@ -97,7 +99,7 @@ public class RotateOperation implements EditorEventListener {
 			p.add(corner);
 		}
 		s.plot(p);
-		s.plotSprite(R.raw.crosshairicon, mRect.midPoint());
+		s.plot(new Sprite(R.raw.crosshairicon, mRect.midPoint()));
 	}
 
 	/**

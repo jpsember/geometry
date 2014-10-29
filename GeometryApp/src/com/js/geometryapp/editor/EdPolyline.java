@@ -14,6 +14,7 @@ import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import com.js.geometry.Sprite;
 
 import static com.js.basic.Tools.*;
 
@@ -70,7 +71,7 @@ public class EdPolyline extends EdObject {
 			for (Point pt : tabLocations) {
 				if (pt == null)
 					continue;
-				s.plotSprite(R.raw.squareicon, pt);
+				s.plot(new Sprite(R.raw.squareicon, pt));
 			}
 		}
 	}

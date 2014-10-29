@@ -20,6 +20,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import com.js.geometry.Sprite;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.ConcreteStepper;
@@ -243,7 +244,7 @@ public class Editor {
 			mCurrentOperation.render(mStepper);
 		if (mPlotTouchLocation != null) {
 			mStepper.setColor(Color.BLACK);
-			mStepper.plotSprite(R.raw.crosshairicon, mPlotTouchLocation);
+			mStepper.plot(new Sprite(R.raw.crosshairicon, mPlotTouchLocation));
 		}
 		mStepper.setRendering(false);
 	}

@@ -90,16 +90,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plotSprite(int spriteResourceId, Point location) {
-		return "";
-	}
-
-	@Override
-	public String highlightSprite(int spriteResourceId, Point location) {
-		return "";
-	}
-
-	@Override
 	public String setColor(int color) {
 		return "";
 	}

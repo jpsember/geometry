@@ -298,7 +298,7 @@ public class RenderTools {
 		sIcons.compile();
 	}
 
-	static SpriteSet iconSet() {
+	public static SpriteSet iconSet() {
 		return sIcons;
 	}
 

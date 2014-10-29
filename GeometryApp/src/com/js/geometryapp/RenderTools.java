@@ -41,7 +41,7 @@ public class RenderTools {
 		sPolylineVertices.clear();
 		sPolylineVertices.add(p1);
 		sPolylineVertices.add(p2);
-		sPolylineProgram.render(sPolylineVertices, null, false);
+		sPolylineProgram.render(sPolylineVertices, null, null, false);
 	}
 
 	public static void renderRay(Point p1, Point p2) {

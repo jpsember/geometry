@@ -6,6 +6,7 @@ import static android.opengl.GLES20.GL_LINE_STRIP;
 import static android.opengl.GLES20.glDrawArrays;
 import static android.opengl.GLES20.glEnableVertexAttribArray;
 import static android.opengl.GLES20.glLineWidth;
+import static android.opengl.GLES20.glUniform2f;
 import static android.opengl.GLES20.glUniform4fv;
 import static android.opengl.GLES20.glUseProgram;
 import static android.opengl.GLES20.glVertexAttribPointer;
@@ -51,6 +52,7 @@ public class PolylineProgram {
 		mPositionLocation = GLTools.getProgramLocation("a_Position");
 		mColorLocation = GLTools.getProgramLocation("u_InputColor");
 		mMatrixLocation = GLTools.getProgramLocation("u_Matrix");
+		mTranslationLocation = GLTools.getProgramLocation("u_Translation");
 	}
 
 	/**
@@ -73,19 +75,25 @@ public class PolylineProgram {
 	 * Render a polyline
 	 * 
 	 * @param vertices
+	 * @param translation
+	 *            optional translation to apply (before further transformations)
 	 * @param additionalTransform
 	 *            optional additional transformation to apply
 	 */
-	public void render(Collection<Point> vertices, Matrix additionalTransform,
+	public void render(Collection<Point> vertices, Point translation,
+			Matrix additionalTransform,
 			boolean closed) {
 		glUseProgram(mProgram.getId());
 
+		mProgram.prepareMatrix(additionalTransform, mMatrixLocation);
+		if (translation == null)
+			translation = Point.ZERO;
+		glUniform2f(mTranslationLocation, translation.x, translation.y);
 		// We only need to send color when it changes
 		if (!mColorValid) {
 			glUniform4fv(mColorLocation, 1, mColor, 0);
 			mColorValid = true;
 		}
-		mProgram.prepareMatrix(additionalTransform, mMatrixLocation);
 
 		FloatBuffer fb = compileVertices(vertices);
 		fb.position(0);
@@ -105,6 +113,7 @@ public class PolylineProgram {
 	private int mPositionLocation;
 	private int mColorLocation;
 	private int mMatrixLocation;
+	private int mTranslationLocation;
 	private float[] mColor = new float[4];
 	private boolean mColorValid;
 

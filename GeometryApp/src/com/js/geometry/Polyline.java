@@ -29,7 +29,7 @@ public class Polyline implements Renderable {
 	@Override
 	public void render(AlgorithmStepper s) {
 		PolylineProgram p = RenderTools.polylineProgram();
-		p.render(mVertices, null, mClosed);
+		p.render(mVertices, null, null, mClosed);
 	}
 
 	public List<Point> vertices() {

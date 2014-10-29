@@ -29,6 +29,7 @@ public class Polyline implements Renderable {
 	@Override
 	public void render(AlgorithmStepper s) {
 		PolylineProgram p = RenderTools.polylineProgram();
+		p.setColor(RenderTools.getRenderColor());
 		p.render(mVertices, null, null, mClosed);
 	}
 

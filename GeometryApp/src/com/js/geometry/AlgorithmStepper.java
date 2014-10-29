@@ -115,17 +115,7 @@ public interface AlgorithmStepper {
 
 	public String plotRay(Point p1, Point p2);
 
-	/**
-	 * Plot a (directed) edge
-	 */
-	public String plot(Edge edge);
-
 	public String highlightRay(Point p1, Point p2);
-
-	/**
-	 * Highlight a (directed) edge
-	 */
-	public String highlight(Edge edge);
 
 	public String plotLine(Point p1, Point p2);
 

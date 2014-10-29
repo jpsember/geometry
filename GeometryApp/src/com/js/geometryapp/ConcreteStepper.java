@@ -19,7 +19,6 @@ import com.js.android.MyActivity;
 import com.js.android.ResolutionInfo;
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.Edge;
 import com.js.geometry.Mesh;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -288,19 +287,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Edge edge) {
-		return plotRay(edge.sourceVertex(), edge.destVertex());
-	}
-
-	@Override
 	public String highlightRay(Point p1, Point p2) {
 		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
 				+ plotRay(p1, p2) + setNormal();
-	}
-
-	@Override
-	public String highlight(Edge edge) {
-		return highlightRay(edge.sourceVertex(), edge.destVertex());
 	}
 
 	@Override

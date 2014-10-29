@@ -2,8 +2,7 @@ package com.js.geometry;
 
 import static com.js.basic.Tools.*;
 
-public final class Edge {
-
+public final class Edge implements Renderable {
 
 	public static final int FLAG_VISITED = 1 << 31;
 	public static final int FLAG_DELETED = 1 << 30;
@@ -137,6 +136,11 @@ public final class Edge {
 
 	public void addFlags(int f) {
 		mFlags |= f;
+	}
+
+	@Override
+	public void render(AlgorithmStepper stepper) {
+		stepper.plotRay(sourceVertex(), destVertex());
 	}
 
 	private Vertex mDestVertex;

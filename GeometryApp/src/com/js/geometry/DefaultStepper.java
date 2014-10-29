@@ -85,17 +85,7 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plot(Edge edge) {
-		return "";
-	}
-
-	@Override
 	public String highlightRay(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String highlight(Edge edge) {
 		return "";
 	}
 

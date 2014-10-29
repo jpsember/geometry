@@ -13,6 +13,7 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Renderable;
+import com.js.geometry.Segment;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
@@ -73,7 +74,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 							if (prevDisc != null) {
 								Bitangent b = constructBitangent(prevDisc, d);
 								if (b != null) {
-									s.plotRay(b.maPoint, b.mbPoint);
+									s.plot(Segment.directed(b.maPoint,
+											b.mbPoint));
 								}
 							}
 							prevDisc = d;
@@ -310,7 +312,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	 * Utility method to highlight a bitangent as a ray
 	 */
 	private String highlight(Bitangent bitangent) {
-		s.highlightRay(bitangent.maPoint, bitangent.mbPoint);
+		s.highlight(Segment.directed(bitangent.maPoint, bitangent.mbPoint));
 		return "";
 	}
 
@@ -335,6 +337,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		return MyMath.angleIsConvex(minHullAngle(), angle);
 	}
 
+	// TODO: make this implement Renderable
 	private static class Bitangent {
 		public Bitangent(Point aTangent, Point bTangent) {
 			maPoint = aTangent;

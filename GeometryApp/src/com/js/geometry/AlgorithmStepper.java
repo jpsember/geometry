@@ -113,10 +113,6 @@ public interface AlgorithmStepper {
 	 */
 	public String highlight(Renderable element);
 
-	public String plotRay(Point p1, Point p2);
-
-	public String highlightRay(Point p1, Point p2);
-
 	public String plotLine(Point p1, Point p2);
 
 	public String highlightLine(Point p1, Point p2);

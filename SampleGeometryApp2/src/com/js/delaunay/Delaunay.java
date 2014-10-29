@@ -14,6 +14,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
+import com.js.geometry.Segment;
 import com.js.geometry.Vertex;
 
 import static com.js.geometry.MyMath.*;
@@ -532,7 +533,7 @@ public class Delaunay {
 		if (s.openLayer(BGND_ELEMENT_BEARING_LINE)) {
 			s.setLineWidth(2);
 			s.setColor(Color.LTGRAY);
-			s.plotRay(bearingStartPoint, queryPoint);
+			s.plot(Segment.directed(bearingStartPoint, queryPoint));
 			s.closeLayer();
 		}
 

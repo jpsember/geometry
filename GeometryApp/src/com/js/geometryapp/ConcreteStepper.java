@@ -24,6 +24,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
+import com.js.geometry.Segment;
 import com.js.geometryapp.widget.AbstractWidget;
 
 public class ConcreteStepper implements AlgorithmStepper {
@@ -282,19 +283,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plotRay(Point p1, Point p2) {
-		return plot(new LineElement(p1, p2, true));
-	}
-
-	@Override
-	public String highlightRay(Point p1, Point p2) {
-		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
-				+ plotRay(p1, p2) + setNormal();
-	}
-
-	@Override
 	public String plotLine(Point p1, Point p2) {
-		return plot(new LineElement(p1, p2, false));
+		return plot(new Segment(p1, p2));
 	}
 
 	@Override

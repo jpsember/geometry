@@ -139,7 +139,7 @@ public class PolygonTriangulator {
 								- vertExtent * .8f, mMesh, true);
 						Point p2 = e.positionOnSweepLine(mSweepLinePosition
 								+ vertExtent * 1.2f, mMesh, true);
-						s.plotRay(p1, p2);
+						s.plot(Segment.directed(p1, p2));
 
 						Point pt = e.positionOnSweepLine(mSweepLinePosition,
 								mMesh, false);

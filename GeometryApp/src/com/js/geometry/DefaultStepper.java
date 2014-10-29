@@ -80,16 +80,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public String plotRay(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String highlightRay(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
 	public String plotLine(Point p1, Point p2) {
 		return "";
 	}

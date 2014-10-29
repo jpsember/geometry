@@ -73,10 +73,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 							s.plot(d);
 							if (prevDisc != null) {
 								Bitangent b = constructBitangent(prevDisc, d);
-								if (b != null) {
-									s.plot(Segment.directed(b.maPoint,
-											b.mbPoint));
-								}
+								if (b != null)
+									s.plot(b);
 							}
 							prevDisc = d;
 						}
@@ -337,8 +335,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		return MyMath.angleIsConvex(minHullAngle(), angle);
 	}
 
-	// TODO: make this implement Renderable
-	private static class Bitangent {
+	private static class Bitangent implements Renderable {
 		public Bitangent(Point aTangent, Point bTangent) {
 			maPoint = aTangent;
 			mbPoint = bTangent;
@@ -347,6 +344,11 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 		public float angle() {
 			return mAngle;
+		}
+
+		@Override
+		public void render(AlgorithmStepper stepper) {
+			Segment.directed(maPoint, mbPoint).render(stepper);
 		}
 
 		public float mAngle;

@@ -18,25 +18,31 @@
         <activity android:name="com.js.hullproject.HullActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+            
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-
+                <category android:name="android.intent.category.BROWSABLE" />
+        			<data android:scheme="file" />
+<!--           		<data android:mimeType="*/*" />  
+ -->
+                <data android:mimeType="text/plain" />
+                <data android:mimeType="application/json" />
+          		<data android:pathPattern=".*\\.json" />  
+        			<data android:pathPattern=".*\\.txt" />  
+        			<data android:host="*" />
+            </intent-filter>
+              
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
                 <data android:mimeType="application/json" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="application/json" />
-            </intent-filter>
+            
         </activity>
     </application>
 

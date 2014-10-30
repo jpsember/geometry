@@ -52,8 +52,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		super.onCreate(savedInstanceState);
 		addAlgorithms(mStepper);
 		mStepper.begin();
-
-		processIntent(getIntent());
+		processIntent();
 	}
 
 	public abstract void addAlgorithms(AlgorithmStepper s);
@@ -111,7 +110,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 			// Restore previous items
 			String script = AppPreferences.getString(
 					GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
-			mEditor.restoreFromJSON(script);
+			if (script != null)
+				mEditor.restoreFromJSON(script);
 		}
 
 		buildAuxilliaryView();
@@ -133,8 +133,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	/**
 	 * Process intent; read editor objects from its contents if possible
 	 */
-	private void processIntent(Intent intent) {
-		final boolean db = true && DEBUG_ONLY_FEATURES;
+	private void processIntent() {
+		final boolean db = false && DEBUG_ONLY_FEATURES;
+		Intent intent = getIntent();
 		if (intent == null)
 			return;
 		if (db)
@@ -144,17 +145,19 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		String type = intent.getType();
 		if (db)
 			pr(" action=" + action + "\n type=" + type);
-
-		if (!("application/json".equals(type) || "text/plain".equals(type)))
+		if (type == null)
 			return;
+		if (!("application/json".equals(type) || "text/plain".equals(type))) {
+			if (db)
+				pr(" unexpected type");
+			return;
+		}
 
 		String jsonContent = null;
 
 		if (Intent.ACTION_SEND.equals(action)) {
 			jsonContent = intent.getStringExtra(Intent.EXTRA_TEXT);
-		}
-
-		if (Intent.ACTION_VIEW.equals(action)) {
+		} else if (Intent.ACTION_VIEW.equals(action)) {
 			try {
 				Uri u = intent.getData();
 				String scheme = u.getScheme();
@@ -174,7 +177,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		}
 		if (jsonContent == null)
 			return;
-
 		mEditor.restoreFromJSON(jsonContent);
 	}
 

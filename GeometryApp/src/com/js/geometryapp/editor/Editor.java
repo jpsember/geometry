@@ -374,14 +374,14 @@ public class Editor {
 	 * Restore the editor state, including the EdObjects, from a JSON string
 	 */
 	public void restoreFromJSON(String script) {
-		if (script == null)
-			return;
 		if (DB_JSON) {
 			pr("\n\nRestoring JSON:\n" + script);
 		}
 		try {
 			JSONObject map = JSONTools.parseMap(script);
-			mObjects.clear();
+			if (!map.has(JSON_KEY_OBJECTS)) {
+				throw new JSONException(JSON_KEY_OBJECTS + " key missing");
+			}
 			parseObjects(map, JSON_KEY_OBJECTS, mObjects);
 			parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
 		} catch (JSONException e) {

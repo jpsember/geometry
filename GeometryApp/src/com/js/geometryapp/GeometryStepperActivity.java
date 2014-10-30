@@ -1,17 +1,27 @@
 package com.js.geometryapp;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.js.android.AppPreferences;
 import com.js.android.UITools;
+import com.js.basic.Files;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorGLSurfaceView;
 
+import android.content.ContentResolver;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import static com.js.basic.Tools.*;
+import static com.js.android.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
@@ -42,6 +52,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		super.onCreate(savedInstanceState);
 		addAlgorithms(mStepper);
 		mStepper.begin();
+
+		processIntent(getIntent());
 	}
 
 	public abstract void addAlgorithms(AlgorithmStepper s);
@@ -116,6 +128,54 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	private void buildAuxilliaryView() {
 		mAuxView = new LinearLayout(this);
+	}
+
+	/**
+	 * Process intent; read editor objects from its contents if possible
+	 */
+	private void processIntent(Intent intent) {
+		final boolean db = true && DEBUG_ONLY_FEATURES;
+		if (intent == null)
+			return;
+		if (db)
+			pr("processIntent:\n" + intent);
+
+		String action = intent.getAction();
+		String type = intent.getType();
+		if (db)
+			pr(" action=" + action + "\n type=" + type);
+
+		if (!("application/json".equals(type) || "text/plain".equals(type)))
+			return;
+
+		String jsonContent = null;
+
+		if (Intent.ACTION_SEND.equals(action)) {
+			jsonContent = intent.getStringExtra(Intent.EXTRA_TEXT);
+		}
+
+		if (Intent.ACTION_VIEW.equals(action)) {
+			try {
+				Uri u = intent.getData();
+				String scheme = u.getScheme();
+				if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+					// handle as content uri
+					InputStream stream = getContentResolver()
+							.openInputStream(u);
+					jsonContent = Files.readTextFile(stream);
+				} else {
+					File f = new File(u.getPath());
+					jsonContent = Files.readTextFile(f);
+				}
+			} catch (IOException e) {
+				toast(this, "Problem reading file");
+				pr(e);
+			}
+		}
+		if (jsonContent == null)
+			return;
+
+		mEditor.restoreFromJSON(jsonContent);
 	}
 
 	private ConcreteStepper mStepper;

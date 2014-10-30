@@ -381,10 +381,12 @@ public class Editor {
 		}
 		try {
 			JSONObject map = JSONTools.parseMap(script);
-			parseObjects(mObjects, map, JSON_KEY_OBJECTS);
-			parseObjects(mClipboard, map, JSON_KEY_CLIPBOARD);
+			mObjects.clear();
+			parseObjects(map, JSON_KEY_OBJECTS, mObjects);
+			parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
 		} catch (JSONException e) {
 			warning("caught " + e);
+			toast(context(), "Problem parsing JSON: " + script);
 		}
 	}
 
@@ -394,43 +396,44 @@ public class Editor {
 	}
 
 	/**
-	 * Parse an EdObjectArray from JSON map
+	 * Parse an EdObjectArray from JSON map, if found
 	 * 
-	 * @param objectsArray
-	 *            where to store the objects; cleared beforehand
 	 * @param map
 	 * @param key
 	 *            key objects are stored as
+	 * @param objectsArray
+	 *            where to store the objects; cleared beforehand if key found
 	 * @return object array, or null if no key found
 	 * @throws JSONException
 	 */
-	private void parseObjects(EdObjectArray objectsArray, JSONObject map,
-			String key) throws JSONException {
+	private void parseObjects(JSONObject map, String key,
+			EdObjectArray objectsArray) throws JSONException {
+		if (!map.has(key))
+			return;
 		objectsArray.clear();
-		if (map.has(key)) {
-			JSONArray array = map.getJSONArray(key);
-			int effectiveArrayLength = array.length();
-			if (!verifyObjectsAllowed(effectiveArrayLength)) {
-				effectiveArrayLength = Math.min(effectiveArrayLength,
-						MAX_OBJECTS_IN_FILE);
-			}
 
-			for (int i = 0; i < effectiveArrayLength; i++) {
-				JSONObject objMap = array.getJSONObject(i);
-				String tag = objMap.getString(EdObjectFactory.JSON_KEY_TYPE);
-				EdObjectFactory factory = mObjectTypes.get(tag);
-				if (factory == null) {
-					warning("no factory found for: " + tag);
-					continue;
-				}
-				EdObject edObject = factory.parse(objMap);
-				edObject.setEditor(this);
-				if (!edObject.valid()) {
-					warning("Unable to parse: " + objMap);
-					continue;
-				}
-				objectsArray.add(edObject);
+		JSONArray array = map.getJSONArray(key);
+		int effectiveArrayLength = array.length();
+		if (!verifyObjectsAllowed(effectiveArrayLength)) {
+			effectiveArrayLength = Math.min(effectiveArrayLength,
+					MAX_OBJECTS_IN_FILE);
+		}
+
+		for (int i = 0; i < effectiveArrayLength; i++) {
+			JSONObject objMap = array.getJSONObject(i);
+			String tag = objMap.getString(EdObjectFactory.JSON_KEY_TYPE);
+			EdObjectFactory factory = mObjectTypes.get(tag);
+			if (factory == null) {
+				warning("no factory found for: " + tag);
+				continue;
 			}
+			EdObject edObject = factory.parse(objMap);
+			edObject.setEditor(this);
+			if (!edObject.valid()) {
+				warning("Unable to parse: " + objMap);
+				continue;
+			}
+			objectsArray.add(edObject);
 		}
 	}
 

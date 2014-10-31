@@ -28,11 +28,6 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	@Override
-	public void prepareInput(AlgorithmInput input) {
-		mEditorPoints = input.points;
-	}
-
-	@Override
 	public void prepareOptions(AlgorithmOptions options) {
 		mOptions = options;
 		mOptions.addSlider("Seed", "min", 1, "max", 300);
@@ -55,7 +50,8 @@ public class DelaunayDriver implements Algorithm {
 	}
 
 	@Override
-	public void run(final AlgorithmStepper s) {
+	public void run(final AlgorithmStepper s, AlgorithmInput input) {
+		mEditorPoints = input.points;
 		mPointBounds = new Rect(50, 50, 900, 900);
 		mMesh = new Mesh();
 		mRandom = new Random(mOptions.getIntValue("Seed"));

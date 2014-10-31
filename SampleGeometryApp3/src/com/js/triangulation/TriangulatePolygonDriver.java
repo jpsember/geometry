@@ -45,12 +45,8 @@ public class TriangulatePolygonDriver implements Algorithm {
 	}
 
 	@Override
-	public void prepareInput(AlgorithmInput input) {
+	public void run(AlgorithmStepper stepper, AlgorithmInput input) {
 		mEditorPolygon = input.getPolygon(null);
-	}
-
-	@Override
-	public void run(AlgorithmStepper stepper) {
 		mStepper = stepper;
 		prepareInput();
 

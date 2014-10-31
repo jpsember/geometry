@@ -24,6 +24,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
+import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.widget.AbstractWidget;
 
 public class ConcreteStepper implements AlgorithmStepper {
@@ -44,8 +45,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 	ConcreteStepper() {
 	}
 
-	void setDependencies(AlgorithmOptions options) {
+	void setDependencies(AlgorithmOptions options, Editor editor) {
 		mOptions = options;
+		mEditor = editor;
 	}
 
 	void setGLSurfaceView(GLSurfaceView glSurfaceView) {
@@ -427,8 +429,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 		int totalSteps;
 		synchronized (getLock()) {
 			acquireLock();
-			mOptions.prepareAlgorithmInput();
-			totalSteps = s.countSteps();
+			AlgorithmInput input = mEditor.constructAlgorithmInput();
+			totalSteps = s.countSteps(input);
 			// If the current target step is equal to its maximum, change it to
 			// stick to the new maximum
 			boolean atMax = (mOptions.readTargetStep() == mOptions
@@ -464,9 +466,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			mCompleted = false;
 			try {
-				mOptions.prepareAlgorithmInput();
 				Algorithm algorithm = mOptions.getActiveAlgorithm();
-				algorithm.run(this);
+				AlgorithmInput input = mEditor.constructAlgorithmInput();
+				algorithm.run(this, input);
 
 				// We completed the algorithm without halting.
 				// We're about to throw an exception that will be caught below;
@@ -739,6 +741,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private String aLockAquireInfo;
 
 	private AlgorithmOptions mOptions;
+	private Editor mEditor;
 	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
 	private Map<String, Layer> mBackgroundLayers = new HashMap();

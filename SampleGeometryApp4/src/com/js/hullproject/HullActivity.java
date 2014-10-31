@@ -56,8 +56,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mOptions = options;
 	}
 
-	@Override
-	public void prepareInput(AlgorithmInput input) {
+	private void prepareInput(AlgorithmInput input) {
 		mAlgBounds = input.algorithmRect;
 		mDiscs.clear();
 		if (mOptions.getBooleanValue(USE_EDITOR_DISCS)) {
@@ -78,7 +77,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	}
 
 	@Override
-	public void run(AlgorithmStepper stepper) {
+	public void run(AlgorithmStepper stepper, AlgorithmInput input) {
+		prepareInput(input);
 		s = stepper;
 		if (mDiscs.size() < 2) {
 			s.show("Not enough discs");

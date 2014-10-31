@@ -39,7 +39,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		// Second, we initialize the dependencies; this is analogous to
 		// constructing the edges of the object graph
 		mEditor.setDependencies(mStepper, mOptions);
-		mStepper.setDependencies(mOptions);
+		mStepper.setDependencies(mOptions, mEditor);
 		mOptions.setDependencies(mEditor, mStepper);
 		mRenderer.setDependencies(mEditor, mStepper);
 	}

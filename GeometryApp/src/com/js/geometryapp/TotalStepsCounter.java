@@ -72,14 +72,14 @@ class TotalStepsCounter extends DefaultStepper {
 		return isActive();
 	}
 
-	public int countSteps() {
+	public int countSteps(AlgorithmInput input) {
 		mActive = true;
 		mCurrentStep = 0;
 		mActiveStack.clear();
 		try {
 			Algorithm algorithm = mOriginalStepper.getOptions()
 					.getActiveAlgorithm();
-			algorithm.run(this);
+			algorithm.run(this, input);
 			// We completed the algorithm without halting.
 			// Increment the step, since we would normally show a 'done'
 			// milestone at this point

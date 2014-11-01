@@ -49,6 +49,7 @@ public class Editor {
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_DUP = true && DEBUG_ONLY_FEATURES;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
 	private static final String JSON_KEY_CLIPBOARD = "cb";
@@ -494,6 +495,11 @@ public class Editor {
 
 	private void persistEditorStateAux() {
 		try {
+			// Convenience for repeated tests; start with same object(s)
+			if (DB_DUP) {
+				warning("not saving state");
+				return;
+			}
 			String jsonState = compileObjectsToJSON();
 			if (!jsonState.equals(mLastSavedState)) {
 				AppPreferences.putString(
@@ -635,6 +641,22 @@ public class Editor {
 		EditorState originalState = new EditorState(this);
 		List<Integer> newSelected = SlotList.build();
 
+		// Determine if pasted items will remain on screen with current
+		// duplication accumulator. If not, start with a fresh one
+		{
+			DupAccumulator d = new DupAccumulator(getDupAccumulator());
+			Point offset = d.getOffsetForPaste();
+			List<Integer> hiddenObjects = findHiddenObjects(mClipboard, offset,
+					null);
+			// If ALL the objects will end up being hidden, reset the
+			// accumulator
+			if (hiddenObjects.size() == mClipboard.size()) {
+				if (DB_DUP)
+					pr("pasted objects won't remain on-screen; reset dup");
+				resetDuplicationOffset();
+			}
+		}
+
 		Point offset = getDupAccumulator().getOffsetForPaste();
 
 		for (EdObject obj : mClipboard) {
@@ -661,6 +683,9 @@ public class Editor {
 	}
 
 	private void doDup() {
+		final boolean db = DB_DUP;
+		if (db)
+			pr("\ndoDup");
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
@@ -668,6 +693,29 @@ public class Editor {
 		if (!verifyObjectsAllowed(objects().size()
 				+ originalState.getSelectedSlots().size()))
 			return;
+
+		// Determine if pasted items will remain on screen with current
+		// duplication accumulator. If not, start with a fresh one
+		{
+			DupAccumulator d = new DupAccumulator(getDupAccumulator());
+			Point offset = d.getOffsetForDup();
+			EdObjectArray modifiedObjects = objects().getSelectedObjects();
+			if (db)
+				pr(" looking for hidden objects; modified size="
+						+ modifiedObjects.size() + ", offset " + offset);
+			List<Integer> hiddenObjects = findHiddenObjects(modifiedObjects,
+					offset, null);
+			if (db)
+				pr(" hidden obj size " + hiddenObjects.size());
+
+			// If ALL the objects will end up being hidden, reset the
+			// accumulator
+			if (hiddenObjects.size() == modifiedObjects.size()) {
+				if (db)
+					pr("   all dup objects will be offscreen; reset dup");
+				resetDuplicationOffset();
+			}
+		}
 
 		List<Integer> newSelected = SlotList.build();
 
@@ -725,7 +773,7 @@ public class Editor {
 	}
 
 	private boolean unhidePossible() {
-		return !findHiddenObjects(null).isEmpty();
+		return !findHiddenObjects(objects(), null, null).isEmpty();
 	}
 
 	/**
@@ -735,13 +783,19 @@ public class Editor {
 	 * editor view. This is inaccurate; consider a very large polygon that
 	 * contains the editor view, but none of whose vertices lie within it.
 	 * 
+	 * @param objects
+	 *            list of objects to examine
+	 * @param translationToApply
+	 *            if not null, simulates applying this translation before
+	 *            performing offscreen test
 	 * @param translation
 	 *            if not null, and hidden objects are found, this is set to a
 	 *            translation to apply to all objects to bring (at least one of
 	 *            them) onscreen
 	 * @return slots of hidden objects
 	 */
-	private List<Integer> findHiddenObjects(Point translation) {
+	private List<Integer> findHiddenObjects(EdObjectArray objects,
+			Point translationToApply, Point translation) {
 		float minUnhideSquaredDistance = 0;
 		boolean translationDefined = false;
 
@@ -761,6 +815,8 @@ public class Editor {
 			// If none of this object's vertices are visible, assume it's hidden
 			for (int j = 0; j < obj.nPoints(); j++) {
 				Point v = obj.getPoint(j);
+				if (translationToApply != null)
+					v = MyMath.add(v, translationToApply);
 				if (outerRect.contains(v))
 					continue objLoop;
 			}
@@ -793,7 +849,7 @@ public class Editor {
 
 	private void doUnhide() {
 		Point translation = new Point();
-		List<Integer> slots = findHiddenObjects(translation);
+		List<Integer> slots = findHiddenObjects(objects(), null, translation);
 		if (slots.isEmpty())
 			return;
 

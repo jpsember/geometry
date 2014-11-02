@@ -106,7 +106,7 @@ public class EdObjectArray implements Iterable<EdObject> {
 	/**
 	 * Get a copy of this array; if we're frozen, returns this
 	 */
-	public EdObjectArray getCopy() {
+	private EdObjectArray getCopy() {
 		if (isFrozen())
 			return this;
 		return getMutableCopy();

@@ -1030,11 +1030,11 @@ public class Editor {
 	 * translation
 	 */
 	void updateDupAccumulatorForTranslation(Point translation) {
-		if (mDupAccumulator != null) {
-			mDupAccumulator = MyMath.add(mDupAccumulator, translation);
-			if (mDupAffectsClipboard)
-				replaceClipboardWithSelectedObjects();
-		}
+		if (mDupAccumulator == null)
+			return;
+		mDupAccumulator = MyMath.add(mDupAccumulator, translation);
+		if (mDupAffectsClipboard)
+			replaceClipboardWithSelectedObjects();
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;

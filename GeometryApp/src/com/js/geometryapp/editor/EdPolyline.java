@@ -60,11 +60,15 @@ public class EdPolyline extends EdObject {
 
 		Point[] tabLocations = null;
 		if (isEditable() && !mTabsHidden) {
-			tabLocations = calculateTabPositions(this);
+			boolean interpFlags[] = new boolean[2];
+			tabLocations = calculateTabPositions(this, interpFlags);
 			Point cursor = getPoint(mCursor);
-			s.setColor(Color.RED);
-			for (Point pt : tabLocations) {
+			s.setColor(Color.GRAY);
+			for (int i = 0; i < 2; i++) {
+				Point pt = tabLocations[i];
 				if (pt == null)
+					continue;
+				if (interpFlags[i])
 					continue;
 				s.plotLine(cursor, pt);
 			}
@@ -111,7 +115,7 @@ public class EdPolyline extends EdObject {
 	@Override
 	public EditorEventListener buildEditOperation(int slot, Point location) {
 
-		Point[] tabLocations = calculateTabPositions(this);
+		Point[] tabLocations = calculateTabPositions(this, null);
 
 		if (targetWithinTab(location, tabLocations[TAB_INSERT_FORWARD])) {
 			EdPolyline mod = getCopy();
@@ -267,13 +271,22 @@ public class EdPolyline extends EdObject {
 	 * editable polyline
 	 * 
 	 * @param polyline
+	 * @param interpolateFlags
+	 *            if not null, an array of two booleans; each will be set true
+	 *            iff the corresponding tab lies on neighboring segment
 	 * @return array of TAB_TOTAL tab locations
 	 */
-	private static Point[] calculateTabPositions(EdPolyline polyline) {
+	private static Point[] calculateTabPositions(EdPolyline polyline,
+			boolean[] interpolateFlags) {
 		Point[] tabLocations = new Point[TAB_TOTAL];
+		if (interpolateFlags == null)
+			interpolateFlags = new boolean[2];
+		interpolateFlags[0] = false;
+		interpolateFlags[1] = false;
+
 		int c = polyline.cursor();
 
-		float tabDistance = polyline.editor().pickRadius() * 1.2f;
+		float tabDistance = polyline.editor().pickRadius() * 2.5f;
 
 		float a1 = 0, a2 = 0;
 		boolean convex = true;
@@ -287,9 +300,13 @@ public class EdPolyline extends EdObject {
 
 		if (pa != null) {
 			a1 = calcAngle(pa, pb);
+			if (MyMath.distanceBetween(pa, pb) >= tabDistance * 1.2f)
+				interpolateFlags[0] = true;
 		}
 		if (pc != null) {
 			a2 = calcAngle(pb, pc);
+			if (MyMath.distanceBetween(pb, pc) >= tabDistance * 1.2f)
+				interpolateFlags[1] = true;
 		}
 
 		if (pa == null)
@@ -297,11 +314,10 @@ public class EdPolyline extends EdObject {
 		if (pc == null)
 			a2 = a1;
 
-		final float TAB_ROTATION_FROM_ADJACENT_SEGMENTS = MyMath.M_DEG * 12;
 		final float TAB_MIN_ANGULAR_SEPARATION = MyMath.M_DEG * 45;
 
 		{
-			// If tab arms are too close together, ajust them
+			// If tab arms are too close together, adjust them
 			float separation = MyMath.normalizeAngle(a2 - a1);
 			float clampedSeparation = MyMath.clamp(separation,
 					-(MyMath.PI - TAB_MIN_ANGULAR_SEPARATION), MyMath.PI
@@ -309,11 +325,18 @@ public class EdPolyline extends EdObject {
 			float diff = clampedSeparation - separation;
 			a2 += diff / 2;
 			a1 -= diff / 2;
+			if (diff != 0) {
+				interpolateFlags[0] = false;
+				interpolateFlags[1] = false;
+			}
 		}
 
 		if (pa != null && pc != null) {
 			convex = MyMath.sideOfLine(pa, pb, pc) > 0;
 		}
+
+		final float TAB_ROTATION_FROM_ADJACENT_SEGMENTS = MyMath.M_DEG * 18;
+
 		float tabRotationFactor = TAB_ROTATION_FROM_ADJACENT_SEGMENTS;
 		if (!convex) {
 			tabRotationFactor = -tabRotationFactor;
@@ -321,10 +344,19 @@ public class EdPolyline extends EdObject {
 		a1 += tabRotationFactor + MyMath.PI;
 		a2 -= tabRotationFactor;
 
-		tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1,
-				tabDistance);
-		tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2,
-				tabDistance);
+		if (interpolateFlags[0])
+			tabLocations[TAB_INSERT_BACKWARD] = MyMath.interpolateBetween(pa,
+					pb, .5f);
+		else
+			tabLocations[TAB_INSERT_BACKWARD] = MyMath.pointOnCircle(pb, a1,
+					tabDistance);
+
+		if (interpolateFlags[1])
+			tabLocations[TAB_INSERT_FORWARD] = MyMath.interpolateBetween(pb,
+					pc, .5f);
+		else
+			tabLocations[TAB_INSERT_FORWARD] = MyMath.pointOnCircle(pb, a2,
+					tabDistance);
 
 		return tabLocations;
 	}

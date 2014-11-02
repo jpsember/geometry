@@ -2,7 +2,6 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import static com.js.basic.Tools.*;
 
 /**
  * Logic for offsetting duplicated or pasted objects based on user's adjustments
@@ -13,7 +12,6 @@ import static com.js.basic.Tools.*;
  * 
  */
 class DupAccumulator {
-	public static final boolean DB_DUP = false && DEBUG_ONLY_FEATURES;
 
 	/**
 	 * Construct a copy of an accumulator, if it exists

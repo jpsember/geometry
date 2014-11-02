@@ -635,9 +635,10 @@ public class Editor {
 		EditorState originalState = new EditorState(this);
 		List<Integer> newSelected = SlotList.build();
 
-		adjustDupAccumulatorForPendingOperation(mClipboard, true);
+		mDupAffectsClipboard = true;
+		adjustDupAccumulatorForPendingOperation(mClipboard);
 
-		Point offset = getDupAccumulator(true, true).getAccumulator();
+		Point offset = getDupAccumulator(true).getAccumulator();
 
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
@@ -678,10 +679,10 @@ public class Editor {
 	 *            DupAccumulator construction argument
 	 */
 	private void adjustDupAccumulatorForPendingOperation(
-			EdObjectArray affectedObjects, boolean affectsClipboard) {
+			EdObjectArray affectedObjects) {
 		if (affectedObjects.size() == 0)
 			return;
-		DupAccumulator accum = getDupAccumulator(true, affectsClipboard);
+		DupAccumulator accum = getDupAccumulator(true);
 		Point offset = accum.getAccumulator();
 		Point correction = new Point();
 		List<Integer> hiddenObjects = findHiddenObjects(affectedObjects,
@@ -689,9 +690,7 @@ public class Editor {
 		// If ALL the objects will end up being hidden, reset the
 		// accumulator
 		if (hiddenObjects.size() == affectedObjects.size()) {
-			ASSERT(affectedObjects.size() != 0);
-			resetDuplicationOffsetWithCorrectingTranslation(correction,
-					affectsClipboard);
+			resetDuplicationOffsetWithCorrectingTranslation(correction);
 		}
 	}
 
@@ -704,11 +703,11 @@ public class Editor {
 				+ originalState.getSelectedSlots().size()))
 			return;
 
-		adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects(),
-				false);
+		mDupAffectsClipboard = false;
+		adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
 		List<Integer> newSelected = SlotList.build();
 
-		Point offset = getDupAccumulator(true, false).getAccumulator();
+		Point offset = getDupAccumulator(true).getAccumulator();
 
 		for (int slot : originalState.getSelectedSlots()) {
 			EdObject obj = objects().get(slot);
@@ -723,27 +722,23 @@ public class Editor {
 		pushCommand(command);
 	}
 
-	private void resetDuplicationOffsetWithCorrectingTranslation(Point t,
-			boolean affectsClipboard) {
+	private void resetDuplicationOffsetWithCorrectingTranslation(Point t) {
 		resetDuplicationOffset();
 		float angle = MyMath.polarAngle(t);
 		// Calculate nearest cardinal angle
 		final float CARDINAL_RANGE = MyMath.PI / 2;
 		angle = MyMath.normalizeAngle(angle + CARDINAL_RANGE / 2);
 		angle -= MyMath.myMod(angle, CARDINAL_RANGE);
-		mDupAccumulator = new DupAccumulator(pickRadius(), angle,
-				affectsClipboard);
+		mDupAccumulator = new DupAccumulator(pickRadius(), angle);
 	}
 
 	DupAccumulator getDupAccumulator() {
 		return mDupAccumulator;
 	}
 
-	private DupAccumulator getDupAccumulator(boolean buildIfMissing,
-			boolean affectsClipboard) {
+	private DupAccumulator getDupAccumulator(boolean buildIfMissing) {
 		if (buildIfMissing && mDupAccumulator == null) {
-			mDupAccumulator = new DupAccumulator(pickRadius(), 0,
-					affectsClipboard);
+			mDupAccumulator = new DupAccumulator(pickRadius(), 0);
 		}
 		return getDupAccumulator();
 	}
@@ -1031,6 +1026,10 @@ public class Editor {
 		return false;
 	}
 
+	public boolean dupAffectsClipboard() {
+		return mDupAffectsClipboard;
+	}
+
 	private Map<String, EdObjectFactory> mObjectTypes;
 	private EditorEventListener mCurrentOperation;
 	private EditorEventListener mDefaultOperation;
@@ -1053,5 +1052,5 @@ public class Editor {
 	private QuiescentDelayOperation mPendingEnableOperation;
 	private CheckBoxWidget mRenderAlways;
 	private DupAccumulator mDupAccumulator;
-
+	private boolean mDupAffectsClipboard;
 }

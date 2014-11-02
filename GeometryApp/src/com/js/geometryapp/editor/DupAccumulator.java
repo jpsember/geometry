@@ -32,21 +32,9 @@ class DupAccumulator {
 	 *            from editor, for choosing reasonable default accumulator
 	 * @param polarAngle
 	 *            direction of initial translation
-	 * @param affectsClipboard
-	 *            true if updates to this accumulator should also affect
-	 *            clipboard contents
 	 */
-	public DupAccumulator(float pickRadius, float polarAngle,
-			boolean affectsClipboard) {
+	public DupAccumulator(float pickRadius, float polarAngle) {
 		mAccumulator = MyMath.pointOnCircle(Point.ZERO, polarAngle, pickRadius);
-		mAffectsClipboard = affectsClipboard;
-	}
-
-	/**
-	 * Get affectsClipboard flag this accumulator was initialized with
-	 */
-	public boolean affectsClipboard() {
-		return mAffectsClipboard;
 	}
 
 	/**
@@ -71,5 +59,4 @@ class DupAccumulator {
 	}
 
 	private Point mAccumulator;
-	private boolean mAffectsClipboard;
 }

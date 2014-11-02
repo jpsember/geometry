@@ -163,7 +163,7 @@ public class DefaultEventListener implements EditorEventListener {
 				DupAccumulator a = mEditor.getDupAccumulator();
 				if (a != null) {
 					a.add(mTranslate);
-					if (a.affectsClipboard())
+					if (mEditor.dupAffectsClipboard())
 						mEditor.replaceClipboardWithSelectedObjects();
 				}
 			}

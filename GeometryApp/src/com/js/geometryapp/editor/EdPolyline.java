@@ -315,7 +315,6 @@ public class EdPolyline extends EdObject {
 			a2 = a1;
 
 		final float TAB_MIN_ANGULAR_SEPARATION = MyMath.M_DEG * 45;
-
 		{
 			// If tab arms are too close together, adjust them
 			float separation = MyMath.normalizeAngle(a2 - a1);

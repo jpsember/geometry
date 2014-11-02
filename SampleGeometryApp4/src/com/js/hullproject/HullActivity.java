@@ -71,7 +71,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 						mAlgBounds.midPoint(), mAlgBounds.maxDim() * .4f);
 				mDiscs.add(new Disc(origin,
 						(float) Math.pow(r.nextFloat(), pow)
-								* mAlgBounds.minDim() * .4f));
+								* mAlgBounds.minDim() * .4f
+								+ mAlgBounds.minDim() * .01f));
 			}
 		}
 	}
@@ -86,7 +87,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mHullDiscLists = new List[2];
 		mHullDiscLists[0] = new ArrayList();
 		mHullDiscLists[1] = new ArrayList();
-		mDiscsExamined = new HashSet();
+		mRendering_DiscsExamined = new HashSet();
+		mRendering_CurrentDisc = null;
 
 		if (s.openLayer(BGND_ELEMENT_BITANGENTS)) {
 			s.plot(new Renderable() {
@@ -110,18 +112,22 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 							prevDisc = d;
 						}
 					}
-					// Plot in light gray those discs that have been examined
-					// and are NOT on the hull
-					s.setColor(Color.LTGRAY);
-					for (Disc d : mDiscsExamined) {
-						if (!hullDiscsFound.contains(d))
-							s.plot(d);
-					}
-					// Plot hull discs and bitangents
-					s.setColor(COLOR_DARKGREEN);
-					for (Disc d : hullDiscsFound) {
+					// Plot discs: gray if unexamined, blue if examined and not
+					// on hull, green if examined and on hull
+					for (Disc d : mDiscs) {
+						// If current disc, it's already been rendered
+						if (d == mRendering_CurrentDisc)
+							continue;
+						if (hullDiscsFound.contains(d))
+							s.setColor(COLOR_DARKGREEN);
+						else if (!mRendering_DiscsExamined.contains(d))
+							s.setColor(Color.LTGRAY);
+						else
+							s.setColor(Color.BLUE);
 						s.plot(d);
 					}
+					// Plot hull bitangents
+					s.setColor(COLOR_DARKGREEN);
 					for (Bitangent b : bitangentsFound)
 						s.plot(b);
 				}
@@ -140,22 +146,18 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			mHullDiscs = mHullDiscLists[pass];
 			initializeHullDiscList();
 
-			if (s.openLayer(BGND_ELEMENT_CURRENTDISC)) {
-				if (mCurrentDiscForRendering != null) {
-					s.setColor(COLOR_DARKGREEN);
-					s.plot(mCurrentDiscForRendering);
-				}
-				s.closeLayer();
-			}
-
 			for (int i = mDiscs.size() - 1; i >= 0; i--) {
 				Disc d = mDiscs.get(i);
-				mCurrentDiscForRendering = d;
-				mDiscsExamined.add(d);
+				mRendering_CurrentDisc = d;
+				if (s.openLayer(BGND_ELEMENT_CURRENTDISC)) {
+					s.highlight(mRendering_CurrentDisc);
+					s.closeLayer();
+				}
 				processDisc(d);
-				mCurrentDiscForRendering = null;
+				mRendering_DiscsExamined.add(d);
+				mRendering_CurrentDisc = null;
+				s.removeLayer(BGND_ELEMENT_CURRENTDISC);
 			}
-			s.removeLayer(BGND_ELEMENT_CURRENTDISC);
 		}
 	}
 
@@ -193,9 +195,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			if (rightmostPoint(disc) > rightmostPoint(discRight))
 				discRight = disc;
 		}
-		if (s.step())
-			s.show("Extremal discs" + s.highlight(discLeft)
-					+ s.highlight(discRight));
 		if (mLowerHullFlag) {
 			Disc temp = discLeft;
 			discLeft = discRight;
@@ -204,6 +203,9 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mHullDiscs.add(discRight);
 		if (discLeft != discRight)
 			mHullDiscs.add(discLeft);
+		if (s.step())
+			s.show("Extremal discs" + s.highlight(discLeft)
+					+ s.highlight(discRight));
 	}
 
 	/**
@@ -258,8 +260,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private void processDisc(Disc xDisc) {
 		if (s.step())
-			s.show("Processing next remaining largest disc"
-					+ s.highlight(xDisc));
+			s.show("Processing next remaining largest disc");
 
 		// Find new hull bitangent XU that this disc supports, if possible.
 
@@ -276,7 +277,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				s.show("Looking for hull bitangent UX" + s.highlight(uDisc));
 			if (ux == null) {
 				if (s.step())
-					s.show("no bitangent exists with " + s.highlight(uDisc));
+					s.show("no bitangent exists" + s.highlight(uDisc));
 				return;
 			}
 			if (!isHullAngle(ux.angle())) {
@@ -411,6 +412,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 	// Active list (i.e. either upper or lower hull)
 	private List<Disc> mHullDiscs;
 	// For rendering purposes only, set of discs examined (for either hull)
-	private Set<Disc> mDiscsExamined;
-	private Disc mCurrentDiscForRendering;
+	private Set<Disc> mRendering_DiscsExamined;
+	private Disc mRendering_CurrentDisc;
 }

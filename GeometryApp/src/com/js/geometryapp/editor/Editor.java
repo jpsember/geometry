@@ -44,12 +44,12 @@ import static com.js.android.Tools.*;
  */
 public class Editor {
 
-	private static final boolean ZAP_SUPPORTED = (false && DEBUG_ONLY_FEATURES);
+	private static final boolean ZAP_SUPPORTED = (true && DEBUG_ONLY_FEATURES);
 
 	private static final boolean DB_RENDER_OBJ_BOUNDS = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_RENDER_EDITABLE = false && DEBUG_ONLY_FEATURES;
 	private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
-	private static final boolean DB_DUP = true && DEBUG_ONLY_FEATURES;
+	private static final boolean DB_DUP = DupAccumulator.DB_DUP;
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
 	private static final String JSON_KEY_CLIPBOARD = "cb";
@@ -633,6 +633,9 @@ public class Editor {
 	}
 
 	private void doPaste() {
+		final boolean db = DB_DUP;
+		if (db)
+			pr("doPaste");
 		if (mClipboard.isEmpty())
 			return;
 		clearOperation();
@@ -644,32 +647,45 @@ public class Editor {
 		// Determine if pasted items will remain on screen with current
 		// duplication accumulator. If not, start with a fresh one
 		{
-			DupAccumulator d = new DupAccumulator(getDupAccumulator());
-			Point offset = d.getOffsetForPaste();
+			DupAccumulator d = getDupAccumulator(true, true);
+			Point offset = d.getAccumulator();
+			Point correction = new Point();
 			List<Integer> hiddenObjects = findHiddenObjects(mClipboard, offset,
-					null);
+					correction);
 			// If ALL the objects will end up being hidden, reset the
 			// accumulator
 			if (hiddenObjects.size() == mClipboard.size()) {
-				if (DB_DUP)
-					pr("pasted objects won't remain on-screen; reset dup");
-				resetDuplicationOffset();
+				ASSERT(mClipboard.size() != 0);
+				if (db)
+					pr(" pasted objects won't remain on-screen; reset dup");
+				resetDuplicationOffsetWithCorrectingTranslation(correction,
+						false);
 			}
 		}
 
-		Point offset = getDupAccumulator().getOffsetForPaste();
+		Point offset = getDupAccumulator(true, true).getAccumulator();
+		if (db)
+			pr(" offset (from dup accum): " + offset);
 
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
 			EdObject copy = obj.getCopy();
 			copy.moveBy(obj, offset);
 			objects().add(copy);
+			if (db)
+				pr(" adding object to new clipboard: " + copy);
 		}
 		objects().setSelected(newSelected);
+
+		replaceClipboardWithSelectedObjects();
 
 		Command command = Command.constructForGeneralChanges(originalState,
 				new EditorState(this), null);
 		pushCommand(command);
+	}
+
+	void replaceClipboardWithSelectedObjects() {
+		setClipboard(objects().getSelectedObjects());
 	}
 
 	private void doZap() {
@@ -685,7 +701,7 @@ public class Editor {
 	private void doDup() {
 		final boolean db = DB_DUP;
 		if (db)
-			pr("\ndoDup");
+			pr("doDup");
 		EditorState originalState = new EditorState(this);
 		if (originalState.getSelectedSlots().isEmpty())
 			return;
@@ -697,14 +713,16 @@ public class Editor {
 		// Determine if pasted items will remain on screen with current
 		// duplication accumulator. If not, start with a fresh one
 		{
-			DupAccumulator d = new DupAccumulator(getDupAccumulator());
-			Point offset = d.getOffsetForDup();
+			DupAccumulator d = getDupAccumulator(true, false);
 			EdObjectArray modifiedObjects = objects().getSelectedObjects();
 			if (db)
 				pr(" looking for hidden objects; modified size="
-						+ modifiedObjects.size() + ", offset " + offset);
+						+ modifiedObjects.size() + ", offset "
+						+ d.getAccumulator());
+			ASSERT(modifiedObjects.size() > 0);
+			Point correction = new Point();
 			List<Integer> hiddenObjects = findHiddenObjects(modifiedObjects,
-					offset, null);
+					d.getAccumulator(), correction);
 			if (db)
 				pr(" hidden obj size " + hiddenObjects.size());
 
@@ -713,13 +731,15 @@ public class Editor {
 			if (hiddenObjects.size() == modifiedObjects.size()) {
 				if (db)
 					pr("   all dup objects will be offscreen; reset dup");
-				resetDuplicationOffset();
+				resetDuplicationOffsetWithCorrectingTranslation(correction,
+						false);
+
 			}
 		}
 
 		List<Integer> newSelected = SlotList.build();
 
-		Point offset = getDupAccumulator().getOffsetForDup();
+		Point offset = getDupAccumulator(true, false).getAccumulator();
 
 		for (int slot : originalState.getSelectedSlots()) {
 			EdObject obj = objects().get(slot);
@@ -734,14 +754,38 @@ public class Editor {
 		pushCommand(command);
 	}
 
+	private void resetDuplicationOffsetWithCorrectingTranslation(Point t,
+			boolean affectsClipboard) {
+		resetDuplicationOffset();
+		float angle = MyMath.polarAngle(t);
+		// Calculate nearest ordinal angle
+		angle = MyMath.normalizeAngle(angle + MyMath.PI / 4);
+		angle -= MyMath.myMod(angle, MyMath.PI / 2);
+		mDupAccumulator = new DupAccumulator(pickRadius(), angle,
+				affectsClipboard);
+
+	}
+
 	DupAccumulator getDupAccumulator() {
-		if (mDupAccumulator == null)
-			resetDuplicationOffset();
 		return mDupAccumulator;
 	}
 
+	private DupAccumulator getDupAccumulator(boolean buildIfMissing,
+			boolean affectsClipboard) {
+		if (buildIfMissing && mDupAccumulator == null) {
+			mDupAccumulator = new DupAccumulator(pickRadius(), 0,
+					affectsClipboard);
+		}
+		return getDupAccumulator();
+	}
+
 	void resetDuplicationOffset() {
-		mDupAccumulator = new DupAccumulator(pickRadius());
+		if (DB_DUP) {
+			if (mDupAccumulator != null)
+				pr("\n\nresetDuplicationOffset (called from " + stackTrace(1)
+						+ ")");
+		}
+		mDupAccumulator = null;
 	}
 
 	/**
@@ -781,21 +825,23 @@ public class Editor {
 	 * from the user. Note: an object is deemed to be hidden if all of its
 	 * vertices are outside of a (slightly inset) rectangle representing the
 	 * editor view. This is inaccurate; consider a very large polygon that
-	 * contains the editor view, but none of whose vertices lie within it.
+	 * contains the editor view, but none of whose vertices lie within it. Also,
+	 * consider a disc, whose two vertices are its origin and uppermost point;
+	 * this excludes much of its boundary
 	 * 
 	 * @param objects
 	 *            list of objects to examine
 	 * @param translationToApply
 	 *            if not null, simulates applying this translation before
 	 *            performing offscreen test
-	 * @param translation
+	 * @param correctingTranslation
 	 *            if not null, and hidden objects are found, this is set to a
 	 *            translation to apply to all objects to bring (at least one of
 	 *            them) onscreen
 	 * @return slots of hidden objects
 	 */
 	private List<Integer> findHiddenObjects(EdObjectArray objects,
-			Point translationToApply, Point translation) {
+			Point translationToApply, Point correctingTranslation) {
 		float minUnhideSquaredDistance = 0;
 		boolean translationDefined = false;
 
@@ -809,8 +855,8 @@ public class Editor {
 		innerRect.inset(40, 40);
 
 		List<Integer> slots = SlotList.build();
-		objLoop: for (int i = 0; i < objects().size(); i++) {
-			EdObject obj = objects().get(i);
+		objLoop: for (int i = 0; i < objects.size(); i++) {
+			EdObject obj = objects.get(i);
 
 			// If none of this object's vertices are visible, assume it's hidden
 			for (int j = 0; j < obj.nPoints(); j++) {
@@ -824,17 +870,19 @@ public class Editor {
 			// This is a hidden object; add to output list
 			slots.add(i);
 
-			if (translation != null) {
+			if (correctingTranslation != null) {
 				// See if one of its vertices is closest yet to the inner rect
 				for (int j = 0; j < obj.nPoints(); j++) {
 					Point v = obj.getPoint(j);
+					if (translationToApply != null)
+						v = MyMath.add(v, translationToApply);
 					Point v2 = outerRect.nearestPointTo(v);
 					float squaredDistance = MyMath
 							.squaredDistanceBetween(v, v2);
 					if (!translationDefined
 							|| squaredDistance < minUnhideSquaredDistance) {
 						translationDefined = true;
-						translation.setTo(MyMath.subtract(v2, v));
+						correctingTranslation.setTo(MyMath.subtract(v2, v));
 						minUnhideSquaredDistance = squaredDistance;
 					}
 				}
@@ -974,7 +1022,7 @@ public class Editor {
 		setObjects(state.getObjects().getMutableCopy());
 		setClipboard(state.getClipboard());
 		objects().setSelected(state.getSelectedSlots());
-		mDupAccumulator = new DupAccumulator(state.getDupAccumulator());
+		mDupAccumulator = DupAccumulator.copyOf(state.getDupAccumulator());
 	}
 
 	private void setOperation(EditorEventListener operation) {

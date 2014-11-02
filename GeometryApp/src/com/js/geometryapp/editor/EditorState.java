@@ -12,7 +12,7 @@ public class EditorState {
 		mObjects = e.objects().getFrozen();
 		mSelectedSlots = mObjects.getSelectedSlots();
 		mClipboard = e.getClipboard();
-		mDupAccumulator = new DupAccumulator(e.getDupAccumulator());
+		mDupAccumulator = DupAccumulator.copyOf(e.getDupAccumulator());
 	}
 
 	public EdObjectArray getObjects() {

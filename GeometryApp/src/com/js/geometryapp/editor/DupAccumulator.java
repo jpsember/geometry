@@ -2,106 +2,76 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import static com.js.basic.Tools.*;
 
 /**
  * Logic for offsetting duplicated or pasted objects based on user's adjustments
  * of the objects' positions.
  * 
- * This maintains two translation vectors: a 'duplication' translation vector D,
- * and a 'paste' translation vector P.
- * 
- * D is the sum of a small default translation, plus whatever little adjustments
- * the user has made.
- * 
- * P is equal to D, plus a correcting factor to move the clipboard contents
- * (whose position does not change) to the most recently pasted location.
+ * This maintains a translation vector that is the sum of a small default
+ * translation, plus whatever little adjustments the user has made.
  * 
  */
 class DupAccumulator {
+	public static final boolean DB_DUP = false && DEBUG_ONLY_FEATURES;
+
+	/**
+	 * Construct a copy of an accumulator, if it exists
+	 * 
+	 * @param source
+	 * @return copy of source, or null if source is null
+	 */
+	public static DupAccumulator copyOf(DupAccumulator source) {
+		if (source == null)
+			return null;
+		return new DupAccumulator(source);
+	}
+
+	/**
+	 * Constructor
+	 * 
+	 * @param pickRadius
+	 *            from editor, for choosing reasonable default accumulator
+	 * @param polarAngle
+	 *            direction of initial translation
+	 * @param affectsClipboard
+	 *            true if updates to this accumulator should also affect
+	 *            clipboard contents
+	 */
+	public DupAccumulator(float pickRadius, float polarAngle,
+			boolean affectsClipboard) {
+		mAccumulator = MyMath.pointOnCircle(Point.ZERO, polarAngle, pickRadius);
+		mAffectsClipboard = affectsClipboard;
+	}
+
+	/**
+	 * Get affectsClipboard flag this accumulator was initialized with
+	 */
+	public boolean affectsClipboard() {
+		return mAffectsClipboard;
+	}
 
 	/**
 	 * Copy constructor
 	 */
-	public DupAccumulator(DupAccumulator source) {
-		mPickRadius = source.mPickRadius;
-		mPreviousUserDirection = source.mPreviousUserDirection;
+	private DupAccumulator(DupAccumulator source) {
 		mAccumulator = new Point(source.mAccumulator);
-		mClipboardAdjustment = new Point(source.mClipboardAdjustment);
-	}
-
-	public DupAccumulator(float pickRadius) {
-		mPickRadius = pickRadius;
-		mAccumulator = constructDefaultTranslation();
-	}
-
-	private Point constructDefaultTranslation() {
-		return new Point(mPickRadius, 0);
 	}
 
 	/**
-	 * Apply filter to accumulator. If user has changed direction abruptly, and
-	 * distance is large, resets it so things don't get too wild.
+	 * Determine translation to apply to new objects
 	 */
-	private void applyFilterToAccumulator() {
-		float largeDistance = mPickRadius * 5;
-
-		if (mAccumulator.magnitude() > largeDistance) {
-			float dir = MyMath.polarAngle(mAccumulator);
-
-			if (mPreviousUserDirection == null) {
-				mPreviousUserDirection = dir;
-			} else {
-				float angDiff = MyMath.normalizeAngle(mPreviousUserDirection
-						- dir);
-				if (Math.abs(angDiff) > MyMath.M_DEG * 30) {
-					mPreviousUserDirection = null;
-					mAccumulator = constructDefaultTranslation();
-				}
-			}
-		}
-	}
-
-	/**
-	 * Determine translation for a paste operation
-	 */
-	public Point getOffsetForPaste() {
-		// apply filter to dup offset amount
-		applyFilterToAccumulator();
-
-		// pasted objects will be offset by this (filtered) duplication offset,
-		// plus the existing clipboard offset
-		mClipboardAdjustment.add(mAccumulator);
-		return new Point(mClipboardAdjustment);
-	}
-
-	/**
-	 * Determine translation for a duplication operation
-	 */
-	public Point getOffsetForDup() {
-		applyFilterToAccumulator();
+	public Point getAccumulator() {
 		return new Point(mAccumulator);
 	}
 
 	/**
-	 * Update accumulator for a move operation
+	 * Add translation to accumulator
 	 */
-	public void processMove(Point translation) {
+	public void add(Point translation) {
 		mAccumulator.add(translation);
-		// add to clipboard offset as well
-		mClipboardAdjustment.add(translation);
 	}
 
-	// If not null, direction previous duplications were occurring within; used
-	// to determine if subsequent adjustments are still generally in that
-	// direction
-	private Float mPreviousUserDirection;
-
-	// The sum of the user's little adjustments, D0 + D1 + ... +Dn
 	private Point mAccumulator;
-
-	// This is the translation to move the clipboard objects to the last
-	// user-adjusted paste location
-	private Point mClipboardAdjustment = new Point();
-
-	private float mPickRadius;
+	private boolean mAffectsClipboard;
 }

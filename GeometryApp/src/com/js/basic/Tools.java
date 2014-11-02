@@ -136,6 +136,13 @@ public final class Tools {
 	}
 
 	/**
+	 * Convenience method equivalent to stackTrace(1,1,null)
+	 */
+	public static String stackTrace(int skipCount) {
+		return stackTrace(1 + skipCount, 1, null);
+	}
+
+	/**
 	 * Simple assertion mechanism, throws a DieException if flag is false; does
 	 * nothing if DEBUG_ONLY_FEATURES is false
 	 * 

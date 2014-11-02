@@ -88,7 +88,8 @@ public abstract class MyActivity extends Activity {
 		}
 		for (int i = 0; i < 20; i++)
 			pr("\n");
-		pr("--------------- Start of " + this.getClass().getSimpleName()
+		pr("!!START!!--------------- Start of "
+				+ this.getClass().getSimpleName()
 				+ " ----- " + strTime + " -------------\n\n\n");
 	}
 

@@ -411,6 +411,19 @@ public abstract class EdObject implements Cloneable {
 		}
 	}
 
+	/**
+	 * Determine if object intersects a rectangle. Default implementation checks
+	 * if any of the object's vertices lie within the rectangle
+	 */
+	public boolean intersects(Rect r) {
+		for (int j = 0; j < nPoints(); j++) {
+			Point v = getPoint(j);
+			if (r.contains(v))
+				return true;
+		}
+		return false;
+	}
+
 	private Editor mEditor;
 	private int mFlags;
 	private List<Point> mPoints = new ArrayList();

@@ -771,12 +771,7 @@ public class Editor {
 
 	/**
 	 * Find which objects, if any, are essentially offscreen and thus hidden
-	 * from the user. Note: an object is deemed to be hidden if all of its
-	 * vertices are outside of a (slightly inset) rectangle representing the
-	 * editor view. This is inaccurate; consider a very large polygon that
-	 * contains the editor view, but none of whose vertices lie within it. Also,
-	 * consider a disc, whose two vertices are its origin and uppermost point;
-	 * this excludes much of its boundary
+	 * from the user.
 	 * 
 	 * @param objects
 	 *            list of objects to examine
@@ -795,26 +790,25 @@ public class Editor {
 		boolean translationDefined = false;
 
 		Rect r = mStepper.algorithmRect();
+		if (translationToApply != null) {
+			r = new Rect(r);
+			r.translate(-translationToApply.x, -translationToApply.y);
+		}
+
 		// Construct a slightly inset version for detecting hidden objects, and
 		// a more inset one representing where we'll move vertices to unhide
 		// them
 		Rect outerRect = new Rect(r);
-		outerRect.inset(20, 20);
+		float inset = pickRadius() * 2;
+		outerRect.inset(inset, inset);
 		Rect innerRect = new Rect(r);
-		innerRect.inset(40, 40);
+		innerRect.inset(inset * 2, inset * 2);
 
 		List<Integer> slots = SlotList.build();
-		objLoop: for (int i = 0; i < objects.size(); i++) {
+		for (int i = 0; i < objects.size(); i++) {
 			EdObject obj = objects.get(i);
-
-			// If none of this object's vertices are visible, assume it's hidden
-			for (int j = 0; j < obj.nPoints(); j++) {
-				Point v = obj.getPoint(j);
-				if (translationToApply != null)
-					v = MyMath.add(v, translationToApply);
-				if (outerRect.contains(v))
-					continue objLoop;
-			}
+			if (obj.intersects(outerRect))
+				continue;
 
 			// This is a hidden object; add to output list
 			slots.add(i);
@@ -823,8 +817,6 @@ public class Editor {
 				// See if one of its vertices is closest yet to the inner rect
 				for (int j = 0; j < obj.nPoints(); j++) {
 					Point v = obj.getPoint(j);
-					if (translationToApply != null)
-						v = MyMath.add(v, translationToApply);
 					Point v2 = outerRect.nearestPointTo(v);
 					float squaredDistance = MyMath
 							.squaredDistanceBetween(v, v2);
@@ -905,8 +897,10 @@ public class Editor {
 	}
 
 	public float pickRadius() {
+		// The pick radius may not be defined until editor view is first
+		// rendered; choose default value if necessary
 		if (mPickRadius == 0)
-			throw new IllegalStateException();
+			mPickRadius = 50.0f;
 		return mPickRadius;
 	}
 

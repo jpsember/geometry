@@ -63,6 +63,11 @@ public class EdDisc extends EdObject {
 		return null;
 	}
 
+	@Override
+	public boolean intersects(Rect r) {
+		return r.distanceFrom(getOrigin()) < getRadius();
+	}
+
 	public Disc buildDisc() {
 		return new Disc(getOrigin(), getRadius());
 	}

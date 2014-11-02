@@ -160,12 +160,7 @@ public class DefaultEventListener implements EditorEventListener {
 			mEditor.objects().setSelected(selectedList);
 		} else if (mOriginalState != null) {
 			if (mTranslate != null) {
-				DupAccumulator a = mEditor.getDupAccumulator();
-				if (a != null) {
-					a.add(mTranslate);
-					if (mEditor.dupAffectsClipboard())
-						mEditor.replaceClipboardWithSelectedObjects();
-				}
+				mEditor.updateDupAccumulatorForTranslation(mTranslate);
 			}
 			Command cmd = Command.constructForGeneralChanges(mOriginalState,
 					new EditorState(mEditor), "move");

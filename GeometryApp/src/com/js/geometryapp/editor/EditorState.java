@@ -2,6 +2,8 @@ package com.js.geometryapp.editor;
 
 import java.util.List;
 
+import com.js.geometry.Point;
+
 /**
  * Encapsulates the state of an editor, including all entities that are mutable
  * and need to be saved and restored to support undo/redo operations
@@ -12,7 +14,7 @@ public class EditorState {
 		mObjects = e.objects().getFrozen();
 		mSelectedSlots = mObjects.getSelectedSlots();
 		mClipboard = e.getClipboard();
-		mDupAccumulator = DupAccumulator.copyOf(e.getDupAccumulator());
+		mDupAccumulator = e.getDupAccumulator();
 	}
 
 	public EdObjectArray getObjects() {
@@ -27,12 +29,12 @@ public class EditorState {
 		return mSelectedSlots;
 	}
 
-	public DupAccumulator getDupAccumulator() {
+	public Point getDupAccumulator() {
 		return mDupAccumulator;
 	}
 
 	private EdObjectArray mObjects;
 	private List<Integer> mSelectedSlots;
 	private EdObjectArray mClipboard;
-	private DupAccumulator mDupAccumulator;
+	private Point mDupAccumulator;
 }

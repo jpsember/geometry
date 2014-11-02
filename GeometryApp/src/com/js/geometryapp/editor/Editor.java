@@ -638,7 +638,7 @@ public class Editor {
 		mDupAffectsClipboard = true;
 		adjustDupAccumulatorForPendingOperation(mClipboard);
 
-		Point offset = getDupAccumulator(true).getAccumulator();
+		Point offset = getDupAccumulator(true);
 
 		for (EdObject obj : mClipboard) {
 			newSelected.add(objects().size());
@@ -655,7 +655,7 @@ public class Editor {
 		pushCommand(command);
 	}
 
-	void replaceClipboardWithSelectedObjects() {
+	private void replaceClipboardWithSelectedObjects() {
 		setClipboard(objects().getSelectedObjects());
 	}
 
@@ -682,8 +682,7 @@ public class Editor {
 			EdObjectArray affectedObjects) {
 		if (affectedObjects.size() == 0)
 			return;
-		DupAccumulator accum = getDupAccumulator(true);
-		Point offset = accum.getAccumulator();
+		Point offset = getDupAccumulator(true);
 		Point correction = new Point();
 		List<Integer> hiddenObjects = findHiddenObjects(affectedObjects,
 				offset, correction);
@@ -707,7 +706,7 @@ public class Editor {
 		adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
 		List<Integer> newSelected = SlotList.build();
 
-		Point offset = getDupAccumulator(true).getAccumulator();
+		Point offset = getDupAccumulator(true);
 
 		for (int slot : originalState.getSelectedSlots()) {
 			EdObject obj = objects().get(slot);
@@ -729,16 +728,16 @@ public class Editor {
 		final float CARDINAL_RANGE = MyMath.PI / 2;
 		angle = MyMath.normalizeAngle(angle + CARDINAL_RANGE / 2);
 		angle -= MyMath.myMod(angle, CARDINAL_RANGE);
-		mDupAccumulator = new DupAccumulator(pickRadius(), angle);
+		mDupAccumulator = MyMath.pointOnCircle(Point.ZERO, angle, pickRadius());
 	}
 
-	DupAccumulator getDupAccumulator() {
+	Point getDupAccumulator() {
 		return mDupAccumulator;
 	}
 
-	private DupAccumulator getDupAccumulator(boolean buildIfMissing) {
+	private Point getDupAccumulator(boolean buildIfMissing) {
 		if (buildIfMissing && mDupAccumulator == null) {
-			mDupAccumulator = new DupAccumulator(pickRadius(), 0);
+			mDupAccumulator = MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
 		}
 		return getDupAccumulator();
 	}
@@ -981,7 +980,7 @@ public class Editor {
 		setObjects(state.getObjects().getMutableCopy());
 		setClipboard(state.getClipboard());
 		objects().setSelected(state.getSelectedSlots());
-		mDupAccumulator = DupAccumulator.copyOf(state.getDupAccumulator());
+		mDupAccumulator = state.getDupAccumulator();
 	}
 
 	private void setOperation(EditorEventListener operation) {
@@ -1026,8 +1025,16 @@ public class Editor {
 		return false;
 	}
 
-	public boolean dupAffectsClipboard() {
-		return mDupAffectsClipboard;
+	/**
+	 * Adjust duplication accumulator (if one exists) by adding an additional
+	 * translation
+	 */
+	void updateDupAccumulatorForTranslation(Point translation) {
+		if (mDupAccumulator != null) {
+			mDupAccumulator = MyMath.add(mDupAccumulator, translation);
+			if (mDupAffectsClipboard)
+				replaceClipboardWithSelectedObjects();
+		}
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;
@@ -1051,6 +1058,8 @@ public class Editor {
 	private EdObjectArray mClipboard = new EdObjectArray();
 	private QuiescentDelayOperation mPendingEnableOperation;
 	private CheckBoxWidget mRenderAlways;
-	private DupAccumulator mDupAccumulator;
+	// This accumulator should be considered immutable
+	private Point mDupAccumulator;
 	private boolean mDupAffectsClipboard;
+
 }

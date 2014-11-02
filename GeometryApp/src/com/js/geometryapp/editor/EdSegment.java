@@ -61,7 +61,7 @@ public class EdSegment extends EdObject {
 		}
 	};
 
-	private static class EditorOperation implements EditorEventListener {
+	private static class EditorOperation extends EditorEventListenerAdapter {
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			mEditor = editor;
 			mEditSlot = slot;
@@ -136,10 +136,6 @@ public class EdSegment extends EdObject {
 				break;
 			}
 			return outputEvent;
-		}
-
-		@Override
-		public void render(AlgorithmStepper s) {
 		}
 
 		// Index of object being edited

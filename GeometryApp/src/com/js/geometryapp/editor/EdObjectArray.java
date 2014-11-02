@@ -148,13 +148,10 @@ public class EdObjectArray implements Iterable<EdObject> {
 	}
 
 	public void setEditableSlot(int slot) {
+		ASSERT(slot >= 0);
+		setSelected(SlotList.build(slot));
+		get(slot).setEditable(true);
 		prepareForChanges();
-		unselectAll();
-		if (slot >= 0) {
-			EdObject editObject = get(slot);
-			editObject.setEditable(true);
-			mSelectedSlots = null;
-		}
 	}
 
 	public void removeSelected() {
@@ -209,6 +206,30 @@ public class EdObjectArray implements Iterable<EdObject> {
 			sb.append("]");
 			return sb.toString();
 		}
+	}
+
+	public EdObject updateEditableObjectStatus(boolean allowEditableObject) {
+		int currentEditable = -1;
+		int newEditable = -1;
+		EdObject editableObject = null;
+		List<Integer> list = getSelectedSlots();
+		for (int slot : list) {
+			EdObject obj = get(slot);
+			if (obj.isEditable())
+				currentEditable = slot;
+		}
+		if (list.size() == 1 && allowEditableObject) {
+			newEditable = list.get(0);
+			editableObject = get(newEditable);
+		}
+		if (currentEditable != newEditable) {
+			prepareForChanges();
+			if (currentEditable >= 0)
+				get(currentEditable).setEditable(false);
+			if (newEditable >= 0)
+				editableObject.setEditable(true);
+		}
+		return editableObject;
 	}
 
 	private List<EdObject> mList = new ArrayList();

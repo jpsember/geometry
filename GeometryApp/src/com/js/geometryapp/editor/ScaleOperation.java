@@ -15,7 +15,7 @@ import com.js.geometry.Sprite;
 
 import static com.js.basic.Tools.*;
 
-public class ScaleOperation implements EditorEventListener {
+public class ScaleOperation extends EditorEventListenerAdapter {
 
 	private static final int NUM_HANDLES = 8;
 
@@ -105,6 +105,11 @@ public class ScaleOperation implements EditorEventListener {
 			s.plot(new Sprite(R.raw.squareicon, applyHandleExternalPadding(
 					handles.get(i), i, true)));
 		}
+	}
+
+	@Override
+	public boolean allowEditableObject() {
+		return false;
 	}
 
 	private static final int[] sLinesBetweenHandles = { 0, 2, 2, 4, 4, 6, 6, 0, };

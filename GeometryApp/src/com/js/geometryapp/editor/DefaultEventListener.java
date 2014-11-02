@@ -11,7 +11,7 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 
-public class DefaultEventListener implements EditorEventListener {
+public class DefaultEventListener extends EditorEventListenerAdapter {
 
 	public DefaultEventListener(Editor editor) {
 		mEditor = editor;

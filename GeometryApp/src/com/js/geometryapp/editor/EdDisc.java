@@ -124,7 +124,7 @@ public class EdDisc extends EdObject {
 
 	};
 
-	private static class EditorOperation implements EditorEventListener {
+	private static class EditorOperation extends EditorEventListenerAdapter {
 		public EditorOperation(Editor editor, int slot, int vertexNumber) {
 			mEditor = editor;
 			mEditSlot = slot;
@@ -201,10 +201,6 @@ public class EdDisc extends EdObject {
 				break;
 			}
 			return outputEvent;
-		}
-
-		@Override
-		public void render(AlgorithmStepper s) {
 		}
 
 		private int mEditSlot;

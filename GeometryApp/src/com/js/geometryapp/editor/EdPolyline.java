@@ -366,7 +366,7 @@ public class EdPolyline extends EdObject {
 	private int mCursor;
 	private boolean mTabsHidden;
 
-	private static class EditorOperation implements EditorEventListener {
+	private static class EditorOperation extends EditorEventListenerAdapter {
 
 		private final static int OPER_MOVE = 0;
 		private final static int OPER_INSERT = 1;

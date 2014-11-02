@@ -307,28 +307,19 @@ public class Editor {
 	}
 
 	/**
-	 * Make an object editable if it is the only selected object. We perform
-	 * this operation with each refresh, since this is simpler than trying to
-	 * maintain the editable state while the editor objects undergo various
-	 * editing operations. Also, update the last editable object type to reflect
-	 * the editable object (if one exists)
+	 * Make an object editable if it is the only selected object (and current
+	 * operation allows editabler highlighting). We perform this operation with
+	 * each refresh, since this is simpler than trying to maintain the editable
+	 * state while the editor objects undergo various editing operations. Also,
+	 * update the last editable object type to reflect the editable object (if
+	 * one exists)
 	 */
 	private void updateEditableObjectStatus() {
-		int currentEditable = -1;
-		int newEditable = -1;
-		List<Integer> list = mObjects.getSelectedSlots();
-		for (int slot : list) {
-			EdObject obj = mObjects.get(slot);
-			if (obj.isEditable())
-				currentEditable = slot;
-		}
-		if (list.size() == 1) {
-			newEditable = list.get(0);
-			mLastEditableObjectType = mObjects.get(newEditable).getFactory();
-		}
-		if (currentEditable != newEditable) {
-			objects().setEditableSlot(newEditable);
-		}
+		EdObject editableObject = mObjects
+				.updateEditableObjectStatus(mCurrentOperation
+						.allowEditableObject());
+		if (editableObject != null)
+			mLastEditableObjectType = editableObject.getFactory();
 	}
 
 	private void refresh() {
@@ -470,7 +461,7 @@ public class Editor {
 	}
 
 	/**
-	 * Clear current operation
+	 * Clear current operation (actually, sets it to the default operation)
 	 */
 	private void clearOperation() {
 		setOperation(null);
@@ -1061,5 +1052,4 @@ public class Editor {
 	// This accumulator should be considered immutable
 	private Point mDupAccumulator;
 	private boolean mDupAffectsClipboard;
-
 }

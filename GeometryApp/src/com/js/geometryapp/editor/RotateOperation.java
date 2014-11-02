@@ -13,7 +13,7 @@ import com.js.geometry.Sprite;
 
 import static com.js.basic.Tools.*;
 
-public class RotateOperation implements EditorEventListener {
+public class RotateOperation extends EditorEventListenerAdapter {
 
 	public RotateOperation(Editor editor) {
 		mEditor = editor;
@@ -100,6 +100,11 @@ public class RotateOperation implements EditorEventListener {
 		}
 		s.plot(p);
 		s.plot(new Sprite(R.raw.crosshairicon, mRect.midPoint()));
+	}
+
+	@Override
+	public boolean allowEditableObject() {
+		return false;
 	}
 
 	/**

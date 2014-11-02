@@ -1,6 +1,7 @@
 package com.js.geometryapp.editor;
 
 import android.graphics.Color;
+import android.graphics.Matrix;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
@@ -93,6 +94,34 @@ public class EdDisc extends EdObject {
 
 	public EdObjectFactory getFactory() {
 		return FACTORY;
+	}
+
+	@Override
+	public void applyTransform(Matrix m) {
+		float radius = getRadius();
+		Point origin = getOrigin();
+
+		// Transform the left and bottom sides of the bounding square
+		Point bottomLeft = new Point(origin.x - radius, origin.y - radius);
+		Point bottomRight = new Point(origin.x + radius, bottomLeft.y);
+		Point topLeft = new Point(bottomLeft.x, origin.y + radius);
+
+		bottomLeft.apply(m);
+		bottomRight.apply(m);
+		topLeft.apply(m);
+
+		// The new origin is the midpoint of the diagonal of the transformed
+		// square
+		Point newOrigin = MyMath.interpolateBetween(bottomRight, topLeft, .5f);
+		// The new radius is the smaller of the distances from the origin to the
+		// transformed sides
+		float bottomDistance = MyMath.ptDistanceToLine(newOrigin, bottomLeft,
+				bottomRight, null);
+		float leftDistance = MyMath.ptDistanceToLine(newOrigin, bottomLeft,
+				topLeft, null);
+		float newRadius = Math.min(bottomDistance, leftDistance);
+		setOrigin(newOrigin);
+		setRadius(newRadius);
 	}
 
 	public static EdObjectFactory FACTORY = new EdObjectFactory("d") {

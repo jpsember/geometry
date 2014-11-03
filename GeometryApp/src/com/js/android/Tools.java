@@ -30,6 +30,24 @@ public final class Tools {
 		toast(context, message, Toast.LENGTH_SHORT);
 	}
 
+	/**
+	 * Display toast message describing an exception
+	 * 
+	 * @param context
+	 * @param throwable
+	 *            exception received
+	 * @param optional
+	 *            message message to display within toast (may be shown with
+	 *            exception message as well)
+	 */
+	public static void showException(Context context, Throwable exception,
+			String message) {
+		warning("caught: " + exception);
+		if (message == null)
+			message = "Caught";
+		toast(context, message + ": " + exception, Toast.LENGTH_LONG);
+	}
+
 	public static String readTextFileResource(Context context, int resourceId) {
 		String str = null;
 		try {

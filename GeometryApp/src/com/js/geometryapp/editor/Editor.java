@@ -57,8 +57,9 @@ public class Editor {
 	public Editor() {
 	}
 
-	public void setDependencies(ConcreteStepper stepper,
-			AlgorithmOptions options) {
+	public void setDependencies(GeometryStepperActivity activity,
+			ConcreteStepper stepper, AlgorithmOptions options) {
+		mActivity = activity;
 		mStepper = stepper;
 		mOptions = options;
 	}
@@ -187,8 +188,24 @@ public class Editor {
 					}
 				});
 			}
+			mOptions.addButton("Share").addListener(new Listener() {
+				public void valueChanged(AbstractWidget widget) {
+					doShare();
+				}
+			});
+
 		}
 		mOptions.popView();
+	}
+
+	private void doShare() {
+		try {
+			String jsonState = compileObjectsToJSON();
+			byte[] bytes = jsonState.toString().getBytes();
+			mActivity.doShare(bytes);
+		} catch (JSONException e) {
+			showException(context(), e, null);
+		}
 	}
 
 	private void prepareAddObjectButtons(Object... args) {
@@ -376,8 +393,7 @@ public class Editor {
 			parseObjects(map, JSON_KEY_OBJECTS, mObjects);
 			parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
 		} catch (JSONException e) {
-			warning("caught " + e);
-			toast(context(), "Problem parsing JSON: " + script);
+			showException(context(), e, "Problem parsing json");
 		}
 	}
 
@@ -495,7 +511,7 @@ public class Editor {
 				}
 			}
 		} catch (JSONException e) {
-			warning("caught: " + e);
+			showException(context(), e, null);
 		}
 	}
 
@@ -1030,6 +1046,7 @@ public class Editor {
 	// operation to edit it
 	private EdObjectFactory mPendingAddObjectOperation;
 	private View mEditorView;
+	private GeometryStepperActivity mActivity;
 	private ConcreteStepper mStepper;
 	private EdObjectArray mObjects = new EdObjectArray();
 	private QuiescentDelayOperation mPendingFlushOperation;

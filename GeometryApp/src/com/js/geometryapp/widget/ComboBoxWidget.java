@@ -14,6 +14,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
 
 public class ComboBoxWidget extends AbstractWidget {
@@ -87,7 +88,7 @@ public class ComboBoxWidget extends AbstractWidget {
 		try {
 			index = Integer.parseInt(internalValue);
 		} catch (NumberFormatException e) {
-			warning("caught " + e);
+			showException(context(), e, null);
 		}
 		index = MyMath.clamp(index, 0, mKeys.size() - 1);
 		mSpinner.setSelection(index, false);

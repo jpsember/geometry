@@ -1,6 +1,7 @@
 package com.js.geometryapp;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -20,6 +21,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
 
@@ -27,6 +29,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 	public static final String PERSIST_KEY_OPTIONS = "_widget_values";
 	public static final String PERSIST_KEY_EDITOR = "_editor";
+	private static final int REQUEST_SHARE_GEOM_FILE = 1000;
 
 	public GeometryStepperActivity() {
 		// First, we construct the various components; this is analogous to
@@ -38,7 +41,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
 		// Second, we initialize the dependencies; this is analogous to
 		// constructing the edges of the object graph
-		mEditor.setDependencies(mStepper, mOptions);
+		mEditor.setDependencies(this, mStepper, mOptions);
 		mStepper.setDependencies(mOptions, mEditor);
 		mOptions.setDependencies(mEditor, mStepper);
 		mRenderer.setDependencies(mEditor, mStepper);
@@ -222,6 +225,52 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		if (jsonContent == null)
 			return;
 		mEditor.restoreFromJSON(jsonContent);
+	}
+
+	/**
+	 * Share a data file via email
+	 * 
+	 * @param attachment
+	 *            data file to include as attachment
+	 */
+	public void doShare(byte[] attachment) {
+		String recipient = "";
+		String subject = "Geometry Framework data file";
+		String message = "";
+
+		final Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.setType("message/rfc822");
+		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { recipient });
+		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+		intent.putExtra(Intent.EXTRA_TEXT, message);
+
+		// create attachment
+		String filename = "example.geom";
+
+		File file = new File(getExternalCacheDir(), filename);
+		Throwable problem = null;
+		try {
+			FileOutputStream fos = new FileOutputStream(file);
+			fos.write(attachment);
+			fos.close();
+		} catch (IOException e) {
+			problem = e;
+		}
+
+		if (problem != null || !file.exists() || !file.canRead()) {
+			String toastMessage = "Problem creating attachment";
+			if (problem != null)
+				toastMessage += ": " + problem;
+			Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+			return;
+		}
+
+		Uri uri = Uri.parse("file://" + file.getAbsolutePath());
+		intent.putExtra(Intent.EXTRA_STREAM, uri);
+
+		startActivityForResult(
+				Intent.createChooser(intent, "Email Geometry file using..."),
+				REQUEST_SHARE_GEOM_FILE);
 	}
 
 	private ConcreteStepper mStepper;

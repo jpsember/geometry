@@ -29,6 +29,7 @@ import com.js.geometryapp.widget.SliderWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.TextWidget;
 
+import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
 
 public class AlgorithmOptions {
@@ -373,7 +374,7 @@ public class AlgorithmOptions {
 				}
 			}
 		} catch (JSONException e) {
-			warning("caught: " + e);
+			showException(getContext(), e, null);
 		}
 		mPrepared = true;
 		int algNumber = 0;

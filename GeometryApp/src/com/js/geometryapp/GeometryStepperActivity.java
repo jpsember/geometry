@@ -130,6 +130,19 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		mAuxView = new LinearLayout(this);
 	}
 
+	private static String dumpIntent(Intent intent) {
+		if (!DEBUG_ONLY_FEATURES)
+			return intent.toString();
+		StringBuilder sb = new StringBuilder("Intent(");
+		sb.append("\n type:       " + d(intent.getType()));
+		sb.append("\n action:     " + d(intent.getAction()));
+		sb.append("\n categories: " + d(intent.getCategories()));
+		sb.append("\n data:       " + intent.getDataString());
+		sb.append("\n extras:     " + d(intent.getExtras()));
+		sb.append("\n)");
+		return sb.toString();
+	}
+
 	/**
 	 * Process intent; read editor objects from its contents if possible
 	 */
@@ -139,25 +152,56 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		if (intent == null)
 			return;
 		if (db)
-			pr("processIntent:\n" + intent);
+			pr("\n\nprocess " + dumpIntent(intent) + "\n\n");
 
-		String action = intent.getAction();
-		String type = intent.getType();
-		if (db)
-			pr(" action=" + action + "\n type=" + type);
-		if (type == null)
-			return;
-		if (!("application/json".equals(type) || "text/plain".equals(type))) {
-			if (db)
-				pr(" unexpected type");
-			return;
-		}
-
+		/**
+		 * <pre>
+		 * 
+		 * My Files:
+		 * ----------
+		 * process Intent( 
+		 *  type:        
+		 *  action:     android.intent.action.VIEW 
+		 *  categories: <null> 
+		 *  data:       file:///storage/emulated/0/Download/b1_00.geom 
+		 *  extras:       "Bundle[mParcelledData.dataSize=616]" 
+		 * ) 
+		 *            
+		 * Dropbox:
+		 * -----------
+		 * process Intent( 
+		 *  type:       application/octet-stream 
+		 *  action:     android.intent.action.VIEW 
+		 *  categories: <null> 
+		 *  data:       file:///storage/emulated/0/Android/data/com.dropbox.android/files/scratch/a1.geom 
+		 *  extras:       "Bundle[mParcelledData.dataSize=164]" 
+		 * )
+		 * 
+		 * GMail:
+		 * -----------
+		 * process Intent( 
+		 *  type:       application/octet-stream 
+		 *  action:     android.intent.action.VIEW 
+		 *  categories: <null> 
+		 *  data:       content://gmail-ls/jpsember@gmail.com/messages/960/attachments/0.1/BEST/false 
+		 *  extras:       <null> 
+		 * )
+		 * 
+		 * 
+		 * Drive:
+		 * -----------
+		 * process Intent( 
+		 *  type:       application/octet-stream 
+		 *  action:     android.intent.action.VIEW 
+		 *  categories: <null> 
+		 *  data:       file:///data/data/com.google.android.apps.docs/files/fileinternal/74eda9f25aa2f91a461546b60100b39e/b1_00.geom 
+		 *  extras:       "Bundle[mParcelledData.dataSize=412]" 
+		 * )
+		 * 
+		 * </pre>
+		 */
 		String jsonContent = null;
-
-		if (Intent.ACTION_SEND.equals(action)) {
-			jsonContent = intent.getStringExtra(Intent.EXTRA_TEXT);
-		} else if (Intent.ACTION_VIEW.equals(action)) {
+		if (Intent.ACTION_VIEW.equals(intent.getAction())) {
 			try {
 				Uri u = intent.getData();
 				String scheme = u.getScheme();

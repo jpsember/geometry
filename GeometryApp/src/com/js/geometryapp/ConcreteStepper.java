@@ -11,12 +11,10 @@ import java.util.Set;
 
 import android.graphics.Color;
 import android.opengl.GLSurfaceView;
-import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.LinearLayout;
 
-import com.js.android.MyActivity;
-import com.js.android.ResolutionInfo;
+import com.js.android.QuiescentDelayOperation;
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
@@ -59,17 +57,29 @@ public class ConcreteStepper implements AlgorithmStepper {
 		mAlgorithms.add(delegate);
 	}
 
+	/**
+	 * If the algorithm rectangle hasn't been defined yet, set it up to best fit
+	 * the space available
+	 * 
+	 * @param availableRect
+	 *            rectangle available (aspect ratio is significant, not the
+	 *            actual size)
+	 */
+	public void prepareAlgorithmRect(Rect availableRect) {
+		if (mAlgorithmRect != null)
+			return;
+		float ar = availableRect.height / availableRect.width;
+
+		if (ar > 1) {
+			mAlgorithmRect = new Rect(0, 0, 1000, ar * 1000);
+		} else {
+			mAlgorithmRect = new Rect(0, 0, ar * 1000, 1000);
+		}
+	}
+
 	@Override
 	public Rect algorithmRect() {
-		if (mAlgorithmRect == null) {
-			ResolutionInfo mResolutionInfo = MyActivity.getResolutionInfo();
-			DisplayMetrics m = mResolutionInfo.getDisplayMetrics();
-			if (m.widthPixels > m.heightPixels) {
-				mAlgorithmRect = new Rect(0, 0, 1200, 1000);
-			} else {
-				mAlgorithmRect = new Rect(0, 0, 1000, 1200);
-			}
-		}
+		ASSERT(mAlgorithmRect != null);
 		return mAlgorithmRect;
 	}
 
@@ -319,7 +329,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 		if (mRefreshing)
 			return;
 		mRefreshing = true;
-		if (mOptions.getActiveAlgorithm() != null) {
+		// If OpenGL view hasn't been prepared yet, don't perform the algorithm
+		if (isSurfacePrepared() && mOptions.getActiveAlgorithm() != null) {
 			synchronized (getLock()) {
 				acquireLock();
 				performAlgorithm();
@@ -735,6 +746,22 @@ public class ConcreteStepper implements AlgorithmStepper {
 		return mRendering;
 	}
 
+	public boolean isSurfacePrepared() {
+		return mGLPrepared;
+	}
+
+	public void setSurfacePrepared() {
+		if (mGLPrepared)
+			return;
+		mGLPrepared = true;
+		// Request a refresh of the stepper (in UI thread)
+		new QuiescentDelayOperation("SurfacePrepared", .1f, new Runnable() {
+			public void run() {
+				mEditor.refresh();
+			}
+		});
+	}
+
 	private Object aSynchronizationLock = new Object();
 	private int aLockCounter;
 	private Thread aLockActiveThread;
@@ -756,6 +783,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private Rect mAlgorithmRect;
 	private boolean mCompleted;
 	private GLSurfaceView mglSurfaceView;
+	private boolean mGLPrepared;
 	private boolean mRendering;
 
 	// True if jumping forward to next milestone;

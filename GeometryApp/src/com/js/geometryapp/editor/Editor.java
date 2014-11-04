@@ -25,6 +25,7 @@ import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
+import com.js.geometryapp.RenderTools;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.CheckBoxWidget;
@@ -55,6 +56,7 @@ public class Editor {
 	private static final int MAX_OBJECTS_IN_FILE = 500;
 
 	public Editor() {
+		clearOperation();
 	}
 
 	public void setDependencies(GeometryStepperActivity activity,
@@ -247,6 +249,10 @@ public class Editor {
 		// editor is not active
 		mPickRadius = MyActivity.getResolutionInfo().inchesToPixelsAlgorithm(
 				.14f);
+
+		// Fill the algorithm bounds with white
+		RenderTools.fillAlgBounds();
+
 		if (!isActive() && !mRenderAlways.getBooleanValue())
 			return;
 		mStepper.setRendering(true);
@@ -339,7 +345,7 @@ public class Editor {
 			mLastEditableObjectType = editableObject.getFactory();
 	}
 
-	private void refresh() {
+	public void refresh() {
 		updateEditableObjectStatus();
 
 		mStepper.refresh();
@@ -351,7 +357,9 @@ public class Editor {
 	private void updateButtonEnableStates() {
 		if (!mOptions.isEditorActive())
 			return;
-
+		if (!mStepper.isSurfacePrepared()) {
+			return;
+		}
 		if (QuiescentDelayOperation.replaceExisting(mPendingEnableOperation)) {
 			final float ENABLE_DELAY = .1f;
 			mPendingEnableOperation = new QuiescentDelayOperation("enable",
@@ -395,11 +403,6 @@ public class Editor {
 		} catch (JSONException e) {
 			showException(context(), e, "Problem parsing json");
 		}
-	}
-
-	public void begin() {
-		clearOperation();
-		updateButtonEnableStates();
 	}
 
 	/**
@@ -913,7 +916,7 @@ public class Editor {
 	}
 
 	public float pickRadius() {
-		mActivity.verifyPrepared(true);
+		ASSERT(mPickRadius != 0);
 		return mPickRadius;
 	}
 

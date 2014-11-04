@@ -27,9 +27,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		super(context);
 	}
 
-	void setDependencies(GeometryStepperActivity activity, Editor editor,
-			ConcreteStepper stepper) {
-		mActivity = activity;
+	void setDependencies(Editor editor, ConcreteStepper stepper) {
 		mEditor = editor;
 		mStepper = stepper;
 	}
@@ -56,8 +54,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (mStepper.getLock()) {
 			mStepper.acquireLock();
 			super.onSurfaceChanged(gl, w, h);
+			mStepper.setSurfacePrepared();
 			// Let the algorithm stepper elements prepare using this renderer
-			RenderTools.setRenderer(this);
+			RenderTools.setRenderer(mStepper.algorithmRect(), this);
 			// Call user method, now that synchronized
 			onSurfaceChanged();
 			mStepper.releaseLock();
@@ -73,7 +72,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (mStepper.getLock()) {
 			mStepper.acquireLock();
 			mStepper.setRendering(true);
-			gl.glClearColor(1f, 1f, 1f, 1f);
+			// Clear the entire OpenGL view to a gray
+			final float GRAY = .8f;
+			gl.glClearColor(GRAY, GRAY, GRAY, 1f);
 			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 			mEditor.render();
@@ -114,6 +115,8 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		paddedDeviceRect.y += paddingInset + titleInset;
 		paddedDeviceRect.width -= paddingInset * 2;
 		paddedDeviceRect.height -= paddingInset * 2 + titleInset;
+
+		mStepper.prepareAlgorithmRect(paddedDeviceRect);
 
 		Matrix mAlgorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
 				mStepper.algorithmRect(), paddedDeviceRect);
@@ -167,10 +170,8 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		addTransform(TRANSFORM_NAME_DEVICE_TO_ALGORITHM,
 				mDeviceToAlgorithmTransform);
-		mActivity.setPrepared();
 	}
 
 	private ConcreteStepper mStepper;
 	private Editor mEditor;
-	private GeometryStepperActivity mActivity;
 }

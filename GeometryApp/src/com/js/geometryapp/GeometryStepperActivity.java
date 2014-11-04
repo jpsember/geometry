@@ -30,7 +30,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	public static final String PERSIST_KEY_OPTIONS = "_widget_values";
 	public static final String PERSIST_KEY_EDITOR = "_editor";
 	private static final int REQUEST_SHARE_GEOM_FILE = 1000;
-	private static final boolean DEB_STARTING = true && DEBUG_ONLY_FEATURES;
 
 	public GeometryStepperActivity() {
 		/**
@@ -41,11 +40,10 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		 * 1) construct the components (the nodes of an object graph)
 		 * 2) establish dependencies between components (the edges of the graph)
 		 * 3) further initialization
-		 * 4) algorithm renderer surface first constructed (so bounding rect
-		 *     is known); place activity in 'prepared' state 
-		 * 
-		 * Some things shouldn't occur until the activity is in the 'prepared' state,
-		 * since we don't know for instance what resolution the user is operating in.
+		 * 4) algorithm renderer surface first prepared (so bounding rect
+		 *     is known); this is done in the OpenGL thread, so a UI callback
+		 *     is started to notify the UI thread when this occurs; see
+		 *     ConcreteStepper.setSurfacePrepared().
 		 * 
 		 * </pre>
 		 */
@@ -60,7 +58,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		mEditor.setDependencies(this, mStepper, mOptions);
 		mStepper.setDependencies(mOptions, mEditor);
 		mOptions.setDependencies(mEditor, mStepper);
-		mRenderer.setDependencies(this, mEditor, mStepper);
+		mRenderer.setDependencies(mEditor, mStepper);
 	}
 
 	@Override
@@ -289,35 +287,10 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 				REQUEST_SHARE_GEOM_FILE);
 	}
 
-	/**
-	 * Set activity's prepared state true, if not already
-	 */
-	void setPrepared() {
-		if (DEB_STARTING) {
-			if (!mPrepared)
-				pr("setPrepared, called from " + stackTrace(1));
-		}
-		mPrepared = true;
-	}
-
-	/**
-	 * For test purposes only; verifies that activity has been prepared (see
-	 * discussion in constructor)
-	 */
-	public void verifyPrepared(boolean expectedValue) {
-		if (!DEBUG_ONLY_FEATURES)
-			return;
-		if (mPrepared == expectedValue)
-			return;
-		die("GeometryStepperActivity expected prepared " + d(expectedValue)
-				+ ", was " + d(mPrepared));
-	}
-
 	private ConcreteStepper mStepper;
 	private AlgorithmOptions mOptions;
 	private AlgorithmRenderer mRenderer;
 	private Editor mEditor;
 	private EditorGLSurfaceView mGLView;
 	private LinearLayout mAuxView;
-	private boolean mPrepared;
 }

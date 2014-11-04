@@ -14,6 +14,7 @@ import com.js.geometry.Point;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
+import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.opengl.Font;
 import com.js.opengl.GLTools;
@@ -63,6 +64,11 @@ public class RenderTools {
 		renderLine(p1, p2b);
 	}
 
+	public static void fillAlgBounds() {
+		sPolygonProgram.setColor(Color.WHITE);
+		sPolygonProgram.render(sAlgBoundsMesh);
+	}
+
 	static void setLineWidthState(float lineWidth) {
 		sLineWidth = lineWidth;
 	}
@@ -99,13 +105,14 @@ public class RenderTools {
 	 * renderer; i.e. setting up shaders and fonts. Should be called within
 	 * onSurfaceCreated(...)
 	 */
-	static void setRenderer(AlgorithmRenderer renderer) {
+	static void setRenderer(Rect algorithmBounds, AlgorithmRenderer renderer) {
 		GLTools.ensureRenderThread();
 		sRenderer = renderer;
 		sPolylineProgram = new PolylineProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sPolygonProgram = new PolygonProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
+		buildAlgBounds(algorithmBounds);
 		buildArrowheads();
 		buildPoints();
 		prepareSprites();
@@ -255,6 +262,13 @@ public class RenderTools {
 		sArrowheadMesh = PolygonMesh.meshForConvexPolygon(p);
 	}
 
+	private static void buildAlgBounds(Rect algorithmBounds) {
+		Polygon p = new Polygon();
+		for (int i = 0; i < 4; i++)
+			p.add(algorithmBounds.corner(i));
+		sAlgBoundsMesh = PolygonMesh.meshForConvexPolygon(p);
+	}
+
 	private static void buildPoints() {
 		int POINT_VERTICES = 10;
 		Polygon p = Polygon.circleWithOrigin(Point.ZERO, resolutionInfo()
@@ -337,6 +351,7 @@ public class RenderTools {
 	private static PolygonProgram sPolygonProgram;
 	private static PolylineProgram sPolylineProgram;
 	private static PolygonMesh sArrowheadMesh;
+	private static PolygonMesh sAlgBoundsMesh;
 	private static PolygonMesh sPointMesh;
 	private static Font sTitleFont;
 	private static Font sElementFont;

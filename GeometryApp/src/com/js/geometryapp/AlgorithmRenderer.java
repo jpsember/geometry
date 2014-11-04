@@ -72,10 +72,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (mStepper.getLock()) {
 			mStepper.acquireLock();
 			mStepper.setRendering(true);
-			// Clear the entire OpenGL view to a gray
-			final float GRAY = .8f;
-			gl.glClearColor(GRAY, GRAY, GRAY, 1f);
-			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			RenderTools.clearView(gl);
 
 			mEditor.render();
 			if (!mEditor.isActive())
@@ -127,8 +124,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		resolutionInfo.setInchesToPixelsAlgorithm(scaleDeviceToAlgorithm
 				* resolutionInfo.inchesToPixelsUI(1.0f));
 
-		Matrix algorithmToNDCTransform = new Matrix(
-				algorithmToDeviceTransform);
+		Matrix algorithmToNDCTransform = new Matrix(algorithmToDeviceTransform);
 		algorithmToNDCTransform
 				.postConcat(getTransform(TRANSFORM_NAME_DEVICE_TO_NDC));
 		addTransform(TRANSFORM_NAME_ALGORITHM_TO_NDC, algorithmToNDCTransform);

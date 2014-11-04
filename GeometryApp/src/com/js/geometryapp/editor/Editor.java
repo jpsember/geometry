@@ -25,7 +25,6 @@ import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
-import com.js.geometryapp.RenderTools;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.CheckBoxWidget;
@@ -249,9 +248,6 @@ public class Editor {
 		// editor is not active
 		mPickRadius = MyActivity.getResolutionInfo().inchesToPixelsAlgorithm(
 				.14f);
-
-		// Fill the algorithm bounds with white
-		RenderTools.fillAlgBounds();
 
 		if (!isActive() && !mRenderAlways.getBooleanValue())
 			return;

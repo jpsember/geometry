@@ -3,6 +3,8 @@ package com.js.geometryapp;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.microedition.khronos.opengles.GL10;
+
 import android.graphics.Color;
 import android.graphics.Matrix;
 
@@ -26,6 +28,25 @@ import static com.js.basic.Tools.*;
  * Utility methods and global state for algorithm-related rendering in OpenGL
  */
 public class RenderTools {
+
+	// If true, plots algorithm rect in white on gray background, vs entire view
+	// in white
+	public static final boolean SHOW_ALG_RECT = false;
+
+	public static void clearView(GL10 gl) {
+		if (SHOW_ALG_RECT) {
+			// Clear the entire OpenGL view to a gray
+			final float GRAY = .8f;
+			gl.glClearColor(GRAY, GRAY, GRAY, 1f);
+			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+			// Fill the algorithm bounds with white
+			sPolygonProgram.setColor(Color.WHITE);
+			sPolygonProgram.render(sAlgBoundsMesh);
+		} else {
+			gl.glClearColor(1, 1, 1, 1);
+			gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		}
+	}
 
 	static int getElementCount() {
 		int r = sElementsConstructed;
@@ -62,11 +83,6 @@ public class RenderTools {
 			sPolygonProgram.render(sArrowheadMesh, null, m);
 		}
 		renderLine(p1, p2b);
-	}
-
-	public static void fillAlgBounds() {
-		sPolygonProgram.setColor(Color.WHITE);
-		sPolygonProgram.render(sAlgBoundsMesh);
 	}
 
 	static void setLineWidthState(float lineWidth) {
@@ -112,7 +128,8 @@ public class RenderTools {
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
 		sPolygonProgram = new PolygonProgram(renderer,
 				AlgorithmRenderer.TRANSFORM_NAME_ALGORITHM_TO_NDC);
-		buildAlgBounds(algorithmBounds);
+		if (SHOW_ALG_RECT)
+			buildAlgBounds(algorithmBounds);
 		buildArrowheads();
 		buildPoints();
 		prepareSprites();

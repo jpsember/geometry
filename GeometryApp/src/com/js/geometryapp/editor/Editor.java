@@ -913,10 +913,7 @@ public class Editor {
 	}
 
 	public float pickRadius() {
-		// The pick radius may not be defined until editor view is first
-		// rendered; choose default value if necessary
-		if (mPickRadius == 0)
-			mPickRadius = 50.0f;
+		mActivity.verifyPrepared(true);
 		return mPickRadius;
 	}
 

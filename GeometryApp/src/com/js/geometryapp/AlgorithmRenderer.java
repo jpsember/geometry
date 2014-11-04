@@ -27,7 +27,9 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		super(context);
 	}
 
-	void setDependencies(Editor editor, ConcreteStepper stepper) {
+	void setDependencies(GeometryStepperActivity activity, Editor editor,
+			ConcreteStepper stepper) {
+		mActivity = activity;
 		mEditor = editor;
 		mStepper = stepper;
 	}
@@ -165,8 +167,10 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		addTransform(TRANSFORM_NAME_DEVICE_TO_ALGORITHM,
 				mDeviceToAlgorithmTransform);
+		mActivity.setPrepared();
 	}
 
 	private ConcreteStepper mStepper;
 	private Editor mEditor;
+	private GeometryStepperActivity mActivity;
 }

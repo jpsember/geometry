@@ -808,7 +808,7 @@ public class Editor {
 		float minUnhideSquaredDistance = 0;
 		boolean translationDefined = false;
 
-		Rect r = mStepper.algorithmRect();
+		Rect r = mStepper.visibleRect();
 		if (translationToApply != null) {
 			r = new Rect(r);
 			r.translate(-translationToApply.x, -translationToApply.y);

@@ -118,29 +118,29 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		mStepper.prepareAlgorithmRect(paddedDeviceRect);
 
-		Matrix mAlgorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
+		Matrix algorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
 				mStepper.algorithmRect(), paddedDeviceRect);
 		float[] v = new float[9];
-		mAlgorithmToDeviceTransform.getValues(v);
+		algorithmToDeviceTransform.getValues(v);
 		float scaleDeviceToAlgorithm = (1.0f / v[0]);
 
 		resolutionInfo.setInchesToPixelsAlgorithm(scaleDeviceToAlgorithm
 				* resolutionInfo.inchesToPixelsUI(1.0f));
 
-		Matrix mAlgorithmToNDCTransform = new Matrix(
-				mAlgorithmToDeviceTransform);
-		mAlgorithmToNDCTransform
+		Matrix algorithmToNDCTransform = new Matrix(
+				algorithmToDeviceTransform);
+		algorithmToNDCTransform
 				.postConcat(getTransform(TRANSFORM_NAME_DEVICE_TO_NDC));
-		addTransform(TRANSFORM_NAME_ALGORITHM_TO_NDC, mAlgorithmToNDCTransform);
+		addTransform(TRANSFORM_NAME_ALGORITHM_TO_NDC, algorithmToNDCTransform);
 
 		// Add a transform to convert algorithm -> device, for rendering text
 		addTransform(TRANSFORM_NAME_ALGORITHM_TO_DEVICE,
-				mAlgorithmToDeviceTransform);
+				algorithmToDeviceTransform);
 
 		// Construct inverse of the previous transform, for editor operations
-		Matrix mDeviceToAlgorithmTransform = new Matrix();
-		boolean inverted = mAlgorithmToDeviceTransform
-				.invert(mDeviceToAlgorithmTransform);
+		Matrix deviceToAlgorithmTransform = new Matrix();
+		boolean inverted = algorithmToDeviceTransform
+				.invert(deviceToAlgorithmTransform);
 		if (!inverted)
 			die("failed to invert matrix");
 
@@ -166,10 +166,20 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 		Matrix viewToDeviceMatrix = new Matrix();
 		viewToDeviceMatrix.setValues(v);
-		mDeviceToAlgorithmTransform.preConcat(viewToDeviceMatrix);
+		deviceToAlgorithmTransform.preConcat(viewToDeviceMatrix);
 
 		addTransform(TRANSFORM_NAME_DEVICE_TO_ALGORITHM,
-				mDeviceToAlgorithmTransform);
+				deviceToAlgorithmTransform);
+
+		// Now that device->algorithm transform known, apply it to the
+		// device bounds to get the visible rect (in alg space)
+		{
+			Point p0 = paddedDeviceRect.bottomLeft();
+			Point p1 = paddedDeviceRect.topRight();
+			p0.apply(deviceToAlgorithmTransform);
+			p1.apply(deviceToAlgorithmTransform);
+			mStepper.setVisibleRect(new Rect(p0, p1));
+		}
 	}
 
 	private ConcreteStepper mStepper;

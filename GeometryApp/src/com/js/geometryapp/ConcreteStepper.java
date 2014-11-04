@@ -62,14 +62,13 @@ public class ConcreteStepper implements AlgorithmStepper {
 	 * the space available
 	 * 
 	 * @param availableRect
-	 *            rectangle available (aspect ratio is significant, not the
-	 *            actual size)
+	 *            rectangle available, in device space (aspect ratio is
+	 *            significant, not the actual size)
 	 */
 	public void prepareAlgorithmRect(Rect availableRect) {
 		if (mAlgorithmRect != null)
 			return;
 		float ar = availableRect.height / availableRect.width;
-
 		if (ar > 1) {
 			mAlgorithmRect = new Rect(0, 0, 1000, ar * 1000);
 		} else {
@@ -77,10 +76,25 @@ public class ConcreteStepper implements AlgorithmStepper {
 		}
 	}
 
+	/**
+	 * Set visible rectangle, in algorithm space; this is probably bigger than
+	 * the algorithm rect, which was constructed to fit within it
+	 * 
+	 * @param visibleRect
+	 */
+	public void setVisibleRect(Rect visibleRect) {
+		mVisibleRect = visibleRect;
+	}
+
 	@Override
 	public Rect algorithmRect() {
 		ASSERT(mAlgorithmRect != null);
 		return mAlgorithmRect;
+	}
+
+	public Rect visibleRect() {
+		ASSERT(mVisibleRect != null);
+		return mVisibleRect;
 	}
 
 	@Override
@@ -781,6 +795,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private Layer mActiveBackgroundLayer;
 	private Rect mAlgorithmRect;
+	private Rect mVisibleRect;
 	private boolean mCompleted;
 	private GLSurfaceView mglSurfaceView;
 	private boolean mGLPrepared;

@@ -247,14 +247,20 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	/**
 	 * Share a data file via email
 	 * 
-	 * @param filename
-	 *            name given to file by user
+	 * @param name
+	 *            name given to file by user; will be incorporated into
+	 *            filename; if empty, uses "unknown"
 	 * @param attachment
 	 *            data file to include as attachment
 	 */
-	public void doShare(String filename, byte[] attachment) {
+	public void doShare(String name, byte[] attachment) {
+		if (name.isEmpty())
+			name = "unknown";
+
+		String filename = name + ".geom";
+
 		String recipient = "";
-		String subject = "Geometry Framework data file";
+		String subject = "Geometry Framework data file: " + filename;
 		String message = "";
 
 		final Intent intent = new Intent(Intent.ACTION_SEND);
@@ -264,9 +270,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		intent.putExtra(Intent.EXTRA_TEXT, message);
 
 		// create attachment
-		if (filename.length() == 0)
-			filename = "example";
-		filename = filename + ".geom";
 
 		File file = new File(getExternalCacheDir(), filename);
 		Throwable problem = null;

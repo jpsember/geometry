@@ -28,6 +28,7 @@ import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.CheckBoxWidget;
+import com.js.geometryapp.widget.TextWidget;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -162,9 +163,9 @@ public class Editor {
 
 		// put additional controls in the options window
 
-		unimp("even though this is in the options window, make it available when other aux views exist");
-		mOptions.addEditText(AlgorithmOptions.WIDGET_ID_FILENAME, "label",
-				"Filename", "editable", true);
+		mFilenameWidget = mOptions.addEditText(
+				AlgorithmOptions.WIDGET_ID_FILENAME, "label", "Filename",
+				"editable", true);
 		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
 				"Always plot editor");
 		mOptions.addStaticText("");
@@ -206,8 +207,7 @@ public class Editor {
 	private void doShare() {
 		try {
 			JSONObject map = compileObjectsToJSON();
-			String filename = mOptions
-					.getValue(AlgorithmOptions.WIDGET_ID_FILENAME);
+			String filename = mFilenameWidget.getValue();
 			map.put(JSON_KEY_FILENAME, filename);
 			String jsonState = map.toString();
 			byte[] bytes = jsonState.toString().getBytes();
@@ -404,8 +404,7 @@ public class Editor {
 			}
 			parseObjects(map, JSON_KEY_OBJECTS, mObjects);
 			parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
-			mOptions.setValue(AlgorithmOptions.WIDGET_ID_FILENAME,
-					map.optString(JSON_KEY_FILENAME));
+			mFilenameWidget.setValue(map.optString(JSON_KEY_FILENAME));
 		} catch (JSONException e) {
 			showException(context(), e, "Problem parsing json");
 		}
@@ -1070,4 +1069,7 @@ public class Editor {
 	// This accumulator should be considered immutable
 	private Point mDupAccumulator;
 	private boolean mDupAffectsClipboard;
+	// We keep a reference to this widget, since it isn't in the primary group
+	// and thus may not be accessible via getWidget()
+	private TextWidget mFilenameWidget;
 }

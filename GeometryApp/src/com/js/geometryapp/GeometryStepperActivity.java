@@ -254,9 +254,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	 *            data file to include as attachment
 	 */
 	public void doShare(String name, byte[] attachment) {
+		name = mEditor.sanitizeFilename(name);
 		if (name.isEmpty())
 			name = "unknown";
-
 		String filename = name + ".geom";
 
 		String recipient = "";

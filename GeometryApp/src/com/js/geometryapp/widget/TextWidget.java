@@ -42,6 +42,11 @@ public class TextWidget extends AbstractWidget {
 	 */
 	public static final String OPTION_CENTER = "center";
 
+	/**
+	 * Key for (optional) Validator to apply to user-edited content
+	 */
+	public static final String OPTION_VALIDATOR = "validator";
+
 	public TextWidget(AlgorithmOptions options, Map attributes) {
 		super(options, attributes);
 
@@ -86,7 +91,19 @@ public class TextWidget extends AbstractWidget {
 
 	@Override
 	public String parseUserValue() {
-		return textView().getText().toString();
+		String content = textView().getText().toString();
+		Validator v = (Validator) attributes().get("validator");
+		if (v != null) {
+			String origContent = content;
+			content = v.validate(this, content);
+			if (!content.equals(origContent))
+				updateUserValue(content);
+		}
+		return content;
+	}
+
+	public void setValidator(Validator v) {
+		setAttribute(OPTION_VALIDATOR, v);
 	}
 
 	private TextView textView() {
@@ -119,7 +136,7 @@ public class TextWidget extends AbstractWidget {
 			public void onClick(DialogInterface dialog, int whichButton) {
 				hideKeyboard(editText);
 				Editable value = editText.getText();
-				updateUserValue(value.toString());
+				setValue(value.toString());
 			}
 		});
 

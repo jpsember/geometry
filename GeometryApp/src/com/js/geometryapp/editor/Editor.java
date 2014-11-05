@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -166,6 +168,11 @@ public class Editor {
 		mFilenameWidget = mOptions.addEditText(
 				AlgorithmOptions.WIDGET_ID_FILENAME, "label", "Filename",
 				"editable", true);
+		mFilenameWidget.setValidator(new AbstractWidget.Validator() {
+			public String validate(AbstractWidget widget, String value) {
+				return sanitizeFilename(value);
+			}
+		});
 		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
 				"Always plot editor");
 		mOptions.addStaticText("");
@@ -922,7 +929,13 @@ public class Editor {
 	}
 
 	public float pickRadius() {
-		ASSERT(mPickRadius != 0);
+		// TODO: this business of requiring the OpenGL view to be prepared is
+		// problematic...
+		if (mPickRadius == 0) {
+			warning("mPickRadius was zero; called from:\n"
+					+ stackTrace(1, 10, null));
+			mPickRadius = 10;
+		}
 		return mPickRadius;
 	}
 
@@ -1042,6 +1055,23 @@ public class Editor {
 		mDupAccumulator = MyMath.add(mDupAccumulator, translation);
 		if (mDupAffectsClipboard)
 			replaceClipboardWithSelectedObjects();
+	}
+
+	/**
+	 * Sanitize a user-specified filename. It should NOT include any path
+	 * information or an extension
+	 * 
+	 * @param name
+	 * @return sanitized name (which may be empty)
+	 */
+	public String sanitizeFilename(String name) {
+		Pattern p = Pattern.compile("[a-zA-Z_0-9 ]*");
+		name = name.trim();
+		Matcher m = p.matcher(name);
+		if (!m.matches() || name.length() > 64) {
+			name = "";
+		}
+		return name;
 	}
 
 	private Map<String, EdObjectFactory> mObjectTypes;

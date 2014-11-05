@@ -83,6 +83,18 @@ public abstract class AbstractWidget {
 	 */
 	public static final String OPTION_LAYOUT_HEIGHT = "layout_height";
 
+	public static interface Validator {
+		/**
+		 * Validate a value for correctness
+		 * 
+		 * @param widget
+		 *            widget containing the value
+		 * @param value
+		 * @return validated value; will be written back to widget
+		 */
+		public String validate(AbstractWidget widget, String value);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder(nameOf(this));

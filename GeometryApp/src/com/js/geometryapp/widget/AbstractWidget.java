@@ -33,6 +33,11 @@ public abstract class AbstractWidget {
 	public static final String OPTION_VALUE = "value";
 
 	/**
+	 * Flag for whether widget's value (if it exists) should be persisted
+	 */
+	public static final String OPTION_PERSIST_VALUE = "hasvalue";
+
+	/**
 	 * String-valued label; if missing, uses id as label
 	 */
 	public static final String OPTION_LABEL = "label";

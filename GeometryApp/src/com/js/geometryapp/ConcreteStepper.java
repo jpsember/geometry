@@ -739,7 +739,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 			mOptions.begin(mAlgorithms);
 			releaseLock();
 		}
-		refresh();
 	}
 
 	/**

@@ -69,7 +69,16 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		super.onCreate(savedInstanceState);
 		addAlgorithms(mStepper);
 		mStepper.begin();
+		restoreEditorPreferences();
 		processIntent();
+		mStepper.refresh();
+	}
+
+	private void restoreEditorPreferences() {
+		String script = AppPreferences.getString(
+				GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
+		if (script != null)
+			mEditor.restoreFromJSON(script);
 	}
 
 	public abstract void addAlgorithms(AlgorithmStepper s);
@@ -123,12 +132,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 				editorView = borderView;
 			}
 			mainView.addView(editorView, p);
-
-			// Restore previous items
-			String script = AppPreferences.getString(
-					GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
-			if (script != null)
-				mEditor.restoreFromJSON(script);
 		}
 
 		buildAuxilliaryView();
@@ -244,10 +247,12 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 	/**
 	 * Share a data file via email
 	 * 
+	 * @param filename
+	 *            name given to file by user
 	 * @param attachment
 	 *            data file to include as attachment
 	 */
-	public void doShare(byte[] attachment) {
+	public void doShare(String filename, byte[] attachment) {
 		String recipient = "";
 		String subject = "Geometry Framework data file";
 		String message = "";
@@ -259,7 +264,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		intent.putExtra(Intent.EXTRA_TEXT, message);
 
 		// create attachment
-		String filename = "example.geom";
+		if (filename.length() == 0)
+			filename = "example";
+		filename = filename + ".geom";
 
 		File file = new File(getExternalCacheDir(), filename);
 		Throwable problem = null;

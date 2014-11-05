@@ -36,6 +36,8 @@ public class AlgorithmOptions {
 
 	static final String WIDGET_ID_TOTALSTEPS = "_steps_";
 	static final String WIDGET_ID_TARGETSTEP = "_target_";
+	public static final String WIDGET_ID_FILENAME = "_filename_";
+
 	private static final String WIDGET_ID_PREV_OPER = "_prevoper_";
 
 	// Algorithm-specific versions of the target & total steps
@@ -156,7 +158,17 @@ public class AlgorithmOptions {
 		mPreviousTextIndex++;
 		String id = "__text_" + mPreviousTextIndex;
 		Map<String, Object> attributes = buildAttributes(id, attributePairs);
-		attributes.put("label", content);
+		attributes.put(AbstractWidget.OPTION_HAS_LABEL, false);
+		attributes.put(AbstractWidget.OPTION_PERSIST_VALUE, false);
+
+		TextWidget w = new TextWidget(this, attributes);
+		w.updateUserValue(content);
+		addWidget(w);
+		return w;
+	}
+
+	public TextWidget addEditText(String id, Object... attributePairs) {
+		Map<String, Object> attributes = buildAttributes(id, attributePairs);
 		TextWidget w = new TextWidget(this, attributes);
 		addWidget(w);
 		return w;
@@ -192,7 +204,11 @@ public class AlgorithmOptions {
 	}
 
 	public void setValue(String widgetId, int intValue) {
-		getWidget(widgetId).setValue(Integer.toString(intValue));
+		setValue(widgetId, Integer.toString(intValue));
+	}
+
+	public void setValue(String widgetId, String strValue) {
+		getWidget(widgetId).setValue(strValue);
 	}
 
 	public void setEnabled(String widgetId, boolean enabled) {
@@ -332,7 +348,7 @@ public class AlgorithmOptions {
 	private JSONObject getWidgetValueMap(WidgetGroup group) {
 		Map<String, String> values = new HashMap();
 		for (AbstractWidget w : group.widgets()) {
-			if (!w.boolAttr("hasvalue", true))
+			if (!w.boolAttr(AbstractWidget.OPTION_PERSIST_VALUE, true))
 				continue;
 			values.put(w.getId(), w.getValue());
 		}

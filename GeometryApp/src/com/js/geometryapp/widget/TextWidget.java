@@ -4,11 +4,32 @@ import java.util.Map;
 
 import com.js.geometryapp.AlgorithmOptions;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.text.Editable;
 import android.view.Gravity;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import static com.js.basic.Tools.*;
 
+/**
+ * <pre>
+ * 
+ * A TextWidget that is non-editable (the default) is represented by a TextView.
+ * If the TextWidget is editable, it is represented by an EditText, but one that
+ * acts like a button: when clicked, it brings up a dialog that contains a
+ * 'standard' EditText, and the (software) keyboard will appear at that point
+ * allowing the user to edit the text.  When the user dismisses that dialog, the
+ * keyboard will be removed.
+ * 
+ * </pre>
+ */
 public class TextWidget extends AbstractWidget {
 
 	/**
@@ -23,23 +44,102 @@ public class TextWidget extends AbstractWidget {
 
 	public TextWidget(AlgorithmOptions options, Map attributes) {
 		super(options, attributes);
-		attributes.put("hasvalue", false);
 
-		mTextView = new TextView(options.getContext());
-		mTextView.setText(this.getLabel(false));
+		if (!boolAttr("editable", false)) {
+			mTextView = new TextView(options.getContext());
+		} else {
+			mEditText = new EditText(options.getContext());
+			// We want user to click on this view, like a button, to bring up a
+			// dialog to edit its value
+			mEditText.setFocusable(false);
+			mEditText.setFocusableInTouchMode(false);
+			mEditText.setClickable(true);
+			mEditText.setOnClickListener(new OnClickListener() {
+				public void onClick(View view) {
+					displayDialog();
+				}
+			});
+		}
 
+		TextView tv = textView();
+		prepareTextView(tv);
 		if (boolAttr("header", false)) {
-			mTextView.setTextSize(mTextView.getTextSize() * 1.3f);
+			tv.setTextSize(mTextView.getTextSize() * 1.3f);
 		}
 		if (boolAttr("center", false)) {
-			mTextView.setGravity(Gravity.CENTER_HORIZONTAL);
+			tv.setGravity(Gravity.CENTER_HORIZONTAL);
 		}
+
+		if (boolAttr(OPTION_HAS_LABEL, true))
+			getView().addView(buildLabelView(true));
 
 		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(intAttr(
 				OPTION_LAYOUT_WIDTH, LayoutParams.MATCH_PARENT), intAttr(
 				OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT));
-		getView().addView(mTextView, p);
+		getView().addView(tv, p);
+	}
+
+	@Override
+	public void updateUserValue(String internalValue) {
+		textView().setText(internalValue);
+	}
+
+	@Override
+	public String parseUserValue() {
+		return textView().getText().toString();
+	}
+
+	private TextView textView() {
+		doNothing();
+		if (mEditText != null)
+			return mEditText;
+		return mTextView;
+	}
+
+	private void hideKeyboard(EditText editText) {
+		InputMethodManager imm = (InputMethodManager) editText.getContext()
+				.getSystemService(Context.INPUT_METHOD_SERVICE);
+		imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+	}
+
+	private void displayDialog() {
+		AlertDialog.Builder alert = new AlertDialog.Builder(context());
+
+		alert.setTitle("Filename");
+		String message = strAttr("prompt", "");
+		if (!message.isEmpty())
+			alert.setMessage(message);
+
+		final EditText editText = new EditText(this.context());
+		prepareTextView(editText);
+
+		alert.setView(editText);
+
+		alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int whichButton) {
+				hideKeyboard(editText);
+				Editable value = editText.getText();
+				updateUserValue(value.toString());
+			}
+		});
+
+		alert.setNegativeButton("Cancel",
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int whichButton) {
+						hideKeyboard(editText);
+					}
+				});
+
+		alert.show();
+
+		return;
+	}
+
+	private void prepareTextView(TextView editText) {
+		editText.setMaxLines(intAttr("maxlines", 1));
+		editText.setText(getValue());
 	}
 
 	private TextView mTextView;
+	private EditText mEditText;
 }

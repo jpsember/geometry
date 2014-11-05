@@ -52,6 +52,7 @@ public class Editor {
 	private static final int MAX_COMMAND_HISTORY_SIZE = 30;
 	private static final String JSON_KEY_OBJECTS = "obj";
 	private static final String JSON_KEY_CLIPBOARD = "cb";
+	private static final String JSON_KEY_FILENAME = "filename";
 	private static final int MAX_OBJECTS_IN_FILE = 500;
 
 	public Editor() {
@@ -161,6 +162,9 @@ public class Editor {
 
 		// put additional controls in the options window
 
+		unimp("even though this is in the options window, make it available when other aux views exist");
+		mOptions.addEditText(AlgorithmOptions.WIDGET_ID_FILENAME, "label",
+				"Filename", "editable", true);
 		mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
 				"Always plot editor");
 		mOptions.addStaticText("");
@@ -201,9 +205,13 @@ public class Editor {
 
 	private void doShare() {
 		try {
-			String jsonState = compileObjectsToJSON();
+			JSONObject map = compileObjectsToJSON();
+			String filename = mOptions
+					.getValue(AlgorithmOptions.WIDGET_ID_FILENAME);
+			map.put(JSON_KEY_FILENAME, filename);
+			String jsonState = map.toString();
 			byte[] bytes = jsonState.toString().getBytes();
-			mActivity.doShare(bytes);
+			mActivity.doShare(filename, bytes);
 		} catch (JSONException e) {
 			showException(context(), e, null);
 		}
@@ -396,6 +404,8 @@ public class Editor {
 			}
 			parseObjects(map, JSON_KEY_OBJECTS, mObjects);
 			parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
+			mOptions.setValue(AlgorithmOptions.WIDGET_ID_FILENAME,
+					map.optString(JSON_KEY_FILENAME));
 		} catch (JSONException e) {
 			showException(context(), e, "Problem parsing json");
 		}
@@ -500,7 +510,8 @@ public class Editor {
 
 	private void persistEditorStateAux() {
 		try {
-			String jsonState = compileObjectsToJSON();
+			JSONObject map = compileObjectsToJSON();
+			String jsonState = map.toString();
 			if (!jsonState.equals(mLastSavedState)) {
 				AppPreferences.putString(
 						GeometryStepperActivity.PERSIST_KEY_EDITOR, jsonState);
@@ -527,11 +538,11 @@ public class Editor {
 		return values;
 	}
 
-	private String compileObjectsToJSON() throws JSONException {
+	private JSONObject compileObjectsToJSON() throws JSONException {
 		JSONObject editorMap = new JSONObject();
 		editorMap.put(JSON_KEY_OBJECTS, getEdObjectsArrayJSON(objects()));
 		editorMap.put(JSON_KEY_CLIPBOARD, getEdObjectsArrayJSON(mClipboard));
-		return editorMap.toString();
+		return editorMap;
 	}
 
 	private void addObjectType(EdObjectFactory factory) {

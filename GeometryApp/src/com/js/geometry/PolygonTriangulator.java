@@ -67,8 +67,7 @@ public class PolygonTriangulator {
 				RenderTools.buildColoredRenderable(
 						Color.argb(0x40, 0x80, 0x80, 0x80),
 						mPolygon.renderable(true)));
-		s.addLayer(BGND_ELEMENT_POLYGON_OUTLINE,
-				RenderTools.buildColoredRenderable(Color.BLUE, mPolygon));
+		s.addLayer(BGND_ELEMENT_POLYGON_OUTLINE, mPolygon);
 		s.addLayer(BGND_ELEMENT_MESH, mMesh);
 
 		if (s.bigStep())

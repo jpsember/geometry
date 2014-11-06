@@ -69,7 +69,6 @@ public class StarshapedHoleTriangulator {
 			}
 		});
 		s.addLayer(BGND_ELEMENT_MESH, mMesh);
-		// TODO: does this need coloring?
 		s.addLayer(BGND_ELEMENT_KERNEL, RenderTools.buildColoredRenderable(
 				RenderTools.COLOR_DARKGREEN, mKernelPoint));
 		calcHoleSize();

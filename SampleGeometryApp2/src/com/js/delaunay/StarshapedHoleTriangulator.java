@@ -72,7 +72,7 @@ public class StarshapedHoleTriangulator {
 
 		s.addLayer(BGND_ELEMENT_MESH, mMesh);
 		s.addLayer(BGND_ELEMENT_KERNEL,
-				RenderTools.colored(RenderTools.COLOR_DARKGREEN, mKernelPoint));
+				s.colored(RenderTools.COLOR_DARKGREEN, mKernelPoint));
 		calcHoleSize();
 		mInitialHoleSize = mHoleSize;
 		mTotalSteps = 0;

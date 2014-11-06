@@ -198,6 +198,22 @@ public abstract class AlgorithmStepper {
 		mActive = active;
 	}
 
+	/**
+	 * Construct a wrapper for a Renderable that renders it using highlighted
+	 * colors; default implementation returns the original renderable
+	 */
+	public Renderable highlighted(final Renderable r) {
+		return r;
+	}
+
+	/**
+	 * Construct a wrapper for a Renderable that renders it with a particular
+	 * color; default implementation returns the original renderable
+	 */
+	public Renderable colored(final int color, final Renderable r) {
+		return r;
+	}
+
 	private boolean mActive;
 	private List<Boolean> mActiveStack = new ArrayList();
 }

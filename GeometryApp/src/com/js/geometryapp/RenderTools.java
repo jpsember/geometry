@@ -367,18 +367,10 @@ public class RenderTools {
 	}
 
 	/**
-	 * Construct a wrapper for a Renderable that renders it using highlighted
-	 * colors
-	 */
-	public static Renderable highlighted(final Renderable r) {
-		return colored(Color.RED, r);
-	}
-
-	/**
 	 * Construct a wrapper for a Renderable that renders it with a particular
 	 * color
 	 */
-	public static Renderable colored(final int color, final Renderable r) {
+	static Renderable colored(final int color, final Renderable r) {
 		return new RenderableStateWrapper(r, color, getRenderLineWidth());
 	}
 

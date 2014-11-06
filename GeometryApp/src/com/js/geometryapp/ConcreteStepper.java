@@ -296,6 +296,22 @@ public class ConcreteStepper extends AlgorithmStepper {
 	}
 
 	/**
+	 * Construct a wrapper for a Renderable that renders it using highlighted
+	 * colors
+	 */
+	public Renderable highlighted(final Renderable r) {
+		return RenderTools.colored(Color.RED, r);
+	}
+
+	/**
+	 * Construct a wrapper for a Renderable that renders it with a particular
+	 * color
+	 */
+	public Renderable colored(final int color, final Renderable r) {
+		return RenderTools.colored(color, r);
+	}
+
+	/**
 	 * Request a refresh of the algorithm display. Runs to the target step (if
 	 * possible) and displays that frame.
 	 */

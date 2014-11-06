@@ -10,7 +10,6 @@ import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.geometryapp.RenderTools;
 import com.js.geometryapp.widget.ComboBoxWidget;
 
 import static com.js.basic.Tools.*;
@@ -58,8 +57,7 @@ public class DelaunayDriver implements Algorithm {
 		boolean withDeletions = deleteAll
 				|| mOptions.getBooleanValue("Deletions");
 
-		s.addLayer(BGND_ELEMENT_MESH, RenderTools.buildColoredRenderable(
-				RenderTools.COLOR_LIGHTBLUE, mMesh));
+		s.addLayer(BGND_ELEMENT_MESH, mMesh);
 
 		Rect delaunayBounds = null;
 		if (mOptions.getBooleanValue("Small initial mesh")) {

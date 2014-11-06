@@ -3,6 +3,8 @@ package com.js.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Color;
+
 import com.js.geometryapp.RenderTools;
 
 import static com.js.basic.Tools.*;
@@ -251,6 +253,8 @@ public final class Mesh implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper s) {
+		final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
+		s.setColor(COLOR_LIGHTBLUE);
 		for (Edge e : constructListOfEdges(true)) {
 			RenderTools.renderLine(e.sourceVertex(), e.destVertex());
 		}

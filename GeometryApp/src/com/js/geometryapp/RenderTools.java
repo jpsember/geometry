@@ -29,7 +29,6 @@ import static com.js.basic.Tools.*;
  */
 public class RenderTools {
 
-	public static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
 	public static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	// If true, plots algorithm rect in white on gray background, vs entire view

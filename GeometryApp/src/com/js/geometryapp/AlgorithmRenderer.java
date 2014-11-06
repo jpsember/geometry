@@ -54,7 +54,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		synchronized (mStepper.getLock()) {
 			mStepper.acquireLock();
 			super.onSurfaceChanged(gl, w, h);
-			mStepper.setSurfacePrepared();
 			// Let the algorithm stepper elements prepare using this renderer
 			RenderTools.setRenderer(mStepper.algorithmRect(), this);
 			// Call user method, now that synchronized

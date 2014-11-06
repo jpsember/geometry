@@ -39,11 +39,6 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 		 * 
 		 * 1) construct the components (the nodes of an object graph)
 		 * 2) establish dependencies between components (the edges of the graph)
-		 * 3) further initialization
-		 * 4) algorithm renderer surface first prepared (so bounding rect
-		 *     is known); this is done in the OpenGL thread, so a UI callback
-		 *     is started to notify the UI thread when this occurs; see
-		 *     ConcreteStepper.setSurfacePrepared().
 		 * 
 		 * </pre>
 		 */

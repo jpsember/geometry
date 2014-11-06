@@ -368,9 +368,6 @@ public class Editor {
 	private void updateButtonEnableStates() {
 		if (!mOptions.isEditorActive())
 			return;
-		if (!mStepper.isSurfacePrepared()) {
-			return;
-		}
 		if (QuiescentDelayOperation.replaceExisting(mPendingEnableOperation)) {
 			final float ENABLE_DELAY = .1f;
 			mPendingEnableOperation = new QuiescentDelayOperation("enable",
@@ -929,13 +926,6 @@ public class Editor {
 	}
 
 	public float pickRadius() {
-		// TODO: this business of requiring the OpenGL view to be prepared is
-		// problematic...
-		if (mPickRadius == 0) {
-			warning("mPickRadius was zero; called from:\n"
-					+ stackTrace(1, 10, null));
-			mPickRadius = 10;
-		}
 		return mPickRadius;
 	}
 

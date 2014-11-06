@@ -1,11 +1,11 @@
 package com.js.geometry;
 
 /**
- * An AlgorithmStepper implementation that does nothing
+ * An AlgorithmStepper implementation that is never active
  */
-public class DefaultStepper extends AlgorithmStepper {
+public class InactiveStepper extends AlgorithmStepper {
 
-	public DefaultStepper() {
+	public InactiveStepper() {
 	}
 
 	@Override

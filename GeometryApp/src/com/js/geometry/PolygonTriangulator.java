@@ -32,7 +32,7 @@ public class PolygonTriangulator {
 	private PolygonTriangulator(AlgorithmStepper stepper, Mesh mesh,
 			Polygon polygon) {
 		if (stepper == null)
-			stepper = AlgorithmStepper.DEFAULT_STEPPER;
+			stepper = AlgorithmStepper.INACTIVE_STEPPER;
 		s = stepper;
 		mMesh = mesh;
 		mPolygon = polygon;

@@ -15,7 +15,7 @@ public abstract class AlgorithmStepper {
 	/**
 	 * A stepper that does nothing
 	 */
-	public static final AlgorithmStepper DEFAULT_STEPPER = new DefaultStepper();
+	public static final AlgorithmStepper INACTIVE_STEPPER = new InactiveStepper();
 
 	/**
 	 * Add an algorithm. Each algorithm will appear in its own options panel

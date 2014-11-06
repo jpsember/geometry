@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -375,7 +376,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 		String renderMessage = null;
 		try {
 			renderBackgroundElements();
-			mForegroundLayer.render();
+			for (Renderable r : mForegroundLayer)
+				r.render(this);
 		} catch (Throwable t) {
 			// Issue #99: don't obscure an existing message, which may be a
 			// GeometryException
@@ -672,30 +674,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 		}
 	}
 
-	private class Layer {
-		public Layer(String name) {
-		}
-
-		public void clear() {
-			mElements.clear();
-		}
-
-		public ArrayList<Renderable> elements() {
-			return mElements;
-		}
-
-		public void add(Renderable element) {
-			mElements.add(element);
-		}
-
-		public void render() {
-			for (Renderable element : elements())
-				element.render(ConcreteStepper.this);
-		}
-
-		private ArrayList<Renderable> mElements = new ArrayList();
-	}
-
 	void begin() {
 		if (mAlgorithms.isEmpty())
 			die("no algorithms specified");
@@ -736,16 +714,16 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	private AlgorithmOptions mOptions;
 	private Editor mEditor;
-	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
-	private Layer mForegroundLayer = new Layer("_");
+	private List<Algorithm> mAlgorithms = new ArrayList();
+	private List<Renderable> mForegroundLayer = new ArrayList();
 	private Map<String, Renderable> mBackgroundLayers = new HashMap();
 	// Map of layer names -> existing layer sharing that name
 	private Set<String> mBackgroundLayerActiveNamesSet = new HashSet();
 	private String mFrameTitle;
 	private String mDoneMessage;
-	private ArrayList<Integer> mMilestones = new ArrayList();
+	private List<Integer> mMilestones = new ArrayList();
 	private boolean mActive;
-	private ArrayList<Boolean> mActiveStack = new ArrayList();
+	private List<Boolean> mActiveStack = new ArrayList();
 	private Rect mAlgorithmRect = new Rect(0, 0, 1200, 1000);
 	private Rect mVisibleRect;
 	private boolean mCompleted;

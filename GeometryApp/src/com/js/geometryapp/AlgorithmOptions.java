@@ -595,7 +595,7 @@ public class AlgorithmOptions {
 		}
 	}
 
-	void begin(ArrayList<Algorithm> algorithms) {
+	void begin(List<Algorithm> algorithms) {
 		prepareEditorOperationRecord();
 		// Create an ActiveOperationRecord for each algorithm
 		for (Algorithm algorithm : algorithms) {

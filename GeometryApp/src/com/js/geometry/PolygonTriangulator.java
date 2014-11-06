@@ -103,20 +103,16 @@ public class PolygonTriangulator {
 				if (!mSweepLineVisible)
 					return;
 				s.setColor(RenderTools.COLOR_DARKGREEN);
-				s.setLineWidth(1);
 				Rect r = s.algorithmRect();
 				float horizExtent = r.width * .25f;
 				s.plotLine(new Point(-horizExtent, mSweepLinePosition),
 						new Point(r.width + horizExtent, mSweepLinePosition));
-				s.setColor(RenderTools.COLOR_DARKGREEN);
 				s.setLineWidth(2);
 				for (SweepEdge e : mSweepStatus) {
 
 					// Extrapolate a little above and below the
 					// sweep line
-					float vertExtent = 22; // TODO: do we still need this?
-					// * AlgorithmRenderer
-					// .algorithmToDensityPixels();
+					float vertExtent = 22;
 					Point p1 = e.positionOnSweepLine(mSweepLinePosition
 							- vertExtent * .8f, mMesh, true);
 					Point p2 = e.positionOnSweepLine(mSweepLinePosition

@@ -382,15 +382,8 @@ public class RenderTools {
 	 * Construct a wrapper for a Renderable that renders it with a particular
 	 * color
 	 */
-	public static Renderable colored(final int color,
-			final Renderable r) {
-		return new Renderable() {
-			@Override
-			public void render(AlgorithmStepper stepper) {
-				stepper.setColor(color);
-				stepper.plot(r);
-			}
-		};
+	public static Renderable colored(final int color, final Renderable r) {
+		return new RenderableStateWrapper(r, color, getRenderLineWidth());
 	}
 
 	private static float sArrowheadLength;

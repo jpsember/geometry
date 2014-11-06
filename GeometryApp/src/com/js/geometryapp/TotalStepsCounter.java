@@ -2,8 +2,6 @@ package com.js.geometryapp;
 
 import static com.js.basic.Tools.*;
 
-import java.util.ArrayList;
-
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Rect;
 
@@ -50,9 +48,8 @@ class TotalStepsCounter extends AlgorithmStepper {
 	}
 
 	public int countSteps(AlgorithmInput input) {
-		setActive(true);
+		initializeActiveState(true);
 		mCurrentStep = 0;
-		mActiveStack.clear();
 		try {
 			Algorithm algorithm = mOriginalStepper.getOptions()
 					.getActiveAlgorithm();
@@ -71,6 +68,5 @@ class TotalStepsCounter extends AlgorithmStepper {
 	}
 
 	private ConcreteStepper mOriginalStepper;
-	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private int mCurrentStep;
 }

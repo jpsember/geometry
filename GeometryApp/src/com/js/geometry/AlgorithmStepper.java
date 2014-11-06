@@ -194,10 +194,6 @@ public abstract class AlgorithmStepper {
 		return EMPTY_STRING;
 	}
 
-	protected void setActive(boolean active) {
-		mActive = active;
-	}
-
 	/**
 	 * Construct a wrapper for a Renderable that renders it using highlighted
 	 * colors; default implementation returns the original renderable
@@ -212,6 +208,10 @@ public abstract class AlgorithmStepper {
 	 */
 	public Renderable colored(final int color, final Renderable r) {
 		return r;
+	}
+
+	private void setActive(boolean active) {
+		mActive = active;
 	}
 
 	private boolean mActive;

@@ -7,8 +7,9 @@ import com.js.geometry.Rect;
 
 class TotalStepsCounter extends AlgorithmStepper {
 
-	TotalStepsCounter(ConcreteStepper original) {
+	TotalStepsCounter(AlgorithmStepper original, AlgorithmOptions options) {
 		mOriginalStepper = original;
+		mOptions = options;
 	}
 
 	@Override
@@ -20,7 +21,7 @@ class TotalStepsCounter extends AlgorithmStepper {
 	public void pushActive(String widgetId) {
 		boolean value = isActive();
 		if (value) {
-			value = mOriginalStepper.getOptions().getBooleanValue(widgetId);
+			value = mOptions.getBooleanValue(widgetId);
 		}
 		pushActive(value);
 	}
@@ -51,8 +52,7 @@ class TotalStepsCounter extends AlgorithmStepper {
 		initializeActiveState(true);
 		mCurrentStep = 0;
 		try {
-			Algorithm algorithm = mOriginalStepper.getOptions()
-					.getActiveAlgorithm();
+			Algorithm algorithm = mOptions.getActiveAlgorithm();
 			algorithm.run(this, input);
 			// We completed the algorithm without halting.
 			// Increment the step, since we would normally show a 'done'
@@ -67,6 +67,7 @@ class TotalStepsCounter extends AlgorithmStepper {
 	private static class DesiredStepReachedException extends RuntimeException {
 	}
 
-	private ConcreteStepper mOriginalStepper;
+	private AlgorithmStepper mOriginalStepper;
 	private int mCurrentStep;
+	private AlgorithmOptions mOptions;
 }

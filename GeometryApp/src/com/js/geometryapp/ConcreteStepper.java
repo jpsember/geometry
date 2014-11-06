@@ -369,10 +369,6 @@ public class ConcreteStepper extends AlgorithmStepper {
 		}
 	}
 
-	AlgorithmOptions getOptions() {
-		return mOptions;
-	}
-
 	/**
 	 * Render algorithm frame, by plotting all previously constructed layers and
 	 * the frame's title
@@ -428,7 +424,7 @@ public class ConcreteStepper extends AlgorithmStepper {
 
 	void calculateAlgorithmTotalSteps() {
 		// Construct a stepper for this purpose, instead of this one
-		TotalStepsCounter s = new TotalStepsCounter(this);
+		TotalStepsCounter s = new TotalStepsCounter(this, mOptions);
 		int totalSteps;
 		synchronized (getLock()) {
 			acquireLock();

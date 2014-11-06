@@ -4,10 +4,10 @@ import static com.js.basic.Tools.*;
 
 import java.util.ArrayList;
 
-import com.js.geometry.DefaultStepper;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Rect;
 
-class TotalStepsCounter extends DefaultStepper {
+class TotalStepsCounter extends AlgorithmStepper {
 
 	TotalStepsCounter(ConcreteStepper original) {
 		mOriginalStepper = original;
@@ -19,26 +19,8 @@ class TotalStepsCounter extends DefaultStepper {
 	}
 
 	@Override
-	public boolean isActive() {
-		return mActive;
-	}
-
-	@Override
-	public void pushActive(boolean active) {
-		mActiveStack.add(mActive);
-		mActive &= active;
-	}
-
-	@Override
-	public void popActive() {
-		if (mActiveStack.isEmpty())
-			throw new IllegalStateException("active stack is empty");
-		mActive = pop(mActiveStack);
-	}
-
-	@Override
 	public void pushActive(String widgetId) {
-		boolean value = mActive;
+		boolean value = isActive();
 		if (value) {
 			value = mOriginalStepper.getOptions().getBooleanValue(widgetId);
 		}
@@ -68,7 +50,7 @@ class TotalStepsCounter extends DefaultStepper {
 	}
 
 	public int countSteps(AlgorithmInput input) {
-		mActive = true;
+		setActive(true);
 		mCurrentStep = 0;
 		mActiveStack.clear();
 		try {
@@ -89,7 +71,6 @@ class TotalStepsCounter extends DefaultStepper {
 	}
 
 	private ConcreteStepper mOriginalStepper;
-	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
 	private int mCurrentStep;
 }

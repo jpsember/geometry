@@ -1,24 +1,11 @@
 package com.js.geometry;
 
-import com.js.geometryapp.Algorithm;
-
 /**
  * An AlgorithmStepper implementation that does nothing
  */
-public class DefaultStepper implements AlgorithmStepper {
+public class DefaultStepper extends AlgorithmStepper {
 
 	public DefaultStepper() {
-	}
-
-	@Override
-	public void addAlgorithm(Algorithm delegate) {
-	}
-
-	private static final Rect sAlgorithmRect = new Rect(0, 0, 1200, 1000);
-
-	@Override
-	public Rect algorithmRect() {
-		return sAlgorithmRect;
 	}
 
 	@Override
@@ -36,67 +23,6 @@ public class DefaultStepper implements AlgorithmStepper {
 
 	@Override
 	public void pushActive(String widgetId) {
-	}
-
-	@Override
-	public boolean step() {
-		return false;
-	}
-
-	@Override
-	public boolean bigStep() {
-		return false;
-	}
-
-	@Override
-	public void show(String message) {
-	}
-
-	@Override
-	public void setDoneMessage(String message) {
-	}
-
-	@Override
-	public void removeLayer(String key) {
-	}
-
-	@Override
-	public String plot(Renderable element) {
-		return "";
-	}
-
-	@Override
-	public String highlight(Renderable element) {
-		return "";
-	}
-
-	@Override
-	public String plotLine(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String highlightLine(Point p1, Point p2) {
-		return "";
-	}
-
-	@Override
-	public String setColor(int color) {
-		return "";
-	}
-
-	@Override
-	public String setLineWidth(float lineWidth) {
-		return "";
-	}
-
-	@Override
-	public String setNormal() {
-		return "";
-	}
-
-	@Override
-	public void addLayer(String key, Renderable renderable) {
 	}
 
 }

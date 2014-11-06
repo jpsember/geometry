@@ -25,7 +25,7 @@ import com.js.geometry.Segment;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.widget.AbstractWidget;
 
-public class ConcreteStepper implements AlgorithmStepper {
+public class ConcreteStepper extends AlgorithmStepper {
 
 	/**
 	 * This debug-only flag, if true, performs additional tests to verify that
@@ -39,9 +39,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	static final String WIDGET_ID_STEP_FWD = ">";
 
 	private static final float HIGHLIGHT_LINE_WIDTH = 3.0f;
-
-	ConcreteStepper() {
-	}
 
 	void setDependencies(AlgorithmOptions options, Editor editor) {
 		mOptions = options;
@@ -85,6 +82,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public Rect algorithmRect() {
+		if (mAlgorithmRect == null)
+			return super.algorithmRect();
 		return mAlgorithmRect;
 	}
 
@@ -94,29 +93,16 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public boolean isActive() {
-		return mActive;
-	}
-
-	@Override
-	public void pushActive(boolean active) {
-		mActiveStack.add(mActive);
-		mActive &= active;
-	}
-
-	@Override
 	public void popActive() {
-		if (mActiveStack.isEmpty())
-			throw new IllegalStateException("active stack is empty");
-		if (mActive) {
+		if (isActive()) {
 			removeCurrentBackgroundLayers();
 		}
-		mActive = pop(mActiveStack);
+		super.popActive();
 	}
 
 	@Override
 	public void pushActive(String widgetId) {
-		boolean value = mActive;
+		boolean value = isActive();
 		if (value)
 			value = mOptions.getBooleanValue(widgetId);
 		pushActive(value);
@@ -267,15 +253,14 @@ public class ConcreteStepper implements AlgorithmStepper {
 			// render state (color, line width)
 			mForegroundLayer.add(RenderTools.wrapRenderableWithState(element));
 		}
-		return "";
+		return EMPTY_STRING;
 	}
 
 	@Override
 	public String highlight(Renderable element) {
 		setColor(Color.RED);
 		plot(element);
-		setNormal();
-		return "";
+		return setNormal();
 	}
 
 	@Override
@@ -285,8 +270,10 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String highlightLine(Point p1, Point p2) {
-		return setColor(Color.RED) + setLineWidth(HIGHLIGHT_LINE_WIDTH)
-				+ plotLine(p1, p2) + setNormal();
+		RenderTools.setColorState(Color.RED);
+		RenderTools.setLineWidthState(HIGHLIGHT_LINE_WIDTH);
+		plotLine(p1, p2);
+		return setNormal();
 	}
 
 	@Override
@@ -303,7 +290,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public String setNormal() {
-		return setColor(Color.BLUE) + setLineWidth(1);
+		RenderTools.setColorState(Color.BLUE);
+		RenderTools.setLineWidthState(1);
+		return EMPTY_STRING;
 	}
 
 	/**
@@ -579,11 +568,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 			mMilestones.add(n);
 	}
 
-	private void initializeActiveState(boolean active) {
-		mActive = active;
-		mActiveStack.clear();
-	}
-
 	void addStepperViewListeners() {
 
 		final String[] ids = { WIDGET_ID_JUMP_BWD, WIDGET_ID_JUMP_FWD,
@@ -722,9 +706,8 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private String mFrameTitle;
 	private String mDoneMessage;
 	private List<Integer> mMilestones = new ArrayList();
-	private boolean mActive;
 	private List<Boolean> mActiveStack = new ArrayList();
-	private Rect mAlgorithmRect = new Rect(0, 0, 1200, 1000);
+	private Rect mAlgorithmRect;
 	private Rect mVisibleRect;
 	private boolean mCompleted;
 	private GLSurfaceView mglSurfaceView;

@@ -89,8 +89,15 @@ public interface AlgorithmStepper {
 	 * (until the layer is removed). Layers are plotted in alphabetical order by
 	 * key, so the last layer plotted is topmost in the view.
 	 * 
+	 * If the layer has a name, and the name matches that of any existing layer,
+	 * it won't be added. The name is defined as (trimmed) characters following
+	 * the first colon (:) in the layer's key. For example, to prevent a
+	 * particular mesh from being drawn twice: once in an outer algorithm, and
+	 * again within a call to a subalgorithm.
+	 * 
 	 * @param key
-	 *            uniquely distinguishes this layer from others
+	 *            uniquely distinguishes this layer from others; can optionally
+	 *            contain a name suffix ":xxx"
 	 */
 	public void addLayer(String key, Renderable renderable);
 

@@ -364,6 +364,33 @@ public class RenderTools {
 		private float mLineWidth;
 	}
 
+	/**
+	 * Construct a wrapper for a Renderable that renders it as highlighted
+	 */
+	public static Renderable buildHighlightingRenderable(final Renderable r) {
+		return new Renderable() {
+			@Override
+			public void render(AlgorithmStepper stepper) {
+				stepper.highlight(r);
+			}
+		};
+	}
+
+	/**
+	 * Construct a wrapper for a Renderable that renders it with a particular
+	 * color
+	 */
+	public static Renderable buildColoredRenderable(final int color,
+			final Renderable r) {
+		return new Renderable() {
+			@Override
+			public void render(AlgorithmStepper stepper) {
+				stepper.setColor(color);
+				stepper.plot(r);
+			}
+		};
+	}
+
 	private static float sArrowheadLength;
 	private static PolygonProgram sPolygonProgram;
 	private static PolylineProgram sPolylineProgram;

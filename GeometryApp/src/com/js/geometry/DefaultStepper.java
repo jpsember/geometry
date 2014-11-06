@@ -57,15 +57,6 @@ public class DefaultStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public boolean openLayer(String key) {
-		return false;
-	}
-
-	@Override
-	public void closeLayer() {
-	}
-
-	@Override
 	public void removeLayer(String key) {
 	}
 
@@ -102,6 +93,10 @@ public class DefaultStepper implements AlgorithmStepper {
 	@Override
 	public String setNormal() {
 		return "";
+	}
+
+	@Override
+	public void addLayer(String key, Renderable renderable) {
 	}
 
 }

@@ -10,6 +10,8 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.TreeSet;
 
+import com.js.geometryapp.RenderTools;
+
 import android.graphics.Color;
 
 /**
@@ -63,25 +65,15 @@ public class PolygonTriangulator {
 	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	public void triangulate() {
-		if (s.openLayer(BGND_ELEMENT_POLYGON_FILLED)) {
-			s.setColor(Color.argb(0x40, 0x80, 0x80, 0x80));
-			s.plot(mPolygon.renderable(true));
-			s.closeLayer();
-		}
-
-		if (s.openLayer(BGND_ELEMENT_POLYGON_OUTLINE)) {
-			s.setLineWidth(1);
-			s.setColor(Color.BLUE);
-			s.plot(mPolygon);
-			s.closeLayer();
-		}
-
-		if (s.openLayer(BGND_ELEMENT_MESH)) {
-			s.setLineWidth(1);
-			s.setColor(COLOR_LIGHTBLUE);
-			s.plot(mMesh);
-			s.closeLayer();
-		}
+		s.addLayer(
+				BGND_ELEMENT_POLYGON_FILLED,
+				RenderTools.buildColoredRenderable(
+						Color.argb(0x40, 0x80, 0x80, 0x80),
+						mPolygon.renderable(true)));
+		s.addLayer(BGND_ELEMENT_POLYGON_OUTLINE,
+				RenderTools.buildColoredRenderable(Color.BLUE, mPolygon));
+		s.addLayer(BGND_ELEMENT_MESH,
+				RenderTools.buildColoredRenderable(COLOR_LIGHTBLUE, mMesh));
 
 		if (s.bigStep())
 			s.show("Triangulating polygon");
@@ -113,42 +105,38 @@ public class PolygonTriangulator {
 		});
 		mSweepLineVisible = false;
 
-		if (s.openLayer(BGND_ELEMENT_SWEEPSTATUS)) {
-			s.plot(new Renderable() {
-				@Override
-				public void render(AlgorithmStepper s) {
-					if (!mSweepLineVisible)
-						return;
-					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(1);
-					Rect r = s.algorithmRect();
-					float horizExtent = r.width * .25f;
-					s.plotLine(
-							new Point(-horizExtent, mSweepLinePosition),
-							new Point(r.width + horizExtent, mSweepLinePosition));
-					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(2);
-					for (SweepEdge e : mSweepStatus) {
+		s.addLayer(BGND_ELEMENT_SWEEPSTATUS, new Renderable() {
+			@Override
+			public void render(AlgorithmStepper s) {
+				if (!mSweepLineVisible)
+					return;
+				s.setColor(COLOR_DARKGREEN);
+				s.setLineWidth(1);
+				Rect r = s.algorithmRect();
+				float horizExtent = r.width * .25f;
+				s.plotLine(new Point(-horizExtent, mSweepLinePosition),
+						new Point(r.width + horizExtent, mSweepLinePosition));
+				s.setColor(COLOR_DARKGREEN);
+				s.setLineWidth(2);
+				for (SweepEdge e : mSweepStatus) {
 
-						// Extrapolate a little above and below the
-						// sweep line
-						float vertExtent = 22; // TODO: do we still need this?
-						// * AlgorithmRenderer
-						// .algorithmToDensityPixels();
-						Point p1 = e.positionOnSweepLine(mSweepLinePosition
-								- vertExtent * .8f, mMesh, true);
-						Point p2 = e.positionOnSweepLine(mSweepLinePosition
-								+ vertExtent * 1.2f, mMesh, true);
-						s.plot(Segment.directed(p1, p2));
+					// Extrapolate a little above and below the
+					// sweep line
+					float vertExtent = 22; // TODO: do we still need this?
+					// * AlgorithmRenderer
+					// .algorithmToDensityPixels();
+					Point p1 = e.positionOnSweepLine(mSweepLinePosition
+							- vertExtent * .8f, mMesh, true);
+					Point p2 = e.positionOnSweepLine(mSweepLinePosition
+							+ vertExtent * 1.2f, mMesh, true);
+					s.plot(Segment.directed(p1, p2));
 
-						Point pt = e.positionOnSweepLine(mSweepLinePosition,
-								mMesh, false);
-						s.plot(pt);
-					}
+					Point pt = e.positionOnSweepLine(mSweepLinePosition, mMesh,
+							false);
+					s.plot(pt);
 				}
-			});
-			s.closeLayer();
-		}
+			}
+		});
 	}
 
 	private void createEventList() {
@@ -384,25 +372,26 @@ public class PolygonTriangulator {
 		}
 	}
 
-	private void triangulateMonotoneFace(Edge edgePointingToHighestVertex) {
+	private void triangulateMonotoneFace(final Edge edgePointingToHighestVertex) {
 		// have stepper display the face while triangulating it
-		if (s.openLayer(BGND_ELEMENT_MONOTONE_FACE)) {
-			// Construct CCW-ordered polygon from monotone face's vertices
-			buildVertexList(edgePointingToHighestVertex);
-			Polygon facePolygon = new Polygon();
-			Deque<Point> points = new ArrayDeque();
-			for (Vertex vertex : mVertexList) {
-				if (vertex.hasFlags(VERTEXFLAG_LEFTSIDE))
-					points.addLast(vertex);
-				else
-					points.addFirst(vertex);
+		s.addLayer(BGND_ELEMENT_MONOTONE_FACE, new Renderable() {
+			public void render(AlgorithmStepper s) {
+				// Construct CCW-ordered polygon from monotone face's vertices
+				buildVertexList(edgePointingToHighestVertex);
+				Polygon facePolygon = new Polygon();
+				Deque<Point> points = new ArrayDeque();
+				for (Vertex vertex : mVertexList) {
+					if (vertex.hasFlags(VERTEXFLAG_LEFTSIDE))
+						points.addLast(vertex);
+					else
+						points.addFirst(vertex);
+				}
+				while (!points.isEmpty())
+					facePolygon.add(points.removeFirst());
+				s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
+				s.plot(facePolygon.renderable(true));
 			}
-			while (!points.isEmpty())
-				facePolygon.add(points.removeFirst());
-			s.setColor(Color.argb(0x60, 0x80, 0xff, 0x80));
-			s.plot(facePolygon.renderable(true));
-			s.closeLayer();
-		}
+		});
 
 		// call an auxilliary function to do the actual triangulation
 		s.pushActive(DETAIL_TRIANGULATE_MONOTONE_FACE);

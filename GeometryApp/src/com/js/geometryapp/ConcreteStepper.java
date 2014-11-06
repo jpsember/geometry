@@ -57,16 +57,13 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	/**
-	 * If the algorithm rectangle hasn't been defined yet, set it up to best fit
-	 * the space available
+	 * Set algorithm rect to best fit the space available
 	 * 
 	 * @param availableRect
 	 *            rectangle available, in device space (aspect ratio is
 	 *            significant, not the actual size)
 	 */
 	public void prepareAlgorithmRect(Rect availableRect) {
-		if (mAlgorithmRect != null)
-			return;
 		float ar = availableRect.height / availableRect.width;
 		if (ar > 1) {
 			mAlgorithmRect = new Rect(0, 0, 1000, ar * 1000);
@@ -87,7 +84,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 	@Override
 	public Rect algorithmRect() {
-		ASSERT(mAlgorithmRect != null);
 		return mAlgorithmRect;
 	}
 
@@ -206,31 +202,20 @@ public class ConcreteStepper implements AlgorithmStepper {
 	}
 
 	@Override
-	public boolean openLayer(String key) {
+	public void addLayer(String key, Renderable layer) {
 		if (!isActive())
-			return false;
-
-		if (mActiveBackgroundLayer != null)
-			throw new IllegalStateException("layer already open");
-
-		// Issue #70: If this layer has a name that matches that of any existing
+			return;
+		// If this layer has a name that matches that of any existing
 		// layer, don't open it. The name is defined as (trimmed) characters
 		// following the first colon (:) in the layer's key
 		String layerName = extractNameFromLayerKey(key);
 		if (layerName != null) {
 			if (mBackgroundLayerActiveNamesSet.contains(layerName)) {
-				return false;
+				return;
 			}
-		}
-
-		RenderTools.resetRenderStateVars();
-		mActiveBackgroundLayer = new Layer(key);
-		mBackgroundLayers.put(getScopedBackgroundLayerKey(key),
-				mActiveBackgroundLayer);
-		if (layerName != null) {
 			mBackgroundLayerActiveNamesSet.add(layerName);
 		}
-		return true;
+		mBackgroundLayers.put(getScopedBackgroundLayerKey(key), layer);
 	}
 
 	/**
@@ -239,14 +224,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 	 */
 	private String getScopedBackgroundLayerKey(String key) {
 		return d(mActiveStack.size(), 2) + "_" + key;
-	}
-
-	@Override
-	public void closeLayer() {
-		if (!isActive())
-			throw new IllegalStateException("stepper must be active");
-		RenderTools.resetRenderStateVars();
-		mActiveBackgroundLayer = null;
 	}
 
 	@Override
@@ -285,14 +262,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 		if (rendering()) {
 			element.render(this);
 		} else {
-			// If there's an active background layer, add it to that instead
-			Layer targetLayer = mActiveBackgroundLayer;
-			if (targetLayer == null)
-				targetLayer = mForegroundLayer;
-
 			// Wrap the renderable in an object that also stores the current
 			// render state (color, line width)
-			targetLayer.add(RenderTools.wrapRenderableWithState(element));
+			mForegroundLayer.add(RenderTools.wrapRenderableWithState(element));
 		}
 		return "";
 	}
@@ -431,8 +403,9 @@ public class ConcreteStepper implements AlgorithmStepper {
 		ArrayList<String> keys = new ArrayList(mBackgroundLayers.keySet());
 		Collections.sort(keys, String.CASE_INSENSITIVE_ORDER);
 		for (String key : keys) {
-			Layer layer = mBackgroundLayers.get(key);
-			layer.render();
+			Renderable renderable = mBackgroundLayers.get(key);
+			RenderTools.resetRenderStateVars();
+			renderable.render(this);
 		}
 	}
 
@@ -475,7 +448,6 @@ public class ConcreteStepper implements AlgorithmStepper {
 
 			mCurrentStep = 0;
 
-			mActiveBackgroundLayer = null;
 			mBackgroundLayers.clear();
 			mBackgroundLayerActiveNamesSet.clear();
 			mForegroundLayer.clear();
@@ -766,7 +738,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private Editor mEditor;
 	private ArrayList<Algorithm> mAlgorithms = new ArrayList();
 	private Layer mForegroundLayer = new Layer("_");
-	private Map<String, Layer> mBackgroundLayers = new HashMap();
+	private Map<String, Renderable> mBackgroundLayers = new HashMap();
 	// Map of layer names -> existing layer sharing that name
 	private Set<String> mBackgroundLayerActiveNamesSet = new HashSet();
 	private String mFrameTitle;
@@ -774,8 +746,7 @@ public class ConcreteStepper implements AlgorithmStepper {
 	private ArrayList<Integer> mMilestones = new ArrayList();
 	private boolean mActive;
 	private ArrayList<Boolean> mActiveStack = new ArrayList();
-	private Layer mActiveBackgroundLayer;
-	private Rect mAlgorithmRect;
+	private Rect mAlgorithmRect = new Rect(0, 0, 1200, 1000);
 	private Rect mVisibleRect;
 	private boolean mCompleted;
 	private GLSurfaceView mglSurfaceView;

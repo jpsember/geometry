@@ -85,21 +85,14 @@ public interface AlgorithmStepper {
 	public void setDoneMessage(String message);
 
 	/**
-	 * Request to open a background layer. Subsequent plot() commands will be
-	 * redirected to this layer. If this returns true, then must be balanced by
-	 * a call to closeLayer(). Layers are plotted in alphabetical order, so the
-	 * last layer plotted is topmost in the view. Once defined, layers will
-	 * appear in every rendered frame, in addition to step-specific elements
+	 * Add a Renderable as a layer: one that will appear in every rendered frame
+	 * (until the layer is removed). Layers are plotted in alphabetical order by
+	 * key, so the last layer plotted is topmost in the view.
 	 * 
 	 * @param key
 	 *            uniquely distinguishes this layer from others
 	 */
-	public boolean openLayer(String key);
-
-	/**
-	 * Close layer previously opened via openLayer()
-	 */
-	public void closeLayer();
+	public void addLayer(String key, Renderable renderable);
 
 	/**
 	 * Remove a layer, so it will no longer be plotted

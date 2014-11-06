@@ -22,6 +22,7 @@ import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;
 import com.js.geometryapp.GeometryStepperActivity;
+import com.js.geometryapp.RenderTools;
 
 public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
@@ -90,50 +91,47 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		mRendering_DiscsExamined = new HashSet();
 		mRendering_CurrentDisc = null;
 
-		if (s.openLayer(BGND_ELEMENT_BITANGENTS)) {
-			s.plot(new Renderable() {
-				@Override
-				public void render(AlgorithmStepper s) {
-					// Keep track of which discs appeared as hull discs
-					Set<Disc> hullDiscsFound = new HashSet();
-					List<Bitangent> bitangentsFound = new ArrayList();
-					s.setColor(COLOR_DARKGREEN);
-					for (int pass = 0; pass < 2; pass++) {
-						List<Disc> hullDiscList = mHullDiscLists[pass];
-						Disc prevDisc = null;
-						for (Disc d : hullDiscList) {
-							hullDiscsFound.add(d);
-							s.plot(d);
-							if (prevDisc != null) {
-								Bitangent b = constructBitangent(prevDisc, d);
-								if (b != null)
-									bitangentsFound.add(b);
-							}
-							prevDisc = d;
-						}
-					}
-					// Plot discs: gray if unexamined, blue if examined and not
-					// on hull, green if examined and on hull
-					for (Disc d : mDiscs) {
-						// If current disc, it's already been rendered
-						if (d == mRendering_CurrentDisc)
-							continue;
-						if (hullDiscsFound.contains(d))
-							s.setColor(COLOR_DARKGREEN);
-						else if (!mRendering_DiscsExamined.contains(d))
-							s.setColor(Color.LTGRAY);
-						else
-							s.setColor(Color.BLUE);
+		s.addLayer(BGND_ELEMENT_BITANGENTS, new Renderable() {
+			@Override
+			public void render(AlgorithmStepper s) {
+				// Keep track of which discs appeared as hull discs
+				Set<Disc> hullDiscsFound = new HashSet();
+				List<Bitangent> bitangentsFound = new ArrayList();
+				s.setColor(COLOR_DARKGREEN);
+				for (int pass = 0; pass < 2; pass++) {
+					List<Disc> hullDiscList = mHullDiscLists[pass];
+					Disc prevDisc = null;
+					for (Disc d : hullDiscList) {
+						hullDiscsFound.add(d);
 						s.plot(d);
+						if (prevDisc != null) {
+							Bitangent b = constructBitangent(prevDisc, d);
+							if (b != null)
+								bitangentsFound.add(b);
+						}
+						prevDisc = d;
 					}
-					// Plot hull bitangents
-					s.setColor(COLOR_DARKGREEN);
-					for (Bitangent b : bitangentsFound)
-						s.plot(b);
 				}
-			});
-			s.closeLayer();
-		}
+				// Plot discs: gray if unexamined, blue if examined and not
+				// on hull, green if examined and on hull
+				for (Disc d : mDiscs) {
+					// If current disc, it's already been rendered
+					if (d == mRendering_CurrentDisc)
+						continue;
+					if (hullDiscsFound.contains(d))
+						s.setColor(COLOR_DARKGREEN);
+					else if (!mRendering_DiscsExamined.contains(d))
+						s.setColor(Color.LTGRAY);
+					else
+						s.setColor(Color.BLUE);
+					s.plot(d);
+				}
+				// Plot hull bitangents
+				s.setColor(COLOR_DARKGREEN);
+				for (Bitangent b : bitangentsFound)
+					s.plot(b);
+			}
+		});
 
 		sortDiscsBySize();
 		for (int pass = 0; pass < 2; pass++) {
@@ -149,10 +147,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			for (int i = mDiscs.size() - 1; i >= 0; i--) {
 				Disc d = mDiscs.get(i);
 				mRendering_CurrentDisc = d;
-				if (s.openLayer(BGND_ELEMENT_CURRENTDISC)) {
-					s.highlight(mRendering_CurrentDisc);
-					s.closeLayer();
-				}
+				s.addLayer(BGND_ELEMENT_CURRENTDISC, RenderTools
+						.buildHighlightingRenderable(mRendering_CurrentDisc));
 				processDisc(d);
 				mRendering_DiscsExamined.add(d);
 				mRendering_CurrentDisc = null;

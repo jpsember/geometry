@@ -16,6 +16,7 @@ import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
 import com.js.geometry.Vertex;
+import com.js.geometryapp.RenderTools;
 
 import static com.js.geometry.MyMath.*;
 import static com.js.basic.Tools.*;
@@ -62,10 +63,8 @@ public class Delaunay {
 	 * @return the new Vertex
 	 */
 	public Vertex add(Point point) {
-		if (s.openLayer(BGND_ELEMENT_QUERY_POINT)) {
-			s.highlight(point);
-			s.closeLayer();
-		}
+		s.addLayer(BGND_ELEMENT_QUERY_POINT,
+				RenderTools.buildHighlightingRenderable(point));
 
 		if (s.bigStep())
 			s.show("Add point");
@@ -74,10 +73,7 @@ public class Delaunay {
 
 		Vertex newVertex = insertPointIntoTriangle(point, edge);
 
-		if (s.isActive()) {
-			s.removeLayer(BGND_ELEMENT_QUERY_POINT);
-		}
-
+		s.removeLayer(BGND_ELEMENT_QUERY_POINT);
 		return newVertex;
 	}
 
@@ -88,10 +84,8 @@ public class Delaunay {
 	 *            vertex previously returned by add()
 	 */
 	public void remove(Vertex vertex) {
-		if (s.openLayer(BGND_ELEMENT_QUERY_POINT)) {
-			s.highlight(vertex);
-			s.closeLayer();
-		}
+		s.addLayer(BGND_ELEMENT_QUERY_POINT,
+				RenderTools.buildHighlightingRenderable(vertex));
 
 		if (s.bigStep())
 			s.show("Remove vertex");
@@ -112,10 +106,8 @@ public class Delaunay {
 		if (s.bigStep())
 			s.show("Filled hole");
 
-		if (s.isActive()) {
-			s.removeLayer(BGND_ELEMENT_HOLE_BOUNDARY);
-			s.removeLayer(BGND_ELEMENT_QUERY_POINT);
-		}
+		s.removeLayer(BGND_ELEMENT_HOLE_BOUNDARY);
+		s.removeLayer(BGND_ELEMENT_QUERY_POINT);
 
 		removeHoleBoundary();
 	}
@@ -203,19 +195,15 @@ public class Delaunay {
 			if (edge == holeEdge)
 				break;
 		}
-		if (s.openLayer(BGND_ELEMENT_HOLE_BOUNDARY)) {
-			s.plot(new Renderable() {
-				@Override
-				public void render(AlgorithmStepper s) {
-					s.setLineWidth(1);
-					s.setColor(COLOR_DARKGREEN);
-					for (Edge edge : mHoleEdges) {
-						s.plotLine(edge.sourceVertex(), edge.destVertex());
-					}
+		s.addLayer(BGND_ELEMENT_HOLE_BOUNDARY, new Renderable() {
+			public void render(AlgorithmStepper stepper) {
+				s.setLineWidth(1);
+				s.setColor(COLOR_DARKGREEN);
+				for (Edge edge : mHoleEdges) {
+					s.plotLine(edge.sourceVertex(), edge.destVertex());
 				}
-			});
-			s.closeLayer();
-		}
+			}
+		});
 	}
 
 	private void triangulateHole(Point kernelPoint) {
@@ -473,46 +461,43 @@ public class Delaunay {
 		return triangleEdge.nextFaceEdge().destVertex();
 	}
 
-	private Edge findTriangleContainingPoint(Point queryPoint) {
+	private Edge findTriangleContainingPoint(final Point queryPoint) {
 		s.pushActive(DETAIL_FIND_TRIANGLE);
 
 		mSearchHistory.clear();
-		if (s.openLayer(BGND_ELEMENT_SEARCH_HISTORY)) {
-			s.plot(new Renderable() {
-				@Override
-				public void render(AlgorithmStepper s) {
+		s.addLayer(BGND_ELEMENT_SEARCH_HISTORY, new Renderable() {
+			@Override
+			public void render(AlgorithmStepper s) {
+				s.setColor(COLOR_DARKGREEN);
+				s.setLineWidth(2);
+				Edge prevEdge = null;
+				Point prevCentroid = null;
+				for (Edge edge : mSearchHistory) {
+					s.setLineWidth(1);
 					s.setColor(COLOR_DARKGREEN);
-					s.setLineWidth(2);
-					Edge prevEdge = null;
-					Point prevCentroid = null;
-					for (Edge edge : mSearchHistory) {
-						s.setLineWidth(1);
-						s.setColor(COLOR_DARKGREEN);
-						Point p1 = edge.sourceVertex();
-						Point p2 = edge.destVertex();
-						Point centroid = faceCentroid(edge);
+					Point p1 = edge.sourceVertex();
+					Point p2 = edge.destVertex();
+					Point centroid = faceCentroid(edge);
 
-						if (prevEdge != null) {
-							// If segment connecting centroids intersects edge,
-							// just draw straight line
-							if (segSegIntersection(prevCentroid, centroid, p1,
-									p2, null) != null) {
-								s.plotLine(prevCentroid, centroid);
-							} else {
-								Point midPoint = MyMath.interpolateBetween(p1,
-										p2, .5f);
-								s.plotLine(midPoint, centroid);
-								s.plotLine(prevCentroid, midPoint);
-							}
+					if (prevEdge != null) {
+						// If segment connecting centroids intersects edge,
+						// just draw straight line
+						if (segSegIntersection(prevCentroid, centroid, p1, p2,
+								null) != null) {
+							s.plotLine(prevCentroid, centroid);
+						} else {
+							Point midPoint = MyMath.interpolateBetween(p1, p2,
+									.5f);
+							s.plotLine(midPoint, centroid);
+							s.plotLine(prevCentroid, midPoint);
 						}
-						s.plot(centroid);
-						prevEdge = edge;
-						prevCentroid = centroid;
 					}
+					s.plot(centroid);
+					prevEdge = edge;
+					prevCentroid = centroid;
 				}
-			});
-			s.closeLayer();
-		}
+			}
+		});
 
 		if (s.step())
 			s.show("Finding triangle containing point");
@@ -528,14 +513,15 @@ public class Delaunay {
 
 		// Construct segment from midpoint of the initial edge and the query
 		// point; we'll try to follow this line
-		Point bearingStartPoint = MyMath.interpolateBetween(
+		final Point bearingStartPoint = MyMath.interpolateBetween(
 				aEdge.sourceVertex(), aEdge.destVertex(), .5f);
-		if (s.openLayer(BGND_ELEMENT_BEARING_LINE)) {
-			s.setLineWidth(2);
-			s.setColor(Color.LTGRAY);
-			s.plot(Segment.directed(bearingStartPoint, queryPoint));
-			s.closeLayer();
-		}
+		s.addLayer(BGND_ELEMENT_BEARING_LINE, new Renderable() {
+			public void render(AlgorithmStepper stepper) {
+				s.setLineWidth(2);
+				s.setColor(Color.LTGRAY);
+				s.plot(Segment.directed(bearingStartPoint, queryPoint));
+			}
+		});
 
 		int maxIterations = mMesh.numVertices();
 		while (true) {

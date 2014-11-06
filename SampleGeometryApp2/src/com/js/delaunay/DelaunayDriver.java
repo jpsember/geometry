@@ -59,12 +59,13 @@ public class DelaunayDriver implements Algorithm {
 		boolean withDeletions = deleteAll
 				|| mOptions.getBooleanValue("Deletions");
 
-		if (s.openLayer(BGND_ELEMENT_MESH)) {
-			s.setLineWidth(1);
-			s.setColor(COLOR_LIGHTBLUE);
-			s.plot(mMesh);
-			s.closeLayer();
-		}
+		s.addLayer(BGND_ELEMENT_MESH, new Renderable() {
+			public void render(AlgorithmStepper stepper) {
+				s.setLineWidth(1);
+				s.setColor(COLOR_LIGHTBLUE);
+				s.plot(mMesh);
+			}
+		});
 
 		Rect delaunayBounds = null;
 		if (mOptions.getBooleanValue("Small initial mesh")) {
@@ -122,22 +123,19 @@ public class DelaunayDriver implements Algorithm {
 				removeArbitraryVertex();
 			s.setDoneMessage("Removed all vertices");
 		} else if (mOptions.getBooleanValue("Voronoi cells")) {
-			if (s.openLayer(BGND_ELEMENT_VORONOI_CELLS)) {
-				s.plot(new Renderable() {
-					@Override
-					public void render(AlgorithmStepper s) {
-						s.setLineWidth(2);
-						s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
-						for (int i = 0; i < mDelaunay.nSites(); i++) {
-							Vertex v = mDelaunay.site(i);
-							s.plot(v);
-							Polygon p = mDelaunay.constructVoronoiPolygon(i);
-							s.plot(p);
-						}
+			s.addLayer(BGND_ELEMENT_VORONOI_CELLS, new Renderable() {
+				@Override
+				public void render(AlgorithmStepper s) {
+					s.setLineWidth(2);
+					s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
+					for (int i = 0; i < mDelaunay.nSites(); i++) {
+						Vertex v = mDelaunay.site(i);
+						s.plot(v);
+						Polygon p = mDelaunay.constructVoronoiPolygon(i);
+						s.plot(p);
 					}
-				});
-				s.closeLayer();
-			}
+				}
+			});
 			s.setDoneMessage("Voronoi cells");
 		}
 	}

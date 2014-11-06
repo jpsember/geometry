@@ -12,6 +12,8 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Renderable;
 import com.js.geometry.Vertex;
+import com.js.geometryapp.RenderTools;
+
 import static com.js.basic.Tools.*;
 
 /**
@@ -59,34 +61,22 @@ public class StarshapedHoleTriangulator {
 	}
 
 	public void run() {
-		if (s.openLayer(BGND_ELEMENT_HOLE_POLYGON)) {
-			s.plot(new Renderable() {
-				@Override
-				public void render(AlgorithmStepper s) {
-					s.setColor(COLOR_DARKGREEN);
-					Edge edge = mStartEdge;
-					while (true) {
-						s.plotLine(edge.sourceVertex(), edge.destVertex());
-						edge = edge.nextFaceEdge();
-						if (edge == mStartEdge)
-							break;
-					}
+		s.addLayer(BGND_ELEMENT_HOLE_POLYGON, new Renderable() {
+			public void render(AlgorithmStepper s) {
+				s.setColor(COLOR_DARKGREEN);
+				Edge edge = mStartEdge;
+				while (true) {
+					s.plotLine(edge.sourceVertex(), edge.destVertex());
+					edge = edge.nextFaceEdge();
+					if (edge == mStartEdge)
+						break;
 				}
-			});
-			s.closeLayer();
-		}
-
-		if (s.openLayer(BGND_ELEMENT_MESH)) {
-			s.setColor(COLOR_LIGHTBLUE);
-			s.plot(mMesh);
-			s.closeLayer();
-		}
-
-		if (s.openLayer(BGND_ELEMENT_KERNEL)) {
-			s.setColor(COLOR_DARKGREEN);
-			s.plot(mKernelPoint);
-			s.closeLayer();
-		}
+			}
+		});
+		s.addLayer(BGND_ELEMENT_MESH,
+				RenderTools.buildColoredRenderable(COLOR_LIGHTBLUE, mMesh));
+		s.addLayer(BGND_ELEMENT_KERNEL, RenderTools.buildColoredRenderable(
+				COLOR_DARKGREEN, mKernelPoint));
 		calcHoleSize();
 		mInitialHoleSize = mHoleSize;
 		mTotalSteps = 0;

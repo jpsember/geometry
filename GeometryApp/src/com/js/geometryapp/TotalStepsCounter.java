@@ -67,11 +67,6 @@ class TotalStepsCounter extends DefaultStepper {
 		throw new DesiredStepReachedException();
 	}
 
-	@Override
-	public boolean openLayer(String key) {
-		return isActive();
-	}
-
 	public int countSteps(AlgorithmInput input) {
 		mActive = true;
 		mCurrentStep = 0;
@@ -85,7 +80,7 @@ class TotalStepsCounter extends DefaultStepper {
 			// milestone at this point
 			mCurrentStep++;
 		} catch (RuntimeException t) {
-			warning("TotalStepsCounter caught: "+t);
+			warning("TotalStepsCounter caught: " + t);
 		}
 		return mCurrentStep;
 	}

@@ -62,11 +62,8 @@ public class PolygonTriangulator {
 	private static final String BGND_ELEMENT_MESH = "00:mesh";
 
 	public void triangulate() {
-		s.addLayer(
-				BGND_ELEMENT_POLYGON_FILLED,
-				RenderTools.buildColoredRenderable(
-						Color.argb(0x40, 0x80, 0x80, 0x80),
-						mPolygon.renderable(true)));
+		s.addLayer(BGND_ELEMENT_POLYGON_FILLED, RenderTools.colored(
+				Color.argb(0x40, 0x80, 0x80, 0x80), mPolygon.renderable(true)));
 		s.addLayer(BGND_ELEMENT_POLYGON_OUTLINE, mPolygon);
 		s.addLayer(BGND_ELEMENT_MESH, mMesh);
 

@@ -369,7 +369,7 @@ public class RenderTools {
 	/**
 	 * Construct a wrapper for a Renderable that renders it as highlighted
 	 */
-	public static Renderable buildHighlightingRenderable(final Renderable r) {
+	public static Renderable highlighted(final Renderable r) {
 		return new Renderable() {
 			@Override
 			public void render(AlgorithmStepper stepper) {
@@ -382,7 +382,7 @@ public class RenderTools {
 	 * Construct a wrapper for a Renderable that renders it with a particular
 	 * color
 	 */
-	public static Renderable buildColoredRenderable(final int color,
+	public static Renderable colored(final int color,
 			final Renderable r) {
 		return new Renderable() {
 			@Override

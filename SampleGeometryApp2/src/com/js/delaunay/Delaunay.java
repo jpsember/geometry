@@ -63,7 +63,7 @@ public class Delaunay {
 	 */
 	public Vertex add(Point point) {
 		s.addLayer(BGND_ELEMENT_QUERY_POINT,
-				RenderTools.buildHighlightingRenderable(point));
+				RenderTools.highlighted(point));
 
 		if (s.bigStep())
 			s.show("Add point");
@@ -84,7 +84,7 @@ public class Delaunay {
 	 */
 	public void remove(Vertex vertex) {
 		s.addLayer(BGND_ELEMENT_QUERY_POINT,
-				RenderTools.buildHighlightingRenderable(vertex));
+				RenderTools.highlighted(vertex));
 
 		if (s.bigStep())
 			s.show("Remove vertex");

@@ -147,7 +147,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				Disc d = mDiscs.get(i);
 				mRendering_CurrentDisc = d;
 				s.addLayer(BGND_ELEMENT_CURRENTDISC, RenderTools
-						.buildHighlightingRenderable(mRendering_CurrentDisc));
+						.highlighted(mRendering_CurrentDisc));
 				processDisc(d);
 				mRendering_DiscsExamined.add(d);
 				mRendering_CurrentDisc = null;

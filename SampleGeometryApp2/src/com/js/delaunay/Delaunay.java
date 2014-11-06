@@ -32,7 +32,6 @@ public class Delaunay {
 	private static final String BGND_ELEMENT_SEARCH_HISTORY = "12";
 	private static final String BGND_ELEMENT_BEARING_LINE = "10";
 	private static final String BGND_ELEMENT_HOLE_BOUNDARY = "15";
-	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	private static final int EDGEFLAG_HOLEBOUNDARY = (1 << 0);
 	private static final int EDGEFLAG_HORIZON = (1 << 1);
@@ -198,7 +197,7 @@ public class Delaunay {
 		s.addLayer(BGND_ELEMENT_HOLE_BOUNDARY, new Renderable() {
 			public void render(AlgorithmStepper stepper) {
 				s.setLineWidth(1);
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				for (Edge edge : mHoleEdges) {
 					s.plotLine(edge.sourceVertex(), edge.destVertex());
 				}
@@ -447,7 +446,7 @@ public class Delaunay {
 					+ s.highlight(closestSample) + s.plot(new Renderable() {
 						@Override
 						public void render(AlgorithmStepper s) {
-							s.setColor(COLOR_DARKGREEN);
+							s.setColor(RenderTools.COLOR_DARKGREEN);
 							for (Vertex v : mSamples) {
 								s.plot(v);
 							}
@@ -468,13 +467,12 @@ public class Delaunay {
 		s.addLayer(BGND_ELEMENT_SEARCH_HISTORY, new Renderable() {
 			@Override
 			public void render(AlgorithmStepper s) {
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				s.setLineWidth(2);
 				Edge prevEdge = null;
 				Point prevCentroid = null;
 				for (Edge edge : mSearchHistory) {
 					s.setLineWidth(1);
-					s.setColor(COLOR_DARKGREEN);
 					Point p1 = edge.sourceVertex();
 					Point p2 = edge.destVertex();
 					Point centroid = faceCentroid(edge);

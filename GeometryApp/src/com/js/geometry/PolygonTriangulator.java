@@ -61,9 +61,6 @@ public class PolygonTriangulator {
 	private static final String BGND_ELEMENT_SWEEPSTATUS = "20";
 	private static final String BGND_ELEMENT_MESH = "00:mesh";
 
-	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
-	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
-
 	public void triangulate() {
 		s.addLayer(
 				BGND_ELEMENT_POLYGON_FILLED,
@@ -72,8 +69,8 @@ public class PolygonTriangulator {
 						mPolygon.renderable(true)));
 		s.addLayer(BGND_ELEMENT_POLYGON_OUTLINE,
 				RenderTools.buildColoredRenderable(Color.BLUE, mPolygon));
-		s.addLayer(BGND_ELEMENT_MESH,
-				RenderTools.buildColoredRenderable(COLOR_LIGHTBLUE, mMesh));
+		s.addLayer(BGND_ELEMENT_MESH, RenderTools.buildColoredRenderable(
+				RenderTools.COLOR_LIGHTBLUE, mMesh));
 
 		if (s.bigStep())
 			s.show("Triangulating polygon");
@@ -110,13 +107,13 @@ public class PolygonTriangulator {
 			public void render(AlgorithmStepper s) {
 				if (!mSweepLineVisible)
 					return;
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				s.setLineWidth(1);
 				Rect r = s.algorithmRect();
 				float horizExtent = r.width * .25f;
 				s.plotLine(new Point(-horizExtent, mSweepLinePosition),
 						new Point(r.width + horizExtent, mSweepLinePosition));
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				s.setLineWidth(2);
 				for (SweepEdge e : mSweepStatus) {
 

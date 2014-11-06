@@ -2,8 +2,6 @@ package com.js.starshaped;
 
 import java.util.ArrayList;
 
-import android.graphics.Color;
-
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
 import com.js.geometry.GeometryException;
@@ -45,9 +43,6 @@ public class StarshapedHoleTriangulator {
 	private static final String BGND_ELEMENT_MESH = "00:mesh";
 	private static final String BGND_ELEMENT_KERNEL = "05";
 
-	private static final int COLOR_LIGHTBLUE = Color.argb(80, 100, 100, 255);
-	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
-
 	private void calcHoleSize() {
 		int size = 0;
 		Edge edge = mStartEdge;
@@ -63,7 +58,7 @@ public class StarshapedHoleTriangulator {
 	public void run() {
 		s.addLayer(BGND_ELEMENT_HOLE_POLYGON, new Renderable() {
 			public void render(AlgorithmStepper s) {
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				Edge edge = mStartEdge;
 				while (true) {
 					s.plotLine(edge.sourceVertex(), edge.destVertex());
@@ -74,9 +69,11 @@ public class StarshapedHoleTriangulator {
 			}
 		});
 		s.addLayer(BGND_ELEMENT_MESH,
-				RenderTools.buildColoredRenderable(COLOR_LIGHTBLUE, mMesh));
+ RenderTools.buildColoredRenderable(
+				RenderTools.COLOR_LIGHTBLUE, mMesh));
+		// TODO: does this need coloring?
 		s.addLayer(BGND_ELEMENT_KERNEL, RenderTools.buildColoredRenderable(
-				COLOR_DARKGREEN, mKernelPoint));
+				RenderTools.COLOR_DARKGREEN, mKernelPoint));
 		calcHoleSize();
 		mInitialHoleSize = mHoleSize;
 		mTotalSteps = 0;

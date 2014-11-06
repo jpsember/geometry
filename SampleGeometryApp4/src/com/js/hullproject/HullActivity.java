@@ -34,7 +34,6 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 
 	private static final String BGND_ELEMENT_BITANGENTS = "10";
 	private static final String BGND_ELEMENT_CURRENTDISC = "20";
-	private static final int COLOR_DARKGREEN = Color.argb(255, 30, 128, 30);
 
 	@Override
 	public void addAlgorithms(AlgorithmStepper stepper) {
@@ -97,7 +96,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 				// Keep track of which discs appeared as hull discs
 				Set<Disc> hullDiscsFound = new HashSet();
 				List<Bitangent> bitangentsFound = new ArrayList();
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				for (int pass = 0; pass < 2; pass++) {
 					List<Disc> hullDiscList = mHullDiscLists[pass];
 					Disc prevDisc = null;
@@ -119,7 +118,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					if (d == mRendering_CurrentDisc)
 						continue;
 					if (hullDiscsFound.contains(d))
-						s.setColor(COLOR_DARKGREEN);
+						s.setColor(RenderTools.COLOR_DARKGREEN);
 					else if (!mRendering_DiscsExamined.contains(d))
 						s.setColor(Color.LTGRAY);
 					else
@@ -127,7 +126,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.plot(d);
 				}
 				// Plot hull bitangents
-				s.setColor(COLOR_DARKGREEN);
+				s.setColor(RenderTools.COLOR_DARKGREEN);
 				for (Bitangent b : bitangentsFound)
 					s.plot(b);
 			}

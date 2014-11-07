@@ -61,7 +61,7 @@ public class StarshapedHoleTriangulator {
 				s.setColor(RenderTools.COLOR_DARKGREEN);
 				Edge edge = mStartEdge;
 				while (true) {
-					s.plotLine(edge.sourceVertex(), edge.destVertex());
+					s.renderLine(edge.sourceVertex(), edge.destVertex());
 					edge = edge.nextFaceEdge();
 					if (edge == mStartEdge)
 						break;
@@ -91,20 +91,20 @@ public class StarshapedHoleTriangulator {
 			Vertex v2 = advanceEdge.destVertex();
 
 			if (s.step())
-				s.show("Current edge" + s.highlight(mStartEdge));
+				s.show("Current edge", s.highlighted(mStartEdge));
 
 			if (MyMath.sideOfLine(v0, v1, v2) < 0) {
 				if (s.step())
-					s.show("Vertex is reflex" + s.highlight(mStartEdge)
-							+ s.highlight(advanceEdge) + s.highlight(v1));
+					s.show("Vertex is reflex", s.highlighted(mStartEdge),
+							s.highlighted(advanceEdge), s.highlighted(v1));
 				mStartEdge = advanceEdge;
 				continue;
 			}
 
 			if (MyMath.sideOfLine(v0, v2, mKernelPoint) < 0) {
 				if (s.step())
-					s.show("Kernel to right of candidate"
-							+ s.highlightLine(v0, v2));
+					s.show("Kernel to right of candidate",
+							s.highlightedLine(v0, v2));
 				mStartEdge = advanceEdge;
 				continue;
 			}
@@ -114,7 +114,7 @@ public class StarshapedHoleTriangulator {
 			mNewEdges.add(newEdge);
 
 			if (s.step())
-				s.show("Adding edge" + s.highlight(newEdge));
+				s.show("Adding edge", s.highlighted(newEdge));
 			mHoleSize--;
 		}
 

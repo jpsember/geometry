@@ -99,10 +99,10 @@ public class ScaleOperation extends EditorEventListenerAdapter {
 		List<Point> handles = new ArrayList();
 		calculateHandleBaseLocations(mScaledRect, handles);
 		for (int i = 0; i < sLinesBetweenHandles.length; i += 2)
-			s.plotLine(handles.get(sLinesBetweenHandles[i]),
+			s.renderLine(handles.get(sLinesBetweenHandles[i]),
 					handles.get(sLinesBetweenHandles[i + 1]));
 		for (int i = 0; i < NUM_HANDLES; i++) {
-			s.plot(new Sprite(R.raw.squareicon, applyHandleExternalPadding(
+			s.render(new Sprite(R.raw.squareicon, applyHandleExternalPadding(
 					handles.get(i), i, true)));
 		}
 	}

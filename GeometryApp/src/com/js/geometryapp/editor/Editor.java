@@ -280,7 +280,7 @@ public class Editor {
 			mCurrentOperation.render(mStepper);
 		if (mPlotTouchLocation != null) {
 			mStepper.setColor(Color.BLACK);
-			mStepper.plot(new Sprite(R.raw.crosshairicon, mPlotTouchLocation));
+			mStepper.render(new Sprite(R.raw.crosshairicon, mPlotTouchLocation));
 		}
 		mStepper.setRendering(false);
 	}

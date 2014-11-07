@@ -98,8 +98,8 @@ public class RotateOperation extends EditorEventListenerAdapter {
 			corner.apply(calcTotalRotateTransform());
 			p.add(corner);
 		}
-		s.plot(p);
-		s.plot(new Sprite(R.raw.crosshairicon, mRect.midPoint()));
+		s.render(p);
+		s.render(new Sprite(R.raw.crosshairicon, mRect.midPoint()));
 	}
 
 	@Override

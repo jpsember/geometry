@@ -46,7 +46,7 @@ public class EdPoint extends EdObject {
 			super.render(s);
 		} else {
 			s.setColor(Color.BLUE);
-			s.plot(getPoint(0));
+			s.render(getPoint(0));
 		}
 	}
 

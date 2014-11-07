@@ -12,6 +12,7 @@ import com.js.geometry.GeometryException;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Polygon;
+import com.js.geometry.Polyline;
 import com.js.geometry.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
@@ -93,7 +94,7 @@ public class Delaunay {
 		Edge edge = vertex.edges();
 		Edge holeEdge = edge.nextFaceEdge();
 		if (s.step())
-			s.show("Edge of resulting hole" + s.highlight(holeEdge));
+			s.show("Edge of resulting hole", s.highlighted(holeEdge));
 
 		mMesh.deleteVertex(vertex);
 
@@ -197,7 +198,7 @@ public class Delaunay {
 				s.setLineWidth(1);
 				s.setColor(RenderTools.COLOR_DARKGREEN);
 				for (Edge edge : mHoleEdges) {
-					s.plotLine(edge.sourceVertex(), edge.destVertex());
+					s.renderLine(edge.sourceVertex(), edge.destVertex());
 				}
 			}
 		});
@@ -215,7 +216,7 @@ public class Delaunay {
 		s.pushActive(DETAIL_SWAPS);
 		for (Edge abEdge : triangulator.getNewEdges()) {
 			if (s.step())
-				s.show("Process next hole edge" + s.highlight(abEdge));
+				s.show("Process next hole edge", s.highlighted(abEdge));
 			swapTestQuad(abEdge);
 		}
 		s.popActive();
@@ -245,8 +246,9 @@ public class Delaunay {
 		mMesh.addEdge(vb, v);
 		mMesh.addEdge(vc, v);
 		if (s.step())
-			s.show("Partitioned triangle" + plot(va, vb, vc)
-					+ s.plotLine(va, v) + s.plotLine(vb, v) + s.plotLine(vc, v));
+			s.show("Partitioned triangle",
+					s.highlighted(Polyline.closedPolyline(va, vb, vc)),
+					s.line(va, v), s.line(vb, v), s.line(vc, v));
 
 		// Note (see issue #53): the sequence of edges examined in each of the
 		// three swapTest calls are disjoint, so no special bookkeeping is
@@ -287,8 +289,8 @@ public class Delaunay {
 		Edge awEdge = baEdge.nextFaceEdge();
 		Vertex w = awEdge.destVertex();
 		if (s.step())
-			s.show("SwapTest" + s.highlight(abEdge) + s.highlight(p)
-					+ s.highlight(w));
+			s.show("SwapTest", s.highlighted(abEdge), s.highlighted(p),
+					s.highlighted(w));
 
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
@@ -299,8 +301,8 @@ public class Delaunay {
 		if (determinant > 0) {
 
 			if (s.step())
-				s.show("Flipping edge" + s.highlight(abEdge)
-						+ s.highlightLine(p, w));
+				s.show("Flipping edge", s.highlighted(abEdge),
+						s.highlightedLine(p, w));
 
 			mMesh.deleteEdge(abEdge);
 			Edge pw = mMesh.addEdge(p, w);
@@ -323,13 +325,13 @@ public class Delaunay {
 		// If this edge has been deleted, do nothing
 		if (abEdge.deleted()) {
 			if (s.step())
-				s.show("SwapTestQuad, edge has been deleted"
-						+ s.highlight(abEdge));
+				s.show("SwapTestQuad, edge has been deleted",
+						s.highlighted(abEdge));
 			return;
 		}
 		if (abEdge.hasFlags(EDGEFLAG_HOLEBOUNDARY)) {
 			if (s.step())
-				s.show("SwapTestQuad, hole boundary" + s.highlight(abEdge));
+				s.show("SwapTestQuad, hole boundary", s.highlighted(abEdge));
 			return;
 		}
 
@@ -338,11 +340,11 @@ public class Delaunay {
 
 		Vertex w = awEdge.destVertex();
 		if (s.step())
-			s.show("SwapTestQuad" + s.highlight(abEdge)
-					+ s.highlight(baEdge.nextFaceEdge())
-					+ s.highlight(baEdge.prevFaceEdge())
-					+ s.highlight(abEdge.nextFaceEdge())
-					+ s.highlight(abEdge.prevFaceEdge()) + s.highlight(w));
+			s.show("SwapTestQuad", s.highlighted(abEdge),
+					s.highlighted(baEdge.nextFaceEdge()),
+					s.highlighted(baEdge.prevFaceEdge()),
+					s.highlighted(abEdge.nextFaceEdge()),
+					s.highlighted(abEdge.prevFaceEdge()), s.highlighted(w));
 
 		Point a = abEdge.sourceVertex();
 		Point b = abEdge.destVertex();
@@ -353,8 +355,8 @@ public class Delaunay {
 			s.show("Sign of determinant: " + Math.signum(determinant));
 		if (determinant > 0) {
 			if (s.step())
-				s.show("Flipping edge" + s.highlight(abEdge)
-						+ s.highlightLine(c, w));
+				s.show("Flipping edge", s.highlighted(abEdge),
+						s.highlightedLine(c, w));
 
 			mMesh.deleteEdge(abEdge);
 
@@ -440,16 +442,17 @@ public class Delaunay {
 			edge = edge.dual();
 		Edge initialEdge = edge;
 		if (s.step())
-			s.show("Closest sample and initial edge" + s.highlight(initialEdge)
-					+ s.highlight(closestSample) + s.plot(new Renderable() {
+			s.show("Closest sample and initial edge",
+					s.highlighted(initialEdge), s.highlighted(closestSample),
+					new Renderable() {
 						@Override
 						public void render(AlgorithmStepper s) {
 							s.setColor(RenderTools.COLOR_DARKGREEN);
 							for (Vertex v : mSamples) {
-								s.plot(v);
+								s.render(v);
 							}
 						}
-					}));
+					});
 		s.popActive();
 		return initialEdge;
 	}
@@ -480,15 +483,15 @@ public class Delaunay {
 						// just draw straight line
 						if (segSegIntersection(prevCentroid, centroid, p1, p2,
 								null) != null) {
-							s.plotLine(prevCentroid, centroid);
+							s.renderLine(prevCentroid, centroid);
 						} else {
 							Point midPoint = MyMath.interpolateBetween(p1, p2,
 									.5f);
-							s.plotLine(midPoint, centroid);
-							s.plotLine(prevCentroid, midPoint);
+							s.renderLine(midPoint, centroid);
+							s.renderLine(prevCentroid, midPoint);
 						}
 					}
-					s.plot(centroid);
+					centroid.render(s);
 					prevEdge = edge;
 					prevCentroid = centroid;
 				}
@@ -515,7 +518,7 @@ public class Delaunay {
 			public void render(AlgorithmStepper stepper) {
 				s.setLineWidth(2);
 				s.setColor(Color.LTGRAY);
-				s.plot(Segment.directed(bearingStartPoint, queryPoint));
+				Segment.directed(bearingStartPoint, queryPoint).render(s);
 			}
 		});
 
@@ -532,8 +535,8 @@ public class Delaunay {
 				GeometryException.raise("search edge not adjacent to triangle "
 						+ aEdge);
 			if (s.step())
-				s.show("Current search triangle" + s.highlight(aEdge)
-						+ s.highlight(oppositeVertex(aEdge)));
+				s.show("Current search triangle", s.highlighted(aEdge),
+						s.highlighted(oppositeVertex(aEdge)));
 
 			boolean bLeftFlag = pointLeftOfEdge(queryPoint, bEdge);
 			boolean cLeftFlag = pointLeftOfEdge(queryPoint, cEdge);
@@ -555,9 +558,9 @@ public class Delaunay {
 			}
 		}
 		if (s.bigStep())
-			s.show("Triangle containing query point"
-					+ plot(aEdge.sourceVertex(), bEdge.sourceVertex(),
-							cEdge.sourceVertex()));
+			s.show("Triangle containing query point", s.highlighted(Polyline
+					.closedPolyline(aEdge.sourceVertex(), bEdge.sourceVertex(),
+							cEdge.sourceVertex())));
 		if (s.isActive()) {
 			s.removeLayer(BGND_ELEMENT_SEARCH_HISTORY);
 			s.removeLayer(BGND_ELEMENT_BEARING_LINE);
@@ -626,13 +629,6 @@ public class Delaunay {
 		p.add(oppositeVertex(faceEdge));
 		p.setTo(p.x / 3, p.y / 3);
 		return p;
-	}
-
-	// Convenience methods for using stepper
-
-	private String plot(Point a, Point b, Point c) {
-		return s.highlightLine(a, b) + s.highlightLine(b, c)
-				+ s.highlightLine(c, a);
 	}
 
 	private AlgorithmStepper s;

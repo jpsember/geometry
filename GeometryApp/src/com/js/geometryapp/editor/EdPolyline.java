@@ -56,7 +56,7 @@ public class EdPolyline extends EdObject {
 		// If there's a single point, we must plot it (if unselected) since no
 		// segments were drawn
 		if (!isSelected() && nPoints() == 1)
-			s.plot(getPoint(0));
+			s.render(getPoint(0));
 
 		Point[] tabLocations = null;
 		if (isEditable() && !mTabsHidden) {
@@ -70,12 +70,12 @@ public class EdPolyline extends EdObject {
 					continue;
 				if (interpFlags[i])
 					continue;
-				s.plotLine(cursor, pt);
+				s.renderLine(cursor, pt);
 			}
 			for (Point pt : tabLocations) {
 				if (pt == null)
 					continue;
-				s.plot(new Sprite(R.raw.squareicon, pt));
+				s.render(new Sprite(R.raw.squareicon, pt));
 			}
 		}
 	}
@@ -540,7 +540,7 @@ public class EdPolyline extends EdObject {
 				EdPolyline polyline = activePolyline();
 				Point signalLocation = polyline.getPoint(polyline.cursor());
 				s.setColor(COLOR_SIGNAL_GREEN);
-				s.plot(new Disc(signalLocation, 15).renderable(true));
+				s.render(new Disc(signalLocation, 15).renderable(true));
 			}
 		}
 

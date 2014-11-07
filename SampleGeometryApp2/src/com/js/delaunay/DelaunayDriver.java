@@ -122,9 +122,9 @@ public class DelaunayDriver implements Algorithm {
 					s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 					for (int i = 0; i < mDelaunay.nSites(); i++) {
 						Vertex v = mDelaunay.site(i);
-						s.plot(v);
+						v.render(s);
 						Polygon p = mDelaunay.constructVoronoiPolygon(i);
-						s.plot(p);
+						s.render(p);
 					}
 				}
 			});

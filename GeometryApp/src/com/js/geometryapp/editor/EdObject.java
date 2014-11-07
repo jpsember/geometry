@@ -368,7 +368,7 @@ public abstract class EdObject implements Cloneable {
 		if (isSelected()) {
 			s.setColor(Color.RED);
 			for (int i = 0; i < nPoints(); i++) {
-				s.plot(getPoint(i));
+				s.render(getPoint(i));
 			}
 		}
 	}
@@ -381,9 +381,9 @@ public abstract class EdObject implements Cloneable {
 	 * @param v1
 	 */
 	protected void renderLine(AlgorithmStepper s, Point v0, Point v1) {
-		s.plotLine(v0, v1);
+		s.renderLine(v0, v1);
 		if (MyMath.distanceBetween(v0, v1) <= editor().pickRadius() * .2f) {
-			s.plot(v0);
+			s.render(v0);
 		}
 	}
 

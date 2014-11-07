@@ -10,7 +10,6 @@ import com.js.geometryapp.Algorithm;
 public abstract class AlgorithmStepper {
 
 	private static Rect sAlgorithmRect = new Rect(0, 0, 1200, 1000);
-	protected static final String EMPTY_STRING = "";
 
 	/**
 	 * A stepper that does nothing
@@ -48,6 +47,9 @@ public abstract class AlgorithmStepper {
 		mActive &= active;
 	}
 
+	/**
+	 * Clear the active state stack, and set active state
+	 */
 	protected void initializeActiveState(boolean active) {
 		setActive(active);
 		mActiveStack.clear();
@@ -97,10 +99,11 @@ public abstract class AlgorithmStepper {
 	 * algorithm.
 	 * 
 	 * @param message
-	 *            message to display, which may cause other elements to be
-	 *            displayed via side effects
+	 *            message to display
+	 * @param items
+	 *            array of Renderable objects to display within frame
 	 */
-	public void show(String message) {
+	public void show(String message, Renderable... items) {
 	}
 
 	/**
@@ -142,56 +145,20 @@ public abstract class AlgorithmStepper {
 
 	/**
 	 * Set color for subsequent render operations
-	 * 
-	 * @return an empty string, as a convenience so calls to this class's
-	 *         methods can be chained together to form a single show() method
-	 *         argument
 	 */
-	public String setColor(int color) {
-		return EMPTY_STRING;
+	public void setColor(int color) {
 	}
 
 	/**
 	 * Set line width for subsequent render operations
 	 */
-	public String setLineWidth(float lineWidth) {
-		return EMPTY_STRING;
-	}
-
-	/**
-	 * Add a Renderable element to be displayed with this algorithm frame
-	 */
-	public String plot(Renderable element) {
-		return EMPTY_STRING;
-	}
-
-	/**
-	 * Like plot(), but renders in a highlighted state. The render state (color,
-	 * line width) is reset to default values after this call
-	 */
-	public String highlight(Renderable element) {
-		return EMPTY_STRING;
-	}
-
-	/**
-	 * Convenience method equivalent to plot(new Segment(p1,p2))
-	 */
-	public String plotLine(Point p1, Point p2) {
-		return EMPTY_STRING;
-	}
-
-	/**
-	 * Convenience method equivalent to highlight(new Segment(p1,p2))
-	 */
-	public String highlightLine(Point p1, Point p2) {
-		return EMPTY_STRING;
+	public void setLineWidth(float lineWidth) {
 	}
 
 	/**
 	 * Restore default rendering attributes: color = BLUE, line width = 1
 	 */
-	public String setNormal() {
-		return EMPTY_STRING;
+	public void setNormal() {
 	}
 
 	/**
@@ -210,10 +177,40 @@ public abstract class AlgorithmStepper {
 		return r;
 	}
 
+	/**
+	 * Construct a renderable for rendering a line with the current color and
+	 * width; default implementation returns null
+	 */
+	public Renderable line(Point p1, Point p2) {
+		return null;
+	}
+
+	/**
+	 * Construct renderable for a highlighted line; default implementation
+	 * returns null
+	 */
+	public Renderable highlightedLine(Point p1, Point p2) {
+		return null;
+	}
+
+	/**
+	 * Render an object
+	 */
+	public void render(Renderable r) {
+		r.render(this);
+	}
+
+	/**
+	 * Convenience method for render(line(p1,p2))
+	 */
+	public void renderLine(Point p1, Point p2) {
+		render(line(p1, p2));
+	}
+
 	private void setActive(boolean active) {
 		mActive = active;
 	}
 
 	private boolean mActive;
-	private List<Boolean> mActiveStack = new ArrayList();
+	protected List<Boolean> mActiveStack = new ArrayList();
 }

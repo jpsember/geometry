@@ -159,8 +159,11 @@ public class ConcreteStepper extends AlgorithmStepper {
 	}
 
 	@Override
-	public void show(String message) {
+	public void show(String message, Renderable... renderables) {
 		mFrameTitle = message;
+		for (Renderable r : renderables) {
+			mForegroundLayer.add(r);
+		}
 		throw new DesiredStepReachedException(message);
 	}
 
@@ -244,55 +247,33 @@ public class ConcreteStepper extends AlgorithmStepper {
 			removeLayerAux(key);
 	}
 
-	@Override
-	public String plot(Renderable element) {
-		if (rendering()) {
-			element.render(this);
-		} else {
-			// Wrap the renderable in an object that also stores the current
-			// render state (color, line width)
-			mForegroundLayer.add(RenderTools.wrapRenderableWithState(element));
-		}
-		return EMPTY_STRING;
+	public Renderable line(Point p1, Point p2) {
+		return RenderTools.wrapRenderableWithState(new Segment(p1, p2));
 	}
 
 	@Override
-	public String highlight(Renderable element) {
-		setColor(Color.RED);
-		plot(element);
-		return setNormal();
-	}
-
-	@Override
-	public String plotLine(Point p1, Point p2) {
-		return plot(new Segment(p1, p2));
-	}
-
-	@Override
-	public String highlightLine(Point p1, Point p2) {
+	public Renderable highlightedLine(Point p1, Point p2) {
 		RenderTools.setColorState(Color.RED);
 		RenderTools.setLineWidthState(HIGHLIGHT_LINE_WIDTH);
-		plotLine(p1, p2);
-		return setNormal();
+		Renderable r = RenderTools.wrapRenderableWithState(new Segment(p1, p2));
+		setNormal();
+		return r;
 	}
 
 	@Override
-	public String setColor(int color) {
+	public void setColor(int color) {
 		RenderTools.setColorState(color);
-		return "";
 	}
 
 	@Override
-	public String setLineWidth(float lineWidth) {
+	public void setLineWidth(float lineWidth) {
 		RenderTools.setLineWidthState(lineWidth);
-		return "";
 	}
 
 	@Override
-	public String setNormal() {
+	public void setNormal() {
 		RenderTools.setColorState(Color.BLUE);
 		RenderTools.setLineWidthState(1);
-		return EMPTY_STRING;
 	}
 
 	/**
@@ -718,7 +699,6 @@ public class ConcreteStepper extends AlgorithmStepper {
 	private String mFrameTitle;
 	private String mDoneMessage;
 	private List<Integer> mMilestones = new ArrayList();
-	private List<Boolean> mActiveStack = new ArrayList();
 	private Rect mAlgorithmRect;
 	private Rect mVisibleRect;
 	private boolean mCompleted;

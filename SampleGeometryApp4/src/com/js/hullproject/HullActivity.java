@@ -102,7 +102,7 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					Disc prevDisc = null;
 					for (Disc d : hullDiscList) {
 						hullDiscsFound.add(d);
-						s.plot(d);
+						s.render(d);
 						if (prevDisc != null) {
 							Bitangent b = constructBitangent(prevDisc, d);
 							if (b != null)
@@ -123,12 +123,12 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 						s.setColor(Color.LTGRAY);
 					else
 						s.setColor(Color.BLUE);
-					s.plot(d);
+					s.render(d);
 				}
 				// Plot hull bitangents
 				s.setColor(RenderTools.COLOR_DARKGREEN);
 				for (Bitangent b : bitangentsFound)
-					s.plot(b);
+					s.render(b);
 			}
 		});
 
@@ -199,8 +199,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		if (discLeft != discRight)
 			mHullDiscs.add(discLeft);
 		if (s.step())
-			s.show("Extremal discs" + s.highlight(discLeft)
-					+ s.highlight(discRight));
+			s.show("Extremal discs", s.highlighted(discLeft),
+					s.highlighted(discRight));
 	}
 
 	/**
@@ -269,16 +269,16 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 			uDisc = mHullDiscs.get(i);
 			ux = constructBitangent(uDisc, xDisc);
 			if (s.step())
-				s.show("Looking for hull bitangent UX" + s.highlight(uDisc));
+				s.show("Looking for hull bitangent UX", s.highlighted(uDisc));
 			if (ux == null) {
 				if (s.step())
-					s.show("no bitangent exists" + s.highlight(uDisc));
+					s.show("no bitangent exists", s.highlighted(uDisc));
 				return;
 			}
 			if (!isHullAngle(ux.angle())) {
 				if (s.step())
-					s.show("not a hull bitangent candidate"
-							+ s.highlight(uDisc) + highlight(ux));
+					s.show("not a hull bitangent candidate",
+							s.highlighted(uDisc), s.highlighted(ux));
 				return;
 			}
 
@@ -305,18 +305,18 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		for (j = mHullDiscs.size() - 1; j >= 0; j--) {
 			vDisc = mHullDiscs.get(j);
 			if (s.step())
-				s.show("Looking for hull bitangent XV" + s.highlight(vDisc));
+				s.show("Looking for hull bitangent XV", s.highlighted(vDisc));
 
 			xv = constructBitangent(xDisc, vDisc);
 			if (xv == null) {
 				if (s.step())
-					s.show("no bitangent exists with " + s.highlight(vDisc));
+					s.show("no bitangent exists with ", s.highlighted(vDisc));
 				return;
 			}
 			if (!isHullAngle(xv.angle())) {
 				if (s.step())
-					s.show("not a hull bitangent candidate"
-							+ s.highlight(vDisc) + highlight(xv));
+					s.show("not a hull bitangent candidate",
+							s.highlighted(vDisc), highlight(xv));
 				return;
 			}
 
@@ -340,20 +340,21 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		for (int k = 0; k < remCount; k++) {
 			if (s.step())
 				s.show("Removing hull disc "
-						+ s.highlight(mHullDiscs.get(i + 1)));
+,
+						s.highlighted(mHullDiscs.get(i + 1)));
 			mHullDiscs.remove(i + 1);
 		}
 		if (s.step())
-			s.show("Inserting hull disc" + s.highlight(xDisc));
+			s.show("Inserting hull disc", s.highlighted(xDisc));
 		mHullDiscs.add(i + 1, xDisc);
 	}
 
 	/**
 	 * Utility method to highlight a bitangent as a ray
 	 */
-	private String highlight(Bitangent bitangent) {
-		s.highlight(Segment.directed(bitangent.maPoint, bitangent.mbPoint));
-		return "";
+	private Renderable highlight(Bitangent bitangent) {
+		return s.highlighted(Segment.directed(bitangent.maPoint,
+				bitangent.mbPoint));
 	}
 
 	/**

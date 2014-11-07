@@ -4,6 +4,7 @@ import static com.js.basic.Tools.*;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Rect;
+import com.js.geometry.Renderable;
 
 class TotalStepsCounter extends AlgorithmStepper {
 
@@ -44,7 +45,7 @@ class TotalStepsCounter extends AlgorithmStepper {
 	}
 
 	@Override
-	public void show(String message) {
+	public void show(String message, Renderable... renderables) {
 		throw new DesiredStepReachedException();
 	}
 

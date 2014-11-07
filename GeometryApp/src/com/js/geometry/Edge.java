@@ -140,7 +140,7 @@ public final class Edge implements Renderable {
 
 	@Override
 	public void render(AlgorithmStepper stepper) {
-		stepper.plot(Segment.directed(sourceVertex(), destVertex()));
+		stepper.render(Segment.directed(sourceVertex(), destVertex()));
 	}
 
 	private Vertex mDestVertex;

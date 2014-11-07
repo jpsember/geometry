@@ -51,7 +51,7 @@ public class EdDisc extends EdObject {
 	@Override
 	public void render(AlgorithmStepper s) {
 		s.setColor(Color.BLUE);
-		s.plot(buildDisc());
+		s.render(buildDisc());
 		super.render(s);
 	}
 

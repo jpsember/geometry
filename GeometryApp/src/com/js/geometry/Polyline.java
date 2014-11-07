@@ -11,8 +11,25 @@ import com.js.geometryapp.RenderTools;
 
 public class Polyline implements Renderable {
 
+	public static Polyline polyline(Point... vertices) {
+		Polyline p = new Polyline();
+		p.add(vertices);
+		return p;
+	}
+
+	public static Polyline closedPolyline(Point... vertices) {
+		Polyline p = polyline(vertices);
+		p.close();
+		return p;
+	}
+
 	public void add(Point vertexLocation) {
 		mVertices.add(vertexLocation);
+	}
+
+	public void add(Point... vertices) {
+		for (Point v : vertices)
+			add(v);
 	}
 
 	/**

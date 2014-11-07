@@ -15,6 +15,8 @@ import com.js.opengl.OurGLRenderer;
 
 import android.content.Context;
 import android.graphics.Matrix;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 
 public class AlgorithmRenderer extends OurGLRenderer {
@@ -58,6 +60,14 @@ public class AlgorithmRenderer extends OurGLRenderer {
 			RenderTools.setRenderer(mStepper.algorithmRect(), this);
 			// Call user method, now that synchronized
 			onSurfaceChanged();
+			// Request a refresh of the stepper, since algorithm rect may have
+			// changed
+			Handler handler = new Handler(Looper.getMainLooper());
+			handler.post(new Runnable() {
+				public void run() {
+					mStepper.refresh();
+				}
+			});
 			mStepper.releaseLock();
 		}
 	}
@@ -72,13 +82,14 @@ public class AlgorithmRenderer extends OurGLRenderer {
 			mStepper.acquireLock();
 			mStepper.setRendering(true);
 			RenderTools.clearView(gl);
-
-			mEditor.render();
-			if (!mEditor.isActive())
-				mStepper.render();
-
-			// Call user method, now that synchronized
-			onDrawFrame();
+			// Don't do any rendering if the algorithm rectangle is not yet
+			// prepared
+			if (mStepper.isAlgorithmRectPrepared()) {
+				mEditor.render();
+				if (!mEditor.isActive())
+					mStepper.render();
+				onDrawFrame();
+			}
 			mStepper.setRendering(false);
 			mStepper.releaseLock();
 		}
@@ -98,8 +109,6 @@ public class AlgorithmRenderer extends OurGLRenderer {
 
 	@Override
 	protected void constructTransforms() {
-		super.constructTransforms();
-
 		ResolutionInfo resolutionInfo = MyActivity.getResolutionInfo();
 
 		// Add a bit of padding to the device rectangle
@@ -113,6 +122,7 @@ public class AlgorithmRenderer extends OurGLRenderer {
 		paddedDeviceRect.height -= paddingInset * 2 + titleInset;
 
 		mStepper.prepareAlgorithmRect(paddedDeviceRect);
+		super.constructTransforms();
 
 		Matrix algorithmToDeviceTransform = MyMath.calcRectFitRectTransform(
 				mStepper.algorithmRect(), paddedDeviceRect);

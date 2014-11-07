@@ -42,18 +42,22 @@ public class OurGLRenderer implements GLSurfaceView.Renderer {
 		float h = mDeviceSize.y;
 		float sx = 2.0f / w;
 		float sy = 2.0f / h;
-		Matrix mScreenToNDCTransform = new Matrix();
-		mScreenToNDCTransform.setScale(sx, sy);
-		mScreenToNDCTransform.preTranslate(-w / 2.0f, -h / 2.0f);
-		return mScreenToNDCTransform;
+		Matrix screenToNDCTransform = new Matrix();
+		screenToNDCTransform.setScale(sx, sy);
+		screenToNDCTransform.preTranslate(-w / 2.0f, -h / 2.0f);
+		return screenToNDCTransform;
 	}
 
 	@Override
 	public void onSurfaceChanged(GL10 gl, int w, int h) {
 		gl.glViewport(0, 0, w, h);
 		mDeviceSize.setTo(w, h);
-		mMatrixId += 1;
+		invalidateMatrixId();
 		constructTransforms();
+	}
+
+	private void invalidateMatrixId() {
+		mMatrixId++;
 	}
 
 	/**

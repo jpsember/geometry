@@ -66,7 +66,7 @@ public class ConcreteStepper extends AlgorithmStepper {
 		if (ar > 1) {
 			mAlgorithmRect = new Rect(0, 0, 1000, ar * 1000);
 		} else {
-			mAlgorithmRect = new Rect(0, 0, ar * 1000, 1000);
+			mAlgorithmRect = new Rect(0, 0, 1000 / ar, 1000);
 		}
 	}
 
@@ -82,7 +82,10 @@ public class ConcreteStepper extends AlgorithmStepper {
 
 	@Override
 	public Rect algorithmRect() {
-		if (mAlgorithmRect == null)
+		// If we haven't prepared a rectangle yet, the view hasn't been
+		// displayed; just return the default (we'll request a refresh
+		// when the rectangle IS prepared)
+		if (!isAlgorithmRectPrepared())
 			return super.algorithmRect();
 		return mAlgorithmRect;
 	}
@@ -297,6 +300,9 @@ public class ConcreteStepper extends AlgorithmStepper {
 	 * possible) and displays that frame.
 	 */
 	public void refresh() {
+		// If algorithm rectangle isn't prepared yet, ignore
+		if (!isAlgorithmRectPrepared())
+			return;
 		// If we're currently doing a refresh, do nothing
 		if (mRefreshing)
 			return;
@@ -682,6 +688,10 @@ public class ConcreteStepper extends AlgorithmStepper {
 
 	boolean rendering() {
 		return mRendering;
+	}
+
+	boolean isAlgorithmRectPrepared() {
+		return mAlgorithmRect != null;
 	}
 
 	private Object aSynchronizationLock = new Object();

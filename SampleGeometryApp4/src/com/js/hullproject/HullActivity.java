@@ -275,6 +275,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists", s.highlighted(uDisc));
 				return;
 			}
+			if (s.step())
+				s.show("Candidate", highlight(ux));
 			if (!isHullAngle(ux.angle())) {
 				if (s.step())
 					s.show("not a hull bitangent candidate",
@@ -313,6 +315,8 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 					s.show("no bitangent exists with ", s.highlighted(vDisc));
 				return;
 			}
+			if (s.step())
+				s.show("Candidate", highlight(xv));
 			if (!isHullAngle(xv.angle())) {
 				if (s.step())
 					s.show("not a hull bitangent candidate",
@@ -339,14 +343,17 @@ public class HullActivity extends GeometryStepperActivity implements Algorithm {
 		int remCount = j - i - 1;
 		for (int k = 0; k < remCount; k++) {
 			if (s.step())
-				s.show("Removing hull disc "
-,
+				s.show("Removing hull disc ",
 						s.highlighted(mHullDiscs.get(i + 1)));
 			mHullDiscs.remove(i + 1);
 		}
 		if (s.step())
 			s.show("Inserting hull disc", s.highlighted(xDisc));
 		mHullDiscs.add(i + 1, xDisc);
+		// If u = v, add v again, since the new disc 'splits' the old one in the
+		// sequence into two
+		if (uDisc == vDisc)
+			mHullDiscs.add(i + 2, vDisc);
 	}
 
 	/**

@@ -22,7 +22,6 @@ public class ScaleOperation extends EditorEventListenerAdapter {
 	public ScaleOperation(Editor editor) {
 		mEditor = editor;
 		prepareScaleOperation();
-		doNothing();
 	}
 
 	@Override

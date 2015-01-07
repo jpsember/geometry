@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import com.js.basic.Files;
 
 import com.js.testUtils.MyTestCase;
+import static com.js.basic.Tools.*;
 
 public class FilesTest extends MyTestCase {
 
@@ -168,7 +169,7 @@ public class FilesTest extends MyTestCase {
 			if (s2 != null)
 				f2 = new File(s2);
 
-			// assertEquals(equal(f1, f2), equal(s1, s2));
+			assertEquals(equal(f1, f2), equal(s1, s2));
 		}
 
 	}

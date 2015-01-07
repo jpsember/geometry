@@ -386,10 +386,6 @@ public abstract class EdObject implements Cloneable {
     }
   }
 
-  static {
-    doNothing();
-  }
-
   public void setEditor(Editor editor) {
     mEditor = editor;
   }

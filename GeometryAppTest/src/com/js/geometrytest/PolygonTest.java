@@ -2,14 +2,12 @@ package com.js.geometrytest;
 
 import com.js.geometry.Polygon;
 import com.js.testUtils.MyTestCase;
-import static com.js.basic.Tools.*;
 
 public class PolygonTest extends MyTestCase {
 
 	private Polygon mPolygon;
 
 	public void testPolygonConvexityTest() {
-		doNothing();
 		int YES = 1;
 		int NO = 0;
 		final int s[] = { Polygon.TESTPOLY_SQUARE, YES,

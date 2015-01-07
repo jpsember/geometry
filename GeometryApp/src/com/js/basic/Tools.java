@@ -9,7 +9,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import android.graphics.Matrix;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.js.geometry.MyMath;
 
@@ -35,6 +37,8 @@ public final class Tools {
 	/**
 	 * A do-nothing method that can be called to avoid 'unused import' warnings
 	 * related to this class
+	 * 
+	 * @deprecated
 	 */
 	public static void doNothing() {
 	}
@@ -133,6 +137,15 @@ public final class Tools {
 			}
 		}
 		return sb.toString();
+	}
+
+	/**
+	 * Construct string describing current stack frame
+	 * 
+	 * @see stackTrace(int,int,Throwable)
+	 */
+	public static String stackTrace(int skipCount, int displayCount) {
+		return stackTrace(1 + skipCount, displayCount, null);
 	}
 
 	/**
@@ -474,15 +487,18 @@ public final class Tools {
 			sb.append(' ');
 			int signPos = 0;
 			boolean leadZero = false;
+			boolean fractionalNonZero = false;
+			int decIndex = -1;
 			for (int i = 0; i < iDig + fDig; i++) {
 				int digit = dig[i];
 				if (!leadZero) {
-					if (digit != 0 || i == iDig || (i == iDig - 1 && fDig == 0)) {
+					if (digit != 0 || i == iDig - 1) {
 						leadZero = true;
 						signPos = sb.length() - 1;
 					}
 				}
 				if (i == iDig) {
+					decIndex = sb.length();
 					sb.append('.');
 				}
 
@@ -490,16 +506,23 @@ public final class Tools {
 					sb.append(' ');
 				} else {
 					sb.append((char) ('0' + digit));
+					if (i >= iDig && digit != 0)
+						fractionalNonZero = true;
 				}
 			}
 			if (neg)
 				sb.setCharAt(signPos, '-');
+			if (!fractionalNonZero && decIndex >= 0) {
+				for (int i = decIndex; i < sb.length(); i++)
+					sb.setCharAt(i, ' ');
+			}
 		}
 		return sb.toString();
 	}
 
 	public static String d(double f) {
-		return d(f, 5, 3);
+		int fractionalDigits = 4;
+		return d(f, 5, fractionalDigits);
 	}
 
 	/**
@@ -604,9 +627,6 @@ public final class Tools {
 
 	/**
 	 * Describe a double array
-	 * 
-	 * @param doubleArray
-	 *            double array
 	 */
 	public static String d(double[] doubleArray) {
 		StringBuilder sb = new StringBuilder("[");
@@ -619,13 +639,25 @@ public final class Tools {
 
 	/**
 	 * Describe an int array
-	 * 
-	 * @param intArray
 	 */
 	public static String d(int[] intArray) {
 		StringBuilder sb = new StringBuilder("[");
 		for (int i = 0; i < intArray.length; i++) {
 			sb.append(d(intArray[i]));
+		}
+		sb.append(']');
+		return sb.toString();
+	}
+
+	/**
+	 * Describe an array of strings
+	 */
+	public static String d(String[] strArray) {
+		StringBuilder sb = new StringBuilder("[");
+		for (int i = 0; i < strArray.length; i++) {
+			if (i > 0)
+				sb.append(',');
+			sb.append(d(strArray[i]));
 		}
 		sb.append(']');
 		return sb.toString();
@@ -641,6 +673,24 @@ public final class Tools {
 		if (obj != null)
 			s = obj.toString();
 		return d(s);
+	}
+
+	public static String d(JSONObject map) {
+		try {
+			return map.toString(2);
+		} catch (JSONException e) {
+			warning("caught:" + e);
+			return map.toString();
+		}
+	}
+
+	public static String d(JSONArray array) {
+		try {
+			return array.toString(2);
+		} catch (JSONException e) {
+			warning("caught:" + e);
+			return array.toString();
+		}
 	}
 
 	/**
@@ -758,10 +808,6 @@ public final class Tools {
 	 */
 	public static String d(CharSequence s) {
 		return d(s, "80eqt");
-	}
-
-	public static String d(Matrix matrix) {
-		return MyMath.dumpMatrix(matrix);
 	}
 
 	/**
@@ -1077,6 +1123,17 @@ public final class Tools {
 	}
 
 	/**
+	 * Remove a contiguous sequence of elements from a list
+	 */
+	public static <T> void remove(List<T> list, int start, int count) {
+		list.subList(start, start + count).clear();
+	}
+
+	public static <T> T getMod(List<T> list, int index) {
+		return list.get(MyMath.myMod(index, list.size()));
+	}
+
+	/**
 	 * Remove an item from a list, and fill gap with last element
 	 * 
 	 * @param list
@@ -1103,6 +1160,15 @@ public final class Tools {
 	}
 
 	/**
+	 * Determine if two objects are equal; returns true if both are null
+	 */
+	public static <T> boolean equal(T obj1, T obj2) {
+		if (obj1 == null || obj2 == null)
+			return obj1 == obj2;
+		return obj1.equals(obj2);
+	}
+
+	/**
 	 * Determine if program is running unit tests. Thread safe.
 	 */
 	public static boolean testing() {
@@ -1117,6 +1183,15 @@ public final class Tools {
 			sTestingKnown = true;
 		}
 		return sTesting;
+	}
+
+	public static int[] toArray(List<Integer> list) {
+		int[] ret = new int[list.size()];
+		Iterator<Integer> iterator = list.iterator();
+		for (int i = 0; i < ret.length; i++) {
+			ret[i] = iterator.next().intValue();
+		}
+		return ret;
 	}
 
 	private static boolean sSanitizeLineNumbersFlag;

@@ -197,7 +197,6 @@ public class EdObjectArray implements Iterable<EdObject> {
 		if (!DEBUG_ONLY_FEATURES)
 			return null;
 		else {
-			doNothing();
 			StringBuilder sb = new StringBuilder("EdObjectArray");
 			sb.append(" [");
 			for (EdObject obj : mList) {

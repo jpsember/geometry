@@ -11,14 +11,11 @@ import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometry.Sprite;
 
-import static com.js.basic.Tools.*;
-
 public class RotateOperation extends EditorEventListenerAdapter {
 
 	public RotateOperation(Editor editor) {
 		mEditor = editor;
 		prepareRotateOperation();
-		doNothing();
 	}
 
 	private boolean touchReasonableDistanceFromOrigin(Point touch) {

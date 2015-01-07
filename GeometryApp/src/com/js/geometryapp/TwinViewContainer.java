@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
-import static com.js.basic.Tools.*;
 
 /**
  * Wrapper for a SlidingPaneLayout, to preserve screen real estate on small
@@ -63,7 +62,6 @@ class TwinViewContainer {
 	 * Add main and aux views to the sliding pane
 	 */
 	private void addChildViews(View mainView) {
-		doNothing();
 
 		// Determine if device in current orientation is large enough to display
 		// both panes at once

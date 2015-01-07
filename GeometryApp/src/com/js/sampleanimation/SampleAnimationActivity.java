@@ -1,7 +1,5 @@
 package com.js.sampleanimation;
 
-import static com.js.basic.Tools.*;
-
 import javax.microedition.khronos.opengles.GL10;
 
 import android.content.Context;
@@ -53,7 +51,6 @@ public class SampleAnimationActivity extends GeometryActivity {
 
 		public SampleRenderer(Context context) {
 			super(context);
-			doNothing();
 		}
 
 		@Override

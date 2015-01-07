@@ -1,7 +1,6 @@
 package com.js.opengl;
 
 import static android.opengl.GLES20.*;
-import static com.js.basic.Tools.*;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -50,7 +49,6 @@ public class GLTexture {
 			boolean trimTransparentPadding) {
 		GLTools.ensureRenderThread();
 
-		doNothing();
 		Bitmap bitmap = BitmapUtil.readFromResource(context, resourceId);
 		bitmap = BitmapUtil.trimPadding(bitmap);
 

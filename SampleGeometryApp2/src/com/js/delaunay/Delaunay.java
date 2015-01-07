@@ -48,7 +48,6 @@ public class Delaunay {
 	 *            bounding rect, or null to use (large) default
 	 */
 	public Delaunay(Mesh context, Rect boundingRect, AlgorithmStepper stepper) {
-		doNothing();
 		s = stepper;
 		constructMesh(context, boundingRect);
 		mRandom = new Random(1);

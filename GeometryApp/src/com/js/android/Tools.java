@@ -56,6 +56,7 @@ public final class Tools {
 			InputStream stream = context.getResources().openRawResource(
 					resourceId);
 			str = IOUtils.toString(stream, "UTF-8");
+			stream.close();
 		} catch (Throwable e) {
 			die("problem reading resource #" + resourceId, e);
 		}

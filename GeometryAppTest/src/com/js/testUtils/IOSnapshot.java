@@ -104,7 +104,11 @@ public class IOSnapshot {
 				try {
 					FileUtils.deleteDirectory(mDynamicSnapshotsDir);
 				} catch (IOException e) {
-					die(e);
+					// It's having problems on my Nexus S; maybe this is a
+					// device issue, unrelated to usage of FileUtils?
+						warning("Unable to delete snapshots dir: "
+								+ mDynamicSnapshotsDir + "\n  exception: " + e);
+						die(e);
 				}
 			}
 

@@ -6,8 +6,6 @@ import com.js.geometry.FloatArray;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 
-import static com.js.basic.Tools.*;
-
 public class GLSpriteProgram {
 
 	/**
@@ -20,7 +18,6 @@ public class GLSpriteProgram {
 	 */
 	public GLSpriteProgram(SpriteContext spriteContext, GLTexture texture,
 			Rect textureWindow) {
-		doNothing();
 		mSpriteContext = spriteContext;
 		mTexture = texture;
 		mTextureWindow = textureWindow;

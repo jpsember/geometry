@@ -32,7 +32,7 @@ public class FilesTest extends MyTestCase {
 		File path = buildFile();
 		ourWriteTextFile(path, CONTENT);
 
-		String x = FileUtils.readFileToString(path);
+		String x = Files.readString(path);
 		assertStringsMatch(x, CONTENT);
 	}
 
@@ -48,7 +48,7 @@ public class FilesTest extends MyTestCase {
 		assertTrue(path.isFile());
 
 		FileUtils.write(path, CONTENT2);
-		assertStringsMatch(CONTENT2, FileUtils.readFileToString(path));
+		assertStringsMatch(CONTENT2, Files.readString(path));
 	}
 
 	public void testDoesntWriteTextFileWhenUnchanged() throws IOException {

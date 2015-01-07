@@ -4,17 +4,46 @@ import java.io.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 
 public class Files {
+
+	/**
+	 * Read string from file, using UTF-8 encoding
+	 */
+	public static String readString(File file) throws IOException {
+		return FileUtils.readFileToString(file, "UTF-8");
+	}
+
+	/**
+	 * Read string from InputStream, using UTF-8 encoding, then close the stream
+	 */
+	public static String readString(InputStream inputStream) throws IOException {
+		String str;
+		try {
+			str = IOUtils.toString(inputStream, "UTF-8");
+		} finally {
+			inputStream.close();
+		}
+		return str;
+	}
+
+	/**
+	 * Write string to file, using UTF-8 encoding
+	 */
+	public static void writeString(File file, String content)
+			throws IOException {
+		FileUtils.writeStringToFile(file, content, "UTF-8");
+	}
 
 	public static void writeStringToFileIfChanged(File file, String content)
 			throws IOException {
 		if (file.isFile()) {
-			String currentContents = FileUtils.readFileToString(file);
+			String currentContents = Files.readString(file);
 			if (currentContents.equals(content))
 				return;
 		}
-		FileUtils.writeStringToFile(file, content);
+		writeString(file, content);
 	}
 
 	/**

@@ -5,9 +5,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import com.js.android.AppPreferences;
 import com.js.android.UITools;
-import com.js.basic.Files;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
@@ -224,10 +226,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 					// handle as content uri
 					InputStream stream = getContentResolver()
 							.openInputStream(u);
-					jsonContent = Files.readTextFile(stream);
+					jsonContent = IOUtils.toString(stream, "UTF-8");
+					stream.close();
 				} else {
 					File f = new File(u.getPath());
-					jsonContent = Files.readTextFile(f);
+					jsonContent = FileUtils.readFileToString(f);
 				}
 			} catch (IOException e) {
 				toast(this, "Problem reading file");

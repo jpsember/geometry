@@ -9,12 +9,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.regex.*;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import android.test.AndroidTestCase;
-
-import com.js.basic.Files;
 
 /**
  * Designed to be called from within a unit test. Captures System.out and
@@ -100,7 +101,11 @@ public class IOSnapshot {
 
 			// Purge any existing snapshots directory
 			if (mDynamicSnapshotsDir.exists()) {
-				Files.deleteDirectory(mDynamicSnapshotsDir);
+				try {
+					FileUtils.deleteDirectory(mDynamicSnapshotsDir);
+				} catch (IOException e) {
+					die(e);
+				}
 			}
 
 			// Construct a new one
@@ -153,7 +158,7 @@ public class IOSnapshot {
 
 		try {
 			InputStream is = m.open("snapshots/" + mSnapshotName);
-			content = Files.readTextFile(is);
+			content = IOUtils.toString(is, "UTF-8");
 			is.close();
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
@@ -202,7 +207,7 @@ public class IOSnapshot {
 			if (write) {
 				File f = getDynamicFile();
 				System.out.println("...writing new snapshot: " + f);
-				Files.writeTextFile(f, content);
+				FileUtils.write(f, content);
 			}
 		} catch (IOException e) {
 			die(e);

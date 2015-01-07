@@ -1,6 +1,8 @@
 package com.js.android;
 
-import com.js.basic.Files;
+import java.io.InputStream;
+
+import org.apache.commons.io.IOUtils;
 
 import android.content.Context;
 import android.widget.Toast;
@@ -51,8 +53,9 @@ public final class Tools {
 	public static String readTextFileResource(Context context, int resourceId) {
 		String str = null;
 		try {
-			str = Files.readTextFile(context.getResources().openRawResource(
-					resourceId));
+			InputStream stream = context.getResources().openRawResource(
+					resourceId);
+			str = IOUtils.toString(stream, "UTF-8");
 		} catch (Throwable e) {
 			die("problem reading resource #" + resourceId, e);
 		}

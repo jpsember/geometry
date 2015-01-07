@@ -2,123 +2,121 @@ package com.js.basic;
 
 import java.io.*;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+
 public class Files {
 
-	private static final String LINE_SEPARATOR = System
-			.getProperty("line.separator");
-
-	public static String readTextFile(InputStream stream) throws IOException {
-		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(stream));
-		return readTextFile(reader);
-	}
-
-	private static String readTextFile(BufferedReader input) throws IOException {
-		StringBuilder sb = new StringBuilder();
-		try {
-			String line = null;
-			/*
-			 * Readline strips newlines, and returns null only for the end of
-			 * the stream.
-			 */
-			while ((line = input.readLine()) != null) {
-				sb.append(line);
-				sb.append(LINE_SEPARATOR);
-			}
-		} finally {
-			input.close();
+	public static void writeStringToFileIfChanged(File file, String content)
+			throws IOException {
+		if (file.isFile()) {
+			String currentContents = FileUtils.readFileToString(file);
+			if (currentContents.equals(content))
+				return;
 		}
-		return sb.toString();
+		FileUtils.writeStringToFile(file, content);
 	}
 
 	/**
-	 * Read a file into a string
+	 * Get an input stream to a resource, which is stored in the class folder
+	 * (or one of its subfolders)
 	 * 
-	 * @param path
-	 *            file to read
-	 * @return String
+	 * @param resourceName
+	 *            name of resource
+	 * @return BufferedInputStream
+	 * @throws IOException
 	 */
-	public static String readTextFile(File file) throws IOException {
-		BufferedReader input = new BufferedReader(new FileReader(file));
-		return readTextFile(input);
-	}
-
-	public static byte[] readBinaryFile(File file) throws IOException {
-		RandomAccessFile f = new RandomAccessFile(file, "r");
-		byte[] b = new byte[(int) f.length()];
-		int bytesRead = f.read(b);
-		if (bytesRead != b.length)
-			throw new IOException("failed to read all bytes from " + file);
-		return b;
-	}
-
-	public static byte[] readBytes(InputStream stream) throws IOException {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-		int nRead;
-		byte[] data = new byte[16384];
-
-		while ((nRead = stream.read(data, 0, data.length)) != -1) {
-			buffer.write(data, 0, nRead);
+	public static BufferedInputStream openResource(Class theClass,
+			String resourceName) throws IOException {
+		InputStream is = theClass.getResourceAsStream(resourceName);
+		if (is == null) {
+			throw new FileNotFoundException("openResource failed: "
+					+ resourceName);
 		}
-		buffer.flush();
-
-		return buffer.toByteArray();
+		return new BufferedInputStream(is);
 	}
 
-	public static void writeBinaryFile(File file, byte[] contents)
-			throws IOException {
-		FileOutputStream f = new FileOutputStream(file);
-		f.write(contents);
-		f.close();
+	/**
+	 * Set extension of file (replacing any existing one)
+	 * 
+	 * @param extension
+	 *            new extension; if empty string, just removes existing
+	 *            extension
+	 */
+	public static File setExtension(File file, String extension) {
+		String filePath = file.getPath();
+		filePath = FilenameUtils.removeExtension(filePath);
+		if (!extension.isEmpty())
+			filePath += FilenameUtils.EXTENSION_SEPARATOR_STR + extension;
+		return new File(filePath);
 	}
 
-	public static void deleteDirectory(File path) {
-		if (!path.isDirectory())
-			throw new IllegalArgumentException("not a directory: " + path);
+	/**
+	 * Get extension of a file
+	 * 
+	 * @return String containing extension, empty if it has none
+	 */
+	public static String getExtension(File file) {
+		return FilenameUtils.getExtension(file.getPath());
+	}
 
-		File[] files = path.listFiles();
+	/**
+	 * Determine if file has an extension
+	 */
+	public static boolean hasExtension(File file) {
+		return !FilenameUtils.getExtension(file.getPath()).isEmpty();
+	}
 
-		for (int i = 0; i < files.length; i++) {
-			if (files[i].isDirectory()) {
-				deleteDirectory(files[i]);
-			} else {
-				files[i].delete();
-			}
+	/**
+	 * Remove extension, if any, from path
+	 */
+	public static File removeExtension(File file) {
+		return setExtension(file, "");
+	}
+
+	/**
+	 * Get file expressed relative to a containing directory, if it lies within
+	 * the directory
+	 * 
+	 * @param file
+	 *            an absolute file
+	 * @param directory
+	 *            an absolute directory, or null
+	 * @return file relative to directory, if directory is not null and file
+	 *         lies within directory's tree; otherwise, the absolute form of
+	 *         file
+	 */
+	public static File fileWithinDirectory(File absFile, File absDirectory) {
+		Files.verifyAbsolute(absFile);
+		if (absDirectory == null)
+			return absFile;
+		Files.verifyAbsolute(absDirectory);
+		String absDirPath = absDirectory.getPath();
+		String absFilePath = absFile.getPath();
+
+		if (!absFilePath.startsWith(absDirPath))
+			return absFile;
+
+		String suffix = absFilePath.substring(absDirPath.length());
+		if (suffix.startsWith(File.separator)) {
+			suffix = suffix.substring(File.separator.length());
 		}
-		path.delete();
+		return new File(suffix);
 	}
 
-	public static void writeTextFile(File file, String content,
-			boolean onlyIfChanged) throws IOException {
-		if (onlyIfChanged) {
-			if (file.isFile()) {
-				String currentContents = readTextFile(file);
-				if (currentContents.equals(content))
-					return;
-			}
+	public static void verifyAbsolute(File file, boolean allowNull) {
+		if (file == null) {
+			if (!allowNull)
+				throw new IllegalArgumentException();
+			return;
 		}
-		BufferedWriter w = new BufferedWriter(new FileWriter(file));
-		w.write(content);
-		w.close();
+		if (!file.isAbsolute())
+			throw new IllegalArgumentException(
+					"expected absolute file, but was '" + file + "'");
 	}
 
-	public static void writeTextFile(File file, String content)
-			throws IOException {
-		writeTextFile(file, content, false);
+	public static void verifyAbsolute(File file) {
+		verifyAbsolute(file, false);
 	}
 
-	public static void copy(File src, File dst) throws IOException {
-		InputStream in = new FileInputStream(src);
-		OutputStream out = new FileOutputStream(dst);
-
-		// Transfer bytes from in to out
-		byte[] buf = new byte[1024];
-		int len;
-		while ((len = in.read(buf)) > 0) {
-			out.write(buf, 0, len);
-		}
-		in.close();
-		out.close();
-	}
 }

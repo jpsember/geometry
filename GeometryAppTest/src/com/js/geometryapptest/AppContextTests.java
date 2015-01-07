@@ -3,11 +3,11 @@ package com.js.geometryapptest;
 import java.io.IOException;
 import java.io.InputStream;
 
-import com.js.basic.Files;
+import org.apache.commons.io.IOUtils;
+
 import com.js.testUtils.MyTestCase;
 
 import android.content.res.AssetManager;
-
 
 public class AppContextTests extends MyTestCase {
 
@@ -19,7 +19,7 @@ public class AppContextTests extends MyTestCase {
 		assertNotNull("asset manager null", m);
 
 		InputStream is = m.open("snapshots/RandomString.txt");
-		String content = Files.readTextFile(is);
+		String content = IOUtils.toString(is, "UTF-8");
 		is.close();
 		assertTrue("unexpected file contents:\n" + content,
 				content.indexOf("jgpgjbyygn") >= 0);

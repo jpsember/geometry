@@ -3,7 +3,8 @@ package com.js.geometryapptest;
 import java.io.File;
 import java.io.IOException;
 
-import com.js.basic.Files;
+import org.apache.commons.io.FileUtils;
+
 import com.js.testUtils.MyTestCase;
 
 public class MiscAndroidTests extends MyTestCase {
@@ -20,7 +21,7 @@ public class MiscAndroidTests extends MyTestCase {
 		assertNotNull("getExternalFilesDir returned null", directory);
 
 		File sampleFile = new File(directory, "___xyz___.txt");
-		Files.writeTextFile(sampleFile, "hello");
+		FileUtils.write(sampleFile, "hello");
 
 		assertTrue(sampleFile.exists());
 		assertTrue(sampleFile.delete());

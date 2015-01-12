@@ -188,6 +188,8 @@ public class UserEvent {
           sb.append("C");
         if (isMeta())
           sb.append("M");
+        if (isMultipleTouch())
+          sb.append("MULTI");
         if (isRight())
           sb.append("R");
         if (isShift())

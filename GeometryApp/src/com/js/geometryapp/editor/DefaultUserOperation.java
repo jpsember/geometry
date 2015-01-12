@@ -55,14 +55,16 @@ public class DefaultUserOperation extends UserOperation {
     switch (event.getCode()) {
 
     case UserEvent.CODE_DOWN:
-      if (event.isMultipleTouch())
-        break;
       mActive = true;
       mInitialEvent = event;
       mDragOperation = false;
       break;
 
     case UserEvent.CODE_DRAG:
+      if (event.isMultipleTouch()) {
+        event.clearOperation();
+        return;
+      }
       if (!mDragOperation) {
         mDragOperation = true;
         doStartDrag(mInitialEvent.getWorldLocation());
@@ -130,6 +132,16 @@ public class DefaultUserOperation extends UserOperation {
    *          location where DOWN occurred
    */
   private void doClick(Point location) {
+
+    // If multitouch, start 'add another object'
+    if (mInitialEvent.isMultipleTouch()) {
+      EdObjectFactory factory = mEditor.getLastEditableObjectType();
+      if (factory == null)
+        mEvent.clearOperation();
+      else
+        mEditor.doStartAddObjectOperation(factory);
+      return;
+    }
 
     // Construct pick set of selected objects. If empty, unselect
     // all objects; else cycle to next object and make it editable

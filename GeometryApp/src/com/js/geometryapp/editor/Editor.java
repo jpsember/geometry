@@ -533,7 +533,7 @@ public class Editor {
   /**
    * Set pending operation to add a new object of a particular type
    */
-  private void doStartAddObjectOperation(EdObjectFactory objectType) {
+  public void doStartAddObjectOperation(EdObjectFactory objectType) {
     objects().unselectAll();
 
     if (!verifyObjectsAllowed(objects().size() + 1)) {
@@ -1074,6 +1074,10 @@ public class Editor {
       name = "";
     }
     return name;
+  }
+
+  public EdObjectFactory getLastEditableObjectType() {
+    return mLastEditableObjectType;
   }
 
   private UserEventManager mUserEventManager;

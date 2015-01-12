@@ -9,9 +9,9 @@ import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 
-public class DefaultEventListener extends UserOperation {
+public class DefaultUserOperation extends UserOperation {
 
-  public DefaultEventListener(Editor editor, AlgorithmStepper stepper) {
+  public DefaultUserOperation(Editor editor, AlgorithmStepper stepper) {
     mEditor = editor;
     mStepper = stepper;
   }

@@ -81,7 +81,7 @@ public class Editor {
   public void prepare(View contentView) {
     mEditorView = contentView;
     prepareObjectTypes();
-    mUserEventManager = new UserEventManager(new DefaultEventListener(this,
+    mUserEventManager = new UserEventManager(new DefaultUserOperation(this,
         mStepper));
 
     mTouchEventGenerator = new TouchEventGenerator();

@@ -9,6 +9,8 @@ import org.json.JSONObject;
 
 import android.graphics.Color;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
@@ -113,8 +115,8 @@ public class EdPolyline extends EdObject {
   }
 
   @Override
-  public EditorEventListener buildEditOperation(int slot, Point location) {
-
+  public UserOperation buildEditOperation(int slot, UserEvent initialPress) {
+    Point location = initialPress.getWorldLocation();
     Point[] tabLocations = calculateTabPositions(this, null);
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_FORWARD])) {
@@ -126,7 +128,7 @@ public class EdPolyline extends EdObject {
         mod.rotateVertexPositions(-1);
         mod.setClosed(false);
       }
-      return EditorOperation.buildInsertOperation(editor(), slot, mod);
+      return OurOperation.buildInsertOperation(editor(), slot, mod);
     }
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_BACKWARD])) {
@@ -137,7 +139,7 @@ public class EdPolyline extends EdObject {
         mod.rotateVertexPositions(0);
         mod.setClosed(false);
       }
-      return EditorOperation.buildInsertOperation(editor(), slot, mod);
+      return OurOperation.buildInsertOperation(editor(), slot, mod);
     }
 
     int vertexIndex = closestVertex(location, editor().pickRadius());
@@ -145,7 +147,7 @@ public class EdPolyline extends EdObject {
       mCursor = vertexIndex;
       EdPolyline mod = getCopy();
       mod.mCursor = vertexIndex;
-      return EditorOperation.buildMoveOperation(editor(), slot, mod);
+      return OurOperation.buildMoveOperation(editor(), slot, mod);
     }
     return null;
   }
@@ -365,7 +367,7 @@ public class EdPolyline extends EdObject {
   private int mCursor;
   private boolean mTabsHidden;
 
-  private static class EditorOperation extends EditorEventListenerAdapter {
+  private static class OurOperation extends UserOperation {
 
     private final static int OPER_MOVE = 0;
     private final static int OPER_INSERT = 1;
@@ -381,7 +383,7 @@ public class EdPolyline extends EdObject {
      * @param vertexNumber
      *          vertex number being edited
      */
-    private EditorOperation(Editor editor, int slot, EdPolyline modified,
+    private OurOperation(Editor editor, int slot, EdPolyline modified,
         int operType) {
       mOperType = operType;
       mEditor = editor;
@@ -396,48 +398,29 @@ public class EdPolyline extends EdObject {
       return mEditor.objects().get(mEditSlot);
     }
 
-    public static EditorEventListener buildMoveOperation(Editor editor,
-        int slot, EdPolyline mod) {
-      EditorOperation oper = new EditorOperation(editor, slot, mod,
-          EditorOperation.OPER_MOVE);
-      return oper;
+    public static UserOperation buildMoveOperation(Editor editor, int slot,
+        EdPolyline mod) {
+      return new OurOperation(editor, slot, mod, OPER_MOVE);
     }
 
-    public static EditorEventListener buildInsertOperation(Editor editor,
-        int slot, EdPolyline mod) {
-      EditorOperation oper = new EditorOperation(editor, slot, mod,
-          EditorOperation.OPER_INSERT);
-      return oper;
+    public static UserOperation buildInsertOperation(Editor editor, int slot,
+        EdPolyline mod) {
+      return new OurOperation(editor, slot, mod, OPER_INSERT);
     }
 
     @Override
-    public EditorEvent processEvent(EditorEvent event) {
-
-      final boolean db = false && DEBUG_ONLY_FEATURES;
-      if (db)
-        event.printProcessingMessage("EdPolyline");
-
-      // By default, we'll be handling the event
-      EditorEvent outputEvent = EditorEvent.NONE;
+    public void processUserEvent(UserEvent event) {
 
       switch (event.getCode()) {
-      default:
-        // we don't know how to handle this event, so pass it
-        // through
-        outputEvent = event;
-        break;
 
-      case EditorEvent.CODE_DOWN:
-        break;
-
-      case EditorEvent.CODE_DRAG: {
+      case UserEvent.CODE_DRAG: {
         // Create a new copy of the polyline, with modified endpoint
         EdPolyline polyline = mReference.getCopy();
         mEditor.objects().set(mEditSlot, polyline);
         polyline.setTabsHidden(true);
         {
           mChangesMade = true;
-          polyline.setPoint(polyline.cursor(), event.getLocation());
+          polyline.setPoint(polyline.cursor(), event.getWorldLocation());
           int absorbVertex = findAbsorbingVertex(polyline);
           mSignal = (absorbVertex >= 0);
           if (mSignal) {
@@ -448,11 +431,7 @@ public class EdPolyline extends EdObject {
       }
         break;
 
-      case EditorEvent.CODE_UP:
-        // stop the operation on UP events
-        outputEvent = EditorEvent.STOP;
-        if (event.isMultipleTouch())
-          break;
+      case UserEvent.CODE_UP:
         if (mChangesMade) {
           EdPolyline polyline = activePolyline();
           int absVert = findAbsorbingVertex(polyline);
@@ -465,27 +444,27 @@ public class EdPolyline extends EdObject {
           mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
               mOriginalState, null, null, null));
         }
+        event.clearOperation();
         break;
 
-      case EditorEvent.CODE_STOP: {
-        activePolyline().setTabsHidden(false);
+      }
+    }
 
-        // Check if polyline has only two vertices very close together.
-        // This can happen when the user clicks when adding a new
-        // polyline
-        // instead of dragging.
-        // Delete the second one if this occurs.
-        EdPolyline polyline = activePolyline();
-        if (polyline.nPoints() == 2
-            && MyMath.distanceBetween(polyline.getPoint(0),
-                polyline.getPoint(1)) < 5) {
-          polyline.removePoint(1);
-          polyline.setCursor(0);
-        }
+    @Override
+    public void stop() {
+      activePolyline().setTabsHidden(false);
+
+      // Check if polyline has only two vertices very close together.
+      // This can happen when the user clicks when adding a new
+      // polyline
+      // instead of dragging.
+      // Delete the second one if this occurs.
+      EdPolyline polyline = activePolyline();
+      if (polyline.nPoints() == 2
+          && MyMath.distanceBetween(polyline.getPoint(0), polyline.getPoint(1)) < 5) {
+        polyline.removePoint(1);
+        polyline.setCursor(0);
       }
-        break;
-      }
-      return outputEvent;
     }
 
     /**
@@ -532,7 +511,8 @@ public class EdPolyline extends EdObject {
     }
 
     @Override
-    public void render(AlgorithmStepper s) {
+    public void paint() {
+      AlgorithmStepper s = mEditor.stepper();
       if (mSignal) {
         EdPolyline polyline = activePolyline();
         Point signalLocation = polyline.getPoint(polyline.cursor());

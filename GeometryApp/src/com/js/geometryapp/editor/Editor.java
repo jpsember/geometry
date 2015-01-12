@@ -21,6 +21,7 @@ import com.js.editor.Command;
 import com.js.editor.UserEvent;
 import com.js.editor.UserEventManager;
 import com.js.editor.UserEventSource;
+import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -72,6 +73,10 @@ public class Editor {
     mStepper = stepper;
     mOptions = options;
     mRenderer = renderer;
+  }
+
+  public AlgorithmStepper stepper() {
+    return mStepper;
   }
 
   /**
@@ -530,7 +535,13 @@ public class Editor {
    */
   private void doStartAddObjectOperation(EdObjectFactory objectType) {
     objects().unselectAll();
-    mPendingAddObjectOperation = objectType;
+
+    if (!verifyObjectsAllowed(objects().size() + 1)) {
+      return;
+    }
+
+    mUserEventManager.setOperation(new AddObjectOperation(this, mStepper,
+        objectType));
     if (false) {
       toast(context(), "Add " + objectType.getTag());
     }
@@ -585,21 +596,21 @@ public class Editor {
     addObjectType(EdPolyline.FACTORY);
   }
 
-  private void addNewObject(EdObjectFactory objectType, Point location) {
-    EditorState originalState = new EditorState(this);
-    EdObject newObject = objectType.construct(location);
-    newObject.setEditor(this);
-    int slot = mObjects.add(newObject);
-    mObjects.setEditableSlot(slot);
-
-    Command c = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), objectType.getTag(), null);
-    pushCommand(c);
-
-    // Start operation for editing this one
-    unimp("addNewObject");
-    // setOperation(newObject.buildEditOperation(slot, location));
-  }
+  // private void addNewObject(EdObjectFactory objectType, Point location) {
+  // EditorState originalState = new EditorState(this);
+  // EdObject newObject = objectType.construct(location);
+  // newObject.setEditor(this);
+  // int slot = mObjects.add(newObject);
+  // mObjects.setEditableSlot(slot);
+  //
+  // Command c = new CommandForGeneralChanges(this, originalState,
+  // new EditorState(this), objectType.getTag(), null);
+  // pushCommand(c);
+  //
+  // // Start operation for editing this one
+  // unimp("addNewObject");
+  // // setOperation(newObject.buildEditOperation(slot, location));
+  // }
 
   private void doUndo() {
     // Button enabling is delayed, so we can't assume this operation is
@@ -1069,9 +1080,6 @@ public class Editor {
 
   private Map<String, EdObjectFactory> mObjectTypes;
   private EdObjectFactory mLastEditableObjectType;
-  // If not null, on next DOWN event, we create a new object and start
-  // operation to edit it
-  private EdObjectFactory mPendingAddObjectOperation;
   private View mEditorView;
   private GeometryStepperActivity mActivity;
   private ConcreteStepper mStepper;

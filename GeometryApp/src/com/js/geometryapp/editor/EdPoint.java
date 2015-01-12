@@ -2,6 +2,8 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -32,8 +34,8 @@ public class EdPoint extends EdObject {
 	}
 
 	@Override
-	public EditorEventListener buildEditOperation(int slot, Point location) {
-		// Points are special in that their entire object is represented by a
+  public UserOperation buildEditOperation(int slot, UserEvent initialPress) {
+    // Points are special in that their entire object is represented by a
 		// single vertex; hence editing a point is equivalent to moving it
 		// around. No per-vertex editing is required, and should in fact
 		// be disallowed to keep the move and DupAccumulator logic simple.

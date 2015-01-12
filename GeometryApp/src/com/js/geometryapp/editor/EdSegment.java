@@ -2,6 +2,8 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -27,7 +29,8 @@ public class EdSegment extends EdObject {
   }
 
   @Override
-  public EditorEventListener buildEditOperation(int slot, Point location) {
+  public UserOperation buildEditOperation(int slot, UserEvent initialPress) {
+    Point location = initialPress.getWorldLocation();
     int vertexIndex = closestVertex(location, editor().pickRadius());
     if (vertexIndex >= 0)
       return new EditorOperation(editor(), slot, vertexIndex);
@@ -61,7 +64,7 @@ public class EdSegment extends EdObject {
     }
   };
 
-  private static class EditorOperation extends EditorEventListenerAdapter {
+  private static class EditorOperation extends UserOperation {
     public EditorOperation(Editor editor, int slot, int vertexNumber) {
       mEditor = editor;
       mEditSlot = slot;
@@ -87,54 +90,31 @@ public class EdSegment extends EdObject {
     }
 
     @Override
-    public EditorEvent processEvent(EditorEvent event) {
-
-      final boolean db = false && DEBUG_ONLY_FEATURES;
-      if (db)
-        event.printProcessingMessage("EdSegment");
+    public void processUserEvent(UserEvent event) {
 
       if (event.hasLocation())
-        initializeOperation(event.getLocation());
-
-      // By default, we'll be handling the event
-      EditorEvent outputEvent = EditorEvent.NONE;
+        initializeOperation(event.getWorldLocation());
 
       switch (event.getCode()) {
-      default:
-        // we don't know how to handle this event, so pass it
-        // through
-        outputEvent = event;
-        break;
 
-      case EditorEvent.CODE_DOWN:
-        break;
-
-      case EditorEvent.CODE_DRAG: {
+      case UserEvent.CODE_DRAG: {
         EdSegment seg = mEditor.objects().get(mEditSlot);
         // Create a new copy of the segment, with modified endpoint
         EdSegment seg2 = seg.getCopy();
-        seg2.setPoint(mEditPointIndex, event.getLocation());
-        if (db)
-          pr(" changed endpoint; " + seg2);
+        seg2.setPoint(mEditPointIndex, event.getWorldLocation());
         mEditor.objects().set(mEditSlot, seg2);
         mModified = true;
       }
         break;
 
-      case EditorEvent.CODE_UP:
-        // stop the operation on UP events
-        outputEvent = EditorEvent.STOP;
-        if (event.isMultipleTouch())
-          break;
-        if (db)
-          pr(" modified " + mModified);
+      case UserEvent.CODE_UP:
         if (mModified) {
           mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
               mOriginalState, null, FACTORY.getTag(), null));
         }
+        event.clearOperation();
         break;
       }
-      return outputEvent;
     }
 
     // Index of object being edited

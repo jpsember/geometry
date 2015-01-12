@@ -3,6 +3,8 @@ package com.js.geometryapp.editor;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
@@ -56,8 +58,9 @@ public class EdDisc extends EdObject {
   }
 
   @Override
-  public EditorEventListener buildEditOperation(int slot, Point location) {
-    int vertexIndex = closestVertex(location, editor().pickRadius());
+  public UserOperation buildEditOperation(int slot, UserEvent initialPress) {
+    int vertexIndex = closestVertex(initialPress.getWorldLocation(), editor()
+        .pickRadius());
     if (vertexIndex >= 0)
       return new EditorOperation(editor(), slot, vertexIndex);
     return null;
@@ -158,7 +161,7 @@ public class EdDisc extends EdObject {
 
   };
 
-  private static class EditorOperation extends EditorEventListenerAdapter {
+  private static class EditorOperation extends UserOperation {
     public EditorOperation(Editor editor, int slot, int vertexNumber) {
       mEditor = editor;
       mEditSlot = slot;
@@ -178,33 +181,23 @@ public class EdDisc extends EdObject {
     }
 
     @Override
-    public EditorEvent processEvent(EditorEvent event) {
-      final boolean db = false && DEBUG_ONLY_FEATURES;
-      if (db)
-        event.printProcessingMessage("EdDisc");
+    public void processUserEvent(UserEvent event) {
+      event.printProcessingMessage("EdDisc");
 
       if (event.hasLocation())
-        initializeOperation(event.getLocation());
-
-      // By default, we'll be handling the event
-      EditorEvent outputEvent = EditorEvent.NONE;
+        initializeOperation(event.getWorldLocation());
 
       switch (event.getCode()) {
-      default:
-        // we don't know how to handle this event, so pass it
-        // through
-        outputEvent = event;
-        break;
 
-      case EditorEvent.CODE_DOWN:
+      case UserEvent.CODE_DOWN:
         mOriginalDisc = mEditor.objects().get(mEditSlot);
         mInitialOffset = MyMath.subtract(
-            mOriginalDisc.getPoint(mEditPointIndex), event.getLocation());
-
+            mOriginalDisc.getPoint(mEditPointIndex), event.getWorldLocation());
         break;
 
-      case EditorEvent.CODE_DRAG: {
-        Point adjustedLoc = MyMath.add(event.getLocation(), mInitialOffset);
+      case UserEvent.CODE_DRAG: {
+        Point adjustedLoc = MyMath
+            .add(event.getWorldLocation(), mInitialOffset);
         EdDisc disc = mEditor.objects().get(mEditSlot);
         // Create a new copy of the disc, with modified origin or radius
         EdDisc disc2 = disc.getCopy();
@@ -220,18 +213,14 @@ public class EdDisc extends EdObject {
       }
         break;
 
-      case EditorEvent.CODE_UP:
-        // stop the operation on UP events
-        outputEvent = EditorEvent.STOP;
-        if (event.isMultipleTouch())
-          break;
+      case UserEvent.CODE_UP:
         if (mModified) {
           mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
               mOriginalState, null, FACTORY.getTag(), null));
         }
+        event.clearOperation();
         break;
       }
-      return outputEvent;
     }
 
     private int mEditSlot;

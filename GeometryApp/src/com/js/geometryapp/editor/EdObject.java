@@ -6,6 +6,8 @@ import java.util.List;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -41,13 +43,12 @@ public abstract class EdObject implements Cloneable {
    * If possible, construct an operation to edit this editable object
    * 
    * @param slot
-   * @param location
-   *          location of user press; e.g., to see if it is at a draggable
-   *          vertex
+   * @param initialPress
+   *          DOWN event; e.g., to see if it is at a draggable vertex
    * @return operation, or null
    */
-  public abstract EditorEventListener buildEditOperation(int slot,
-      Point location);
+  public abstract UserOperation buildEditOperation(int slot,
+      UserEvent initialPress);
 
   public <T extends EdObject> T getCopy() {
     return (T) this.clone();

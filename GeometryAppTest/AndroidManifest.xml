@@ -9,6 +9,8 @@
         android:minSdkVersion="14"
         android:targetSdkVersion="20" />
 
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> 
+    
     <instrumentation
         android:name="android.test.InstrumentationTestRunner"
         android:targetPackage="com.js.geometryapptest" />

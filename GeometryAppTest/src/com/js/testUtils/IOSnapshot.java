@@ -12,6 +12,8 @@ import java.util.regex.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.js.basic.Files;
+
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.os.Environment;
@@ -104,11 +106,7 @@ public class IOSnapshot {
 				try {
 					FileUtils.deleteDirectory(mDynamicSnapshotsDir);
 				} catch (IOException e) {
-					// It's having problems on my Nexus S; maybe this is a
-					// device issue, unrelated to usage of FileUtils?
-						warning("Unable to delete snapshots dir: "
-								+ mDynamicSnapshotsDir + "\n  exception: " + e);
-						die(e);
+					die(e);
 				}
 			}
 

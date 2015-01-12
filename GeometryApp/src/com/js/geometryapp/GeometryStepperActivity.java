@@ -13,7 +13,6 @@ import com.js.basic.Files;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
-import com.js.geometryapp.editor.EditorGLSurfaceView;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -29,275 +28,275 @@ import static com.js.android.Tools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
-	public static final String PERSIST_KEY_OPTIONS = "_widget_values";
-	public static final String PERSIST_KEY_EDITOR = "_editor";
-	private static final int REQUEST_SHARE_GEOM_FILE = 1000;
+  public static final String PERSIST_KEY_OPTIONS = "_widget_values";
+  public static final String PERSIST_KEY_EDITOR = "_editor";
+  private static final int REQUEST_SHARE_GEOM_FILE = 1000;
 
-	public GeometryStepperActivity() {
-		/**
-		 * <pre>
-		 * 
-		 * Activity initialization has these stages:
-		 * 
-		 * 1) construct the components (the nodes of an object graph)
-		 * 2) establish dependencies between components (the edges of the graph)
-		 * 
-		 * </pre>
-		 */
+  public GeometryStepperActivity() {
+    /**
+     * <pre>
+     * 
+     * Activity initialization has these stages:
+     * 
+     * 1) construct the components (the nodes of an object graph)
+     * 2) establish dependencies between components (the edges of the graph)
+     * 
+     * </pre>
+     */
 
-		// Stage 1: construct the various components
-		mEditor = new Editor();
-		mStepper = new ConcreteStepper();
-		mOptions = new AlgorithmOptions(this);
-		mRenderer = new AlgorithmRenderer(this);
+    // Stage 1: construct the various components
+    mEditor = new Editor();
+    mStepper = new ConcreteStepper();
+    mOptions = new AlgorithmOptions(this);
+    mRenderer = new AlgorithmRenderer(this);
 
-		// Stage 2: establish dependencies
-		mEditor.setDependencies(this, mStepper, mOptions);
-		mStepper.setDependencies(mOptions, mEditor);
-		mOptions.setDependencies(mEditor, mStepper);
-		mRenderer.setDependencies(mEditor, mStepper);
-	}
+    // Stage 2: establish dependencies
+    mEditor.setDependencies(this, mStepper, mOptions, mRenderer);
+    mStepper.setDependencies(mOptions, mEditor);
+    mOptions.setDependencies(mEditor, mStepper);
+    mRenderer.setDependencies(mEditor, mStepper);
+  }
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		// Set the theme to appply to the entire application.
-		// AppTheme is defined in res/values/styles.xml:
-		setTheme(R.style.AppTheme);
-		super.onCreate(savedInstanceState);
-		addAlgorithms(mStepper);
-		mStepper.begin();
-		restoreEditorPreferences();
-		processIntent();
-		mStepper.refresh();
-	}
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    // Set the theme to appply to the entire application.
+    // AppTheme is defined in res/values/styles.xml:
+    setTheme(R.style.AppTheme);
+    super.onCreate(savedInstanceState);
+    addAlgorithms(mStepper);
+    mStepper.begin();
+    restoreEditorPreferences();
+    processIntent();
+    mStepper.refresh();
+  }
 
-	private void restoreEditorPreferences() {
-		String script = AppPreferences.getString(
-				GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
-		if (script != null)
-			mEditor.restoreFromJSON(script);
-	}
+  private void restoreEditorPreferences() {
+    String script = AppPreferences.getString(
+        GeometryStepperActivity.PERSIST_KEY_EDITOR, null);
+    if (script != null)
+      mEditor.restoreFromJSON(script);
+  }
 
-	public abstract void addAlgorithms(AlgorithmStepper s);
+  public abstract void addAlgorithms(AlgorithmStepper s);
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-		if (mGLView != null)
-			mGLView.onResume();
-	}
+  @Override
+  protected void onResume() {
+    super.onResume();
+    if (mGLView != null)
+      mGLView.onResume();
+  }
 
-	@Override
-	protected void onPause() {
-		mOptions.persistStepperState(false);
-		mEditor.persistEditorState(false);
-		super.onPause();
-		if (mGLView != null)
-			mGLView.onPause();
-	}
+  @Override
+  protected void onPause() {
+    mOptions.persistStepperState(false);
+    mEditor.persistEditorState(false);
+    super.onPause();
+    if (mGLView != null)
+      mGLView.onPause();
+  }
 
-	@Override
-	protected View buildContentView() {
-		EditorGLSurfaceView surfaceView = new EditorGLSurfaceView(this);
-		mGLView = surfaceView;
-		surfaceView.setRenderer(mRenderer);
-		surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+  @Override
+  protected View buildContentView() {
+    GLSurfaceView surfaceView = new GLSurfaceView(this);
+    surfaceView.setEGLContextClientVersion(2);
 
-		mStepper.setGLSurfaceView(surfaceView);
+    mGLView = surfaceView;
+    surfaceView.setRenderer(mRenderer);
+    surfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
 
-		// Build a view that will contain the GLSurfaceView and a stepper
-		// control panel
-		LinearLayout mainView = new LinearLayout(this);
-		{
-			mainView.setOrientation(LinearLayout.VERTICAL);
-			LinearLayout.LayoutParams p = UITools.layoutParams(false);
-			p.weight = 1;
+    mStepper.setGLSurfaceView(surfaceView);
 
-			// Wrap the GLSurfaceView within another container, so we can
-			// overlay it with an editing toolbar
-			mEditor.prepare(surfaceView);
-			surfaceView.setEditor(mEditor, mStepper);
+    // Build a view that will contain the GLSurfaceView and a stepper
+    // control panel
+    LinearLayout mainView = new LinearLayout(this);
+    {
+      mainView.setOrientation(LinearLayout.VERTICAL);
+      LinearLayout.LayoutParams p = UITools.layoutParams(false);
+      p.weight = 1;
 
-			View editorView = mEditor.getView();
-			// Place editor view within a container with a black background
-			// to emphasize boundary between the editor and the neighbors
-			{
-				LinearLayout borderView = UITools.linearLayout(this, true);
-				borderView.setPadding(2, 2, 2, 2);
-				borderView.setBackgroundColor(Color.rgb(128, 128, 128));
-				borderView.addView(editorView);
-				editorView = borderView;
-			}
-			mainView.addView(editorView, p);
-		}
+      // Wrap the GLSurfaceView within another container, so we can
+      // overlay it with an editing toolbar
+      mEditor.prepare(surfaceView);
 
-		buildAuxilliaryView();
-		mainView.addView(mAuxView);
+      View editorView = mEditor.getView();
+      // Place editor view within a container with a black background
+      // to emphasize boundary between the editor and the neighbors
+      {
+        LinearLayout borderView = UITools.linearLayout(this, true);
+        borderView.setPadding(2, 2, 2, 2);
+        borderView.setBackgroundColor(Color.rgb(128, 128, 128));
+        borderView.addView(editorView);
+        editorView = borderView;
+      }
+      mainView.addView(editorView, p);
+    }
 
-		// Add the stepper control panel to this container
-		mainView.addView(mStepper.buildControllerView());
+    buildAuxilliaryView();
+    mainView.addView(mAuxView);
 
-		// Make the container the main view of a TwinViewContainer
-		TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
-		mOptions.prepareViews(twinViews.getAuxilliaryView());
-		return twinViews.getContainer();
-	}
+    // Add the stepper control panel to this container
+    mainView.addView(mStepper.buildControllerView());
 
-	private void buildAuxilliaryView() {
-		mAuxView = new LinearLayout(this);
-	}
+    // Make the container the main view of a TwinViewContainer
+    TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
+    mOptions.prepareViews(twinViews.getAuxilliaryView());
+    return twinViews.getContainer();
+  }
 
-	private static String dumpIntent(Intent intent) {
-		if (!DEBUG_ONLY_FEATURES)
-			return intent.toString();
-		StringBuilder sb = new StringBuilder("Intent(");
-		sb.append("\n type:       " + d(intent.getType()));
-		sb.append("\n action:     " + d(intent.getAction()));
-		sb.append("\n categories: " + d(intent.getCategories()));
-		sb.append("\n data:       " + intent.getDataString());
-		sb.append("\n extras:     " + d(intent.getExtras()));
-		sb.append("\n)");
-		return sb.toString();
-	}
+  private void buildAuxilliaryView() {
+    mAuxView = new LinearLayout(this);
+  }
 
-	/**
-	 * Process intent; read editor objects from its contents if possible
-	 */
-	private void processIntent() {
-		final boolean db = false && DEBUG_ONLY_FEATURES;
-		Intent intent = getIntent();
-		if (intent == null)
-			return;
-		if (db)
-			pr("\n\nprocess " + dumpIntent(intent) + "\n\n");
+  private static String dumpIntent(Intent intent) {
+    if (!DEBUG_ONLY_FEATURES)
+      return intent.toString();
+    StringBuilder sb = new StringBuilder("Intent(");
+    sb.append("\n type:       " + d(intent.getType()));
+    sb.append("\n action:     " + d(intent.getAction()));
+    sb.append("\n categories: " + d(intent.getCategories()));
+    sb.append("\n data:       " + intent.getDataString());
+    sb.append("\n extras:     " + d(intent.getExtras()));
+    sb.append("\n)");
+    return sb.toString();
+  }
 
-		/**
-		 * <pre>
-		 * 
-		 * My Files:
-		 * ----------
-		 * process Intent( 
-		 *  type:        
-		 *  action:     android.intent.action.VIEW 
-		 *  categories: <null> 
-		 *  data:       file:///storage/emulated/0/Download/b1_00.geom 
-		 *  extras:       "Bundle[mParcelledData.dataSize=616]" 
-		 * ) 
-		 *            
-		 * Dropbox:
-		 * -----------
-		 * process Intent( 
-		 *  type:       application/octet-stream 
-		 *  action:     android.intent.action.VIEW 
-		 *  categories: <null> 
-		 *  data:       file:///storage/emulated/0/Android/data/com.dropbox.android/files/scratch/a1.geom 
-		 *  extras:       "Bundle[mParcelledData.dataSize=164]" 
-		 * )
-		 * 
-		 * GMail:
-		 * -----------
-		 * process Intent( 
-		 *  type:       application/octet-stream 
-		 *  action:     android.intent.action.VIEW 
-		 *  categories: <null> 
-		 *  data:       content://gmail-ls/jpsember@gmail.com/messages/960/attachments/0.1/BEST/false 
-		 *  extras:       <null> 
-		 * )
-		 * 
-		 * 
-		 * Drive:
-		 * -----------
-		 * process Intent( 
-		 *  type:       application/octet-stream 
-		 *  action:     android.intent.action.VIEW 
-		 *  categories: <null> 
-		 *  data:       file:///data/data/com.google.android.apps.docs/files/fileinternal/74eda9f25aa2f91a461546b60100b39e/b1_00.geom 
-		 *  extras:       "Bundle[mParcelledData.dataSize=412]" 
-		 * )
-		 * 
-		 * </pre>
-		 */
-		String jsonContent = null;
-		if (Intent.ACTION_VIEW.equals(intent.getAction())) {
-			try {
-				Uri u = intent.getData();
-				String scheme = u.getScheme();
-				if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
-					// handle as content uri
-					InputStream stream = getContentResolver()
-							.openInputStream(u);
-					jsonContent = Files.readString(stream);
-				} else {
-					File f = new File(u.getPath());
-					jsonContent = FileUtils.readFileToString(f);
-				}
-			} catch (IOException e) {
-				toast(this, "Problem reading file");
-				pr(e);
-			}
-		}
-		if (jsonContent == null)
-			return;
-		mEditor.restoreFromJSON(jsonContent);
-	}
+  /**
+   * Process intent; read editor objects from its contents if possible
+   */
+  private void processIntent() {
+    final boolean db = false && DEBUG_ONLY_FEATURES;
+    Intent intent = getIntent();
+    if (intent == null)
+      return;
+    if (db)
+      pr("\n\nprocess " + dumpIntent(intent) + "\n\n");
 
-	/**
-	 * Share a data file via email
-	 * 
-	 * @param name
-	 *            name given to file by user; will be incorporated into
-	 *            filename; if empty, uses "unknown"
-	 * @param attachment
-	 *            data file to include as attachment
-	 */
-	public void doShare(String name, byte[] attachment) {
-		name = mEditor.sanitizeFilename(name);
-		if (name.isEmpty())
-			name = "unknown";
-		String filename = name + ".geom";
+    /**
+     * <pre>
+     * 
+     * My Files:
+     * ----------
+     * process Intent( 
+     *  type:        
+     *  action:     android.intent.action.VIEW 
+     *  categories: <null> 
+     *  data:       file:///storage/emulated/0/Download/b1_00.geom 
+     *  extras:       "Bundle[mParcelledData.dataSize=616]" 
+     * ) 
+     *            
+     * Dropbox:
+     * -----------
+     * process Intent( 
+     *  type:       application/octet-stream 
+     *  action:     android.intent.action.VIEW 
+     *  categories: <null> 
+     *  data:       file:///storage/emulated/0/Android/data/com.dropbox.android/files/scratch/a1.geom 
+     *  extras:       "Bundle[mParcelledData.dataSize=164]" 
+     * )
+     * 
+     * GMail:
+     * -----------
+     * process Intent( 
+     *  type:       application/octet-stream 
+     *  action:     android.intent.action.VIEW 
+     *  categories: <null> 
+     *  data:       content://gmail-ls/jpsember@gmail.com/messages/960/attachments/0.1/BEST/false 
+     *  extras:       <null> 
+     * )
+     * 
+     * 
+     * Drive:
+     * -----------
+     * process Intent( 
+     *  type:       application/octet-stream 
+     *  action:     android.intent.action.VIEW 
+     *  categories: <null> 
+     *  data:       file:///data/data/com.google.android.apps.docs/files/fileinternal/74eda9f25aa2f91a461546b60100b39e/b1_00.geom 
+     *  extras:       "Bundle[mParcelledData.dataSize=412]" 
+     * )
+     * 
+     * </pre>
+     */
+    String jsonContent = null;
+    if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+      try {
+        Uri u = intent.getData();
+        String scheme = u.getScheme();
+        if (ContentResolver.SCHEME_CONTENT.equals(scheme)) {
+          // handle as content uri
+          InputStream stream = getContentResolver().openInputStream(u);
+          jsonContent = Files.readString(stream);
+        } else {
+          File f = new File(u.getPath());
+          jsonContent = FileUtils.readFileToString(f);
+        }
+      } catch (IOException e) {
+        toast(this, "Problem reading file");
+        pr(e);
+      }
+    }
+    if (jsonContent == null)
+      return;
+    mEditor.restoreFromJSON(jsonContent);
+  }
 
-		String recipient = "";
-		String subject = "Geometry Framework data file: " + filename;
-		String message = "";
+  /**
+   * Share a data file via email
+   * 
+   * @param name
+   *          name given to file by user; will be incorporated into filename; if
+   *          empty, uses "unknown"
+   * @param attachment
+   *          data file to include as attachment
+   */
+  public void doShare(String name, byte[] attachment) {
+    name = mEditor.sanitizeFilename(name);
+    if (name.isEmpty())
+      name = "unknown";
+    String filename = name + ".geom";
 
-		final Intent intent = new Intent(Intent.ACTION_SEND);
-		intent.setType("message/rfc822");
-		intent.putExtra(Intent.EXTRA_EMAIL, new String[] { recipient });
-		intent.putExtra(Intent.EXTRA_SUBJECT, subject);
-		intent.putExtra(Intent.EXTRA_TEXT, message);
+    String recipient = "";
+    String subject = "Geometry Framework data file: " + filename;
+    String message = "";
 
-		// create attachment
+    final Intent intent = new Intent(Intent.ACTION_SEND);
+    intent.setType("message/rfc822");
+    intent.putExtra(Intent.EXTRA_EMAIL, new String[] { recipient });
+    intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+    intent.putExtra(Intent.EXTRA_TEXT, message);
 
-		File file = new File(getExternalCacheDir(), filename);
-		Throwable problem = null;
-		try {
-			FileOutputStream fos = new FileOutputStream(file);
-			fos.write(attachment);
-			fos.close();
-		} catch (IOException e) {
-			problem = e;
-		}
+    // create attachment
 
-		if (problem != null || !file.exists() || !file.canRead()) {
-			String toastMessage = "Problem creating attachment";
-			if (problem != null)
-				toastMessage += ": " + problem;
-			Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
-			return;
-		}
+    File file = new File(getExternalCacheDir(), filename);
+    Throwable problem = null;
+    try {
+      FileOutputStream fos = new FileOutputStream(file);
+      fos.write(attachment);
+      fos.close();
+    } catch (IOException e) {
+      problem = e;
+    }
 
-		Uri uri = Uri.parse("file://" + file.getAbsolutePath());
-		intent.putExtra(Intent.EXTRA_STREAM, uri);
+    if (problem != null || !file.exists() || !file.canRead()) {
+      String toastMessage = "Problem creating attachment";
+      if (problem != null)
+        toastMessage += ": " + problem;
+      Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+      return;
+    }
 
-		startActivityForResult(
-				Intent.createChooser(intent, "Email Geometry file using..."),
-				REQUEST_SHARE_GEOM_FILE);
-	}
+    Uri uri = Uri.parse("file://" + file.getAbsolutePath());
+    intent.putExtra(Intent.EXTRA_STREAM, uri);
 
-	private ConcreteStepper mStepper;
-	private AlgorithmOptions mOptions;
-	private AlgorithmRenderer mRenderer;
-	private Editor mEditor;
-	private EditorGLSurfaceView mGLView;
-	private LinearLayout mAuxView;
+    startActivityForResult(
+        Intent.createChooser(intent, "Email Geometry file using..."),
+        REQUEST_SHARE_GEOM_FILE);
+  }
+
+  private ConcreteStepper mStepper;
+  private AlgorithmOptions mOptions;
+  private AlgorithmRenderer mRenderer;
+  private Editor mEditor;
+  private GLSurfaceView mGLView;
+  private LinearLayout mAuxView;
 }

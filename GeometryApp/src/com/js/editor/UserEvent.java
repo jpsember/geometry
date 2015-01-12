@@ -37,6 +37,7 @@ public class UserEvent {
   public static final int FLAG_SHIFT = (1 << 2);
   public static final int FLAG_ALT = (1 << 3);
   public static final int FLAG_META = (1 << 4);
+  public static final int FLAG_MULTITOUCH = (1 << 5);
 
   public UserEvent(int code, UserEventSource source, IPoint viewLocation,
       int modifierFlags) {
@@ -127,18 +128,16 @@ public class UserEvent {
     return hasFlag(FLAG_SHIFT);
   }
 
+  public boolean isMultipleTouch() {
+    return hasFlag(FLAG_MULTITOUCH);
+  }
+
   public boolean hasModifierKeys() {
     return hasFlag(FLAG_CTRL | FLAG_SHIFT | FLAG_ALT | FLAG_META);
   }
 
   private boolean hasFlag(int f) {
     return 0 != (mModifierFlags & f);
-  }
-
-  public boolean isMultipleTouch() {
-    if (!hasLocation())
-      throw new IllegalStateException();
-    return mMultipleTouchFlag;
   }
 
   public void printProcessingMessage(String message) {
@@ -209,6 +208,5 @@ public class UserEvent {
   private UserEventSource mSource;
   private IPoint mViewLocation;
   private Point mWorldLocation;
-  private boolean mMultipleTouchFlag;
   private int mModifierFlags;
 }

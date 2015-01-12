@@ -3,6 +3,7 @@ package com.js.geometryapp.editor;
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
+@Deprecated
 public class EditorEvent {
 
 	public static final int CODE_NONE = 0;

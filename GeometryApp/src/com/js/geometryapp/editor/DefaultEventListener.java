@@ -4,18 +4,86 @@ import static com.js.basic.Tools.*;
 
 import java.util.List;
 
-import android.graphics.Color;
-
-import com.js.editor.Command;
+import com.js.editor.*;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
-import com.js.geometry.Rect;
 
-public class DefaultEventListener extends EditorEventListenerAdapter {
+public class DefaultEventListener extends UserOperation {
 
-  public DefaultEventListener(Editor editor) {
+  public DefaultEventListener(Editor editor, AlgorithmStepper stepper) {
     mEditor = editor;
+    mStepper = stepper;
+  }
+
+  @Override
+  public void stop() {
+    mActive = false;
+  }
+
+  /**
+   * <pre>
+   * 
+   * Picking behaviour
+   * 
+   * The 'pick set' under a point p is the ordered sequence of all objects that contain p. These
+   * objects may or may not be currently selected.  Some objects, such as segments, should have
+   * a fuzzy definition of what it means to contain a point.
+   * 
+   * Repeated clicks at a point should cycle between the pick set under that point, by selecting 
+   * each item in sequence.
+   * 
+   * Clicking should unselect all objects that are not in the current point's click set.
+   * 
+   * There should be a distinction between clicking (down+up) and dragging (down+drag+up).
+   * 
+   * A down event on an empty pick set, followed by a drag, should produce a rectangle used to
+   * select contained objects.
+   * 
+   * </pre>
+   */
+  @Override
+  public void processUserEvent(UserEvent event) {
+    final boolean db = true && DEBUG_ONLY_FEATURES;
+    if (db)
+      event.printProcessingMessage("DefaultEventListener");
+
+    mEvent = event;
+    if (event.getCode() != UserEvent.CODE_DOWN && !operActive())
+      return;
+
+    switch (event.getCode()) {
+
+    case UserEvent.CODE_DOWN:
+      if (event.isMultipleTouch())
+        break;
+      mActive = true;
+      mInitialEvent = event;
+      mDragOperation = false;
+      break;
+
+    case UserEvent.CODE_DRAG:
+      if (!mDragOperation) {
+        mDragOperation = true;
+        doStartDrag(mInitialEvent.getWorldLocation());
+      }
+      if (!operActive())
+        return;
+      doContinueDrag(event.getWorldLocation());
+      break;
+
+    case UserEvent.CODE_UP:
+      if (!mDragOperation) {
+        doClick(mInitialEvent.getWorldLocation());
+      } else {
+        doFinishDrag();
+      }
+      break;
+    }
+  }
+
+  private boolean operActive() {
+    return mActive;
   }
 
   private List<Integer> getPickSet(Point location) {
@@ -125,41 +193,28 @@ public class DefaultEventListener extends EditorEventListenerAdapter {
       // Replace selected objects with copies in preparation for moving
       mEditor.objects().replaceSelectedObjectsWithCopies();
     } else {
-      mDraggingRect = true;
-      mEditor.objects().unselectAll();
-      mEditor.resetDuplicationOffset();
+      UserOperation oper = new SelectWithRectOperation(mEditor, mStepper);
+      mEvent.setOperation(oper);
+      // Send the down, drag events to the new operation.
+      oper.processUserEvent(mInitialEvent);
+      oper.processUserEvent(mEvent);
     }
   }
 
   private void doContinueDrag(Point location) {
-    if (mDraggingRect) {
-      mDragCorner = location;
-    } else {
-      mTranslate = MyMath.subtract(location, mInitialDownLocation);
-      if (mTranslate.magnitude() == 0)
-        return;
+    mTranslate = MyMath.subtract(location, mInitialEvent.getWorldLocation());
+    if (mTranslate.magnitude() == 0)
+      return;
 
-      for (int slot : mOriginalState.getSelectedSlots()) {
-        EdObject obj = mEditor.objects().get(slot);
-        EdObject orig = mOriginalState.getObjects().get(slot);
-        obj.moveBy(orig, mTranslate);
-      }
+    for (int slot : mOriginalState.getSelectedSlots()) {
+      EdObject obj = mEditor.objects().get(slot);
+      EdObject orig = mOriginalState.getObjects().get(slot);
+      obj.moveBy(orig, mTranslate);
     }
   }
 
   private void doFinishDrag() {
-    if (mDraggingRect) {
-      Rect dragRect = getDragRect();
-      if (dragRect == null)
-        return;
-      List<Integer> selectedList = SlotList.build();
-      for (int slot = 0; slot < mEditor.objects().size(); slot++) {
-        EdObject edObject = mEditor.objects().get(slot);
-        if (dragRect.contains(edObject.getBounds()))
-          selectedList.add(slot);
-      }
-      mEditor.objects().setSelected(selectedList);
-    } else if (mOriginalState != null) {
+    if (mOriginalState != null) {
       if (mTranslate != null) {
         mEditor.updateDupAccumulatorForTranslation(mTranslate);
       }
@@ -169,108 +224,13 @@ public class DefaultEventListener extends EditorEventListenerAdapter {
     }
   }
 
-  /**
-   * <pre>
-   * 
-   * Picking behaviour
-   * 
-   * The 'pick set' under a point p is the ordered sequence of all objects that contain p. These
-   * objects may or may not be currently selected.  Some objects, such as segments, should have
-   * a fuzzy definition of what it means to contain a point.
-   * 
-   * Repeated clicks at a point should cycle between the pick set under that point, by selecting 
-   * each item in sequence.
-   * 
-   * Clicking should unselect all objects that are not in the current point's click set.
-   * 
-   * There should be a distinction between clicking (down+up) and dragging (down+drag+up).
-   * 
-   * A down event on an empty pick set, followed by a drag, should produce a rectangle used to
-   * select contained objects.
-   * 
-   * </pre>
-   */
-  @Override
-  public EditorEvent processEvent(EditorEvent event) {
-    final boolean db = false && DEBUG_ONLY_FEATURES;
-    if (db)
-      event.printProcessingMessage("DefaultEventListener");
-
-    // By default, we'll be handling this event; so clear return code
-    EditorEvent outputEvent = EditorEvent.NONE;
-
-    switch (event.getCode()) {
-    default:
-      // Don't know how to handle this event, so restore return code
-      outputEvent = event;
-      break;
-
-    case EditorEvent.CODE_DOWN:
-      if (event.isMultipleTouch())
-        break;
-      mInitialDownLocation = event.getLocation();
-      break;
-
-    case EditorEvent.CODE_DRAG:
-      if (!processingSingleTouch())
-        break;
-      if (!mDragStarted) {
-        mDragStarted = true;
-        doStartDrag(mInitialDownLocation);
-      }
-      doContinueDrag(event.getLocation());
-      break;
-
-    case EditorEvent.CODE_UP:
-      if (!processingSingleTouch())
-        break;
-      outputEvent = EditorEvent.STOP;
-      if (!mDragStarted) {
-        doClick(mInitialDownLocation);
-      } else {
-        doFinishDrag();
-      }
-      break;
-    }
-
-    return outputEvent;
-  }
-
-  /**
-   * The DefaultEventListener, being a special type, may receive a DRAG or UP
-   * event before it has received any DOWN events. Use this method as a guard to
-   * ensure that a (single) DOWN event was received
-   */
-  private boolean processingSingleTouch() {
-    return mInitialDownLocation != null;
-  }
-
-  @Override
-  public void render(AlgorithmStepper s) {
-    Rect r = getDragRect();
-    if (r != null) {
-      s.setColor(Color.argb(0x80, 0xff, 0x40, 0x40));
-      EditorTools.plotRect(s, r);
-    }
-  }
-
-  /**
-   * Get the rectangle for the current drag selection operation, or null if none
-   * is active (or rectangle is not available)
-   * 
-   * @return Rect, or null
-   */
-  private Rect getDragRect() {
-    if (mDraggingRect && mDragCorner != null)
-      return new Rect(mInitialDownLocation, mDragCorner);
-    return null;
-  }
-
   private Editor mEditor;
-  private Point mInitialDownLocation;
-  private Point mDragCorner;
-  private boolean mDragStarted;
-  private boolean mDraggingRect;
+  private boolean mActive;
+  private UserEvent mInitialEvent;
+  private boolean mDragOperation;
   private EditorState mOriginalState;
   private Point mTranslate;
+  private AlgorithmStepper mStepper;
+  private UserEvent mEvent;
+
 }

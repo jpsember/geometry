@@ -2,6 +2,9 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.AlgorithmStepper;
 
+/**
+ * @deprecated use com.js.editor package
+ */
 public interface EditorEventListener {
 
 	/**

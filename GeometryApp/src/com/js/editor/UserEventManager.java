@@ -2,6 +2,8 @@ package com.js.editor;
 
 import static com.js.basic.Tools.warning;
 
+import static com.js.basic.Tools.*;
+
 public class UserEventManager implements UserEvent.Listener {
 
   /**
@@ -14,7 +16,7 @@ public class UserEventManager implements UserEvent.Listener {
   public UserEventManager(UserOperation defaultOper) {
     if (defaultOper == null)
       throw new IllegalArgumentException();
-    sDefaultOperation = defaultOper;
+    mDefaultOperation = defaultOper;
   }
 
   /**
@@ -31,25 +33,28 @@ public class UserEventManager implements UserEvent.Listener {
    * Get current operation
    */
   public UserOperation getOperation() {
-    if (sCurrentOperation == null)
-      sCurrentOperation = sDefaultOperation;
-    return sCurrentOperation;
+    if (mCurrentOperation == null)
+      mCurrentOperation = mDefaultOperation;
+    return mCurrentOperation;
   }
 
   /**
-   * Set current operation
+   * Set current operation. Stops existing, if one exists; then starts new. If
+   * new is null, uses default operation.
    */
   public void setOperation(UserOperation oper) {
+   if (false) pr("setOperation, currently " + nameOf(mCurrentOperation) + ", setting to "
+        + nameOf(oper));
+    if (mCurrentOperation != null) {
+      mCurrentOperation.stop();
+      mCurrentOperation = null;
+    }
+
     if (oper == null) {
-      oper = sDefaultOperation;
+      oper = mDefaultOperation;
     }
-    if (sCurrentOperation != oper) {
-      if (sCurrentOperation != null)
-        sCurrentOperation.stop();
-      sCurrentOperation = oper;
-      if (sCurrentOperation != null)
-        sCurrentOperation.start();
-    }
+    mCurrentOperation = oper;
+    mCurrentOperation.start();
   }
 
   public void clearOperation() {
@@ -88,7 +93,7 @@ public class UserEventManager implements UserEvent.Listener {
 
   private boolean mEnabled;
   private UserEvent.Listener mListener;
-  private UserOperation sDefaultOperation;
-  private UserOperation sCurrentOperation;
+  private UserOperation mDefaultOperation;
+  private UserOperation mCurrentOperation;
   private UserEvent mLastEventHandled;
 }

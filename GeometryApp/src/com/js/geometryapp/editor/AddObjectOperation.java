@@ -1,7 +1,5 @@
 package com.js.geometryapp.editor;
 
-import static com.js.basic.Tools.unimp;
-
 import java.util.List;
 
 import android.graphics.Color;
@@ -27,8 +25,6 @@ public class AddObjectOperation extends UserOperation {
 
   @Override
   public void processUserEvent(UserEvent event) {
-    event.printProcessingMessage("AddObjectOperation");
-
     mEvent = event;
 
     switch (event.getCode()) {
@@ -91,8 +87,11 @@ public class AddObjectOperation extends UserOperation {
     Command c = new CommandForGeneralChanges(mEditor, originalState, null,
         mObjectFactory.getTag(), null);
     mEditor.pushCommand(c);
-    mEvent.setOperation(newObject.buildEditOperation(slot, mInitialEvent))
-        .processUserEvent(mInitialEvent);
+    UserOperation oper = newObject.buildEditOperation(slot, mInitialEvent);
+    mEvent.setOperation(oper);
+    // The 'EdPoint' operation clears itself immediately for some reason
+    if (mEvent.getOperation() == oper)
+      oper.processUserEvent(mInitialEvent);
 
   }
 

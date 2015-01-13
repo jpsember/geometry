@@ -81,9 +81,15 @@ public class UserEvent {
   /**
    * Convenience method for getManager().setOperation()
    */
-  public UserOperation setOperation(UserOperation oper) {
+  public void setOperation(UserOperation oper) {
     getManager().setOperation(oper);
-    return oper;
+  }
+
+  /**
+   * Convenience method for getManager().getOperation()
+   */
+  public UserOperation getOperation() {
+    return getManager().getOperation();
   }
 
   /**

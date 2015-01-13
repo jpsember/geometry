@@ -801,7 +801,7 @@ public class Editor {
    * 
    * @return slot if found, or -1
    */
-  private int getEditableSlot() {
+  public int getEditableSlot() {
     if (objects().getSelectedSlots().size() != 1)
       return -1;
     int slot = objects().getSelectedSlots().get(0);
@@ -1022,30 +1022,6 @@ public class Editor {
     mDupAccumulator = state.getDupAccumulator();
   }
 
-  /**
-   * Determine if there's an editable object which can construct an edit
-   * operation for a particular location. If so, start the operation and return
-   * true
-   * 
-   * @param event
-   *          EditorEvent; if not (single) DOWN event, always returns false
-   */
-  private boolean startEditableObjectOperation(EditorEvent event) {
-    // if (!(event.isDownVariant() && !event.isMultipleTouch()))
-    // return false;
-    // int editableSlot = getEditableSlot();
-    // if (editableSlot >= 0) {
-    // EdObject obj = objects().get(editableSlot);
-    // EditorEventListener operation = obj.buildEditOperation(editableSlot,
-    // event.getLocation());
-    //
-    // if (operation != null) {
-    // setOperation(operation);
-    // return true;
-    // }
-    // }
-    return false;
-  }
 
   /**
    * Adjust duplication accumulator (if one exists) by adding an additional

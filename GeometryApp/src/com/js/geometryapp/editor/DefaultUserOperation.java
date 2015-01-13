@@ -44,9 +44,7 @@ public class DefaultUserOperation extends UserOperation {
    */
   @Override
   public void processUserEvent(UserEvent event) {
-    final boolean db = true && DEBUG_ONLY_FEATURES;
-    if (db)
-      event.printProcessingMessage("DefaultEventListener");
+    // event.printProcessingMessage("DefaultEventListener");
 
     mEvent = event;
     if (event.getCode() != UserEvent.CODE_DOWN && !operActive())
@@ -189,6 +187,9 @@ public class DefaultUserOperation extends UserOperation {
      * </pre>
      */
 
+    if (modifyEditableObject())
+      return;
+
     // get 'pick set' for touch location
     List<Integer> pickSet = getPickSet(location);
     // get subset of pick set that are currently selected
@@ -211,6 +212,32 @@ public class DefaultUserOperation extends UserOperation {
       oper.processUserEvent(mInitialEvent);
       oper.processUserEvent(mEvent);
     }
+  }
+
+  /**
+   * Determine if there's an editable object which can construct an edit
+   * operation for a particular location. If so, start the operation and return
+   * true
+   * 
+   * @param event
+   *          EditorEvent; if not (single) DOWN event, always returns false
+   */
+  private boolean modifyEditableObject() {
+    UserEvent downEvent = mInitialEvent;
+
+    int editableSlot = mEditor.getEditableSlot();
+    if (editableSlot < 0)
+      return false;
+
+    EdObject obj = mEditor.objects().get(editableSlot);
+    UserOperation operation = obj.buildEditOperation(editableSlot, downEvent);
+
+    if (operation == null)
+      return false;
+
+    downEvent.setOperation(operation);
+    operation.processUserEvent(downEvent);
+    return true;
   }
 
   private void doContinueDrag(Point location) {

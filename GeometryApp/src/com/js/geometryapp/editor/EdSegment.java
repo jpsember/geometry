@@ -9,8 +9,6 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 
-import static com.js.basic.Tools.*;
-
 public class EdSegment extends EdObject {
 
   private EdSegment() {

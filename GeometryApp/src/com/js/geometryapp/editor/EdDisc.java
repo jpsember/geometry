@@ -12,8 +12,6 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 
-import static com.js.basic.Tools.*;
-
 public class EdDisc extends EdObject {
 
   private EdDisc() {

@@ -5,8 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.FileUtils;
-
 import com.js.android.AppPreferences;
 import com.js.android.UITools;
 import com.js.basic.Files;

@@ -7,6 +7,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 
 import com.js.editor.Command;
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -14,9 +16,7 @@ import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometry.Sprite;
 
-import static com.js.basic.Tools.*;
-
-public class ScaleOperation extends EditorEventListenerAdapter {
+public class ScaleOperation extends UserOperation {
 
   private static final int NUM_HANDLES = 8;
 
@@ -26,21 +26,11 @@ public class ScaleOperation extends EditorEventListenerAdapter {
   }
 
   @Override
-  public EditorEvent processEvent(EditorEvent event) {
-    final boolean db = false && DEBUG_ONLY_FEATURES;
-    if (db)
-      event.printProcessingMessage("ScaleOperation");
-
-    // By default, we'll be handling this event; so clear return code
-    EditorEvent outputEvent = EditorEvent.NONE;
+  public void processUserEvent(UserEvent event) {
 
     switch (event.getCode()) {
-    default:
-      // Don't know how to handle this event, so restore return code
-      outputEvent = event;
-      break;
 
-    case EditorEvent.CODE_DOWN: {
+    case UserEvent.CODE_DOWN: {
       prepareScaleOperation();
       // Find handle
       float minDist = 0;
@@ -48,7 +38,8 @@ public class ScaleOperation extends EditorEventListenerAdapter {
       Point minHandleLocation = null;
       for (int i = 0; i < NUM_HANDLES; i++) {
         Point handleLoc = handleBaseLocation(i, true);
-        float dist = MyMath.distanceBetween(event.getLocation(), handleLoc);
+        float dist = MyMath
+            .distanceBetween(event.getWorldLocation(), handleLoc);
         if (minHandle < 0 || dist < minDist) {
           minDist = dist;
           minHandle = i;
@@ -56,22 +47,22 @@ public class ScaleOperation extends EditorEventListenerAdapter {
         }
       }
       if (minDist > mEditor.pickRadius()) {
-        mPerformingDragSequence = false;
-        return EditorEvent.STOP;
+        event.clearOperation();
+        break;
       }
       mActiveHandle = minHandle;
       mInitialHandleOffset = MyMath.subtract(minHandleLocation,
-          event.getLocation());
+          event.getWorldLocation());
     }
       break;
 
-    case EditorEvent.CODE_DRAG:
+    case UserEvent.CODE_DRAG:
       if (!mPerformingDragSequence)
         break;
-      performScale(mActiveHandle, event.getLocation());
+      performScale(mActiveHandle, event.getWorldLocation());
       break;
 
-    case EditorEvent.CODE_UP: {
+    case UserEvent.CODE_UP: {
       if (!mPerformingDragSequence)
         break;
       Command c = new CommandForGeneralChanges(mEditor, mOriginalState, null,
@@ -82,13 +73,13 @@ public class ScaleOperation extends EditorEventListenerAdapter {
       break;
     }
 
-    return outputEvent;
   }
 
   @Override
-  public void render(AlgorithmStepper s) {
+  public void paint() {
     // Render with emphasis if scaled rect = original rect
     boolean equalsOriginal = mRect.equals(mScaledRect);
+    AlgorithmStepper s = mEditor.stepper();
     if (equalsOriginal)
       s.setColor(Color.argb(0xff, 0xff, 0x40, 0x40));
     else

@@ -815,8 +815,7 @@ public class Editor {
   private void doScale() {
     if (objects().getSelectedSlots().isEmpty())
       return;
-    unimp("doScale");
-    // setOperation(new ScaleOperation(this));
+    mUserEventManager.setOperation(new ScaleOperation(this));
   }
 
   private void doRotate() {

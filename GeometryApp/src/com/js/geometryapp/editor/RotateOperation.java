@@ -13,6 +13,7 @@ import com.js.geometry.Polygon;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometry.Sprite;
+import static com.js.basic.Tools.*;
 
 public class RotateOperation extends UserOperation {
 
@@ -206,7 +207,7 @@ public class RotateOperation extends UserOperation {
     Matrix matrix = calcCurrentRotateTransform();
     for (int slot : mOriginalState.getSelectedSlots()) {
       EdObject object = mOriginalState.getObjects().get(slot);
-      EdObject rotated = object.getCopy();
+      EdObject rotated = mutableCopyOf(object);
       rotated.applyTransform(matrix);
       mEditor.objects().set(slot, rotated);
     }

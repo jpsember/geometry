@@ -13,8 +13,9 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
 import static com.js.basic.Tools.*;
+import com.js.basic.Freezable;
 
-public abstract class EdObject implements Cloneable {
+public abstract class EdObject extends Freezable.Mutable {
 
   private static final int FLAG_SELECTED = (1 << 31);
   private static final int FLAG_EDITABLE = (1 << 30);
@@ -50,24 +51,17 @@ public abstract class EdObject implements Cloneable {
   public abstract UserOperation buildEditOperation(int slot,
       UserEvent initialPress);
 
-  public <T extends EdObject> T getCopy() {
-    return (T) this.clone();
-  }
-
   /**
    * Clone the object
    */
-  protected Object clone() {
-    try {
-      EdObject copy = (EdObject) super.clone();
-      // Give clone a fresh copy of all the vertices
-      copy.mPoints = new ArrayList();
-      for (Point pt : mPoints)
-        copy.mPoints.add(new Point(pt));
-      return copy;
-    } catch (CloneNotSupportedException e) {
-      throw new RuntimeException(e);
-    }
+  protected EdObject(EdObject source) {
+    if (source == null)
+      return;
+
+    for (Point pt : source.mPoints)
+      mPoints.add(new Point(pt));
+    mEditor = source.mEditor;
+    mFlags = source.mFlags;
   }
 
   /**
@@ -140,8 +134,8 @@ public abstract class EdObject implements Cloneable {
   }
 
   public void clearPoints() {
+    mutate();
     mPoints.clear();
-    mBounds = null;
   }
 
   /**
@@ -154,11 +148,11 @@ public abstract class EdObject implements Cloneable {
    *          location of point
    */
   private void storePoint(int ptIndex, Point point) {
+    mutate();
     if (mPoints.size() == ptIndex)
       mPoints.add(point);
     else
       mPoints.set(ptIndex, point);
-    mBounds = null;
   }
 
   /**
@@ -284,8 +278,9 @@ public abstract class EdObject implements Cloneable {
     // distinct object as the 'starting' point
     if (this == orig)
       throw new IllegalArgumentException();
+    mutate();
     if (orig == null)
-      orig = this.getCopy();
+      orig = mutableCopyOf(this);
     for (int i = 0; i < orig.nPoints(); i++) {
       Point pt = orig.getPoint(i);
       setPoint(i, MyMath.add(pt, delta));
@@ -294,13 +289,11 @@ public abstract class EdObject implements Cloneable {
 
   /**
    * Replace existing flags with new ones
-   * 
-   * @param f
-   *          new flags
    */
   public void setFlags(int f) {
-    if (((f ^ mFlags) & (FLAG_EDITABLE | FLAG_SELECTED)) != 0)
-      mBounds = null;
+    if (mFlags == f)
+      return;
+    mutate();
     this.mFlags = f;
   }
 
@@ -388,6 +381,7 @@ public abstract class EdObject implements Cloneable {
   }
 
   public void setEditor(Editor editor) {
+    mutate();
     mEditor = editor;
   }
 
@@ -418,6 +412,12 @@ public abstract class EdObject implements Cloneable {
         return true;
     }
     return false;
+  }
+
+  @Override
+  public void mutate() {
+    super.mutate();
+    mBounds = null;
   }
 
   private Editor mEditor;

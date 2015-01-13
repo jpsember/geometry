@@ -3,6 +3,7 @@ package com.js.geometryapp.editor;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
+import com.js.basic.Freezable;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
@@ -11,10 +12,17 @@ import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
+import static com.js.basic.Tools.*;
 
 public class EdDisc extends EdObject {
 
-  private EdDisc() {
+  private EdDisc(EdDisc source) {
+    super(source);
+  }
+
+  @Override
+  public Freezable getMutableCopy() {
+    return new EdDisc(this);
   }
 
   @Override
@@ -133,7 +141,7 @@ public class EdDisc extends EdObject {
   public static EdObjectFactory FACTORY = new EdObjectFactory("d") {
     @Override
     public EdObject construct(Point defaultLocation) {
-      EdDisc s = new EdDisc();
+      EdDisc s = new EdDisc(null);
       if (defaultLocation != null) {
         s.setOrigin(defaultLocation);
         s.setRadius(20);
@@ -182,7 +190,8 @@ public class EdDisc extends EdObject {
       case UserEvent.CODE_DRAG: {
         Point adjustedLoc = MyMath
             .add(event.getWorldLocation(), mInitialOffset);
-        EdDisc disc = mEditor.objects().get(mEditSlot).getCopy();
+        EdDisc origDisc = mEditor.objects().get(mEditSlot);
+        EdDisc disc = mutableCopyOf(origDisc);
 
         if (mEditPointIndex == 1) {
           disc.setRadius(MyMath.distanceBetween(adjustedLoc,

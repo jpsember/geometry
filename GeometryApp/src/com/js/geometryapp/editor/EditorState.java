@@ -3,6 +3,7 @@ package com.js.geometryapp.editor;
 import java.util.List;
 
 import com.js.geometry.Point;
+import static com.js.basic.Tools.*;
 
 /**
  * Encapsulates the state of an editor, including all entities that are mutable
@@ -10,31 +11,31 @@ import com.js.geometry.Point;
  */
 public class EditorState {
 
-	public EditorState(Editor e) {
-		mObjects = e.objects().getFrozen();
-		mSelectedSlots = mObjects.getSelectedSlots();
-		mClipboard = e.getClipboard();
-		mDupAccumulator = e.getDupAccumulator();
-	}
+  public EditorState(Editor e) {
+    mObjects = frozen(e.objects());
+    mSelectedSlots = mObjects.getSelectedSlots();
+    mClipboard = e.getClipboard();
+    mDupAccumulator = e.getDupAccumulator();
+  }
 
-	public EdObjectArray getObjects() {
-		return mObjects;
-	}
+  public EdObjectArray getObjects() {
+    return mObjects;
+  }
 
-	public EdObjectArray getClipboard() {
-		return mClipboard;
-	}
+  public EdObjectArray getClipboard() {
+    return mClipboard;
+  }
 
-	public List<Integer> getSelectedSlots() {
-		return mSelectedSlots;
-	}
+  public List<Integer> getSelectedSlots() {
+    return mSelectedSlots;
+  }
 
-	public Point getDupAccumulator() {
-		return mDupAccumulator;
-	}
+  public Point getDupAccumulator() {
+    return mDupAccumulator;
+  }
 
-	private EdObjectArray mObjects;
-	private List<Integer> mSelectedSlots;
-	private EdObjectArray mClipboard;
-	private Point mDupAccumulator;
+  private EdObjectArray mObjects;
+  private List<Integer> mSelectedSlots;
+  private EdObjectArray mClipboard;
+  private Point mDupAccumulator;
 }

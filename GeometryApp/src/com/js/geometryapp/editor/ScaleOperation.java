@@ -15,6 +15,7 @@ import com.js.geometry.Point;
 import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometry.Sprite;
+import static com.js.basic.Tools.*;
 
 public class ScaleOperation extends UserOperation {
 
@@ -321,7 +322,7 @@ public class ScaleOperation extends UserOperation {
     Matrix matrix = calcScaleTransform();
     for (int slot : mOriginalState.getSelectedSlots()) {
       EdObject object = mOriginalState.getObjects().get(slot);
-      EdObject scaled = object.getCopy();
+      EdObject scaled = mutableCopyOf(object);
       scaled.applyTransform(matrix);
       mEditor.objects().set(slot, scaled);
     }

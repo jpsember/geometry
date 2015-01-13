@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import android.graphics.Color;
 
+import com.js.basic.Freezable;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
@@ -32,7 +33,18 @@ public class EdPolyline extends EdObject {
   private static final int COLOR_SIGNAL_GREEN = Color.argb(0x40, 0x60, 0xff,
       0x60);
 
-  private EdPolyline() {
+  private EdPolyline(EdPolyline source) {
+    super(source);
+    if (source == null)
+      return;
+    mClosed = source.mClosed;
+    mCursor = source.mCursor;
+    mTabsHidden = source.mTabsHidden;
+  }
+
+  @Override
+  public Freezable getMutableCopy() {
+    return new EdPolyline(this);
   }
 
   @Override
@@ -120,7 +132,7 @@ public class EdPolyline extends EdObject {
     Point[] tabLocations = calculateTabPositions(this, null);
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_FORWARD])) {
-      EdPolyline mod = getCopy();
+      EdPolyline mod = mutableCopyOf(this);
       // Insert a new vertex after the cursor
       mod.mCursor++;
       mod.addPoint(mod.mCursor, location);
@@ -132,7 +144,7 @@ public class EdPolyline extends EdObject {
     }
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_BACKWARD])) {
-      EdPolyline mod = getCopy();
+      EdPolyline mod = mutableCopyOf(this);
       // Insert a new vertex before the cursor
       mod.addPoint(mod.mCursor, location);
       if (mod.closed()) {
@@ -145,7 +157,7 @@ public class EdPolyline extends EdObject {
     int vertexIndex = closestVertex(location, editor().pickRadius());
     if (vertexIndex >= 0) {
       mCursor = vertexIndex;
-      EdPolyline mod = getCopy();
+      EdPolyline mod = mutableCopyOf(this);
       mod.mCursor = vertexIndex;
       return OurOperation.buildMoveOperation(editor(), slot, mod);
     }
@@ -189,7 +201,7 @@ public class EdPolyline extends EdObject {
     private static final String JSON_KEY_CLOSED = "cl";
 
     public EdObject construct(Point defaultLocation) {
-      EdPolyline p = new EdPolyline();
+      EdPolyline p = new EdPolyline(null);
       if (defaultLocation != null) {
         p.addPoint(defaultLocation);
         p.addPoint(defaultLocation);
@@ -415,7 +427,7 @@ public class EdPolyline extends EdObject {
 
       case UserEvent.CODE_DRAG: {
         // Create a new copy of the polyline, with modified endpoint
-        EdPolyline polyline = mReference.getCopy();
+        EdPolyline polyline = mutableCopyOf(mReference);
         mEditor.objects().set(mEditSlot, polyline);
         polyline.setTabsHidden(true);
         {

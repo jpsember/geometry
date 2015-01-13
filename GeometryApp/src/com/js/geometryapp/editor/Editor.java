@@ -639,7 +639,7 @@ public class Editor {
     if (originalState.getSelectedSlots().isEmpty())
       return;
 
-    EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
+    EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
     setClipboard(newClipboard);
     objects().removeSelected();
 
@@ -653,7 +653,7 @@ public class Editor {
     EditorState originalState = new EditorState(this);
     if (originalState.getSelectedSlots().isEmpty())
       return;
-    EdObjectArray newClipboard = objects().getSelectedObjects().freeze();
+    EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
     setClipboard(newClipboard);
 
     Command command = new CommandForGeneralChanges(this, originalState,
@@ -694,7 +694,7 @@ public class Editor {
 
     for (EdObject obj : mClipboard) {
       newSelected.add(objects().size());
-      EdObject copy = obj.getCopy();
+      EdObject copy = mutableCopyOf(obj);
       copy.moveBy(obj, offset);
       objects().add(copy);
     }
@@ -760,7 +760,7 @@ public class Editor {
 
     for (int slot : originalState.getSelectedSlots()) {
       EdObject obj = objects().get(slot);
-      EdObject copy = obj.getCopy();
+      EdObject copy = mutableCopyOf(obj);
       copy.moveBy(obj, offset);
       newSelected.add(objects().add(copy));
     }
@@ -969,7 +969,7 @@ public class Editor {
   }
 
   private void setClipboard(EdObjectArray clipboard) {
-    mClipboard = clipboard.freeze();
+    mClipboard = freeze(clipboard);
   }
 
   private void setObjects(EdObjectArray objects) {
@@ -1014,7 +1014,7 @@ public class Editor {
   }
 
   void setState(EditorState state) {
-    setObjects(state.getObjects().getMutableCopy());
+    setObjects((EdObjectArray) state.getObjects().getMutableCopy());
     setClipboard(state.getClipboard());
     objects().setSelected(state.getSelectedSlots());
     mDupAccumulator = state.getDupAccumulator();

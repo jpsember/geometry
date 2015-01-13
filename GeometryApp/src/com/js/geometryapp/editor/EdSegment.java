@@ -2,16 +2,26 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
+import com.js.basic.Freezable;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import static com.js.basic.Tools.*;
 
 public class EdSegment extends EdObject {
 
-  private EdSegment() {
+  private EdSegment(EdSegment source) {
+    super(source);
+    if (source == null)
+      return;
+  }
+
+  @Override
+  public Freezable getMutableCopy() {
+    return new EdSegment(this);
   }
 
   @Override
@@ -48,7 +58,7 @@ public class EdSegment extends EdObject {
   public static EdObjectFactory FACTORY = new EdObjectFactory("s") {
     @Override
     public EdObject construct(Point defaultLocation) {
-      EdSegment s = new EdSegment();
+      EdSegment s = new EdSegment(null);
       if (defaultLocation != null) {
         s.addPoint(defaultLocation);
         s.addPoint(defaultLocation);
@@ -78,7 +88,8 @@ public class EdSegment extends EdObject {
 
       case UserEvent.CODE_DRAG: {
         // Create a new copy of the segment, with modified endpoint
-        EdSegment segment = mEditor.objects().get(mEditSlot).getCopy();
+        EdSegment segment = mEditor.objects().get(mEditSlot);
+        segment = mutableCopyOf(segment);
         segment.setPoint(mEditPointIndex, event.getWorldLocation());
         mEditor.objects().set(mEditSlot, segment);
         mModified = true;

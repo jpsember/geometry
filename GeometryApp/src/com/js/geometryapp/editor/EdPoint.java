@@ -2,16 +2,24 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
+import com.js.basic.Freezable;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
 import com.js.geometry.R;
+import static com.js.basic.Tools.*;
 
 public class EdPoint extends EdObject {
 
-  private EdPoint() {
+  private EdPoint(EdPoint source) {
+    super(source);
+  }
+
+  @Override
+  public Freezable getMutableCopy() {
+    return new EdPoint(this);
   }
 
   private Point location() {
@@ -55,7 +63,7 @@ public class EdPoint extends EdObject {
   public static EdObjectFactory FACTORY = new EdObjectFactory("p") {
     @Override
     public EdObject construct(Point defaultLocation) {
-      EdPoint pt = new EdPoint();
+      EdPoint pt = new EdPoint(null);
       if (defaultLocation != null)
         pt.addPoint(defaultLocation);
       return pt;
@@ -82,7 +90,7 @@ public class EdPoint extends EdObject {
       case UserEvent.CODE_DRAG: {
         EdPoint point = mEditor.objects().get(mEditSlot);
         // Create a new copy of the object, with modified vertex
-        EdPoint point2 = point.getCopy();
+        EdPoint point2 = mutableCopyOf(point);
         point2.setPoint(0, event.getWorldLocation());
         mEditor.objects().set(mEditSlot, point2);
         mModified = true;

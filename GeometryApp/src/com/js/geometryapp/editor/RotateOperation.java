@@ -4,6 +4,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 
 import com.js.editor.Command;
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
@@ -12,7 +14,7 @@ import com.js.geometry.R;
 import com.js.geometry.Rect;
 import com.js.geometry.Sprite;
 
-public class RotateOperation extends EditorEventListenerAdapter {
+public class RotateOperation extends UserOperation {
 
   public RotateOperation(Editor editor) {
     mEditor = editor;
@@ -25,43 +27,36 @@ public class RotateOperation extends EditorEventListenerAdapter {
   }
 
   @Override
-  public EditorEvent processEvent(EditorEvent event) {
-
-    // By default, we'll be handling this event; so clear return code
-    EditorEvent outputEvent = EditorEvent.NONE;
+  public void processUserEvent(UserEvent event) {
 
     switch (event.getCode()) {
-    default:
-      // Don't know how to handle this event, so restore return code
-      outputEvent = event;
-      break;
 
-    case EditorEvent.CODE_DOWN:
-      prepareRotateOperation();
-      // Get location of press within rotated space
-      Point rotLoc = new Point(event.getLocation());
-      rotLoc.apply(calcTotalRotateInvTransform());
-      if (!mRect.contains(rotLoc)
-          || !touchReasonableDistanceFromOrigin(event.getLocation())) {
-        outputEvent = EditorEvent.STOP;
+    case UserEvent.CODE_DOWN:
+      if (event.isMultipleTouch()) {
+        event.clearOperation();
         break;
       }
-      mInitialTouchLocation = event.getLocation();
+      prepareRotateOperation();
+      // Get location of press within rotated space
+      Point rotLoc = new Point(event.getWorldLocation());
+      rotLoc.apply(calcTotalRotateInvTransform());
+      if (!mRect.contains(rotLoc)
+          || !touchReasonableDistanceFromOrigin(event.getWorldLocation())) {
+        event.clearOperation();
+        break;
+      }
+      mInitialEvent = event;
       mDragged = false;
       break;
 
-    case EditorEvent.CODE_DRAG:
+    case UserEvent.CODE_DRAG:
       mDragged = true;
-      performRotate(event.getLocation());
+      performRotate(event.getWorldLocation());
       break;
 
-    case EditorEvent.CODE_UP: {
-      if (event.isMultipleTouch()) {
-        outputEvent = EditorEvent.STOP;
-        break;
-      }
+    case UserEvent.CODE_UP: {
       if (!mDragged) {
-        outputEvent = EditorEvent.STOP;
+        event.clearOperation();
         break;
       }
       if (mOperationPrepared) {
@@ -73,18 +68,17 @@ public class RotateOperation extends EditorEventListenerAdapter {
     }
       break;
     }
-
-    return outputEvent;
   }
 
   @Override
-  public void render(AlgorithmStepper s) {
+  public void paint() {
     boolean equalsOriginal = false;
     if (false) {
       // Render with emphasis if rotation angle matches some groove value
       // (multiple of 30 or 45 degrees for example)
       equalsOriginal = (mRotAmount == 0);
     }
+    AlgorithmStepper s = mEditor.stepper();
     if (equalsOriginal)
       s.setColor(Color.argb(0xff, 0xff, 0x40, 0x40));
     else
@@ -155,7 +149,8 @@ public class RotateOperation extends EditorEventListenerAdapter {
   private void performRotate(Point touchLocation) {
     if (!touchReasonableDistanceFromOrigin(touchLocation))
       return;
-    Point origRay = MyMath.subtract(mInitialTouchLocation, mRect.midPoint());
+    Point origRay = MyMath.subtract(mInitialEvent.getWorldLocation(),
+        mRect.midPoint());
     Point newRay = MyMath.subtract(touchLocation, mRect.midPoint());
     float origAngle = MyMath.polarAngle(origRay);
     float newAngle = MyMath.polarAngle(newRay);
@@ -231,7 +226,7 @@ public class RotateOperation extends EditorEventListenerAdapter {
   private Matrix mRotMatrixInvTotal;
   private Matrix mRotMatrixCurrent;
 
-  private Point mInitialTouchLocation;
+  private UserEvent mInitialEvent;
   // if user clicks without dragging, we'll cancel the operation;
   // this may be the only easy way if the selected objects occupy the whole
   // view

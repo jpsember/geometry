@@ -822,8 +822,7 @@ public class Editor {
   private void doRotate() {
     if (objects().getSelectedSlots().isEmpty())
       return;
-    unimp("rotate oper");
-    // setOperation(new RotateOperation(this));
+    mUserEventManager.setOperation(new RotateOperation(this));
   }
 
   private boolean unhidePossible() {
@@ -1021,7 +1020,6 @@ public class Editor {
     objects().setSelected(state.getSelectedSlots());
     mDupAccumulator = state.getDupAccumulator();
   }
-
 
   /**
    * Adjust duplication accumulator (if one exists) by adding an additional

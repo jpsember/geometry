@@ -228,7 +228,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
           jsonContent = Files.readString(stream);
         } else {
           File f = new File(u.getPath());
-          jsonContent = FileUtils.readFileToString(f);
+          jsonContent = Files.readString(f);
         }
       } catch (IOException e) {
         toast(this, "Problem reading file");

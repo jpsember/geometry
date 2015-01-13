@@ -107,6 +107,10 @@ public class EdObjectArray extends Freezable.Mutable implements
     mSelectedSlots = slots;
   }
 
+  public void setSelected(SlotList slots) {
+    mSelectedSlots = frozen(slots).getArray();
+  }
+
   public void setEditableSlot(int slot) {
     ASSERT(slot >= 0);
     setSelected(SlotList.build(slot));

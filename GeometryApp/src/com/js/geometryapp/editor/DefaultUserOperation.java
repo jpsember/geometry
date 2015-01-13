@@ -1,9 +1,5 @@
 package com.js.geometryapp.editor;
 
-import static com.js.basic.Tools.*;
-
-import java.util.List;
-
 import com.js.editor.*;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
@@ -86,8 +82,8 @@ public class DefaultUserOperation extends UserOperation {
     return mActive;
   }
 
-  private List<Integer> getPickSet(Point location) {
-    List<Integer> slots = SlotList.build();
+  private SlotList getPickSet(Point location) {
+    SlotList slots = new SlotList();
     EdObjectArray srcObjects = mEditor.objects();
     float pickRadius = mEditor.pickRadius();
     for (int slot = 0; slot < srcObjects.size(); slot++) {
@@ -113,8 +109,8 @@ public class DefaultUserOperation extends UserOperation {
    *          list of item slots
    * @return subsequence of slotList that are selected
    */
-  private List<Integer> getSelectedObjects(List<Integer> slotList) {
-    List<Integer> selectedSlots = SlotList.build();
+  private SlotList getSelectedObjects(SlotList slotList) {
+    SlotList selectedSlots = new SlotList();
     for (int slot : slotList) {
       EdObject obj = editorObject(slot);
       if (obj.isSelected())
@@ -143,7 +139,7 @@ public class DefaultUserOperation extends UserOperation {
 
     // Construct pick set of selected objects. If empty, unselect
     // all objects; else cycle to next object and make it editable
-    List<Integer> pickSet = getPickSet(location);
+    SlotList pickSet = getPickSet(location);
     if (pickSet.isEmpty()) {
       mEditor.objects().unselectAll();
       mEditor.resetDuplicationOffset();
@@ -191,12 +187,12 @@ public class DefaultUserOperation extends UserOperation {
       return;
 
     // get 'pick set' for touch location
-    List<Integer> pickSet = getPickSet(location);
+    SlotList pickSet = getPickSet(location);
     // get subset of pick set that are currently selected
-    List<Integer> hlPickSet = getSelectedObjects(pickSet);
+    SlotList hlPickSet = getSelectedObjects(pickSet);
 
     if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
-      hlPickSet = SlotList.build(last(pickSet));
+      hlPickSet = new SlotList(pickSet.last());
       mEditor.objects().setSelected(hlPickSet);
       mEditor.resetDuplicationOffset();
       // fall through to next...

@@ -1054,13 +1054,11 @@ public class Editor {
   }
 
   private UserEventManager mUserEventManager;
-
   private Map<String, EdObjectFactory> mObjectTypes;
   private EdObjectFactory mLastEditableObjectType;
   private View mEditorView;
   private GeometryStepperActivity mActivity;
   private ConcreteStepper mStepper;
-  private EdObjectArray mObjects = new EdObjectArray();
   private QuiescentDelayOperation mPendingFlushOperation;
   private String mLastSavedState;
   private List<Command> mCommandHistory = new ArrayList();
@@ -1079,4 +1077,5 @@ public class Editor {
   // We keep a reference to this widget, since it isn't in the primary group
   // and thus may not be accessible via getWidget()
   private TextWidget mFilenameWidget;
+  private EdObjectArray mObjects = new EdObjectArray();
 }

@@ -11,61 +11,98 @@ import com.js.geometry.R;
 
 public class EdPoint extends EdObject {
 
-	private EdPoint() {
-	}
+  private EdPoint() {
+  }
 
-	private Point location() {
-		return getPoint(0);
-	}
+  private Point location() {
+    return getPoint(0);
+  }
 
-	@Override
-	public boolean valid() {
-		return nPoints() == 1;
-	}
+  @Override
+  public boolean valid() {
+    return nPoints() == 1;
+  }
 
-	@Override
-	public float distFrom(Point pt) {
-		return MyMath.distanceBetween(pt, location());
-	}
+  @Override
+  public float distFrom(Point pt) {
+    return MyMath.distanceBetween(pt, location());
+  }
 
-	@Override
-	public EdObjectFactory getFactory() {
-		return FACTORY;
-	}
+  @Override
+  public EdObjectFactory getFactory() {
+    return FACTORY;
+  }
 
-	@Override
+  @Override
   public UserOperation buildEditOperation(int slot, UserEvent initialPress) {
-    // Points are special in that their entire object is represented by a
-		// single vertex; hence editing a point is equivalent to moving it
-		// around. No per-vertex editing is required, and should in fact
-		// be disallowed to keep the move and DupAccumulator logic simple.
-		return null;
-	}
+    Point location = initialPress.getWorldLocation();
+    int vertexIndex = closestVertex(location, editor().pickRadius());
+    if (vertexIndex >= 0)
+      return new EditorOperation(editor(), slot);
+    return null;
+  }
 
-	@Override
-	public void render(AlgorithmStepper s) {
-		if (isSelected()) {
-			super.render(s);
-		} else {
-			s.setColor(Color.BLUE);
-			s.render(getPoint(0));
-		}
-	}
+  @Override
+  public void render(AlgorithmStepper s) {
+    if (isSelected()) {
+      super.render(s);
+    } else {
+      s.setColor(Color.BLUE);
+      s.render(getPoint(0));
+    }
+  }
 
-	public static EdObjectFactory FACTORY = new EdObjectFactory("p") {
-		@Override
-		public EdObject construct(Point defaultLocation) {
-			EdPoint pt = new EdPoint();
-			if (defaultLocation != null)
-				pt.addPoint(defaultLocation);
-			return pt;
-		}
+  public static EdObjectFactory FACTORY = new EdObjectFactory("p") {
+    @Override
+    public EdObject construct(Point defaultLocation) {
+      EdPoint pt = new EdPoint();
+      if (defaultLocation != null)
+        pt.addPoint(defaultLocation);
+      return pt;
+    }
 
+    @Override
+    public int getIconResource() {
+      return R.raw.pointicon;
+    }
+  };
 
-		@Override
-		public int getIconResource() {
-			return R.raw.pointicon;
-		}
-	};
+  private static class EditorOperation extends UserOperation {
+    public EditorOperation(Editor editor, int slot) {
+      mEditor = editor;
+      mEditSlot = slot;
+      mOriginalState = new EditorState(mEditor);
+    }
+
+    @Override
+    public void processUserEvent(UserEvent event) {
+
+      switch (event.getCode()) {
+
+      case UserEvent.CODE_DRAG: {
+        EdPoint point = mEditor.objects().get(mEditSlot);
+        // Create a new copy of the object, with modified vertex
+        EdPoint point2 = point.getCopy();
+        point2.setPoint(0, event.getWorldLocation());
+        mEditor.objects().set(mEditSlot, point2);
+        mModified = true;
+      }
+        break;
+
+      case UserEvent.CODE_UP:
+        if (mModified)
+          mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
+              mOriginalState, null, FACTORY.getTag(), null));
+        event.clearOperation();
+        break;
+      }
+    }
+
+    // Index of point being edited
+    private int mEditSlot;
+    private boolean mModified;
+    private EditorState mOriginalState;
+    private Editor mEditor;
+  }
 
 }

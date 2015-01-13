@@ -160,30 +160,16 @@ public class EdDisc extends EdObject {
   };
 
   private static class EditorOperation extends UserOperation {
+
     public EditorOperation(Editor editor, int slot, int vertexNumber) {
       mEditor = editor;
       mEditSlot = slot;
       mEditPointIndex = vertexNumber;
-    }
-
-    /**
-     * Initialize the edit operation, if it hasn't already been
-     * 
-     * This is necessary because we may start the operation without an
-     * EVENT_DOWN_x
-     */
-    private void initializeOperation(Point location) {
-      if (mOriginalState != null)
-        return;
       mOriginalState = new EditorState(mEditor);
     }
 
     @Override
     public void processUserEvent(UserEvent event) {
-      event.printProcessingMessage("EdDisc");
-
-      if (event.hasLocation())
-        initializeOperation(event.getWorldLocation());
 
       switch (event.getCode()) {
 
@@ -196,17 +182,17 @@ public class EdDisc extends EdObject {
       case UserEvent.CODE_DRAG: {
         Point adjustedLoc = MyMath
             .add(event.getWorldLocation(), mInitialOffset);
-        EdDisc disc = mEditor.objects().get(mEditSlot);
-        // Create a new copy of the disc, with modified origin or radius
-        EdDisc disc2 = disc.getCopy();
+        EdDisc disc = mEditor.objects().get(mEditSlot).getCopy();
+
         if (mEditPointIndex == 1) {
-          disc2.setRadius(MyMath.distanceBetween(adjustedLoc,
+          disc.setRadius(MyMath.distanceBetween(adjustedLoc,
               mOriginalDisc.getOrigin()));
         } else {
-          disc2.setOrigin(adjustedLoc);
-          disc2.setRadius(disc.getRadius());
+          float radius = disc.getRadius();
+          disc.setOrigin(adjustedLoc);
+          disc.setRadius(radius);
         }
-        mEditor.objects().set(mEditSlot, disc2);
+        mEditor.objects().set(mEditSlot, disc);
         mModified = true;
       }
         break;

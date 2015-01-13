@@ -63,53 +63,32 @@ public class EdSegment extends EdObject {
   };
 
   private static class EditorOperation extends UserOperation {
+
     public EditorOperation(Editor editor, int slot, int vertexNumber) {
       mEditor = editor;
       mEditSlot = slot;
       mEditPointIndex = vertexNumber;
-    }
-
-    /**
-     * Initialize the edit operation, if it hasn't already been
-     * 
-     * This is necessary because we may start the operation without an
-     * EVENT_DOWN_x
-     */
-    private void initializeOperation(Point location) {
-      if (mOriginalState != null)
-        return;
-
       mOriginalState = new EditorState(mEditor);
-      EdSegment seg = mEditor.objects().get(mEditSlot);
-
-      if (mEditPointIndex < 0) {
-        mEditPointIndex = seg.nPoints() - 1;
-      }
     }
 
     @Override
     public void processUserEvent(UserEvent event) {
 
-      if (event.hasLocation())
-        initializeOperation(event.getWorldLocation());
-
       switch (event.getCode()) {
 
       case UserEvent.CODE_DRAG: {
-        EdSegment seg = mEditor.objects().get(mEditSlot);
         // Create a new copy of the segment, with modified endpoint
-        EdSegment seg2 = seg.getCopy();
-        seg2.setPoint(mEditPointIndex, event.getWorldLocation());
-        mEditor.objects().set(mEditSlot, seg2);
+        EdSegment segment = mEditor.objects().get(mEditSlot).getCopy();
+        segment.setPoint(mEditPointIndex, event.getWorldLocation());
+        mEditor.objects().set(mEditSlot, segment);
         mModified = true;
       }
         break;
 
       case UserEvent.CODE_UP:
-        if (mModified) {
+        if (mModified)
           mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
               mOriginalState, null, FACTORY.getTag(), null));
-        }
         event.clearOperation();
         break;
       }
@@ -117,7 +96,7 @@ public class EdSegment extends EdObject {
 
     // Index of object being edited
     private int mEditSlot;
-    // Index of point being edited
+    // Index of vertex being edited
     private int mEditPointIndex;
     private boolean mModified;
     private EditorState mOriginalState;

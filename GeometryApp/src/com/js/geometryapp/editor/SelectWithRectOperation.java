@@ -22,14 +22,11 @@ public class SelectWithRectOperation extends UserOperation {
 
   @Override
   public void processUserEvent(UserEvent event) {
-    event.printProcessingMessage("SelectWithRectOperation");
-
-    mEvent = event;
 
     switch (event.getCode()) {
 
     case UserEvent.CODE_DOWN:
-      mInitialEvent = mEvent;
+      mInitialEvent = event;
       break;
 
     case UserEvent.CODE_DRAG:
@@ -47,7 +44,7 @@ public class SelectWithRectOperation extends UserOperation {
         }
         mEditor.objects().setSelected(selectedList);
       }
-      mEvent.clearOperation();
+      event.clearOperation();
       break;
     }
   }
@@ -76,7 +73,6 @@ public class SelectWithRectOperation extends UserOperation {
 
   private AlgorithmStepper mStepper;
   private UserEvent mInitialEvent;
-  private UserEvent mEvent;
   private Point mDragCorner;
   private Editor mEditor;
 }

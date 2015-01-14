@@ -388,9 +388,29 @@ public class Editor {
    * exists)
    */
   private void updateEditableObjectStatus() {
-    EdObject editableObject = mObjects
-        .updateEditableObjectStatus(mUserEventManager.getOperation()
-            .allowEditableObject());
+    boolean allowEditableObject = mUserEventManager.getOperation()
+        .allowEditableObject();
+    EdObject editableObject = null;
+
+    EdObjectArray items = this.mObjects;
+    int currentEditable = -1;
+    int newEditable = -1;
+    SlotList list = items.getSelectedSlots();
+    for (int slot : list) {
+      EdObject obj = items.get(slot);
+      if (obj.isEditable())
+        currentEditable = slot;
+    }
+    if (list.size() == 1 && allowEditableObject) {
+      newEditable = list.get(0);
+      editableObject = items.get(newEditable);
+    }
+    if (currentEditable != newEditable) {
+      if (currentEditable >= 0)
+        items.get(currentEditable).setEditable(false);
+      if (newEditable >= 0)
+        editableObject.setEditable(true);
+    }
     if (editableObject != null)
       mLastEditableObjectType = editableObject.getFactory();
   }

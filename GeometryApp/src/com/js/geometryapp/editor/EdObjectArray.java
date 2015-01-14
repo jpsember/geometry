@@ -170,30 +170,6 @@ public class EdObjectArray extends Freezable.Mutable implements
     }
   }
 
-  public EdObject updateEditableObjectStatus(boolean allowEditableObject) {
-    int currentEditable = -1;
-    int newEditable = -1;
-    EdObject editableObject = null;
-    SlotList list = getSelectedSlots();
-    for (int slot : list) {
-      EdObject obj = get(slot);
-      if (obj.isEditable())
-        currentEditable = slot;
-    }
-    if (list.size() == 1 && allowEditableObject) {
-      newEditable = list.get(0);
-      editableObject = get(newEditable);
-    }
-    if (currentEditable != newEditable) {
-      mutate();
-      if (currentEditable >= 0)
-        get(currentEditable).setEditable(false);
-      if (newEditable >= 0)
-        editableObject.setEditable(true);
-    }
-    return editableObject;
-  }
-
   private List<EdObject> mList = new ArrayList();
   private SlotList mSelectedSlots;
 }

@@ -1,7 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.util.List;
-
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
 
@@ -26,7 +24,7 @@ public class EditorState {
     return mClipboard;
   }
 
-  public List<Integer> getSelectedSlots() {
+  public SlotList getSelectedSlots() {
     return mSelectedSlots;
   }
 
@@ -35,7 +33,7 @@ public class EditorState {
   }
 
   private EdObjectArray mObjects;
-  private List<Integer> mSelectedSlots;
+  private SlotList mSelectedSlots;
   private EdObjectArray mClipboard;
   private Point mDupAccumulator;
 }

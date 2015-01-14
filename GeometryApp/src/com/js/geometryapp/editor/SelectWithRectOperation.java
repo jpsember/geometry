@@ -1,7 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.util.List;
-
 import android.graphics.Color;
 
 import com.js.editor.UserEvent;
@@ -36,12 +34,13 @@ public class SelectWithRectOperation extends UserOperation {
     case UserEvent.CODE_UP:
       Rect dragRect = getDragRect();
       if (dragRect != null) {
-        List<Integer> selectedList = SlotList.build();
+        SlotList selectedList = new SlotList();
         for (int slot = 0; slot < mEditor.objects().size(); slot++) {
           EdObject edObject = mEditor.objects().get(slot);
           if (dragRect.contains(edObject.getBounds()))
             selectedList.add(slot);
         }
+        selectedList.freeze();
         mEditor.objects().setSelected(selectedList);
       }
       event.clearOperation();

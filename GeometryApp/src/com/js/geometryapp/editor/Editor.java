@@ -419,7 +419,7 @@ public class Editor {
   }
 
   private void updateButtonEnableStatesAux() {
-    List<Integer> selected = objects().getSelectedSlots();
+    SlotList selected = objects().getSelectedSlots();
     mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
     mOptions.setEnabled("Cut", !selected.isEmpty());
@@ -685,7 +685,7 @@ public class Editor {
     if (!verifyObjectsAllowed(objects().size() + mClipboard.size()))
       return;
     EditorState originalState = new EditorState(this);
-    List<Integer> newSelected = SlotList.build();
+    SlotList newSelected = new SlotList();
 
     mDupAffectsClipboard = true;
     adjustDupAccumulatorForPendingOperation(mClipboard);
@@ -735,7 +735,7 @@ public class Editor {
       return;
     Point offset = getDupAccumulator(true);
     Point correction = new Point();
-    List<Integer> hiddenObjects = findHiddenObjects(affectedObjects, offset,
+    SlotList hiddenObjects = findHiddenObjects(affectedObjects, offset,
         correction);
     // If ALL the objects will end up being hidden, reset the
     // accumulator
@@ -754,7 +754,7 @@ public class Editor {
 
     mDupAffectsClipboard = false;
     adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
-    List<Integer> newSelected = SlotList.build();
+    SlotList newSelected = new SlotList();
 
     Point offset = getDupAccumulator(true);
 
@@ -843,7 +843,7 @@ public class Editor {
    *          them) onscreen
    * @return slots of hidden objects
    */
-  private List<Integer> findHiddenObjects(EdObjectArray objects,
+  private SlotList findHiddenObjects(EdObjectArray objects,
       Point translationToApply, Point correctingTranslation) {
     float minUnhideSquaredDistance = 0;
     boolean translationDefined = false;
@@ -863,7 +863,7 @@ public class Editor {
     Rect innerRect = new Rect(r);
     innerRect.inset(inset * 2, inset * 2);
 
-    List<Integer> slots = SlotList.build();
+    SlotList slots = new SlotList();
     for (int i = 0; i < objects.size(); i++) {
       EdObject obj = objects.get(i);
       if (obj.intersects(outerRect))
@@ -895,7 +895,7 @@ public class Editor {
 
   private void doUnhide() {
     Point translation = new Point();
-    List<Integer> slots = findHiddenObjects(objects(), null, translation);
+    SlotList slots = findHiddenObjects(objects(), null, translation);
     if (slots.isEmpty())
       return;
 

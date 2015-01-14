@@ -35,12 +35,18 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     add(singleSlot);
   }
 
+  public static SlotList build(List<Integer> slots) {
+    SlotList list = new SlotList(null);
+    for (Integer i : slots)
+      list.add(i);
+    return list;
+  }
+
   public void add(int slotNumber) {
     mutate();
     if (!isEmpty() && last() >= slotNumber)
       throw new IllegalArgumentException("not strictly increasing");
     mList.add(slotNumber);
-    pr("added " + slotNumber + ", now " + this);
   }
 
   public int size() {
@@ -51,29 +57,6 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     if (source == null)
       return;
     mList.addAll(source.mList);
-  }
-
-  /**
-   * Construct an empty slot list
-   * 
-   * @deprecated
-   */
-  public static List<Integer> build() {
-    return build(-1);
-  }
-
-  /**
-   * Construct a slot list, optionally with a single slot
-   * 
-   * @param initialSlot
-   *          if >= 0, this slot is added
-   * @deprecated
-   */
-  public static List<Integer> build(int initialSlot) {
-    List slots = new ArrayList();
-    if (initialSlot >= 0)
-      slots.add(initialSlot);
-    return slots;
   }
 
   /**

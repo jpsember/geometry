@@ -42,8 +42,7 @@ public class AddObjectOperation extends UserOperation {
         SlotList selectedList = new SlotList();
         for (int slot = 0; slot < mEditor.objects().size(); slot++) {
           EdObject edObject = mEditor.objects().get(slot);
-          if (dragRect.contains(edObject.getBounds(mEditor.objects()
-              .isSlotSelected(slot))))
+          if (dragRect.contains(edObject.getBounds()))
             selectedList.add(slot);
         }
         mEditor.objects().setSelected(selectedList);

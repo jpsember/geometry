@@ -114,12 +114,13 @@ public class ScaleOperation extends UserOperation {
   private Rect boundsForObjects(EdObjectArray objects) {
     Rect bounds = null;
     for (EdObject obj : objects) {
-      Rect objBounds = obj.getBounds(false, true);
+      Rect objBounds = obj.getBounds();
       if (bounds == null)
         bounds = objBounds;
       else
         bounds.include(objBounds);
     }
+    mEditor.expandRectByPickRadius(bounds);
     return bounds;
   }
 

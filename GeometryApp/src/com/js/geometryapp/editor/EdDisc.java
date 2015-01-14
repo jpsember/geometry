@@ -31,13 +31,11 @@ public class EdDisc extends EdObject {
   }
 
   @Override
-  public Rect getBounds(boolean isSelected, boolean ignoreSelectedFlag) {
+  public Rect getBounds() {
     // The bounds is not just the smallest rect containing the two points,
     // but is instead the square containing the disc they represent
     float radius = getRadius();
     Point origin = getOrigin();
-    if (!ignoreSelectedFlag && isSelected)
-      radius += editor().pickRadius();
     Rect r = new Rect(origin.x - radius, origin.y - radius, radius * 2,
         radius * 2);
     return r;

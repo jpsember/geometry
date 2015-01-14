@@ -6,10 +6,11 @@ import com.js.geometry.Rect;
 
 public class EditorTools {
 
-	public static void plotRect(AlgorithmStepper s, Rect r) {
-		Polygon p = new Polygon();
-		for (int i = 0; i < 4; i++)
-			p.add(r.corner(i));
-		s.render(p);
-	}
+  public static void plotRect(AlgorithmStepper s, Rect r) {
+    Polygon p = new Polygon();
+    for (int i = 0; i < 4; i++)
+      p.add(r.corner(i));
+    s.render(p);
+  }
+
 }

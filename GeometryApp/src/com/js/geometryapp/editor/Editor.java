@@ -897,6 +897,11 @@ public class Editor {
     return mPickRadius;
   }
 
+  public void expandRectByPickRadius(Rect rect) {
+    float r = pickRadius();
+    rect.inset(-r, -r);
+  }
+
   public LinearLayout getAuxControlsView() {
     if (mAuxView == null) {
       mAuxView = UITools.linearLayout(context(), true);

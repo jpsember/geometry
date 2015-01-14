@@ -73,24 +73,18 @@ public abstract class EdObject extends Freezable.Mutable {
    * Get bounding rectangle of object. Default implementation calculates minimum
    * bounding rectangle of the object's points
    */
-  public Rect getBounds(boolean isSelected) {
-    return getBounds(isSelected, false);
+  public Rect getBounds() {
+    if (mBounds == null) {
+      mBounds = Rect.rectContainingPoints(mPoints);
+    }
+    return mBounds;
   }
 
-  public Rect getBounds(boolean isSelected, boolean ignoreSelectedFlag) {
-    // Only use cached value if we're not ignoring the selected flag
-    if (!ignoreSelectedFlag || !isSelected) {
-      if (mBounds == null) {
-        mBounds = Rect.rectContainingPoints(mPoints);
-        if (!ignoreSelectedFlag && isSelected) {
-          float r = mEditor.pickRadius();
-          mBounds.inset(-r, -r);
-        }
-      }
-      return mBounds;
-    } else {
-      return Rect.rectContainingPoints(mPoints);
-    }
+  @Override
+  public void freeze() {
+    // Make sure we've performed all possible lazy initialization
+    getBounds();
+    super.freeze();
   }
 
   /**
@@ -132,8 +126,8 @@ public abstract class EdObject extends Freezable.Mutable {
    * @param point
    */
   public void addPoint(int ptIndex, Point point) {
+    mutate();
     mPoints.add(ptIndex, point);
-    mBounds = null;
   }
 
   /**

@@ -51,9 +51,9 @@ public class EdPoint extends EdObject {
   }
 
   @Override
-  public void render(AlgorithmStepper s) {
-    if (isSelected()) {
-      super.render(s);
+  public void render(AlgorithmStepper s, boolean selected, boolean editable) {
+    if (selected) {
+      super.render(s, selected, editable);
     } else {
       s.setColor(Color.BLUE);
       s.render(getPoint(0));

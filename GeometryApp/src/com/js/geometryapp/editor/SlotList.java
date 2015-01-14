@@ -40,8 +40,8 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
 
   public void add(int slotNumber) {
     mutate();
-    if (!isEmpty() && last() >= slotNumber)
-      throw new IllegalArgumentException("not strictly increasing");
+    if (slotNumber < 0 || (!isEmpty() && last() >= slotNumber))
+      throw new IllegalArgumentException("not strictly increasing nonnegative");
     mList.add(slotNumber);
   }
 
@@ -57,11 +57,33 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     return mList.get(index);
   }
 
+  public boolean contains(int slot) {
+    // Later: use binary search to determine this
+    return mList.contains(slot);
+  }
+
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder("SlotList ");
     sb.append(d(mList));
     return sb.toString();
+  }
+
+  public static SlotList intersection(SlotList a, SlotList b) {
+    SlotList outputList = new SlotList();
+    int cursor1 = 0;
+    int cursor2 = 0;
+    while (cursor1 < a.size() && cursor2 < b.size()) {
+      int s1 = a.get(cursor1);
+      int s2 = b.get(cursor2);
+      if (s1 == s2)
+        outputList.add(s1);
+      if (s1 <= s2)
+        cursor1++;
+      if (s2 <= s1)
+        cursor2++;
+    }
+    return outputList;
   }
 
   private SlotList(SlotList source) {

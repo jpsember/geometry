@@ -15,7 +15,6 @@ public class EdObjectArray extends Freezable.Mutable implements
   @Override
   public void mutate() {
     super.mutate();
-    mSelectedSlots = null;
   }
 
   public boolean isEmpty() {
@@ -61,60 +60,73 @@ public class EdObjectArray extends Freezable.Mutable implements
    * Construct array containing only the selected objects from this array
    */
   public EdObjectArray getSelectedObjects() {
+    return getSubset(getSelectedSlots());
+  }
+
+  /**
+   * Construct subset of this array
+   */
+  public EdObjectArray getSubset(SlotList slots) {
     EdObjectArray subset = new EdObjectArray();
-    for (int slot : getSelectedSlots()) {
+    for (int slot : slots) {
       subset.add(get(slot));
     }
     return subset;
   }
 
+  public EdObjectArray() {
+    this(null);
+  }
+
+  private EdObjectArray(EdObjectArray source) {
+    if (source == null) {
+      mList = new ArrayList();
+      mSelectedSlots = new SlotList();
+      mSelectedSlots.freeze();
+      return;
+    }
+    for (EdObject obj : source.mList)
+      add(obj);
+    mEditableSlot = source.mEditableSlot;
+    mSelectedSlots = source.mSelectedSlots;
+  }
+
   @Override
   public Freezable getMutableCopy() {
-    EdObjectArray copy = new EdObjectArray();
-    for (EdObject obj : mList)
-      copy.add(obj);
-    return copy;
+    return new EdObjectArray(this);
   }
 
   /**
    * Get slots of selected items
    */
   public SlotList getSelectedSlots() {
-    if (mSelectedSlots == null) {
-      SlotList slots = new SlotList();
-      for (int i = 0; i < mList.size(); i++) {
-        if (mList.get(i).isSelected()) {
-          slots.add(i);
-        }
-      }
-      slots.freeze();
-      setSelected(slots);
-    }
     return mSelectedSlots;
+  }
+
+  private void setSelectedSlotsAux(SlotList slots) {
+    mSelectedSlots = slots;
+    mEditableSlot = -1;
+    if (mSelectedSlots.size() == 1)
+      mEditableSlot = mSelectedSlots.get(0);
   }
 
   /**
    * Make specific slots selected, and others unselected
    */
   public void setSelected(SlotList slots) {
+    mutate();
     slots = frozen(slots);
-    int j = 0;
-    for (int i = 0; i < mList.size(); i++) {
-      boolean sel = j < slots.size() && slots.get(j) == i;
-      mList.get(i).setSelected(sel);
-      if (sel)
-        j++;
-    }
-    if (j != slots.size())
+    if (!slots.isEmpty() && slots.last() >= size())
       throw new IllegalArgumentException();
-    mSelectedSlots = slots;
+    setSelectedSlotsAux(slots);
   }
 
   public void setEditableSlot(int slot) {
-    ASSERT(slot >= 0);
     setSelected(new SlotList(slot));
-    get(slot).setEditable(true);
-    mutate();
+  }
+
+  public int getEditableSlot() {
+    return mEditableSlot;
   }
 
   public void removeSelected() {
@@ -151,8 +163,11 @@ public class EdObjectArray extends Freezable.Mutable implements
 
   public void selectAll() {
     mutate();
-    for (EdObject obj : mList)
-      obj.setSelected(true);
+    SlotList list = new SlotList();
+    for (int i = 0; i < size(); i++)
+      list.add(i);
+    list.freeze();
+    setSelected(list);
   }
 
   @Override
@@ -170,6 +185,15 @@ public class EdObjectArray extends Freezable.Mutable implements
     }
   }
 
+  public boolean isSlotEditable(int slot) {
+    return slot == mEditableSlot;
+  }
+
+  public boolean isSlotSelected(int slot) {
+    return mSelectedSlots.contains(slot);
+  }
+
   private List<EdObject> mList = new ArrayList();
-  private SlotList mSelectedSlots;
+  private SlotList mSelectedSlots = new SlotList();
+  private int mEditableSlot = -1;
 }

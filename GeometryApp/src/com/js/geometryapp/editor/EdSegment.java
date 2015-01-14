@@ -30,10 +30,10 @@ public class EdSegment extends EdObject {
   }
 
   @Override
-  public void render(AlgorithmStepper s) {
+  public void render(AlgorithmStepper s, boolean selected, boolean editable) {
     s.setColor(Color.BLUE);
     renderLine(s, getPoint(0), getPoint(1));
-    super.render(s);
+    super.render(s, selected, editable);
   }
 
   @Override

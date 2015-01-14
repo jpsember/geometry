@@ -114,7 +114,7 @@ public class ScaleOperation extends UserOperation {
   private Rect boundsForObjects(EdObjectArray objects) {
     Rect bounds = null;
     for (EdObject obj : objects) {
-      Rect objBounds = obj.getBounds(true);
+      Rect objBounds = obj.getBounds(false, true);
       if (bounds == null)
         bounds = objBounds;
       else

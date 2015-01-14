@@ -53,7 +53,7 @@ public class EdPolyline extends EdObject {
   }
 
   @Override
-  public void render(AlgorithmStepper s) {
+  public void render(AlgorithmStepper s, boolean selected, boolean editable) {
     Point prev = null;
     if (closed() && nPoints() > 2)
       prev = getPointMod(-1);
@@ -66,14 +66,14 @@ public class EdPolyline extends EdObject {
       }
       prev = pt;
     }
-    super.render(s);
+    super.render(s, selected, editable);
     // If there's a single point, we must plot it (if unselected) since no
     // segments were drawn
-    if (!isSelected() && nPoints() == 1)
+    if (!selected && nPoints() == 1)
       s.render(getPoint(0));
 
     Point[] tabLocations = null;
-    if (isEditable() && !mTabsHidden) {
+    if (editable && !mTabsHidden) {
       boolean interpFlags[] = new boolean[2];
       tabLocations = calculateTabPositions(this, interpFlags);
       Point cursor = getPoint(mCursor);

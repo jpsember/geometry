@@ -108,12 +108,14 @@ public class RotateOperation extends UserOperation {
    */
   private Rect boundsForObjects(EdObjectArray objects) {
     Rect bounds = null;
+    int slot = 0;
     for (EdObject obj : objects) {
-      Rect objBounds = obj.getBounds();
+      Rect objBounds = obj.getBounds(objects.isSlotSelected(slot));
       if (bounds == null)
         bounds = objBounds;
       else
         bounds.include(objBounds);
+      slot++;
     }
     return bounds;
   }

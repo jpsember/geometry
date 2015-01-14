@@ -89,17 +89,13 @@ public class DefaultUserOperation extends UserOperation {
     for (int slot = 0; slot < srcObjects.size(); slot++) {
       EdObject src = srcObjects.get(slot);
       float dist = src.distFrom(location);
-      if (src.isSelected())
+      if (srcObjects.isSlotSelected(slot))
         pickRadius *= 2f;
       if (dist > pickRadius)
         continue;
       slots.add(slot);
     }
     return slots;
-  }
-
-  private EdObject editorObject(int slot) {
-    return mEditor.objects().get(slot);
   }
 
   /**
@@ -110,13 +106,8 @@ public class DefaultUserOperation extends UserOperation {
    * @return subsequence of slotList that are selected
    */
   private SlotList getSelectedObjects(SlotList slotList) {
-    SlotList selectedSlots = new SlotList();
-    for (int slot : slotList) {
-      EdObject obj = editorObject(slot);
-      if (obj.isSelected())
-        selectedSlots.add(slot);
-    }
-    return selectedSlots;
+    return SlotList
+        .intersection(mEditor.objects().getSelectedSlots(), slotList);
   }
 
   /**
@@ -149,7 +140,7 @@ public class DefaultUserOperation extends UserOperation {
     // Find selected item with highest index
     int highestIndex = pickSet.size();
     for (int i = 0; i < pickSet.size(); i++) {
-      if (mEditor.objects().get(pickSet.get(i)).isSelected())
+      if (mEditor.objects().isSlotSelected(pickSet.get(i)))
         highestIndex = i;
     }
     int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());

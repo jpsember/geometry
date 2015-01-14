@@ -2,7 +2,6 @@ package com.js.geometryapp.editor;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import com.js.basic.Freezable;
 import static com.js.basic.Tools.*;
 
@@ -13,6 +12,7 @@ import static com.js.basic.Tools.*;
  */
 public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
 
+  @Override
   public Iterator<Integer> iterator() {
     return mList.iterator();
   }
@@ -30,16 +30,12 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     return size() == 0;
   }
 
+  /**
+   * Build a list containing a single slot
+   */
   public SlotList(int singleSlot) {
     this(null);
     add(singleSlot);
-  }
-
-  public static SlotList build(List<Integer> slots) {
-    SlotList list = new SlotList(null);
-    for (Integer i : slots)
-      list.add(i);
-    return list;
   }
 
   public void add(int slotNumber) {
@@ -51,19 +47,6 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
 
   public int size() {
     return mList.size();
-  }
-
-  private SlotList(SlotList source) {
-    if (source == null)
-      return;
-    mList.addAll(source.mList);
-  }
-
-  /**
-   * Get underlying array of integers
-   */
-  public ArrayList<Integer> getArray() {
-    return mList;
   }
 
   public Integer last() {
@@ -79,6 +62,12 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     StringBuilder sb = new StringBuilder("SlotList ");
     sb.append(d(mList));
     return sb.toString();
+  }
+
+  private SlotList(SlotList source) {
+    if (source == null)
+      return;
+    mList.addAll(source.mList);
   }
 
   private ArrayList<Integer> mList = new ArrayList();

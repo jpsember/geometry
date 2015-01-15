@@ -174,7 +174,7 @@ public class Editor {
       mOptions.addButton("Dup", "icon", R.raw.duplicateicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doDup();
+              new DupOperation(Editor.this).attempt();
               refresh();
             }
           });
@@ -393,7 +393,7 @@ public class Editor {
     mOptions.setEnabled("Cut", !selected.isEmpty());
     mOptions.setEnabled("Copy", new CopyOperation(this).isValid());
     mOptions.setEnabled("Paste", new PasteOperation(this).isValid());
-    mOptions.setEnabled("Dup", !selected.isEmpty());
+    mOptions.setEnabled("Dup", new DupOperation(this).isValid());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
     mOptions.setEnabled("Scale", !selected.isEmpty());
@@ -627,9 +627,10 @@ public class Editor {
    *          DupAccumulator construction argument
    */
   public void adjustDupAccumulatorForPendingOperation(
-      EdObjectArray affectedObjects) {
+      EdObjectArray affectedObjects, boolean affectsClipboard) {
     if (affectedObjects.size() == 0)
       return;
+    mDupAffectsClipboard = affectsClipboard;
     Point offset = getDupAccumulator();
     Point correction = new Point();
     SlotList hiddenObjects = findHiddenObjects(affectedObjects, offset,
@@ -639,36 +640,6 @@ public class Editor {
     if (hiddenObjects.size() == affectedObjects.size()) {
       resetDuplicationOffsetWithCorrectingTranslation(correction);
     }
-  }
-
-  private void doDup() {
-    CommandForGeneralChanges command = new CommandForGeneralChanges(this, null,
-        "Duplicate");
-    EditorState state = command.getOriginalState();
-    if (state.getSelectedSlots().isEmpty())
-      return;
-    if (!verifyObjectsAllowed(objects().size()
-        + state.getSelectedSlots().size()))
-      return;
-
-    setDupAffectsClipboard(false);
-    adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
-    SlotList newSelected = new SlotList();
-
-    Point offset = getDupAccumulator();
-
-    for (int slot : state.getSelectedSlots()) {
-      EdObject obj = objects().get(slot);
-      EdObject copy = mutableCopyOf(obj);
-      copy.moveBy(obj, offset);
-      newSelected.add(objects().add(copy));
-    }
-    objects().setSelected(newSelected);
-    command.finish();
-  }
-
-  public void setDupAffectsClipboard(boolean f) {
-    mDupAffectsClipboard = f;
   }
 
   private void resetDuplicationOffsetWithCorrectingTranslation(Point t) {
@@ -933,8 +904,7 @@ public class Editor {
   }
 
   /**
-   * Adjust duplication accumulator (if one exists) by adding an additional
-   * translation
+   * Adjust duplication accumulator by adding an additional translation
    */
   void updateDupAccumulatorForTranslation(Point translation) {
     Point dup = mState.getDupAccumulator();

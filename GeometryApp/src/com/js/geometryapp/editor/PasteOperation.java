@@ -23,8 +23,7 @@ public class PasteOperation {
       return;
     SlotList newSelected = new SlotList();
 
-    mEditor.setDupAffectsClipboard(true);
-    mEditor.adjustDupAccumulatorForPendingOperation(clipboard);
+    mEditor.adjustDupAccumulatorForPendingOperation(clipboard, true);
 
     Point offset = state.getDupAccumulator();
 

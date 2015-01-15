@@ -1,8 +1,6 @@
 package com.js.geometryapp.editor;
 
 import com.js.editor.Command;
-import static com.js.basic.Tools.*;
-
 
 public class CommandForGeneralChanges extends Command.Adapter {
 
@@ -103,7 +101,8 @@ public class CommandForGeneralChanges extends Command.Adapter {
   }
 
   private void setOriginalState(EditorState s) {
-    if (s.isMutable()) throw new IllegalArgumentException();
+    if (s.isMutable())
+      throw new IllegalArgumentException();
     mOriginalState = s;
   }
 

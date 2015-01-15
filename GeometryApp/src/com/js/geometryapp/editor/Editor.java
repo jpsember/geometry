@@ -56,7 +56,7 @@ import static com.js.android.Tools.*;
 public class Editor {
 
   private static final boolean ZAP_SUPPORTED = (true && DEBUG_ONLY_FEATURES);
-  private static final boolean DB_SNAPSHOT = (true && DEBUG_ONLY_FEATURES);
+  private static final boolean DB_SNAPSHOT = (false && DEBUG_ONLY_FEATURES);
 
   private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
   private static final int MAX_COMMAND_HISTORY_SIZE = 30;
@@ -85,7 +85,7 @@ public class Editor {
   public void prepare(View contentView) {
     warning("rotate operation now misbehaves");
     disposeOfStateSnapshot();
-    mState = new EditorState(null, null, calcDefaultDupAccumulator());
+    mState = new EditorState();
     mEditorView = contentView;
     prepareObjectTypes();
     mUserEventManager = new UserEventManager(new DefaultUserOperation(this,
@@ -412,13 +412,13 @@ public class Editor {
       if (!map.has(JSON_KEY_OBJECTS)) {
         throw new JSONException(JSON_KEY_OBJECTS + " key missing");
       }
-      EdObjectArray mObjects = new EdObjectArray();
-      EdObjectArray mClipboard = new EdObjectArray();
-      parseObjects(map, JSON_KEY_OBJECTS, mObjects);
-      parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
+      EdObjectArray objects = new EdObjectArray();
+      EdObjectArray clipboard = new EdObjectArray();
+      parseObjects(map, JSON_KEY_OBJECTS, objects);
+      parseObjects(map, JSON_KEY_CLIPBOARD, clipboard);
       mFilenameWidget.setValue(map.optString(JSON_KEY_FILENAME));
       disposeOfStateSnapshot();
-      mState = new EditorState(mObjects, mClipboard, Point.ZERO);
+      mState = new EditorState(objects, clipboard, null);
     } catch (JSONException e) {
       showException(context(), e, "Problem parsing json");
     }
@@ -665,7 +665,7 @@ public class Editor {
   private void doZap() {
     if (ZAP_SUPPORTED) {
       disposeOfStateSnapshot();
-      mState = new EditorState(null, null, calcDefaultDupAccumulator());
+      mState = new EditorState();
       mCommandHistory.clear();
       mCommandHistoryCursor = 0;
     }
@@ -728,26 +728,20 @@ public class Editor {
     final float CARDINAL_RANGE = MyMath.PI / 2;
     angle = MyMath.normalizeAngle(angle + CARDINAL_RANGE / 2);
     angle -= MyMath.myMod(angle, CARDINAL_RANGE);
-    setDupAccumulator(MyMath.pointOnCircle(Point.ZERO, angle, pickRadius()));
+    mState.setDupAccumulator(MyMath.pointOnCircle(Point.ZERO, angle,
+        pickRadius()));
   }
 
-  Point getDupAccumulator() {
-    return mState.getDupAccumulator();
-  }
-
-  private Point calcDefaultDupAccumulator() {
-    warning("clean up so we don't need default accumulator; maybe if it's zero, choose it at that time");
-    return MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
-  }
-
-  private void setDupAccumulator(Point accum) {
-    if (accum == null)
-      accum = calcDefaultDupAccumulator();
-    mState.setDupAccumulator(accum);
+  private Point getDupAccumulator() {
+    Point accum = mState.getDupAccumulator();
+    if (accum.magnitude() == 0) {
+      accum = MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
+    }
+    return accum;
   }
 
   void resetDuplicationOffset() {
-    setDupAccumulator(null);
+    mState.setDupAccumulator(null);
   }
 
   /**
@@ -966,7 +960,7 @@ public class Editor {
     if (mStateSnapshot == null) {
       mStateSnapshot = frozen(mState);
       if (DB_SNAPSHOT) {
-        pr("creating state snapshot " + nameOf(mStateSnapshot));
+        pr("creating state snapshot:     " + nameOf(mStateSnapshot));
       }
     }
     return mStateSnapshot;
@@ -982,7 +976,7 @@ public class Editor {
 
   void setState(EditorState state) {
     if (DB_SNAPSHOT) {
-      pr("setState to " + nameOf(state));
+      pr("setState to:                   " + nameOf(state));
     }
     if (state.isMutable())
       throw new IllegalArgumentException();
@@ -997,7 +991,7 @@ public class Editor {
    */
   void updateDupAccumulatorForTranslation(Point translation) {
     Point dup = mState.getDupAccumulator();
-    setDupAccumulator(MyMath.add(dup, translation));
+    mState.setDupAccumulator(MyMath.add(dup, translation));
     if (mDupAffectsClipboard)
       replaceClipboardWithSelectedObjects();
   }

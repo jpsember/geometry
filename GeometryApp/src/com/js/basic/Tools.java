@@ -843,9 +843,9 @@ public final class Tools {
     String s = obj.getClass().getSimpleName() + ":" + identifier;
     if (obj instanceof Freezable) {
       if (((Freezable) obj).isFrozen())
-        s += " FROZEN ";
+        s += " (frozen) ";
       else
-        s += " MUTABLE";
+        s += " (mutable)";
     }
     return s;
   }

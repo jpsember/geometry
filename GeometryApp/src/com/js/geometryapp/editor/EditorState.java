@@ -21,8 +21,12 @@ public class EditorState extends Freezable.Mutable {
   public void freeze() {
     // We must override freeze() since we have components that need freezing as
     // well
-    mObjects = frozen(mObjects);
+    mObjects.freeze();
     super.freeze();
+  }
+
+  public EditorState() {
+    this(null, null, null);
   }
 
   public EditorState(EdObjectArray objects, EdObjectArray clipboard,
@@ -33,7 +37,7 @@ public class EditorState extends Freezable.Mutable {
     if (clipboard == null)
       clipboard = new EdObjectArray();
     mClipboard = frozen(clipboard);
-    mDupAccumulator = new Point(dupAccum);
+    setDupAccumulatorAux(dupAccum);
   }
 
   public EdObjectArray getObjects() {
@@ -42,6 +46,12 @@ public class EditorState extends Freezable.Mutable {
 
   public EdObjectArray getClipboard() {
     return mClipboard;
+  }
+
+  private void setDupAccumulatorAux(Point dupAccum) {
+    if (dupAccum == null)
+      dupAccum = Point.ZERO;
+    mDupAccumulator = new Point(dupAccum);
   }
 
   /**
@@ -57,7 +67,7 @@ public class EditorState extends Freezable.Mutable {
 
   public void setDupAccumulator(Point accumulator) {
     mutate();
-    mDupAccumulator = accumulator;
+    setDupAccumulatorAux(accumulator);
   }
 
   public void setObjects(EdObjectArray objects) {

@@ -79,7 +79,7 @@ public class EdPoint extends EdObject {
     public EditorOperation(Editor editor, int slot) {
       mEditor = editor;
       mEditSlot = slot;
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, FACTORY.getTag(), null);
     }
 
     @Override
@@ -99,8 +99,7 @@ public class EdPoint extends EdObject {
 
       case UserEvent.CODE_UP:
         if (mModified)
-          mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
-              mOriginalState, null, FACTORY.getTag(), null));
+          mCommand.finish();
         event.clearOperation();
         break;
       }
@@ -109,7 +108,7 @@ public class EdPoint extends EdObject {
     // Index of point being edited
     private int mEditSlot;
     private boolean mModified;
-    private EditorState mOriginalState;
+    private CommandForGeneralChanges mCommand;
     private Editor mEditor;
   }
 

@@ -56,6 +56,7 @@ import static com.js.android.Tools.*;
 public class Editor {
 
   private static final boolean ZAP_SUPPORTED = (true && DEBUG_ONLY_FEATURES);
+  private static final boolean DB_SNAPSHOT = (true && DEBUG_ONLY_FEATURES);
 
   private static final boolean DB_JSON = false && DEBUG_ONLY_FEATURES;
   private static final int MAX_COMMAND_HISTORY_SIZE = 30;
@@ -82,6 +83,9 @@ public class Editor {
    *          view displaying objects being edited; probably a GLSurfaceView
    */
   public void prepare(View contentView) {
+    warning("rotate operation now misbehaves");
+    disposeOfStateSnapshot();
+    mState = new EditorState(null, null, calcDefaultDupAccumulator());
     mEditorView = contentView;
     prepareObjectTypes();
     mUserEventManager = new UserEventManager(new DefaultUserOperation(this,
@@ -306,6 +310,7 @@ public class Editor {
       return;
     mStepper.setRendering(true);
 
+    EdObjectArray mObjects = objects();
     int editableSlot = mObjects.getEditableSlot();
     SlotList sel = mObjects.getSelectedSlots();
     int selCursor = 0;
@@ -348,7 +353,7 @@ public class Editor {
         .allowEditableObject();
     EdObject editableObject = null;
 
-    EdObjectArray items = this.mObjects;
+    EdObjectArray items = objects();
     SlotList list = items.getSelectedSlots();
     if (list.size() == 1 && allowEditableObject) {
       int newEditable = list.get(0);
@@ -387,7 +392,7 @@ public class Editor {
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
     mOptions.setEnabled("Cut", !selected.isEmpty());
     mOptions.setEnabled("Copy", !selected.isEmpty());
-    mOptions.setEnabled("Paste", !mClipboard.isEmpty());
+    mOptions.setEnabled("Paste", !clipboard().isEmpty());
     mOptions.setEnabled("Dup", !selected.isEmpty());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
@@ -407,9 +412,13 @@ public class Editor {
       if (!map.has(JSON_KEY_OBJECTS)) {
         throw new JSONException(JSON_KEY_OBJECTS + " key missing");
       }
+      EdObjectArray mObjects = new EdObjectArray();
+      EdObjectArray mClipboard = new EdObjectArray();
       parseObjects(map, JSON_KEY_OBJECTS, mObjects);
       parseObjects(map, JSON_KEY_CLIPBOARD, mClipboard);
       mFilenameWidget.setValue(map.optString(JSON_KEY_FILENAME));
+      disposeOfStateSnapshot();
+      mState = new EditorState(mObjects, mClipboard, Point.ZERO);
     } catch (JSONException e) {
       showException(context(), e, "Problem parsing json");
     }
@@ -486,7 +495,7 @@ public class Editor {
    * Get the EdObjectArray being edited
    */
   EdObjectArray objects() {
-    return mObjects;
+    return mState.getObjects();
   }
 
   private Context context() {
@@ -543,7 +552,7 @@ public class Editor {
   private JSONObject compileObjectsToJSON() throws JSONException {
     JSONObject editorMap = new JSONObject();
     editorMap.put(JSON_KEY_OBJECTS, getEdObjectsArrayJSON(objects()));
-    editorMap.put(JSON_KEY_CLIPBOARD, getEdObjectsArrayJSON(mClipboard));
+    editorMap.put(JSON_KEY_CLIPBOARD, getEdObjectsArrayJSON(clipboard()));
     return editorMap;
   }
 
@@ -582,31 +591,27 @@ public class Editor {
   }
 
   private void doCut() {
-    EditorState originalState = new EditorState(this);
-    if (originalState.getSelectedSlots().isEmpty())
+    CommandForGeneralChanges c = new CommandForGeneralChanges(this, null, "Cut");
+    if (c.getOriginalState().getSelectedSlots().isEmpty())
       return;
 
     EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
     setClipboard(newClipboard);
     objects().removeSelected();
 
-    Command command = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), null, null);
-    pushCommand(command);
     resetDuplicationOffset();
+    c.finish();
   }
 
   private void doCopy() {
-    EditorState originalState = new EditorState(this);
-    if (originalState.getSelectedSlots().isEmpty())
+    CommandForGeneralChanges c = new CommandForGeneralChanges(this, null,
+        "Copy");
+    if (c.getOriginalState().getSelectedSlots().isEmpty())
       return;
     EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
     setClipboard(newClipboard);
-
-    Command command = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), null, null);
-    pushCommand(command);
     resetDuplicationOffset();
+    c.finish();
   }
 
   /**
@@ -627,17 +632,19 @@ public class Editor {
   }
 
   private void doPaste() {
+    CommandForGeneralChanges command = new CommandForGeneralChanges(this, null,
+        "Paste");
+    EdObjectArray mClipboard = command.getOriginalState().getClipboard();
     if (mClipboard.isEmpty())
       return;
     if (!verifyObjectsAllowed(objects().size() + mClipboard.size()))
       return;
-    EditorState originalState = new EditorState(this);
     SlotList newSelected = new SlotList();
 
     mDupAffectsClipboard = true;
     adjustDupAccumulatorForPendingOperation(mClipboard);
 
-    Point offset = getDupAccumulator(true);
+    Point offset = getDupAccumulator();
 
     for (EdObject obj : mClipboard) {
       newSelected.add(objects().size());
@@ -648,10 +655,7 @@ public class Editor {
     objects().setSelected(newSelected);
 
     replaceClipboardWithSelectedObjects();
-
-    Command command = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), null, null);
-    pushCommand(command);
+    command.finish();
   }
 
   private void replaceClipboardWithSelectedObjects() {
@@ -660,8 +664,8 @@ public class Editor {
 
   private void doZap() {
     if (ZAP_SUPPORTED) {
-      objects().clear();
-      mClipboard = new EdObjectArray();
+      disposeOfStateSnapshot();
+      mState = new EditorState(null, null, calcDefaultDupAccumulator());
       mCommandHistory.clear();
       mCommandHistoryCursor = 0;
     }
@@ -680,7 +684,7 @@ public class Editor {
       EdObjectArray affectedObjects) {
     if (affectedObjects.size() == 0)
       return;
-    Point offset = getDupAccumulator(true);
+    Point offset = getDupAccumulator();
     Point correction = new Point();
     SlotList hiddenObjects = findHiddenObjects(affectedObjects, offset,
         correction);
@@ -692,30 +696,29 @@ public class Editor {
   }
 
   private void doDup() {
-    EditorState originalState = new EditorState(this);
-    if (originalState.getSelectedSlots().isEmpty())
+    CommandForGeneralChanges command = new CommandForGeneralChanges(this, null,
+        "Duplicate");
+    EditorState state = command.getOriginalState();
+    if (state.getSelectedSlots().isEmpty())
       return;
     if (!verifyObjectsAllowed(objects().size()
-        + originalState.getSelectedSlots().size()))
+        + state.getSelectedSlots().size()))
       return;
 
     mDupAffectsClipboard = false;
     adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
     SlotList newSelected = new SlotList();
 
-    Point offset = getDupAccumulator(true);
+    Point offset = getDupAccumulator();
 
-    for (int slot : originalState.getSelectedSlots()) {
+    for (int slot : state.getSelectedSlots()) {
       EdObject obj = objects().get(slot);
       EdObject copy = mutableCopyOf(obj);
       copy.moveBy(obj, offset);
       newSelected.add(objects().add(copy));
     }
     objects().setSelected(newSelected);
-
-    Command command = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), null, null);
-    pushCommand(command);
+    command.finish();
   }
 
   private void resetDuplicationOffsetWithCorrectingTranslation(Point t) {
@@ -725,22 +728,26 @@ public class Editor {
     final float CARDINAL_RANGE = MyMath.PI / 2;
     angle = MyMath.normalizeAngle(angle + CARDINAL_RANGE / 2);
     angle -= MyMath.myMod(angle, CARDINAL_RANGE);
-    mDupAccumulator = MyMath.pointOnCircle(Point.ZERO, angle, pickRadius());
+    setDupAccumulator(MyMath.pointOnCircle(Point.ZERO, angle, pickRadius()));
   }
 
   Point getDupAccumulator() {
-    return mDupAccumulator;
+    return mState.getDupAccumulator();
   }
 
-  private Point getDupAccumulator(boolean buildIfMissing) {
-    if (buildIfMissing && mDupAccumulator == null) {
-      mDupAccumulator = MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
-    }
-    return getDupAccumulator();
+  private Point calcDefaultDupAccumulator() {
+    warning("clean up so we don't need default accumulator; maybe if it's zero, choose it at that time");
+    return MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
+  }
+
+  private void setDupAccumulator(Point accum) {
+    if (accum == null)
+      accum = calcDefaultDupAccumulator();
+    mState.setDupAccumulator(accum);
   }
 
   void resetDuplicationOffset() {
-    mDupAccumulator = null;
+    setDupAccumulator(null);
   }
 
   /**
@@ -834,12 +841,12 @@ public class Editor {
   }
 
   private void doUnhide() {
+    CommandForGeneralChanges command = new CommandForGeneralChanges(this,
+        "unhide", "Unhide");
     Point translation = new Point();
     SlotList slots = findHiddenObjects(objects(), null, translation);
     if (slots.isEmpty())
       return;
-
-    EditorState originalState = new EditorState(this);
 
     objects().setSelected(slots);
     objects().replaceSelectedObjectsWithCopies();
@@ -848,16 +855,13 @@ public class Editor {
       EdObject obj = objects().get(slot);
       obj.moveBy(null, translation);
     }
-
-    Command cmd = new CommandForGeneralChanges(this, originalState,
-        new EditorState(this), "unhide", "Unhide");
-    pushCommand(cmd);
+    command.finish();
   }
 
   /**
    * Add a command that has already been performed to the undo stack
    */
-  public void pushCommand(Command command) {
+  void pushCommand(Command command) {
     // Throw out any older 'redoable' commands that will now be stale
     while (mCommandHistory.size() > mCommandHistoryCursor) {
       pop(mCommandHistory);
@@ -891,6 +895,10 @@ public class Editor {
       mCommandHistoryCursor -= del;
       mCommandHistory.subList(0, del).clear();
     }
+
+    // Dispose of any cached state snapshot; it's likely invalid since we just
+    // performed a command
+    disposeOfStateSnapshot();
   }
 
   public float pickRadius() {
@@ -909,16 +917,12 @@ public class Editor {
     return mAuxView;
   }
 
-  public EdObjectArray getClipboard() {
-    return mClipboard;
+  public EdObjectArray clipboard() {
+    return mState.getClipboard();
   }
 
   private void setClipboard(EdObjectArray clipboard) {
-    mClipboard = freeze(clipboard);
-  }
-
-  private void setObjects(EdObjectArray objects) {
-    mObjects = objects;
+    mState.setClipboard(clipboard);
   }
 
   public AlgorithmInput constructAlgorithmInput() {
@@ -958,11 +962,33 @@ public class Editor {
     return algorithmInput;
   }
 
+  EditorState getStateSnapshot() {
+    if (mStateSnapshot == null) {
+      mStateSnapshot = frozen(mState);
+      if (DB_SNAPSHOT) {
+        pr("creating state snapshot " + nameOf(mStateSnapshot));
+      }
+    }
+    return mStateSnapshot;
+  }
+
+  void disposeOfStateSnapshot() {
+    if (DB_SNAPSHOT) {
+      if (mStateSnapshot != null)
+        pr("disposing of state snapshot: " + nameOf(mStateSnapshot));
+    }
+    mStateSnapshot = null;
+  }
+
   void setState(EditorState state) {
-    setObjects((EdObjectArray) state.getObjects().getMutableCopy());
-    setClipboard(state.getClipboard());
-    objects().setSelected(state.getSelectedSlots());
-    mDupAccumulator = state.getDupAccumulator();
+    if (DB_SNAPSHOT) {
+      pr("setState to " + nameOf(state));
+    }
+    if (state.isMutable())
+      throw new IllegalArgumentException();
+    disposeOfStateSnapshot();
+    mStateSnapshot = state;
+    mState = mutableCopyOf(state);
   }
 
   /**
@@ -970,9 +996,8 @@ public class Editor {
    * translation
    */
   void updateDupAccumulatorForTranslation(Point translation) {
-    if (mDupAccumulator == null)
-      return;
-    mDupAccumulator = MyMath.add(mDupAccumulator, translation);
+    Point dup = mState.getDupAccumulator();
+    setDupAccumulator(MyMath.add(dup, translation));
     if (mDupAffectsClipboard)
       replaceClipboardWithSelectedObjects();
   }
@@ -1013,14 +1038,14 @@ public class Editor {
   private AlgorithmOptions mOptions;
   private AlgorithmRenderer mRenderer;
   private LinearLayout mAuxView;
-  private EdObjectArray mClipboard = new EdObjectArray();
   private QuiescentDelayOperation mPendingEnableOperation;
   private CheckBoxWidget mRenderAlways;
-  // This accumulator should be considered immutable
-  private Point mDupAccumulator;
   private boolean mDupAffectsClipboard;
   // We keep a reference to this widget, since it isn't in the primary group
   // and thus may not be accessible via getWidget()
   private TextWidget mFilenameWidget;
-  private EdObjectArray mObjects = new EdObjectArray();
+  // The current (and mutable) editor state
+  private EditorState mState;
+  // The most recent frozen snapshot of the editor state
+  private EditorState mStateSnapshot;
 }

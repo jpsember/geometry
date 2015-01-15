@@ -171,7 +171,7 @@ public class EdDisc extends EdObject {
       mEditor = editor;
       mEditSlot = slot;
       mEditPointIndex = vertexNumber;
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, FACTORY.getTag(), null);
     }
 
     @Override
@@ -206,8 +206,7 @@ public class EdDisc extends EdObject {
 
       case UserEvent.CODE_UP:
         if (mModified) {
-          mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
-              mOriginalState, null, FACTORY.getTag(), null));
+          mCommand.finish();
         }
         event.clearOperation();
         break;
@@ -219,7 +218,7 @@ public class EdDisc extends EdObject {
     private EdDisc mOriginalDisc;
     private Point mInitialOffset;
     private boolean mModified;
-    private EditorState mOriginalState;
+    private CommandForGeneralChanges mCommand;
     private Editor mEditor;
   }
 }

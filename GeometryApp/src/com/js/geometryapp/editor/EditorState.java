@@ -2,18 +2,38 @@ package com.js.geometryapp.editor;
 
 import com.js.geometry.Point;
 import static com.js.basic.Tools.*;
+import com.js.basic.Freezable;
 
 /**
  * Encapsulates the state of an editor, including all entities that are mutable
  * and need to be saved and restored to support undo/redo operations
  */
-public class EditorState {
+public class EditorState extends Freezable.Mutable {
 
-  public EditorState(Editor e) {
-    mObjects = frozen(e.objects());
-    mSelectedSlots = mObjects.getSelectedSlots();
-    mClipboard = e.getClipboard();
-    mDupAccumulator = e.getDupAccumulator();
+  @Override
+  public Freezable getMutableCopy() {
+    EditorState copy = new EditorState(mutableCopyOf(mObjects), mClipboard,
+        mDupAccumulator);
+    return copy;
+  }
+
+  @Override
+  public void freeze() {
+    // We must override freeze() since we have components that need freezing as
+    // well
+    mObjects = frozen(mObjects);
+    super.freeze();
+  }
+
+  public EditorState(EdObjectArray objects, EdObjectArray clipboard,
+      Point dupAccum) {
+    if (objects == null)
+      objects = new EdObjectArray();
+    mObjects = mutable(objects);
+    if (clipboard == null)
+      clipboard = new EdObjectArray();
+    mClipboard = frozen(clipboard);
+    mDupAccumulator = new Point(dupAccum);
   }
 
   public EdObjectArray getObjects() {
@@ -24,16 +44,38 @@ public class EditorState {
     return mClipboard;
   }
 
+  /**
+   * Convenience method to get list of selected items from objects
+   */
   public SlotList getSelectedSlots() {
-    return mSelectedSlots;
+    return mObjects.getSelectedSlots();
   }
 
   public Point getDupAccumulator() {
     return mDupAccumulator;
   }
 
+  public void setDupAccumulator(Point accumulator) {
+    mutate();
+    mDupAccumulator = accumulator;
+  }
+
+  public void setObjects(EdObjectArray objects) {
+    mutate();
+    if (objects == null)
+      objects = new EdObjectArray();
+    mObjects = frozen(objects);
+  }
+
+  public void setClipboard(EdObjectArray clipboard) {
+    mutate();
+    if (clipboard == null)
+      clipboard = new EdObjectArray();
+    mClipboard = frozen(clipboard);
+  }
+
   private EdObjectArray mObjects;
-  private SlotList mSelectedSlots;
   private EdObjectArray mClipboard;
   private Point mDupAccumulator;
+
 }

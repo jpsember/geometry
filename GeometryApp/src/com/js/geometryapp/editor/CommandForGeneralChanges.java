@@ -1,25 +1,49 @@
 package com.js.geometryapp.editor;
 
 import com.js.editor.Command;
+import static com.js.basic.Tools.*;
+
 
 public class CommandForGeneralChanges extends Command.Adapter {
 
   /**
-   * Constructor
+   * Construct a command in preparation for changes. Saves current editor state.
+   * Client should modify the state, and call finish() to mark the completion of
+   * the command
    * 
-   * @param originalState
-   * @param newState
-   *          editor state after change; if null, constructs from current
-   *          editor's state
+   * @param editor
    * @param mergeKey
-   *          optional merge key
+   * @param description
    */
-  public CommandForGeneralChanges(Editor editor, EditorState originalState,
+  public CommandForGeneralChanges(Editor editor, String mergeKey,
+      String description) {
+    mEditor = editor;
+    setOriginalState(editor.getStateSnapshot());
+    mMergeKey = mergeKey;
+    setDescription(description);
+  }
+
+  public void finish() {
+    if (finished())
+      throw new IllegalStateException();
+    mEditor.disposeOfStateSnapshot();
+    mNewState = mEditor.getStateSnapshot();
+    // Push command onto editor stack
+    mEditor.pushCommand(this);
+  }
+
+  public EditorState getOriginalState() {
+    return mOriginalState;
+  }
+
+  private boolean finished() {
+    return mNewState != null;
+  }
+
+  private CommandForGeneralChanges(Editor editor, EditorState originalState,
       EditorState newState, String mergeKey, String description) {
     mEditor = editor;
-    if (newState == null)
-      newState = new EditorState(editor);
-    mOriginalState = originalState;
+    setOriginalState(originalState);
     mNewState = newState;
     mMergeKey = mergeKey;
     setDescription(description);
@@ -76,6 +100,11 @@ public class CommandForGeneralChanges extends Command.Adapter {
     if (mCommandDescription != null)
       return mCommandDescription;
     return "Last Command";
+  }
+
+  private void setOriginalState(EditorState s) {
+    if (s.isMutable()) throw new IllegalArgumentException();
+    mOriginalState = s;
   }
 
   private Editor mEditor;

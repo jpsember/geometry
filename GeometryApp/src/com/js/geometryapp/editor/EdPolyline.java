@@ -401,8 +401,12 @@ public class EdPolyline extends EdObject {
       mEditor = editor;
       mEditSlot = slot;
       mReference = modified;
-      mOriginalState = new EditorState(editor);
-      mOriginalPolyline = mOriginalState.getObjects().get(mEditSlot);
+      // Don't allow any merging with polygon commands, because
+      // the user may end up doing a lot of work on a single
+      // polygon and he should be able to undo individual steps
+      mCommand = new CommandForGeneralChanges(mEditor, null, null);
+      mOriginalPolyline = mCommand.getOriginalState().getObjects()
+          .get(mEditSlot);
       editor.objects().set(slot, mReference);
     }
 
@@ -450,11 +454,7 @@ public class EdPolyline extends EdObject {
           if (absVert >= 0) {
             performAbsorption(polyline, absVert);
           }
-          // Don't allow any merging with polygon commands, because
-          // the user may end up doing a lot of work on a single
-          // polygon and he should be able to undo individual steps
-          mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
-              mOriginalState, null, null, null));
+          mCommand.finish();
         }
         event.clearOperation();
         break;
@@ -544,7 +544,7 @@ public class EdPolyline extends EdObject {
     // Index of object being edited
     private Editor mEditor;
     private int mEditSlot;
-    private EditorState mOriginalState;
+    private CommandForGeneralChanges mCommand;
     // polyline before editing operation began
     private EdPolyline mOriginalPolyline;
     // polyline just after editing operation began

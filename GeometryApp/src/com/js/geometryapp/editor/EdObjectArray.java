@@ -12,11 +12,6 @@ import com.js.basic.Freezable;
 public class EdObjectArray extends Freezable.Mutable implements
     Iterable<EdObject> {
 
-  @Override
-  public void mutate() {
-    super.mutate();
-  }
-
   public boolean isEmpty() {
     return mList.isEmpty();
   }
@@ -31,13 +26,11 @@ public class EdObjectArray extends Freezable.Mutable implements
   }
 
   /**
-   * Add an object to the end of the list
-   * 
-   * @param object
-   * @return the index of the object
+   * Freeze object and add it to the end of the list.
    */
   public int add(EdObject object) {
     mutate();
+    object.freeze();
     int index = mList.size();
     mList.add(object);
     return index;
@@ -47,9 +40,14 @@ public class EdObjectArray extends Freezable.Mutable implements
     return (T) mList.get(index);
   }
 
-  public void set(int index, EdObject object) {
+  /**
+   * Freeze object and place it within the array, replacing existing object in
+   * that slot
+   */
+  public void set(int slot, EdObject object) {
     mutate();
-    mList.set(index, object);
+    object.freeze();
+    mList.set(slot, object);
   }
 
   public int size() {

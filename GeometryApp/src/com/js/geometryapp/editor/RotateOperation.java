@@ -3,7 +3,6 @@ package com.js.geometryapp.editor;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
-import com.js.editor.Command;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
@@ -61,9 +60,7 @@ public class RotateOperation extends UserOperation {
         break;
       }
       if (mOperationPrepared) {
-        Command c = new CommandForGeneralChanges(mEditor, mOriginalState, null,
-            "rotate", "Rotate");
-        mEditor.pushCommand(c);
+        mCommand.finish();
         setUnprepared();
       }
     }
@@ -122,7 +119,7 @@ public class RotateOperation extends UserOperation {
 
   private void prepareRotateOperation() {
     if (!mOperationPrepared) {
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, "rotate", "Rotate");
       // Don't replace an existing bounding rectangle, since it may have
       // been derived from a previous rotate procedure involving these
       // objects, and recalculating it may produce a different rectangle
@@ -207,8 +204,9 @@ public class RotateOperation extends UserOperation {
       mRotMatrixTotal = null;
     }
     Matrix matrix = calcCurrentRotateTransform();
-    for (int slot : mOriginalState.getSelectedSlots()) {
-      EdObject object = mOriginalState.getObjects().get(slot);
+    EditorState state = mCommand.getOriginalState();
+    for (int slot : state.getSelectedSlots()) {
+      EdObject object = state.getObjects().get(slot);
       EdObject rotated = mutableCopyOf(object);
       rotated.applyTransform(matrix);
       mEditor.objects().set(slot, rotated);
@@ -219,8 +217,7 @@ public class RotateOperation extends UserOperation {
 
   // True if processing a down/drag/up rotation sequence
   private boolean mOperationPrepared;
-
-  private EditorState mOriginalState;
+  private CommandForGeneralChanges mCommand;
   // Bounding rect of original objects
   private Rect mRect;
   private float mRotStart;

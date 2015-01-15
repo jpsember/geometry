@@ -78,7 +78,7 @@ public class EdSegment extends EdObject {
       mEditor = editor;
       mEditSlot = slot;
       mEditPointIndex = vertexNumber;
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, FACTORY.getTag(), null);
     }
 
     @Override
@@ -98,8 +98,7 @@ public class EdSegment extends EdObject {
 
       case UserEvent.CODE_UP:
         if (mModified)
-          mEditor.pushCommand(new CommandForGeneralChanges(mEditor,
-              mOriginalState, null, FACTORY.getTag(), null));
+          mCommand.finish();
         event.clearOperation();
         break;
       }
@@ -110,7 +109,7 @@ public class EdSegment extends EdObject {
     // Index of vertex being edited
     private int mEditPointIndex;
     private boolean mModified;
-    private EditorState mOriginalState;
+    private CommandForGeneralChanges mCommand;
     private Editor mEditor;
   }
 }

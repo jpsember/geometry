@@ -6,7 +6,6 @@ import java.util.List;
 import android.graphics.Color;
 import android.graphics.Matrix;
 
-import com.js.editor.Command;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
@@ -66,9 +65,7 @@ public class ScaleOperation extends UserOperation {
     case UserEvent.CODE_UP: {
       if (!mPerformingDragSequence)
         break;
-      Command c = new CommandForGeneralChanges(mEditor, mOriginalState, null,
-          "scale", "Scale");
-      mEditor.pushCommand(c);
+      mCommand.finish();
       setUnprepared();
     }
       break;
@@ -126,7 +123,7 @@ public class ScaleOperation extends UserOperation {
 
   private void prepareScaleOperation() {
     if (!mPerformingDragSequence) {
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, "scale", "Scale");
       mHandles = new ArrayList();
       // Don't replace an existing bounding rectangle, since it may have
       // been derived from a previous scale procedure involving these
@@ -321,8 +318,9 @@ public class ScaleOperation extends UserOperation {
    */
   private void scaleObjects() {
     Matrix matrix = calcScaleTransform();
-    for (int slot : mOriginalState.getSelectedSlots()) {
-      EdObject object = mOriginalState.getObjects().get(slot);
+    EditorState state = mCommand.getOriginalState();
+    for (int slot : state.getSelectedSlots()) {
+      EdObject object = state.getObjects().get(slot);
       EdObject scaled = mutableCopyOf(object);
       scaled.applyTransform(matrix);
       mEditor.objects().set(slot, scaled);
@@ -333,8 +331,7 @@ public class ScaleOperation extends UserOperation {
 
   // True if processing a down/drag/up scaling operation
   private boolean mPerformingDragSequence;
-
-  private EditorState mOriginalState;
+  private CommandForGeneralChanges mCommand;
   // Bounding rect of unscaled objects
   private Rect mRect;
   // Handle base locations for unscaled objects

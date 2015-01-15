@@ -2,12 +2,12 @@ package com.js.geometryapp.editor;
 
 import android.graphics.Color;
 
-import com.js.editor.Command;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Point;
 import com.js.geometry.Rect;
+import static com.js.basic.Tools.*;
 
 /**
  * Operation for adding new objects
@@ -75,19 +75,18 @@ public class AddObjectOperation extends UserOperation {
   }
 
   private void addNewObject() {
+    CommandForGeneralChanges c = new CommandForGeneralChanges(mEditor,
+        mObjectFactory.getTag(), null);
     EdObjectArray objects = mEditor.objects();
-    EditorState originalState = new EditorState(mEditor);
     EdObject newObject = mObjectFactory.construct(mEvent.getWorldLocation());
     newObject.setEditor(mEditor);
     int slot = objects.add(newObject);
     objects.setEditableSlot(slot);
-
-    Command c = new CommandForGeneralChanges(mEditor, originalState, null,
-        mObjectFactory.getTag(), null);
-    mEditor.pushCommand(c);
+    c.finish();
     UserOperation oper = newObject.buildEditOperation(slot, mInitialEvent);
     mEvent.setOperation(oper);
     // The 'EdPoint' operation clears itself immediately for some reason
+    warning("is this still necessary?");
     if (mEvent.getOperation() == oper)
       oper.processUserEvent(mInitialEvent);
 

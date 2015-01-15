@@ -1225,6 +1225,18 @@ public final class Tools {
   }
 
   /**
+   * If item is frozen, construct a mutable copy; otherwise, return original
+   */
+  public static <T extends Freezable> T mutable(T orig) {
+    T out;
+    if (!orig.isFrozen())
+      out = orig;
+    else
+      out = (T) orig.getMutableCopy();
+    return (T) out;
+  }
+
+  /**
    * Make a Freezable object frozen, if not already
    */
   public static <T extends Freezable> T freeze(T obj) {

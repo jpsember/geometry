@@ -4,6 +4,7 @@ import com.js.editor.*;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.MyMath;
 import com.js.geometry.Point;
+import static com.js.basic.Tools.*;
 
 public class DefaultUserOperation extends UserOperation {
 
@@ -189,7 +190,8 @@ public class DefaultUserOperation extends UserOperation {
       // fall through to next...
     }
     if (!hlPickSet.isEmpty()) {
-      mOriginalState = new EditorState(mEditor);
+      mCommand = new CommandForGeneralChanges(mEditor, "move", null);
+
       // Replace selected objects with copies in preparation for moving
       mEditor.objects().replaceSelectedObjectsWithCopies();
     } else {
@@ -232,29 +234,29 @@ public class DefaultUserOperation extends UserOperation {
     if (mTranslate.magnitude() == 0)
       return;
 
-    for (int slot : mOriginalState.getSelectedSlots()) {
-      EdObject obj = mEditor.objects().get(slot);
-      EdObject orig = mOriginalState.getObjects().get(slot);
+    for (int slot : mCommand.getOriginalState().getSelectedSlots()) {
+      EdObject orig = mCommand.getOriginalState().getObjects().get(slot);
+      EdObject obj = mutableCopyOf(orig);
       obj.moveBy(orig, mTranslate);
+      mEditor.objects().set(slot, obj);
     }
   }
 
   private void doFinishDrag() {
-    if (mOriginalState != null) {
-      if (mTranslate != null) {
-        mEditor.updateDupAccumulatorForTranslation(mTranslate);
-      }
-      Command cmd = new CommandForGeneralChanges(mEditor, mOriginalState,
-          new EditorState(mEditor), "move", null);
-      mEditor.pushCommand(cmd);
+    if (mCommand == null)
+      return;
+
+    if (mTranslate != null) {
+      mEditor.updateDupAccumulatorForTranslation(mTranslate);
     }
+    mCommand.finish();
   }
 
   private Editor mEditor;
   private boolean mActive;
   private UserEvent mInitialEvent;
   private boolean mDragOperation;
-  private EditorState mOriginalState;
+  private CommandForGeneralChanges mCommand;
   private Point mTranslate;
   private AlgorithmStepper mStepper;
   private UserEvent mEvent;

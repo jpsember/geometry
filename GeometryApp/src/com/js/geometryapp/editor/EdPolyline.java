@@ -132,34 +132,38 @@ public class EdPolyline extends EdObject {
     Point[] tabLocations = calculateTabPositions(this, null);
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_FORWARD])) {
-      EdPolyline mod = mutableCopyOf(this);
+
+      // Construct a 'staged' polyline, which is the original polyline with an
+      // additional vertex, and possibly opened up; this is what the edit
+      // operation will end up further modifying
+      EdPolyline stagedPolyline = mutableCopyOf(this);
       // Insert a new vertex after the cursor
-      mod.mCursor++;
-      mod.addPoint(mod.mCursor, location);
-      if (mod.closed()) {
-        mod.rotateVertexPositions(-1);
-        mod.setClosed(false);
+      stagedPolyline.mCursor++;
+      stagedPolyline.addPoint(stagedPolyline.mCursor, location);
+      if (stagedPolyline.closed()) {
+        stagedPolyline.rotateVertexPositions(-1);
+        stagedPolyline.setClosed(false);
       }
-      return OurOperation.buildInsertOperation(editor(), slot, mod);
+      return OurOperation.buildInsertOperation(editor(), slot, stagedPolyline);
     }
 
     if (targetWithinTab(location, tabLocations[TAB_INSERT_BACKWARD])) {
-      EdPolyline mod = mutableCopyOf(this);
+      EdPolyline stagedPolyline = mutableCopyOf(this);
       // Insert a new vertex before the cursor
-      mod.addPoint(mod.mCursor, location);
-      if (mod.closed()) {
-        mod.rotateVertexPositions(0);
-        mod.setClosed(false);
+      stagedPolyline.addPoint(stagedPolyline.mCursor, location);
+      if (stagedPolyline.closed()) {
+        stagedPolyline.rotateVertexPositions(0);
+        stagedPolyline.setClosed(false);
       }
-      return OurOperation.buildInsertOperation(editor(), slot, mod);
+      return OurOperation.buildInsertOperation(editor(), slot, stagedPolyline);
     }
 
     int vertexIndex = closestVertex(location, editor().pickRadius());
     if (vertexIndex >= 0) {
       mCursor = vertexIndex;
-      EdPolyline mod = mutableCopyOf(this);
-      mod.mCursor = vertexIndex;
-      return OurOperation.buildMoveOperation(editor(), slot, mod);
+      EdPolyline stagedPolyline = mutableCopyOf(this);
+      stagedPolyline.mCursor = vertexIndex;
+      return OurOperation.buildMoveOperation(editor(), slot, stagedPolyline);
     }
     return null;
   }
@@ -390,24 +394,30 @@ public class EdPolyline extends EdObject {
      * @param editor
      * @param slot
      *          slot containing object being edited
-     * @param modified
-     *          new object
+     * @param stagedPolyline
+     *          polyline when operation begins (not necessarily the same as
+     *          appears in the editor snapshot)
      * @param vertexNumber
      *          vertex number being edited
      */
-    private OurOperation(Editor editor, int slot, EdPolyline modified,
+    private OurOperation(Editor editor, int slot, EdPolyline stagedPolyline,
         int operType) {
       mOperType = operType;
       mEditor = editor;
       mEditSlot = slot;
-      mReference = modified;
+      mStagedPolyline = stagedPolyline;
       // Don't allow any merging with polygon commands, because
       // the user may end up doing a lot of work on a single
       // polygon and he should be able to undo individual steps
       mCommand = new CommandForGeneralChanges(mEditor, null, null);
-      mOriginalPolyline = mCommand.getOriginalState().getObjects()
-          .get(mEditSlot);
-      editor.objects().set(slot, mReference);
+      editor.objects().set(slot, mStagedPolyline);
+    }
+
+    /**
+     * Get polyline as it was in the snapshot, before the operation began
+     */
+    private EdPolyline snapshotPolyline() {
+      return mCommand.getOriginalState().getObjects().get(mEditSlot);
     }
 
     private EdPolyline activePolyline() {
@@ -415,13 +425,13 @@ public class EdPolyline extends EdObject {
     }
 
     public static UserOperation buildMoveOperation(Editor editor, int slot,
-        EdPolyline mod) {
-      return new OurOperation(editor, slot, mod, OPER_MOVE);
+        EdPolyline stagedPolyline) {
+      return new OurOperation(editor, slot, stagedPolyline, OPER_MOVE);
     }
 
     public static UserOperation buildInsertOperation(Editor editor, int slot,
-        EdPolyline mod) {
-      return new OurOperation(editor, slot, mod, OPER_INSERT);
+        EdPolyline stagedPolyline) {
+      return new OurOperation(editor, slot, stagedPolyline, OPER_INSERT);
     }
 
     @Override
@@ -431,8 +441,7 @@ public class EdPolyline extends EdObject {
 
       case UserEvent.CODE_DRAG: {
         // Create a new copy of the polyline, with modified endpoint
-        EdPolyline polyline = mutableCopyOf(mReference);
-        mEditor.objects().set(mEditSlot, polyline);
+        EdPolyline polyline = mutableCopyOf(mStagedPolyline);
         polyline.setTabsHidden(true);
         {
           mChangesMade = true;
@@ -444,6 +453,7 @@ public class EdPolyline extends EdObject {
                 polyline.getPoint(absorbVertex));
           }
         }
+        mEditor.objects().set(mEditSlot, polyline);
       }
         break;
 
@@ -499,7 +509,7 @@ public class EdPolyline extends EdObject {
         float dist = MyMath.distanceBetween(cp, c2);
         // If we just split a closed polyline, don't assume he wants to
         // close it again; use smaller radius
-        boolean closingVertex = !p.closed() && !mOriginalPolyline.closed()
+        boolean closingVertex = !p.closed() && !snapshotPolyline().closed()
             && Math.abs(neighbor - p.cursor()) > 1;
         float factor = absorptionFactor(!closingVertex
             && mOperType == OPER_INSERT);
@@ -545,10 +555,8 @@ public class EdPolyline extends EdObject {
     private Editor mEditor;
     private int mEditSlot;
     private CommandForGeneralChanges mCommand;
-    // polyline before editing operation began
-    private EdPolyline mOriginalPolyline;
     // polyline just after editing operation began
-    private EdPolyline mReference;
+    private EdPolyline mStagedPolyline;
     private boolean mChangesMade;
     private boolean mSignal;
     private int mOperType;

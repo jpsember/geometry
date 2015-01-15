@@ -512,8 +512,7 @@ public class Editor {
       return;
     }
 
-    mUserEventManager.setOperation(new AddObjectOperation(this, mStepper,
-        objectType));
+    mUserEventManager.setOperation(new AddObjectOperation(this, objectType));
     if (false) {
       toast(context(), "Add " + objectType.getTag());
     }
@@ -576,6 +575,7 @@ public class Editor {
     }
     mCommandHistoryCursor--;
     Command command = mCommandHistory.get(mCommandHistoryCursor);
+    pr("undoing " + command);
     command.getReverse().perform();
   }
 
@@ -863,6 +863,7 @@ public class Editor {
    * Add a command that has already been performed to the undo stack
    */
   void pushCommand(Command command) {
+    pr("pushing command " + command);
     // Throw out any older 'redoable' commands that will now be stale
     while (mCommandHistory.size() > mCommandHistoryCursor) {
       pop(mCommandHistory);

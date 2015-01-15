@@ -38,6 +38,16 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     add(singleSlot);
   }
 
+  /**
+   * Build a complete list of slots 0...size-1
+   */
+  public static SlotList buildComplete(int size) {
+    SlotList s = new SlotList();
+    for (int i = 0; i < size; i++)
+      s.add(i);
+    return s;
+  }
+
   public void add(int slotNumber) {
     mutate();
     if (slotNumber < 0 || (!isEmpty() && last() >= slotNumber))
@@ -82,6 +92,33 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
         cursor1++;
       if (s2 <= s1)
         cursor2++;
+    }
+    return outputList;
+  }
+
+  /**
+   * Construct the slotlist {this \ b}
+   */
+  public SlotList minus(SlotList b) {
+    SlotList outputList = new SlotList();
+    int cursor1 = 0;
+    int cursor2 = 0;
+    while (cursor1 < size()) {
+      int s1 = get(cursor1);
+      if (cursor2 < b.size()) {
+        int s2 = b.get(cursor2);
+        if (s1 == s2) {
+          cursor1++;
+          cursor2++;
+          continue;
+        }
+        if (s2 < s1) {
+          cursor2++;
+          continue;
+        }
+      }
+      outputList.add(s1);
+      cursor1++;
     }
     return outputList;
   }

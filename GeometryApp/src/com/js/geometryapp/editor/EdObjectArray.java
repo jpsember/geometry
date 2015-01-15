@@ -127,23 +127,10 @@ public class EdObjectArray extends Freezable.Mutable implements
     return mEditableSlot;
   }
 
-  public void removeSelected() {
-    SlotList slots = getSelectedSlots();
-    mutate();
-    List<EdObject> newList = new ArrayList();
-    int j = 0;
-    for (int i = 0; i < mList.size(); i++) {
-      if (j < slots.size() && i == slots.get(j)) {
-        j++;
-        continue;
-      }
-      newList.add(mList.get(i));
-    }
-    mList = newList;
-  }
-
   /**
    * Replace selected objects with copies
+   * 
+   * @deprecated
    */
   public void replaceSelectedObjectsWithCopies() {
     SlotList selectedSlots = getSelectedSlots();

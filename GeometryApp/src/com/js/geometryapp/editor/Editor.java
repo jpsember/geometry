@@ -595,9 +595,16 @@ public class Editor {
     if (c.getOriginalState().getSelectedSlots().isEmpty())
       return;
 
-    EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
-    setClipboard(newClipboard);
-    objects().removeSelected();
+    EdObjectArray objects = objects();
+    SlotList allSlots = SlotList.buildComplete(objects.size());
+    SlotList selectedSlots = objects.getSelectedSlots();
+    SlotList newSlots = allSlots.minus(selectedSlots);
+
+    EdObjectArray newObjects = objects.getSubset(newSlots);
+    EdObjectArray newClipboard = objects.getSubset(selectedSlots);
+
+    mState.setObjects(newObjects);
+    mState.setClipboard(newClipboard);
 
     resetDuplicationOffset();
     c.finish();

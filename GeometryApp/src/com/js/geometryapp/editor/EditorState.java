@@ -74,7 +74,9 @@ public class EditorState extends Freezable.Mutable {
     mutate();
     if (objects == null)
       objects = new EdObjectArray();
-    mObjects = frozen(objects);
+    if (objects.isFrozen())
+      throw new IllegalArgumentException();
+    mObjects = objects;
   }
 
   public void setClipboard(EdObjectArray clipboard) {

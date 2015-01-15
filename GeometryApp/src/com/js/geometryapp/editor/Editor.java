@@ -850,11 +850,11 @@ public class Editor {
       return;
 
     objects().setSelected(slots);
-    objects().replaceSelectedObjectsWithCopies();
-
     for (int slot : slots) {
-      EdObject obj = objects().get(slot);
-      obj.moveBy(null, translation);
+      EdObject orig = objects().get(slot);
+      EdObject obj = mutableCopyOf(orig);
+      obj.moveBy(orig, translation);
+      objects().set(slot, obj);
     }
     command.finish();
   }

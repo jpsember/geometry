@@ -223,26 +223,15 @@ public abstract class EdObject extends Freezable.Mutable {
    * Move entire object by a displacement. Default implementation just adjusts
    * each point.
    * 
-   * Caution: objects should usually be considered immutable for editing
-   * purposes (except for some flags, such as 'selected'). When an editing
-   * operation is to be performed on an object, it should first be replaced by a
-   * clone, so that any references to the original (i.e. within an undo list)
-   * are valid.
-   * 
    * @param orig
-   *          a copy of the original object; if null, constructs one
+   *          a copy of the original object, representing its original position
    * @param delta
    *          amount to move by
    */
   public void moveBy(EdObject orig, Point delta) {
-    // Some objects may enforce constraints that affect other vertices when
-    // one is moved; e.g., a square. Thus for safety we should use a
-    // distinct object as the 'starting' point
-    if (this == orig)
+    if (orig == null || orig == this)
       throw new IllegalArgumentException();
     mutate();
-    if (orig == null)
-      orig = mutableCopyOf(this);
     for (int i = 0; i < orig.nPoints(); i++) {
       Point pt = orig.getPoint(i);
       setPoint(i, MyMath.add(pt, delta));

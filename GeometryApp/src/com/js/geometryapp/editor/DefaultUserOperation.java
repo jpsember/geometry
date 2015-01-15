@@ -191,9 +191,6 @@ public class DefaultUserOperation extends UserOperation {
     }
     if (!hlPickSet.isEmpty()) {
       mCommand = new CommandForGeneralChanges(mEditor, "move", null);
-
-      // Replace selected objects with copies in preparation for moving
-      mEditor.objects().replaceSelectedObjectsWithCopies();
     } else {
       UserOperation oper = new SelectWithRectOperation(mEditor, mStepper);
       mEvent.setOperation(oper);

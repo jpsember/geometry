@@ -119,6 +119,8 @@ public class DefaultUserOperation extends UserOperation {
    */
   private void doClick(Point location) {
 
+    EditorState state = mEditor.getCurrentState();
+
     // If multitouch, start 'add another object'
     if (mInitialEvent.isMultipleTouch()) {
       EdObjectFactory factory = mEditor.getLastEditableObjectType();
@@ -133,8 +135,8 @@ public class DefaultUserOperation extends UserOperation {
     // all objects; else cycle to next object and make it editable
     SlotList pickSet = getPickSet(location);
     if (pickSet.isEmpty()) {
-      mEditor.objects().unselectAll();
-      mEditor.resetDuplicationOffset();
+      state.getObjects().unselectAll();
+      state.resetDupAccumulator();
       return;
     }
 
@@ -146,9 +148,10 @@ public class DefaultUserOperation extends UserOperation {
     }
     int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
     int slot = pickSet.get(nextSelectedIndex);
-    mEditor.objects().setEditableSlot(slot);
-    mEditor.objects().get(slot).selectedForEditing(location);
-    mEditor.resetDuplicationOffset();
+
+    state.getObjects().setEditableSlot(slot);
+    state.getObjects().get(slot).selectedForEditing(location);
+    state.resetDupAccumulator();
   }
 
   private void doStartDrag(Point location) {
@@ -178,6 +181,8 @@ public class DefaultUserOperation extends UserOperation {
     if (modifyEditableObject())
       return;
 
+    EditorState state = mEditor.getCurrentState();
+
     // get 'pick set' for touch location
     SlotList pickSet = getPickSet(location);
     // get subset of pick set that are currently selected
@@ -185,8 +190,8 @@ public class DefaultUserOperation extends UserOperation {
 
     if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
       hlPickSet = new SlotList(pickSet.last());
-      mEditor.objects().setSelected(hlPickSet);
-      mEditor.resetDuplicationOffset();
+      state.getObjects().setSelected(hlPickSet);
+      state.resetDupAccumulator();
       // fall through to next...
     }
     if (!hlPickSet.isEmpty()) {

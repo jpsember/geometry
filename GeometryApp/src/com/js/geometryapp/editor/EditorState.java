@@ -65,6 +65,10 @@ public class EditorState extends Freezable.Mutable {
     return mDupAccumulator;
   }
 
+  public void resetDupAccumulator() {
+    setDupAccumulator(null);
+  }
+
   public void setDupAccumulator(Point accumulator) {
     mutate();
     setDupAccumulatorAux(accumulator);

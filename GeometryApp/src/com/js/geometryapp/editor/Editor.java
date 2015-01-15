@@ -159,7 +159,7 @@ public class Editor {
       mOptions.addButton("Copy", "icon", R.raw.copyicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doCopy();
+              new CopyOperation(Editor.this).attempt();
               refresh();
             }
           });
@@ -167,7 +167,7 @@ public class Editor {
       mOptions.addButton("Paste", "icon", R.raw.pasteicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doPaste();
+              new PasteOperation(Editor.this).attempt();
               refresh();
             }
           });
@@ -391,7 +391,7 @@ public class Editor {
     mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
     mOptions.setEnabled("Cut", !selected.isEmpty());
-    mOptions.setEnabled("Copy", !selected.isEmpty());
+    mOptions.setEnabled("Copy", new CopyOperation(this).isValid());
     mOptions.setEnabled("Paste", new PasteOperation(this).isValid());
     mOptions.setEnabled("Dup", !selected.isEmpty());
     mOptions.setEnabled("All", selected.size() < objects().size());
@@ -591,17 +591,6 @@ public class Editor {
     mCommandHistoryCursor++;
   }
 
-  private void doCopy() {
-    CommandForGeneralChanges c = new CommandForGeneralChanges(this, null,
-        "Copy");
-    if (c.getOriginalState().getSelectedSlots().isEmpty())
-      return;
-    EdObjectArray newClipboard = freeze(objects().getSelectedObjects());
-    setClipboard(newClipboard);
-    resetDuplicationOffset();
-    c.finish();
-  }
-
   /**
    * Determine if the current file can contain a particular number of objects.
    * If not, display a warning to the user and return false
@@ -617,10 +606,6 @@ public class Editor {
       return true;
     toast(context(), "Too many objects!", Toast.LENGTH_LONG);
     return false;
-  }
-
-  private void doPaste() {
-    new PasteOperation(this).attempt();
   }
 
   private void doZap() {
@@ -687,7 +672,7 @@ public class Editor {
   }
 
   private void resetDuplicationOffsetWithCorrectingTranslation(Point t) {
-    resetDuplicationOffset();
+    mState.resetDupAccumulator();
     float angle = MyMath.polarAngle(t);
     // Calculate nearest cardinal angle
     final float CARDINAL_RANGE = MyMath.PI / 2;
@@ -703,10 +688,6 @@ public class Editor {
       accum = MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
     }
     return accum;
-  }
-
-  void resetDuplicationOffset() {
-    mState.setDupAccumulator(null);
   }
 
   /**

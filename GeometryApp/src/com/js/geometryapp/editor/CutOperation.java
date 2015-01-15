@@ -22,7 +22,7 @@ public class CutOperation {
     EditorState state = editor.getCurrentState();
     state.setObjects(newObjects);
     state.setClipboard(newClipboard);
-    state.setDupAccumulator(null);
+    state.resetDupAccumulator();
 
     c.finish();
   }

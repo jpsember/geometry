@@ -1,6 +1,6 @@
 package com.js.geometryapp.editor;
 
-import static com.js.basic.Tools.mutableCopyOf;
+import static com.js.basic.Tools.*;
 
 import com.js.geometry.Point;
 

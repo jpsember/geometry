@@ -392,7 +392,7 @@ public class Editor {
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
     mOptions.setEnabled("Cut", !selected.isEmpty());
     mOptions.setEnabled("Copy", !selected.isEmpty());
-    mOptions.setEnabled("Paste", !mState.getClipboard().isEmpty());
+    mOptions.setEnabled("Paste", new PasteOperation(this).isValid());
     mOptions.setEnabled("Dup", !selected.isEmpty());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
@@ -612,7 +612,7 @@ public class Editor {
    * 
    * @return true if requested capacity can be satisfied
    */
-  private boolean verifyObjectsAllowed(int requestedCapacity) {
+  public boolean verifyObjectsAllowed(int requestedCapacity) {
     if (requestedCapacity <= MAX_OBJECTS_IN_FILE)
       return true;
     toast(context(), "Too many objects!", Toast.LENGTH_LONG);
@@ -620,34 +620,7 @@ public class Editor {
   }
 
   private void doPaste() {
-    CommandForGeneralChanges command = new CommandForGeneralChanges(this, null,
-        "Paste");
-    EdObjectArray mClipboard = command.getOriginalState().getClipboard();
-    if (mClipboard.isEmpty())
-      return;
-    if (!verifyObjectsAllowed(objects().size() + mClipboard.size()))
-      return;
-    SlotList newSelected = new SlotList();
-
-    mDupAffectsClipboard = true;
-    adjustDupAccumulatorForPendingOperation(mClipboard);
-
-    Point offset = getDupAccumulator();
-
-    for (EdObject obj : mClipboard) {
-      newSelected.add(objects().size());
-      EdObject copy = mutableCopyOf(obj);
-      copy.moveBy(obj, offset);
-      objects().add(copy);
-    }
-    objects().setSelected(newSelected);
-
-    replaceClipboardWithSelectedObjects();
-    command.finish();
-  }
-
-  private void replaceClipboardWithSelectedObjects() {
-    setClipboard(objects().getSelectedObjects());
+    new PasteOperation(this).attempt();
   }
 
   private void doZap() {
@@ -668,7 +641,7 @@ public class Editor {
    * @param affectsClipboard
    *          DupAccumulator construction argument
    */
-  private void adjustDupAccumulatorForPendingOperation(
+  public void adjustDupAccumulatorForPendingOperation(
       EdObjectArray affectedObjects) {
     if (affectedObjects.size() == 0)
       return;
@@ -693,7 +666,7 @@ public class Editor {
         + state.getSelectedSlots().size()))
       return;
 
-    mDupAffectsClipboard = false;
+    setDupAffectsClipboard(false);
     adjustDupAccumulatorForPendingOperation(objects().getSelectedObjects());
     SlotList newSelected = new SlotList();
 
@@ -707,6 +680,10 @@ public class Editor {
     }
     objects().setSelected(newSelected);
     command.finish();
+  }
+
+  public void setDupAffectsClipboard(boolean f) {
+    mDupAffectsClipboard = f;
   }
 
   private void resetDuplicationOffsetWithCorrectingTranslation(Point t) {
@@ -982,7 +959,7 @@ public class Editor {
     Point dup = mState.getDupAccumulator();
     mState.setDupAccumulator(MyMath.add(dup, translation));
     if (mDupAffectsClipboard)
-      replaceClipboardWithSelectedObjects();
+      setClipboard(objects().getSelectedObjects());
   }
 
   /**

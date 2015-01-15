@@ -152,7 +152,7 @@ public class Editor {
       mOptions.addButton("Cut", "icon", R.raw.cuticon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doCut();
+              CutOperation.attempt(Editor.this);
               refresh();
             }
           });
@@ -392,7 +392,7 @@ public class Editor {
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
     mOptions.setEnabled("Cut", !selected.isEmpty());
     mOptions.setEnabled("Copy", !selected.isEmpty());
-    mOptions.setEnabled("Paste", !clipboard().isEmpty());
+    mOptions.setEnabled("Paste", !mState.getClipboard().isEmpty());
     mOptions.setEnabled("Dup", !selected.isEmpty());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
@@ -551,7 +551,8 @@ public class Editor {
   private JSONObject compileObjectsToJSON() throws JSONException {
     JSONObject editorMap = new JSONObject();
     editorMap.put(JSON_KEY_OBJECTS, getEdObjectsArrayJSON(objects()));
-    editorMap.put(JSON_KEY_CLIPBOARD, getEdObjectsArrayJSON(clipboard()));
+    editorMap.put(JSON_KEY_CLIPBOARD,
+        getEdObjectsArrayJSON(mState.getClipboard()));
     return editorMap;
   }
 
@@ -588,26 +589,6 @@ public class Editor {
     Command command = mCommandHistory.get(mCommandHistoryCursor);
     command.perform();
     mCommandHistoryCursor++;
-  }
-
-  private void doCut() {
-    CommandForGeneralChanges c = new CommandForGeneralChanges(this, null, "Cut");
-    if (c.getOriginalState().getSelectedSlots().isEmpty())
-      return;
-
-    EdObjectArray objects = objects();
-    SlotList allSlots = SlotList.buildComplete(objects.size());
-    SlotList selectedSlots = objects.getSelectedSlots();
-    SlotList newSlots = allSlots.minus(selectedSlots);
-
-    EdObjectArray newObjects = objects.getSubset(newSlots);
-    EdObjectArray newClipboard = objects.getSubset(selectedSlots);
-
-    mState.setObjects(newObjects);
-    mState.setClipboard(newClipboard);
-
-    resetDuplicationOffset();
-    c.finish();
   }
 
   private void doCopy() {
@@ -919,10 +900,6 @@ public class Editor {
     return mAuxView;
   }
 
-  public EdObjectArray clipboard() {
-    return mState.getClipboard();
-  }
-
   private void setClipboard(EdObjectArray clipboard) {
     mState.setClipboard(clipboard);
   }
@@ -972,6 +949,10 @@ public class Editor {
       }
     }
     return mStateSnapshot;
+  }
+
+  EditorState getCurrentState() {
+    return mState;
   }
 
   void disposeOfStateSnapshot() {

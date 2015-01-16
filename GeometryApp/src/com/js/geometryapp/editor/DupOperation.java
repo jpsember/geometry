@@ -22,8 +22,7 @@ public class DupOperation extends UserOperation.InstantOperation {
     EdObjectArray origObjects = state.getObjects();
     if (state.getSelectedSlots().isEmpty())
       return;
-    if (!mEditor.verifyObjectsAllowed(origObjects.size()
-        + state.getSelectedSlots().size()))
+    if (!mEditor.verifyObjectsAllowed(state.getSelectedSlots().size()))
       return;
 
     mEditor.adjustDupAccumulatorForPendingOperation(

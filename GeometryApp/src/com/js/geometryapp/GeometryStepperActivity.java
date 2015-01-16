@@ -11,6 +11,7 @@ import com.js.basic.Files;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
+import com.js.geometryapp.editor.EditorTools;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -248,7 +249,7 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
    *          data file to include as attachment
    */
   public void doShare(String name, byte[] attachment) {
-    name = mEditor.sanitizeFilename(name);
+    name = EditorTools.sanitizeFilename(name);
     if (name.isEmpty())
       name = "unknown";
     String filename = name + ".geom";

@@ -127,20 +127,6 @@ public class EdObjectArray extends Freezable.Mutable implements
     return mEditableSlot;
   }
 
-  /**
-   * Replace selected objects with copies
-   * 
-   * @deprecated
-   */
-  public void replaceSelectedObjectsWithCopies() {
-    SlotList selectedSlots = getSelectedSlots();
-    mutate();
-    for (int slot : selectedSlots) {
-      EdObject obj = get(slot);
-      set(slot, copyOf(obj));
-    }
-  }
-
   public void unselectAll() {
     mutate();
     setSelected(new SlotList());

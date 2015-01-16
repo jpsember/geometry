@@ -215,8 +215,7 @@ public class DefaultUserOperation extends UserOperation {
    */
   private boolean modifyEditableObject() {
     UserEvent downEvent = mInitialEvent;
-
-    int editableSlot = mEditor.getEditableSlot();
+    int editableSlot = mEditor.objects().getEditableSlot();
     if (editableSlot < 0)
       return false;
 

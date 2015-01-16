@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -83,7 +81,6 @@ public class Editor {
    *          view displaying objects being edited; probably a GLSurfaceView
    */
   public void prepare(View contentView) {
-    warning("rotate operation now misbehaves");
     disposeOfStateSnapshot();
     mState = new EditorState();
     mEditorView = contentView;
@@ -189,7 +186,8 @@ public class Editor {
     {
       mOptions.pushView(mOptions.addView(false));
 
-      prepareAddObjectButtons("Pt", EdPoint.FACTORY, //
+      prepareAddObjectButtons(//
+          "Pt", EdPoint.FACTORY, //
           "Seg", EdSegment.FACTORY, //
           "Disc", EdDisc.FACTORY,//
           "Poly", EdPolyline.FACTORY);
@@ -219,7 +217,7 @@ public class Editor {
         "label", "Filename", "editable", true);
     mFilenameWidget.setValidator(new AbstractWidget.Validator() {
       public String validate(AbstractWidget widget, String value) {
-        return sanitizeFilename(value);
+        return EditorTools.sanitizeFilename(value);
       }
     });
     mRenderAlways = mOptions.addCheckBox("_render_always_", "label",
@@ -598,17 +596,16 @@ public class Editor {
   }
 
   /**
-   * Determine if the current file can contain a particular number of objects.
-   * If not, display a warning to the user and return false
+   * Determine if the current file can contain a particular number of additional
+   * objects. If not, display a warning to the user and return false
    * 
-   * @param requestedCapacity
-   *          desired number of objects after user's operation is to be
-   *          performed
+   * @param addCount
+   *          desired number of new objects to be added
    * 
    * @return true if requested capacity can be satisfied
    */
-  public boolean verifyObjectsAllowed(int requestedCapacity) {
-    if (requestedCapacity <= MAX_OBJECTS_IN_FILE)
+  public boolean verifyObjectsAllowed(int addCount) {
+    if (addCount + objects().size() <= MAX_OBJECTS_IN_FILE)
       return true;
     toast(context(), "Too many objects!", Toast.LENGTH_LONG);
     return false;
@@ -665,15 +662,6 @@ public class Editor {
       accum = MyMath.pointOnCircle(Point.ZERO, 0, pickRadius());
     }
     return accum;
-  }
-
-  /**
-   * Determine which slot, if any, holds the (at most one) editable object
-   * 
-   * @return slot if found, or -1
-   */
-  public int getEditableSlot() {
-    return objects().getEditableSlot();
   }
 
   private void doScale() {
@@ -778,8 +766,7 @@ public class Editor {
   /**
    * Add a command that has already been performed to the undo stack
    */
-  void pushCommand(Command command) {
-    pr("pushing command " + command);
+  void recordCommand(Command command) {
     // Throw out any older 'redoable' commands that will now be stale
     while (mCommandHistory.size() > mCommandHistoryCursor) {
       pop(mCommandHistory);
@@ -833,10 +820,6 @@ public class Editor {
       mAuxView = UITools.linearLayout(context(), true);
     }
     return mAuxView;
-  }
-
-  private void setClipboard(EdObjectArray clipboard) {
-    mState.setClipboard(clipboard);
   }
 
   public AlgorithmInput constructAlgorithmInput() {
@@ -916,24 +899,7 @@ public class Editor {
     Point dup = mState.getDupAccumulator();
     mState.setDupAccumulator(MyMath.add(dup, translation));
     if (mDupAffectsClipboard)
-      setClipboard(objects().getSelectedObjects());
-  }
-
-  /**
-   * Sanitize a user-specified filename. It should NOT include any path
-   * information or an extension
-   * 
-   * @param name
-   * @return sanitized name (which may be empty)
-   */
-  public String sanitizeFilename(String name) {
-    Pattern p = Pattern.compile("[a-zA-Z_0-9 ]*");
-    name = name.trim();
-    Matcher m = p.matcher(name);
-    if (!m.matches() || name.length() > 64) {
-      name = "";
-    }
-    return name;
+      mState.setClipboard(objects().getSelectedObjects());
   }
 
   public EdObjectFactory getLastEditableObjectType() {

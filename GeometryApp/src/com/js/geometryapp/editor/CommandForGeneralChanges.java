@@ -27,7 +27,7 @@ public class CommandForGeneralChanges extends Command.Adapter {
     mEditor.disposeOfStateSnapshot();
     mNewState = mEditor.getStateSnapshot();
     // Push command onto editor stack
-    mEditor.pushCommand(this);
+    mEditor.recordCommand(this);
   }
 
   public EditorState getOriginalState() {

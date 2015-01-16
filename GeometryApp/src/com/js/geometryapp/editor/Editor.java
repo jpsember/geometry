@@ -95,6 +95,7 @@ public class Editor {
     mPasteOper = new PasteOperation(this);
     mDupOper = new DupOperation(this);
     mSelectAllOper = new SelectAllOperation(this);
+    mUnhideOper = new UnhideOperation(this, mStepper);
 
     mTouchEventGenerator = new TouchEventGenerator();
     mTouchEventGenerator.setView(new UserEventSource() {
@@ -238,7 +239,7 @@ public class Editor {
       mOptions.addButton("Unhide", "icon", R.raw.unhideicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doUnhide();
+              mUserEventManager.perform(mUnhideOper);
               refresh();
             }
           });
@@ -401,7 +402,7 @@ public class Editor {
     mOptions.setEnabled("Paste", mPasteOper.shouldBeEnabled());
     mOptions.setEnabled("Dup", mDupOper.shouldBeEnabled());
     mOptions.setEnabled("All", mSelectAllOper.shouldBeEnabled());
-    mOptions.setEnabled("Unhide", unhidePossible());
+    mOptions.setEnabled("Unhide", mUnhideOper.shouldBeEnabled());
     mOptions.setEnabled("Scale", !selected.isEmpty());
     mOptions.setEnabled("Rotate", !selected.isEmpty());
   }
@@ -636,13 +637,13 @@ public class Editor {
       return;
     mDupAffectsClipboard = affectsClipboard;
     Point offset = getDupAccumulator();
-    Point correction = new Point();
-    SlotList hiddenObjects = findHiddenObjects(affectedObjects, offset,
-        correction);
+    SlotList hiddenObjects = mUnhideOper.findHiddenObjects(affectedObjects,
+        offset);
     // If ALL the objects will end up being hidden, reset the
     // accumulator
     if (hiddenObjects.size() == affectedObjects.size()) {
-      resetDuplicationOffsetWithCorrectingTranslation(correction);
+      resetDuplicationOffsetWithCorrectingTranslation(mUnhideOper
+          .getCorrectingTranslation());
     }
   }
 
@@ -675,90 +676,6 @@ public class Editor {
     if (objects().getSelectedSlots().isEmpty())
       return;
     mUserEventManager.setOperation(new RotateOperation(this));
-  }
-
-  private boolean unhidePossible() {
-    return !findHiddenObjects(objects(), null, null).isEmpty();
-  }
-
-  /**
-   * Find which objects, if any, are essentially offscreen and thus hidden from
-   * the user.
-   * 
-   * @param objects
-   *          list of objects to examine
-   * @param translationToApply
-   *          if not null, simulates applying this translation before performing
-   *          offscreen test
-   * @param correctingTranslation
-   *          if not null, and hidden objects are found, this is set to a
-   *          translation to apply to all objects to bring (at least one of
-   *          them) onscreen
-   * @return slots of hidden objects
-   */
-  private SlotList findHiddenObjects(EdObjectArray objects,
-      Point translationToApply, Point correctingTranslation) {
-    float minUnhideSquaredDistance = 0;
-    boolean translationDefined = false;
-
-    Rect r = mStepper.visibleRect();
-    if (translationToApply != null) {
-      r = new Rect(r);
-      r.translate(-translationToApply.x, -translationToApply.y);
-    }
-
-    // Construct a slightly inset version for detecting hidden objects, and
-    // a more inset one representing where we'll move vertices to unhide
-    // them
-    Rect outerRect = new Rect(r);
-    float inset = pickRadius() * 2;
-    outerRect.inset(inset, inset);
-    Rect innerRect = new Rect(r);
-    innerRect.inset(inset * 2, inset * 2);
-
-    SlotList slots = new SlotList();
-    for (int i = 0; i < objects.size(); i++) {
-      EdObject obj = objects.get(i);
-      if (obj.intersects(outerRect))
-        continue;
-
-      // This is a hidden object; add to output list
-      slots.add(i);
-
-      if (correctingTranslation != null) {
-        // See if one of its vertices is closest yet to the inner rect
-        for (int j = 0; j < obj.nPoints(); j++) {
-          Point v = obj.getPoint(j);
-          Point v2 = outerRect.nearestPointTo(v);
-          float squaredDistance = MyMath.squaredDistanceBetween(v, v2);
-          if (!translationDefined || squaredDistance < minUnhideSquaredDistance) {
-            translationDefined = true;
-            correctingTranslation.setTo(MyMath.subtract(v2, v));
-            minUnhideSquaredDistance = squaredDistance;
-          }
-        }
-      }
-    }
-    return slots;
-  }
-
-  private void doUnhide() {
-    // TODO: make this an external operation
-    CommandForGeneralChanges command = new CommandForGeneralChanges(this,
-        "unhide", "Unhide");
-    Point translation = new Point();
-    SlotList slots = findHiddenObjects(objects(), null, translation);
-    if (slots.isEmpty())
-      return;
-
-    objects().setSelected(slots);
-    for (int slot : slots) {
-      EdObject orig = objects().get(slot);
-      EdObject obj = mutableCopyOf(orig);
-      obj.moveBy(orig, translation);
-      objects().set(slot, obj);
-    }
-    command.finish();
   }
 
   /**
@@ -930,6 +847,7 @@ public class Editor {
   private UserOperation mPasteOper;
   private UserOperation mDupOper;
   private UserOperation mSelectAllOper;
+  private UnhideOperation mUnhideOper;
   private Map<String, EdObjectFactory> mObjectTypes;
   private EdObjectFactory mLastEditableObjectType;
   private View mEditorView;

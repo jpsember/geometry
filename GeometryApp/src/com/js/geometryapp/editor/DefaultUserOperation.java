@@ -41,7 +41,6 @@ public class DefaultUserOperation extends UserOperation {
    */
   @Override
   public void processUserEvent(UserEvent event) {
-    // event.printProcessingMessage("DefaultEventListener");
 
     mEvent = event;
     if (event.getCode() != UserEvent.CODE_DOWN && !operActive())

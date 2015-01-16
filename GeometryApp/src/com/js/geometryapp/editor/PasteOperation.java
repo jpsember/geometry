@@ -19,7 +19,7 @@ public class PasteOperation extends UserOperation.InstantOperation {
     EdObjectArray clipboard = command.getOriginalState().getClipboard();
     EditorState state = mEditor.getCurrentState();
     EdObjectArray objects = state.getObjects();
-    if (!mEditor.verifyObjectsAllowed(objects.size() + clipboard.size()))
+    if (!mEditor.verifyObjectsAllowed(clipboard.size()))
       return;
     SlotList newSelected = new SlotList();
 

@@ -40,8 +40,7 @@ public class SelectWithRectOperation extends UserOperation {
           if (dragRect.contains(edObject.getBounds()))
             selectedList.add(slot);
         }
-        selectedList.freeze();
-        mEditor.objects().setSelected(selectedList);
+        mEditor.performSelectObjectsCommand(selectedList, null);
       }
       event.clearOperation();
       break;

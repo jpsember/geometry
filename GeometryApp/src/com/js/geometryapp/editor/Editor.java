@@ -19,6 +19,7 @@ import com.js.editor.Command;
 import com.js.editor.UserEvent;
 import com.js.editor.UserEventManager;
 import com.js.editor.UserEventSource;
+import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
 import com.js.geometry.MyMath;
@@ -93,6 +94,7 @@ public class Editor {
     mCopyOper = new CopyOperation(this);
     mPasteOper = new PasteOperation(this);
     mDupOper = new DupOperation(this);
+    mSelectAllOper = new SelectAllOperation(this);
 
     mTouchEventGenerator = new TouchEventGenerator();
     mTouchEventGenerator.setView(new UserEventSource() {
@@ -229,7 +231,7 @@ public class Editor {
       mOptions.addButton("All", "icon", R.raw.allicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              doSelectAll();
+              mUserEventManager.perform(mSelectAllOper);
               refresh();
             }
           });
@@ -398,7 +400,7 @@ public class Editor {
     mOptions.setEnabled("Copy", mCopyOper.shouldBeEnabled());
     mOptions.setEnabled("Paste", mPasteOper.shouldBeEnabled());
     mOptions.setEnabled("Dup", mDupOper.shouldBeEnabled());
-    mOptions.setEnabled("All", selected.size() < objects().size());
+    mOptions.setEnabled("All", mSelectAllOper.shouldBeEnabled());
     mOptions.setEnabled("Unhide", unhidePossible());
     mOptions.setEnabled("Scale", !selected.isEmpty());
     mOptions.setEnabled("Rotate", !selected.isEmpty());
@@ -510,7 +512,6 @@ public class Editor {
    * Set pending operation to add a new object of a particular type
    */
   public void doStartAddObjectOperation(EdObjectFactory objectType) {
-    objects().unselectAll();
 
     if (!verifyObjectsAllowed(objects().size() + 1)) {
       return;
@@ -741,11 +742,8 @@ public class Editor {
     return slots;
   }
 
-  private void doSelectAll() {
-    objects().selectAll();
-  }
-
   private void doUnhide() {
+    // TODO: make this an external operation
     CommandForGeneralChanges command = new CommandForGeneralChanges(this,
         "unhide", "Unhide");
     Point translation = new Point();
@@ -902,15 +900,36 @@ public class Editor {
       mState.setClipboard(objects().getSelectedObjects());
   }
 
+  /**
+   * Execute a command to change the select objects; does nothing if selection
+   * not actually changing
+   * 
+   * @param selection
+   */
+  void performSelectObjectsCommand(SlotList selection, String description) {
+
+    if (SlotList.equal(mState.getSelectedSlots(), selection))
+      return;
+    if (description == null)
+      description = (selection.isEmpty()) ? "Unselect" : "Select";
+    CommandForGeneralChanges c = new CommandForGeneralChanges(this, "select",
+        description);
+    mState.getObjects().setSelected(selection);
+    mState.resetDupAccumulator();
+    unimp("what about the polygon cursor selection that used to occur if exactly one item now editable?");
+    c.finish();
+  }
+
   public EdObjectFactory getLastEditableObjectType() {
     return mLastEditableObjectType;
   }
 
   private UserEventManager mUserEventManager;
-  private CutOperation mCutOper;
-  private CopyOperation mCopyOper;
-  private PasteOperation mPasteOper;
-  private DupOperation mDupOper;
+  private UserOperation mCutOper;
+  private UserOperation mCopyOper;
+  private UserOperation mPasteOper;
+  private UserOperation mDupOper;
+  private UserOperation mSelectAllOper;
   private Map<String, EdObjectFactory> mObjectTypes;
   private EdObjectFactory mLastEditableObjectType;
   private View mEditorView;

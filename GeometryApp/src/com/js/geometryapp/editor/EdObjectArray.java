@@ -101,6 +101,10 @@ public class EdObjectArray extends Freezable.Mutable implements
     return mSelectedSlots;
   }
 
+  public int getEditableSlot() {
+    return mEditableSlot;
+  }
+
   private void setSelectedSlotsAux(SlotList slots) {
     mSelectedSlots = slots;
     mEditableSlot = -1;
@@ -123,22 +127,12 @@ public class EdObjectArray extends Freezable.Mutable implements
     setSelected(new SlotList(slot));
   }
 
-  public int getEditableSlot() {
-    return mEditableSlot;
-  }
-
   public void unselectAll() {
-    mutate();
     setSelected(new SlotList());
   }
 
   public void selectAll() {
-    mutate();
-    SlotList list = new SlotList();
-    for (int i = 0; i < size(); i++)
-      list.add(i);
-    list.freeze();
-    setSelected(list);
+    setSelected(SlotList.buildComplete(size()));
   }
 
   @Override

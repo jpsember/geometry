@@ -129,6 +129,10 @@ public class SlotList extends Freezable.Mutable implements Iterable<Integer> {
     mList.addAll(source.mList);
   }
 
+  public static boolean equal(SlotList a, SlotList b) {
+    return a.mList.equals(b.mList);
+  }
+
   private ArrayList<Integer> mList = new ArrayList();
 
 }

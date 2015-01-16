@@ -119,8 +119,6 @@ public class DefaultUserOperation extends UserOperation {
    */
   private void doClick(Point location) {
 
-    EditorState state = mEditor.getCurrentState();
-
     // If multitouch, start 'add another object'
     if (mInitialEvent.isMultipleTouch()) {
       EdObjectFactory factory = mEditor.getLastEditableObjectType();
@@ -135,8 +133,7 @@ public class DefaultUserOperation extends UserOperation {
     // all objects; else cycle to next object and make it editable
     SlotList pickSet = getPickSet(location);
     if (pickSet.isEmpty()) {
-      state.getObjects().unselectAll();
-      state.resetDupAccumulator();
+      mEditor.performSelectObjectsCommand(new SlotList(), null);
       return;
     }
 
@@ -149,9 +146,7 @@ public class DefaultUserOperation extends UserOperation {
     int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
     int slot = pickSet.get(nextSelectedIndex);
 
-    state.getObjects().setEditableSlot(slot);
-    state.getObjects().get(slot).selectedForEditing(location);
-    state.resetDupAccumulator();
+    mEditor.performSelectObjectsCommand(new SlotList(slot), null);
   }
 
   private void doStartDrag(Point location) {
@@ -190,12 +185,11 @@ public class DefaultUserOperation extends UserOperation {
 
     if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
       hlPickSet = new SlotList(pickSet.last());
-      state.getObjects().setSelected(hlPickSet);
-      state.resetDupAccumulator();
-      // fall through to next...
     }
     if (!hlPickSet.isEmpty()) {
-      mCommand = new CommandForGeneralChanges(mEditor, "move", null);
+      startCommand("move", null);
+      state.getObjects().setSelected(hlPickSet);
+      state.resetDupAccumulator();
     } else {
       UserOperation oper = new SelectWithRectOperation(mEditor, mStepper);
       mEvent.setOperation(oper);
@@ -203,6 +197,10 @@ public class DefaultUserOperation extends UserOperation {
       oper.processUserEvent(mInitialEvent);
       oper.processUserEvent(mEvent);
     }
+  }
+
+  private void startCommand(String mergeKey, String description) {
+    mCommand = new CommandForGeneralChanges(mEditor, mergeKey, description);
   }
 
   /**
@@ -243,6 +241,13 @@ public class DefaultUserOperation extends UserOperation {
     }
   }
 
+  private void executeCommand() {
+    if (mCommand == null)
+      throw new IllegalStateException();
+    mCommand.finish();
+    mCommand = null;
+  }
+
   private void doFinishDrag() {
     if (mCommand == null)
       return;
@@ -250,7 +255,7 @@ public class DefaultUserOperation extends UserOperation {
     if (mTranslate != null) {
       mEditor.updateDupAccumulatorForTranslation(mTranslate);
     }
-    mCommand.finish();
+    executeCommand();
   }
 
   private Editor mEditor;

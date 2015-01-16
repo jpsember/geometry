@@ -4,10 +4,18 @@ package com.js.editor;
  * Class representing a user operation, usually involving the mouse (or touch
  * device)
  */
-public abstract class UserOperation implements UserEvent.Listener {
+public abstract class UserOperation implements UserEvent.Listener, Enableable {
 
   @Override
   public abstract void processUserEvent(UserEvent event);
+
+  /**
+   * Enableable interface; by default, always returns true
+   */
+  @Override
+  public boolean shouldBeEnabled() {
+    return true;
+  }
 
   /**
    * Determine if an object can be editable during this operation. Default is

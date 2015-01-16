@@ -43,8 +43,6 @@ public class UserEventManager implements UserEvent.Listener {
    * new is null, uses default operation.
    */
   public void setOperation(UserOperation oper) {
-   if (false) pr("setOperation, currently " + nameOf(mCurrentOperation) + ", setting to "
-        + nameOf(oper));
     if (mCurrentOperation != null) {
       mCurrentOperation.stop();
       mCurrentOperation = null;
@@ -89,6 +87,17 @@ public class UserEventManager implements UserEvent.Listener {
 
   public UserEvent getLastEventHandled() {
     return mLastEventHandled;
+  }
+
+  /**
+   * Perform an operation, if possible. Checks if operation is enableable; if
+   * so, starts it and clears it
+   */
+  public void perform(UserOperation operation) {
+    if (!operation.shouldBeEnabled())
+      return;
+    setOperation(operation);
+    clearOperation();
   }
 
   private boolean mEnabled;

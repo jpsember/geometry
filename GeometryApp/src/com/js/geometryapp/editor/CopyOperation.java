@@ -1,14 +1,16 @@
 package com.js.geometryapp.editor;
 
-public class CopyOperation {
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
+
+public class CopyOperation extends UserOperation {
 
   public CopyOperation(Editor editor) {
     mEditor = editor;
   }
 
-  public void attempt() {
-    if (!isValid())
-      return;
+  @Override
+  public void start() {
     CommandForGeneralChanges c = new CommandForGeneralChanges(mEditor, null,
         "Copy");
     EditorState s = mEditor.getCurrentState();
@@ -17,8 +19,14 @@ public class CopyOperation {
     c.finish();
   }
 
-  public boolean isValid() {
+  @Override
+  public boolean shouldBeEnabled() {
     return !mEditor.getCurrentState().getSelectedSlots().isEmpty();
+  }
+
+  @Override
+  public void processUserEvent(UserEvent event) {
+    throw new UnsupportedOperationException();
   }
 
   private Editor mEditor;

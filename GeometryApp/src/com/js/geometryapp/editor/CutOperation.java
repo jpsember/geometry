@@ -1,16 +1,23 @@
 package com.js.geometryapp.editor;
 
-/**
- * Note: this is not a UserOperation, since it requires no user interaction
- */
-public class CutOperation {
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 
-  public static void attempt(Editor editor) {
-    CommandForGeneralChanges c = new CommandForGeneralChanges(editor, null,
+public class CutOperation extends UserOperation {
+
+  public CutOperation(Editor editor) {
+    mEditor = editor;
+  }
+
+  @Override
+  public boolean shouldBeEnabled() {
+    return !mEditor.getCurrentState().getSelectedSlots().isEmpty();
+  }
+
+  @Override
+  public void start() {
+    CommandForGeneralChanges c = new CommandForGeneralChanges(mEditor, null,
         "Cut");
-    if (c.getOriginalState().getSelectedSlots().isEmpty())
-      return;
-
     EdObjectArray objects = c.getOriginalState().getObjects();
     SlotList allSlots = SlotList.buildComplete(objects.size());
     SlotList selectedSlots = objects.getSelectedSlots();
@@ -19,12 +26,19 @@ public class CutOperation {
     EdObjectArray newObjects = objects.getSubset(newSlots);
     EdObjectArray newClipboard = objects.getSubset(selectedSlots);
 
-    EditorState state = editor.getCurrentState();
+    EditorState state = mEditor.getCurrentState();
     state.setObjects(newObjects);
     state.setClipboard(newClipboard);
     state.resetDupAccumulator();
 
     c.finish();
   }
+
+  @Override
+  public void processUserEvent(UserEvent event) {
+    throw new UnsupportedOperationException();
+  }
+
+  private Editor mEditor;
 
 }

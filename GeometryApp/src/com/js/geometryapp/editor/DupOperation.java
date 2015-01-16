@@ -2,46 +2,59 @@ package com.js.geometryapp.editor;
 
 import static com.js.basic.Tools.*;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.Point;
 
-public class DupOperation {
+public class DupOperation extends UserOperation {
 
   public DupOperation(Editor editor) {
     mEditor = editor;
   }
 
-  public void attempt() {
-    if (!isValid())
+  @Override
+  public void start() {
+    if (!shouldBeEnabled())
       return;
     CommandForGeneralChanges command = new CommandForGeneralChanges(mEditor,
         null, "Duplicate");
+
     EditorState state = command.getOriginalState();
-    EdObjectArray objects = state.getObjects();
+    EdObjectArray origObjects = state.getObjects();
     if (state.getSelectedSlots().isEmpty())
       return;
-    if (!mEditor.verifyObjectsAllowed(objects.size()
+    if (!mEditor.verifyObjectsAllowed(origObjects.size()
         + state.getSelectedSlots().size()))
       return;
 
-    mEditor.adjustDupAccumulatorForPendingOperation(objects
-.getSelectedObjects(), false);
+    mEditor.adjustDupAccumulatorForPendingOperation(
+        origObjects.getSelectedObjects(), false);
     SlotList newSelected = new SlotList();
 
     Point offset = state.getDupAccumulator();
 
+    EdObjectArray currObjects = mEditor.getCurrentState().getObjects();
+
     for (int slot : state.getSelectedSlots()) {
-      EdObject obj = objects.get(slot);
+      EdObject obj = origObjects.get(slot);
       EdObject copy = mutableCopyOf(obj);
       copy.moveBy(obj, offset);
-      newSelected.add(objects.add(copy));
+      newSelected.add(currObjects.add(copy));
     }
-    objects.setSelected(newSelected);
+    currObjects.setSelected(newSelected);
     command.finish();
   }
 
-  public boolean isValid() {
+  @Override
+  public boolean shouldBeEnabled() {
     return !mEditor.getCurrentState().getSelectedSlots().isEmpty();
   }
 
+  @Override
+  public void processUserEvent(UserEvent event) {
+    throw new UnsupportedOperationException();
+  }
+
   private Editor mEditor;
+
 }

@@ -2,17 +2,18 @@ package com.js.geometryapp.editor;
 
 import static com.js.basic.Tools.*;
 
+import com.js.editor.UserEvent;
+import com.js.editor.UserOperation;
 import com.js.geometry.Point;
 
-public class PasteOperation {
+public class PasteOperation extends UserOperation {
 
   public PasteOperation(Editor editor) {
     mEditor = editor;
   }
 
-  public void attempt() {
-    if (!isValid())
-      return;
+  @Override
+  public void start() {
 
     CommandForGeneralChanges command = new CommandForGeneralChanges(mEditor,
         null, "Paste");
@@ -39,9 +40,16 @@ public class PasteOperation {
     command.finish();
   }
 
-  public boolean isValid() {
+  @Override
+  public boolean shouldBeEnabled() {
     return !mEditor.getCurrentState().getClipboard().isEmpty();
   }
 
+  @Override
+  public void processUserEvent(UserEvent event) {
+    throw new UnsupportedOperationException();
+  }
+
   private Editor mEditor;
+
 }

@@ -152,14 +152,14 @@ public class Editor {
       mOptions.addButton("Cut", "icon", R.raw.cuticon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              CutOperation.attempt(Editor.this);
+              mUserEventManager.perform(new CutOperation(Editor.this));
               refresh();
             }
           });
       mOptions.addButton("Copy", "icon", R.raw.copyicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              new CopyOperation(Editor.this).attempt();
+              mUserEventManager.perform(new CopyOperation(Editor.this));
               refresh();
             }
           });
@@ -167,14 +167,14 @@ public class Editor {
       mOptions.addButton("Paste", "icon", R.raw.pasteicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              new PasteOperation(Editor.this).attempt();
+              mUserEventManager.perform(new PasteOperation(Editor.this));
               refresh();
             }
           });
       mOptions.addButton("Dup", "icon", R.raw.duplicateicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              new DupOperation(Editor.this).attempt();
+              mUserEventManager.perform(new DupOperation(Editor.this));
               refresh();
             }
           });
@@ -390,10 +390,10 @@ public class Editor {
     SlotList selected = objects().getSelectedSlots();
     mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
-    mOptions.setEnabled("Cut", !selected.isEmpty());
-    mOptions.setEnabled("Copy", new CopyOperation(this).isValid());
-    mOptions.setEnabled("Paste", new PasteOperation(this).isValid());
-    mOptions.setEnabled("Dup", new DupOperation(this).isValid());
+    mOptions.setEnabled("Cut", new CutOperation(this).shouldBeEnabled());
+    mOptions.setEnabled("Copy", new CopyOperation(this).shouldBeEnabled());
+    mOptions.setEnabled("Paste", new PasteOperation(this).shouldBeEnabled());
+    mOptions.setEnabled("Dup", new DupOperation(this).shouldBeEnabled());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
     mOptions.setEnabled("Scale", !selected.isEmpty());

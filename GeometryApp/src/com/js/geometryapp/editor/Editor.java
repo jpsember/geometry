@@ -88,8 +88,14 @@ public class Editor {
     mState = new EditorState();
     mEditorView = contentView;
     prepareObjectTypes();
+
     mUserEventManager = new UserEventManager(new DefaultUserOperation(this,
         mStepper));
+
+    mCutOper = new CutOperation(this);
+    mCopyOper = new CopyOperation(this);
+    mPasteOper = new PasteOperation(this);
+    mDupOper = new DupOperation(this);
 
     mTouchEventGenerator = new TouchEventGenerator();
     mTouchEventGenerator.setView(new UserEventSource() {
@@ -152,14 +158,14 @@ public class Editor {
       mOptions.addButton("Cut", "icon", R.raw.cuticon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              mUserEventManager.perform(new CutOperation(Editor.this));
+              mUserEventManager.perform(mCutOper);
               refresh();
             }
           });
       mOptions.addButton("Copy", "icon", R.raw.copyicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              mUserEventManager.perform(new CopyOperation(Editor.this));
+              mUserEventManager.perform(mCopyOper);
               refresh();
             }
           });
@@ -167,14 +173,14 @@ public class Editor {
       mOptions.addButton("Paste", "icon", R.raw.pasteicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              mUserEventManager.perform(new PasteOperation(Editor.this));
+              mUserEventManager.perform(mPasteOper);
               refresh();
             }
           });
       mOptions.addButton("Dup", "icon", R.raw.duplicateicon).addListener(
           new Listener() {
             public void valueChanged(AbstractWidget widget) {
-              mUserEventManager.perform(new DupOperation(Editor.this));
+              mUserEventManager.perform(mDupOper);
               refresh();
             }
           });
@@ -390,10 +396,10 @@ public class Editor {
     SlotList selected = objects().getSelectedSlots();
     mOptions.setEnabled("Undo", mCommandHistoryCursor > 0);
     mOptions.setEnabled("Redo", mCommandHistoryCursor < mCommandHistory.size());
-    mOptions.setEnabled("Cut", new CutOperation(this).shouldBeEnabled());
-    mOptions.setEnabled("Copy", new CopyOperation(this).shouldBeEnabled());
-    mOptions.setEnabled("Paste", new PasteOperation(this).shouldBeEnabled());
-    mOptions.setEnabled("Dup", new DupOperation(this).shouldBeEnabled());
+    mOptions.setEnabled("Cut", mCutOper.shouldBeEnabled());
+    mOptions.setEnabled("Copy", mCopyOper.shouldBeEnabled());
+    mOptions.setEnabled("Paste", mPasteOper.shouldBeEnabled());
+    mOptions.setEnabled("Dup", mDupOper.shouldBeEnabled());
     mOptions.setEnabled("All", selected.size() < objects().size());
     mOptions.setEnabled("Unhide", unhidePossible());
     mOptions.setEnabled("Scale", !selected.isEmpty());
@@ -935,6 +941,10 @@ public class Editor {
   }
 
   private UserEventManager mUserEventManager;
+  private CutOperation mCutOper;
+  private CopyOperation mCopyOper;
+  private PasteOperation mPasteOper;
+  private DupOperation mDupOper;
   private Map<String, EdObjectFactory> mObjectTypes;
   private EdObjectFactory mLastEditableObjectType;
   private View mEditorView;

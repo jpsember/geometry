@@ -1,9 +1,8 @@
 package com.js.geometryapp.editor;
 
-import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 
-public class CutOperation extends UserOperation {
+public class CutOperation extends UserOperation.InstantOperation {
 
   public CutOperation(Editor editor) {
     mEditor = editor;
@@ -32,11 +31,6 @@ public class CutOperation extends UserOperation {
     state.resetDupAccumulator();
 
     c.finish();
-  }
-
-  @Override
-  public void processUserEvent(UserEvent event) {
-    throw new UnsupportedOperationException();
   }
 
   private Editor mEditor;

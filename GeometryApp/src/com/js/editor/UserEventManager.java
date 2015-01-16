@@ -2,8 +2,6 @@ package com.js.editor;
 
 import static com.js.basic.Tools.warning;
 
-import static com.js.basic.Tools.*;
-
 public class UserEventManager implements UserEvent.Listener {
 
   /**

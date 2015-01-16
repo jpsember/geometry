@@ -1,9 +1,8 @@
 package com.js.geometryapp.editor;
 
-import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 
-public class CopyOperation extends UserOperation {
+public class CopyOperation extends UserOperation.InstantOperation {
 
   public CopyOperation(Editor editor) {
     mEditor = editor;
@@ -22,11 +21,6 @@ public class CopyOperation extends UserOperation {
   @Override
   public boolean shouldBeEnabled() {
     return !mEditor.getCurrentState().getSelectedSlots().isEmpty();
-  }
-
-  @Override
-  public void processUserEvent(UserEvent event) {
-    throw new UnsupportedOperationException();
   }
 
   private Editor mEditor;

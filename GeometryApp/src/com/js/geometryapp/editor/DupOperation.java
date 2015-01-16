@@ -2,11 +2,10 @@ package com.js.geometryapp.editor;
 
 import static com.js.basic.Tools.*;
 
-import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.Point;
 
-public class DupOperation extends UserOperation {
+public class DupOperation extends UserOperation.InstantOperation {
 
   public DupOperation(Editor editor) {
     mEditor = editor;
@@ -48,11 +47,6 @@ public class DupOperation extends UserOperation {
   @Override
   public boolean shouldBeEnabled() {
     return !mEditor.getCurrentState().getSelectedSlots().isEmpty();
-  }
-
-  @Override
-  public void processUserEvent(UserEvent event) {
-    throw new UnsupportedOperationException();
   }
 
   private Editor mEditor;

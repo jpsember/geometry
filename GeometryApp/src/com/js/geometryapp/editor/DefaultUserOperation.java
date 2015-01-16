@@ -232,7 +232,7 @@ public class DefaultUserOperation extends UserOperation {
     if (mTranslate.magnitude() == 0)
       return;
 
-    for (int slot : mCommand.getOriginalState().getSelectedSlots()) {
+    for (int slot : mEditor.objects().getSelectedSlots()) {
       EdObject orig = mCommand.getOriginalState().getObjects().get(slot);
       EdObject obj = mutableCopyOf(orig);
       obj.moveBy(orig, mTranslate);

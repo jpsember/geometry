@@ -126,8 +126,6 @@ public class Editor {
     mUserEventManager.setEnabled(true);
   }
 
-  private TouchEventGenerator mTouchEventGenerator;
-
   /**
    * Construct the various editor widgets
    * 
@@ -512,12 +510,10 @@ public class Editor {
   /**
    * Set pending operation to add a new object of a particular type
    */
-  public void doStartAddObjectOperation(EdObjectFactory objectType) {
-
+  void doStartAddObjectOperation(EdObjectFactory objectType) {
     if (!verifyObjectsAllowed(objects().size() + 1)) {
       return;
     }
-
     mUserEventManager.setOperation(new AddObjectOperation(this, objectType));
     if (false) {
       toast(context(), "Add " + objectType.getTag());
@@ -631,8 +627,8 @@ public class Editor {
    * @param affectsClipboard
    *          DupAccumulator construction argument
    */
-  public void adjustDupAccumulatorForPendingOperation(
-      EdObjectArray affectedObjects, boolean affectsClipboard) {
+  void adjustDupAccumulatorForPendingOperation(EdObjectArray affectedObjects,
+      boolean affectsClipboard) {
     if (affectedObjects.size() == 0)
       return;
     mDupAffectsClipboard = affectsClipboard;
@@ -820,27 +816,24 @@ public class Editor {
   /**
    * Execute a command to change the select objects; does nothing if selection
    * not actually changing
-   * 
-   * @param selection
    */
   void performSelectObjectsCommand(SlotList selection, String description) {
-
     if (SlotList.equal(mState.getSelectedSlots(), selection))
       return;
     if (description == null)
       description = (selection.isEmpty()) ? "Unselect" : "Select";
-    CommandForGeneralChanges c = new CommandForGeneralChanges(this, "select",
-        description);
+    CommandForGeneralChanges command = new CommandForGeneralChanges(this,
+        "select", description);
     mState.getObjects().setSelected(selection);
     mState.resetDupAccumulator();
-    unimp("what about the polygon cursor selection that used to occur if exactly one item now editable?");
-    c.finish();
+    command.finish();
   }
 
   public EdObjectFactory getLastEditableObjectType() {
     return mLastEditableObjectType;
   }
 
+  private TouchEventGenerator mTouchEventGenerator;
   private UserEventManager mUserEventManager;
   private UserOperation mCutOper;
   private UserOperation mCopyOper;

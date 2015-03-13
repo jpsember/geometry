@@ -17,9 +17,9 @@ import android.widget.LinearLayout;
 
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
 import com.js.geometryapp.editor.Editor;
@@ -288,6 +288,24 @@ public class ConcreteStepper extends AlgorithmStepper {
    */
   public Renderable highlighted(final Renderable r) {
     return RenderTools.colored(Color.RED, r);
+  }
+
+  public Renderable highlighted(final Point pt) {
+    return new RPoint(pt);
+  }
+
+  private static class RPoint implements Renderable {
+
+    public RPoint(Point pt) {
+      mPoint = pt;
+    }
+
+    @Override
+    public void render(AlgorithmStepper stepper) {
+      RenderTools.renderPoint(mPoint, 1);
+    }
+
+    private Point mPoint;
   }
 
   /**

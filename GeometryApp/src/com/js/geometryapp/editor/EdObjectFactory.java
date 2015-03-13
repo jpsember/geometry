@@ -4,7 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.R;
 import static com.js.basic.Tools.*;
 

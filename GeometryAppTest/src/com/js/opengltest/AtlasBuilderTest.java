@@ -1,7 +1,7 @@
 package com.js.opengltest;
 
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.opengl.AtlasBuilder;
 import com.js.testUtils.MyTestCase;
 import static com.js.basic.Tools.*;

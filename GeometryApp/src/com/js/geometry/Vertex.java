@@ -2,6 +2,8 @@ package com.js.geometry;
 
 import static com.js.basic.Tools.*;
 
+import com.js.basic.Point;
+
 public final class Vertex extends Point {
 	public static final int FLAG_VISITED = 1 << 31;
 

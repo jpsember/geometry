@@ -6,7 +6,7 @@ import java.util.Map;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 
 import static com.js.basic.Tools.*;
 

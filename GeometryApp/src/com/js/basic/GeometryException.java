@@ -1,4 +1,4 @@
-package com.js.geometry;
+package com.js.basic;
 
 public class GeometryException extends RuntimeException {
 	public GeometryException(String message) {

@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 
 public class AtlasBuilder {
 

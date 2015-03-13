@@ -1,10 +1,10 @@
 package com.js.geometryapp;
 
 import com.js.geometry.Disc;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
 import com.js.geometry.Polygon;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 
 /**
  * Instances of this class should be considered immutable (once constructed by

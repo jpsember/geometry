@@ -13,8 +13,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.js.geometry.MyMath;
-
 public final class Tools {
 
   public static class DieException extends RuntimeException {

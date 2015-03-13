@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.Renderable;
 import com.js.geometryapp.PolylineProgram;
 import com.js.geometryapp.RenderTools;

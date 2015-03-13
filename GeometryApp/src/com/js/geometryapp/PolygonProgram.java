@@ -4,7 +4,7 @@ import java.nio.FloatBuffer;
 
 import android.graphics.Matrix;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.PolygonMesh;
 import com.js.geometry.R;
 import com.js.opengl.GLProgram;

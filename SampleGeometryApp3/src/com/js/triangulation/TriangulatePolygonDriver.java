@@ -1,9 +1,9 @@
 package com.js.triangulation;
 
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.GeometryException;
+import com.js.basic.GeometryException;
 import com.js.geometry.Mesh;
-import com.js.geometry.MyMath;
+import com.js.basic.MyMath;
 import com.js.geometry.Polygon;
 import com.js.geometry.PolygonTriangulator;
 import com.js.geometryapp.Algorithm;

@@ -1,6 +1,6 @@
 package com.js.android;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 
 import android.util.DisplayMetrics;
 import static com.js.basic.Tools.*;

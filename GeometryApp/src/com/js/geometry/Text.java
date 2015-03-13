@@ -1,5 +1,6 @@
 package com.js.geometry;
 
+import com.js.basic.Point;
 import com.js.geometryapp.RenderTools;
 
 public class Text implements Renderable {

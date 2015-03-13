@@ -1,4 +1,4 @@
-package com.js.geometry;
+package com.js.basic;
 
 import static com.js.basic.Tools.*;
 

@@ -1,7 +1,7 @@
 package com.js.editor;
 
 import com.js.geometry.IPoint;
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import static com.js.basic.Tools.*;
 
 /**

@@ -1,6 +1,6 @@
 package com.js.editor;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 
 public interface UserEventSource {
 

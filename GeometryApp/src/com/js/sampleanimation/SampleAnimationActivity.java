@@ -7,10 +7,10 @@ import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.view.View;
 
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
 import com.js.geometry.R;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 import com.js.geometryapp.GeometryActivity;
 import com.js.opengl.GLSpriteProgram;
 import com.js.opengl.GLTexture;

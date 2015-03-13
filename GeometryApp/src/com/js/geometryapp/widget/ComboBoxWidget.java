@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.js.android.UITools;
-import com.js.geometry.MyMath;
+import com.js.basic.MyMath;
 import com.js.geometryapp.AlgorithmOptions;
 
 import android.view.View;

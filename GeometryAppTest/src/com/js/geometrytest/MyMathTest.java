@@ -2,10 +2,10 @@ package com.js.geometrytest;
 
 import android.graphics.Matrix;
 
-import com.js.geometry.GeometryException;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.GeometryException;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.testUtils.IOSnapshot;
 import com.js.testUtils.MyTestCase;
 import static com.js.basic.Tools.*;

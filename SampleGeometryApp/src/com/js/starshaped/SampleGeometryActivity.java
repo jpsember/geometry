@@ -4,11 +4,11 @@ import java.util.Random;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryException;
+import com.js.basic.GeometryException;
 import com.js.geometry.Mesh;
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.Polygon;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
 import com.js.geometryapp.AlgorithmOptions;

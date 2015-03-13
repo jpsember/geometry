@@ -7,7 +7,7 @@ import java.nio.FloatBuffer;
 
 import android.content.Context;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.R;
 
 public class SpriteContext {

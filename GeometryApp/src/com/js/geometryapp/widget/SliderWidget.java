@@ -2,7 +2,7 @@ package com.js.geometryapp.widget;
 
 import java.util.Map;
 
-import com.js.geometry.MyMath;
+import com.js.basic.MyMath;
 import com.js.geometryapp.AlgorithmOptions;
 
 import android.view.Gravity;

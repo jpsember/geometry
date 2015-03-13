@@ -3,8 +3,8 @@ package com.js.opengl;
 import java.nio.FloatBuffer;
 
 import com.js.geometry.FloatArray;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 
 public class GLSpriteProgram {
 

@@ -10,9 +10,9 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 
 import com.js.android.BitmapUtil;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 
 /**
  * Organizes and prepares sprites for rendering. Sprites are drawn using

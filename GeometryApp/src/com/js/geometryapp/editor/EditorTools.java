@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Polygon;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 
 public class EditorTools {
 

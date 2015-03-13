@@ -8,8 +8,8 @@ import android.graphics.Paint.FontMetrics;
 import android.graphics.Typeface;
 
 import com.js.geometry.IPoint;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 
 import static com.js.basic.Tools.*;
 

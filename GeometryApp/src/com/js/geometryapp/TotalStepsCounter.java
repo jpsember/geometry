@@ -3,7 +3,7 @@ package com.js.geometryapp;
 import static com.js.basic.Tools.*;
 
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 import com.js.geometry.Renderable;
 
 class TotalStepsCounter extends AlgorithmStepper {

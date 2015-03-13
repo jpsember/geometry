@@ -2,6 +2,8 @@ package com.js.geometry;
 
 import static com.js.basic.Tools.*;
 
+import com.js.basic.Point;
+
 public final class IPoint {
 
   public IPoint() {

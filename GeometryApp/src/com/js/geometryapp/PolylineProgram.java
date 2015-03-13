@@ -19,7 +19,7 @@ import android.graphics.Matrix;
 
 import com.js.android.MyActivity;
 import com.js.geometry.FloatArray;
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import com.js.geometry.R;
 import com.js.opengl.GLProgram;
 import com.js.opengl.GLShader;

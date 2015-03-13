@@ -20,6 +20,13 @@ public class JSONTools {
   }
 
   /**
+   * Parse a JSON array from a string
+   */
+  public static JSONArray parseArray(String source) throws JSONException {
+    return (JSONArray) new JSONTokener(source).nextValue();
+  }
+
+  /**
    * Get keys from JSONObject as an Iterable<String>
    * 
    * @param object

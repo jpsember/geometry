@@ -1,12 +1,10 @@
-package com.js.geometry;
+package com.js.basic;
 
 import static com.js.basic.Tools.*;
 
-import com.js.geometryapp.RenderTools;
-
 import android.graphics.Matrix;
 
-public class Point implements Renderable {
+public class Point {
 
 	public static final Point ZERO = new Point();
 
@@ -53,7 +51,7 @@ public class Point implements Renderable {
 	}
 
 	public final float magnitude() {
-		return MyMath.magnitudeOfRay(x, y);
+		return (x * x) + (y * y);
 	}
 
 	public final void add(Point point) {
@@ -85,15 +83,6 @@ public class Point implements Renderable {
 		sb.append(d(y));
 		sb.append(' ');
 		return sb.toString();
-	}
-
-	@Override
-	public void render(AlgorithmStepper stepper) {
-		RenderTools.renderPoint(this, 1);
-	}
-
-	public void renderWithRadius(float radius) {
-		RenderTools.renderPoint(this, radius);
 	}
 
 	public float x;

@@ -9,10 +9,10 @@ import android.graphics.Matrix;
 import com.js.editor.UserEvent;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
 import com.js.geometry.R;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 import com.js.geometry.Sprite;
 import static com.js.basic.Tools.*;
 

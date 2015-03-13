@@ -3,7 +3,7 @@ package com.js.geometryapp.editor;
 import static com.js.basic.Tools.*;
 
 import com.js.editor.UserOperation;
-import com.js.geometry.Point;
+import com.js.basic.Point;
 
 public class PasteOperation extends UserOperation.InstantOperation {
 

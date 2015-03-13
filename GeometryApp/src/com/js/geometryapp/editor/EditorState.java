@@ -1,6 +1,6 @@
 package com.js.geometryapp.editor;
 
-import com.js.geometry.Point;
+import com.js.basic.Point;
 import static com.js.basic.Tools.*;
 import com.js.basic.Freezable;
 

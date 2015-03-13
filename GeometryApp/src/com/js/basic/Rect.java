@@ -1,6 +1,7 @@
-package com.js.geometry;
+package com.js.basic;
 
 import java.util.List;
+
 
 public class Rect {
 

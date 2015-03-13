@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Edge;
-import com.js.geometry.GeometryException;
+import com.js.basic.GeometryException;
 import com.js.geometry.Mesh;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
 import com.js.geometry.Renderable;
 import com.js.geometry.Vertex;
 import com.js.geometryapp.RenderTools;

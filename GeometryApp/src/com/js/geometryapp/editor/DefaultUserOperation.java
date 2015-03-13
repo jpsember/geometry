@@ -2,8 +2,8 @@ package com.js.geometryapp.editor;
 
 import com.js.editor.*;
 import com.js.geometry.AlgorithmStepper;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
 import static com.js.basic.Tools.*;
 
 public class DefaultUserOperation extends UserOperation {

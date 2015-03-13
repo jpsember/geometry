@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.js.geometry.IPoint;
-import com.js.geometry.Rect;
+import com.js.basic.Rect;
 
 import android.content.Context;
 import android.graphics.Bitmap;

@@ -86,6 +86,11 @@ public interface Freezable {
         throw new IllegalMutationException();
     }
 
+    public void assertFrozen() {
+      if (!isFrozen())
+        throw new IllegalStateException();
+    }
+
     public boolean isMutable() {
       return !mFrozen;
     }

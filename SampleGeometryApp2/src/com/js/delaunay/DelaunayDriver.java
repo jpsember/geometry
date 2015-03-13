@@ -6,6 +6,10 @@ import java.util.Random;
 
 import android.graphics.Color;
 
+import com.js.basic.GeometryException;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.geometry.*;
 import com.js.geometryapp.Algorithm;
 import com.js.geometryapp.AlgorithmInput;
@@ -122,7 +126,7 @@ public class DelaunayDriver implements Algorithm {
 					s.setColor(Color.argb(0x80, 0x20, 0x80, 0x20));
 					for (int i = 0; i < mDelaunay.nSites(); i++) {
 						Vertex v = mDelaunay.site(i);
-						v.render(s);
+            s.render(v);
 						Polygon p = mDelaunay.constructVoronoiPolygon(i);
 						s.render(p);
 					}

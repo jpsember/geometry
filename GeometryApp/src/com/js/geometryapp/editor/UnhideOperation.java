@@ -3,9 +3,9 @@ package com.js.geometryapp.editor;
 import static com.js.basic.Tools.*;
 
 import com.js.editor.UserOperation;
-import com.js.geometry.MyMath;
-import com.js.geometry.Point;
-import com.js.geometry.Rect;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.geometryapp.ConcreteStepper;
 
 public class UnhideOperation extends UserOperation.InstantOperation {

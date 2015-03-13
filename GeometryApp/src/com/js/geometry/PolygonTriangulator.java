@@ -1,7 +1,7 @@
 package com.js.geometry;
 
 import static com.js.basic.Tools.*;
-import static com.js.geometry.MyMath.*;
+import static com.js.basic.MyMath.*;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -10,6 +10,10 @@ import java.util.Comparator;
 import java.util.Deque;
 import java.util.TreeSet;
 
+import com.js.basic.GeometryException;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+import com.js.basic.Rect;
 import com.js.geometryapp.RenderTools;
 
 import android.graphics.Color;

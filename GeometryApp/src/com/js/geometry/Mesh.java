@@ -5,10 +5,12 @@ import java.util.List;
 
 import android.graphics.Color;
 
+import com.js.basic.GeometryException;
+import com.js.basic.Point;
 import com.js.geometryapp.RenderTools;
 
 import static com.js.basic.Tools.*;
-import static com.js.geometry.MyMath.*;
+import static com.js.basic.MyMath.*;
 
 public final class Mesh implements Renderable {
 

@@ -3,6 +3,10 @@ package com.js.geometry;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 
+import com.js.basic.GeometryException;
+import com.js.basic.MyMath;
+import com.js.basic.Point;
+
 import static com.js.basic.Tools.*;
 
 /**
@@ -179,7 +183,7 @@ public class PolygonMesh {
 	 * 
 	 * @return new version of first point
 	 */
-	private static Point inset(Point a, Point b) {
+  private static Point inset(Point a, Point b) {
 		ASSERT(EMPHASIZE_INDIVIDUAL_TRIANGLES);
 		float dist = MyMath.distanceBetween(a, b);
 		float factor = .1f;

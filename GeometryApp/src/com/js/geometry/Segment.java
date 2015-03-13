@@ -1,6 +1,7 @@
 package com.js.geometry;
 
 import com.js.geometryapp.RenderTools;
+import com.js.basic.Point;
 
 public class Segment implements Renderable {
 

@@ -2,8 +2,6 @@ package com.js.android;
 
 import android.os.Handler;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.OnTouchListener;
 
 import com.js.editor.UserEvent;
 import com.js.editor.UserEventSource;
@@ -14,7 +12,7 @@ import static com.js.basic.Tools.*;
 /**
  * Listens to mouse events within a View, and generates corresponding UserEvents
  */
-public class TouchEventGenerator implements OnTouchListener {
+public class TouchEventGenerator extends MyTouchListener {
 
   /**
    * State machine representing our filter on Android touch events. It imposes a
@@ -30,12 +28,8 @@ public class TouchEventGenerator implements OnTouchListener {
 
   private static final long MULTITOUCH_TIMEOUT_MS = 200;
 
-  /**
-   * Specify view to listen to (Java) mouse events
-   */
-  public void setView(UserEventSource eventSource, View view) {
-    mView = eventSource;
-    view.setOnTouchListener(this);
+  public TouchEventGenerator(UserEventSource eventSource) {
+    mUserEventSource = eventSource;
   }
 
   private void sendEvent(int type) {
@@ -47,12 +41,12 @@ public class TouchEventGenerator implements OnTouchListener {
   }
 
   private void sendEvent(int type, IPoint viewPoint, int modifierFlags) {
-    UserEvent event = new UserEvent(type, mView, viewPoint, modifierFlags);
+    UserEvent event = new UserEvent(type, mUserEventSource, viewPoint, modifierFlags);
     event.getManager().processUserEvent(event);
   }
 
   @Override
-  public boolean onTouch(View v, MotionEvent e) {
+  public boolean onTouch(MotionEvent e) {
     IPoint viewPoint = new IPoint(e.getX(), e.getY());
 
     mCurrentTouchLocation = viewPoint;
@@ -104,8 +98,6 @@ public class TouchEventGenerator implements OnTouchListener {
         sendEvent(UserEvent.CODE_DOWN);
         sendEvent(UserEvent.CODE_UP);
         setTouchState(STATE_START);
-        // Compiler complains if we don't call performClick()
-        v.performClick();
         break;
       }
       break;
@@ -153,5 +145,5 @@ public class TouchEventGenerator implements OnTouchListener {
   private IPoint mInitialTouchLocation;
   private IPoint mCurrentTouchLocation;
 
-  private UserEventSource mView;
+  private UserEventSource mUserEventSource;
 }

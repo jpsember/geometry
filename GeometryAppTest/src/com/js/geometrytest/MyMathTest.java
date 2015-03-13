@@ -17,7 +17,7 @@ public class MyMathTest extends MyTestCase {
 
 		Rect r1 = new Rect(13, 77, 200, 80);
 		Rect r2 = new Rect(53, 92, 50 + 211, 20);
-		Matrix m = MyMath.calcRectFitRectTransform(r1, r2);
+    Matrix m = MyMath.calcRectFitRectTransform(r1, r2);
 
 		Point p1 = r1.bottomLeft();
 		Point p2 = r1.topRight();

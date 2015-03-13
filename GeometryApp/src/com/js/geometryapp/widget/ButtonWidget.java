@@ -4,6 +4,8 @@ import java.util.Map;
 
 import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmOptions;
+import com.js.gest.GestureEventFilter;
+import com.js.gest.StrokeSet;
 
 import android.content.res.TypedArray;
 import android.view.View;
@@ -15,81 +17,91 @@ import static com.js.basic.Tools.*;
 
 public class ButtonWidget extends AbstractWidget {
 
-	public ButtonWidget(AlgorithmOptions options, Map attributes) {
-		super(options, attributes);
-		attributes.put("hasvalue", false);
+  public static final GestureEventFilter.Listener GESTURE_LISTENER = new GestureEventFilter.Listener() {
+    @Override
+    public void strokeSetExtended(StrokeSet strokeSet) {
+    }
 
-		int iconId = intAttr("icon", -1);
-		if (iconId < 0) {
-			Button b = new Button(options.getContext());
-			b.setText(getLabel(false));
-			b.setOnClickListener(new Button.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					notifyListeners();
-				}
-			});
+    @Override
+    public void processGesture(String gestureName) {
+      pr("...ignoring gesture '" + gestureName + "'");
+    }
+  };
 
-			LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-					intAttr(OPTION_LAYOUT_WIDTH, LayoutParams.MATCH_PARENT),
-					intAttr(OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT));
-			getView().addView(b, p);
-			mButton = b;
-		} else {
-			ImageButton b;
-			b = new ImageButton(options.getContext());
-			b.setImageResource(iconId);
-			b.setOnClickListener(new Button.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					notifyListeners();
-				}
-			});
+  public ButtonWidget(AlgorithmOptions options, Map attributes) {
+    super(options, attributes);
+    attributes.put("hasvalue", false);
 
-			getView().addView(b, getImageButtonLayoutParams());
-			mImageButton = b;
-		}
-	}
+    int iconId = intAttr("icon", -1);
+    if (iconId < 0) {
+      Button b = new Button(options.getContext());
+      b.setText(getLabel(false));
+      b.setOnClickListener(new Button.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          notifyListeners();
+        }
+      });
 
-	private LayoutParams getImageButtonLayoutParams() {
+      LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(intAttr(
+          OPTION_LAYOUT_WIDTH, LayoutParams.MATCH_PARENT), intAttr(
+          OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT));
+      getView().addView(b, p);
+      mButton = b;
+    } else {
+      ImageButton b;
+      b = new ImageButton(options.getContext());
+      b.setImageResource(iconId);
+      b.setOnClickListener(new Button.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          notifyListeners();
+        }
+      });
 
-		// TODO: do this in a once-only initialization somewhere
+      getView().addView(b, getImageButtonLayoutParams());
+      mImageButton = b;
+    }
+  }
 
-		// See:
-		// http://stackoverflow.com/questions/24213193/android-ignores-layout-weight-parameter-from-styles-xml
+  private LayoutParams getImageButtonLayoutParams() {
 
-		TypedArray a = context().obtainStyledAttributes(
-				R.style.CompactImageButton, new int[] { //
-				android.R.attr.layout_width, //
-						android.R.attr.layout_height, //
-						android.R.attr.layout_margin, //
-				});
-		int width = a.getDimensionPixelSize(0, LayoutParams.WRAP_CONTENT);
-		int height = a.getDimensionPixelSize(1, LayoutParams.WRAP_CONTENT);
-		int margin = a.getDimensionPixelSize(2, 0);
+    // TODO: do this in a once-only initialization somewhere
 
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(width,
-				height);
-		p.setMargins(margin, margin, margin, margin);
+    // See:
+    // http://stackoverflow.com/questions/24213193/android-ignores-layout-weight-parameter-from-styles-xml
 
-		a.recycle();
-		return p;
-	}
+    TypedArray a = context().obtainStyledAttributes(R.style.CompactImageButton,
+        new int[] { //
+        android.R.attr.layout_width, //
+            android.R.attr.layout_height, //
+            android.R.attr.layout_margin, //
+        });
+    int width = a.getDimensionPixelSize(0, LayoutParams.WRAP_CONTENT);
+    int height = a.getDimensionPixelSize(1, LayoutParams.WRAP_CONTENT);
+    int margin = a.getDimensionPixelSize(2, 0);
 
-	@Override
-	public void setEnabled(boolean enabled) {
-		if (isIcon())
-			mImageButton.setEnabled(enabled);
-		else
-			mButton.setEnabled(enabled);
-	}
+    LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(width, height);
+    p.setMargins(margin, margin, margin, margin);
 
-	private boolean isIcon() {
-		if (DEBUG_ONLY_FEATURES) {
-		}
-		return mImageButton != null;
-	}
+    a.recycle();
+    return p;
+  }
 
-	private Button mButton;
-	private ImageButton mImageButton;
+  @Override
+  public void setEnabled(boolean enabled) {
+    if (isIcon())
+      mImageButton.setEnabled(enabled);
+    else
+      mButton.setEnabled(enabled);
+  }
+
+  private boolean isIcon() {
+    if (DEBUG_ONLY_FEATURES) {
+    }
+    return mImageButton != null;
+  }
+
+  private Button mButton;
+  private ImageButton mImageButton;
 }

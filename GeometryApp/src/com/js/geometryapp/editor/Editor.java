@@ -1,5 +1,6 @@
 package com.js.geometryapp.editor;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
+import com.js.android.MyTouchListener;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.TouchEventGenerator;
 import com.js.android.UITools;
@@ -22,6 +24,7 @@ import com.js.editor.UserEventSource;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
+import com.js.basic.Files;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.geometry.Polygon;
@@ -35,8 +38,11 @@ import com.js.geometryapp.ConcreteStepper;
 import com.js.geometryapp.GeometryStepperActivity;
 import com.js.geometryapp.widget.AbstractWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
+import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.TextWidget;
+import com.js.gest.GestureEventFilter;
+import com.js.gest.StrokeSetCollection;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -97,8 +103,7 @@ public class Editor {
     mSelectAllOper = new SelectAllOperation(this);
     mUnhideOper = new UnhideOperation(this, mStepper);
 
-    mTouchEventGenerator = new TouchEventGenerator();
-    mTouchEventGenerator.setView(new UserEventSource() {
+    UserEventSource eventSource = new UserEventSource() {
       @Override
       public Point viewToWorld(Point viewPt) {
         // Transform point from device to algorithm coordinates
@@ -113,7 +118,11 @@ public class Editor {
       public UserEventManager getManager() {
         return mUserEventManager;
       }
-    }, mEditorView);
+    };
+
+    TouchEventGenerator eventGenerator = new TouchEventGenerator(eventSource);
+    eventGenerator.setView(mEditorView);
+    prepareGestures(eventGenerator);
 
     mUserEventManager.setListener(new UserEvent.Listener() {
       @Override
@@ -124,6 +133,30 @@ public class Editor {
       }
     });
     mUserEventManager.setEnabled(true);
+  }
+
+  /**
+   * Attach an event filter to intercept gestures and send them to an
+   * appropriate button widget
+   * 
+   * @param touchListener
+   *          listener to prepend the gesture filter to
+   */
+  private void prepareGestures(MyTouchListener touchListener) {
+    unimp("rename StrokeSetCollection -> GestureSet?");
+    unimp("make utility function for this read & parse json routine");
+    StrokeSetCollection gestures = null;
+    try {
+      InputStream stream = Editor.class.getResourceAsStream("gestures.json");
+      String json = Files.readString(stream);
+      gestures = StrokeSetCollection.parseJSON(json);
+    } catch (Exception e) {
+      die(e);
+    }
+    GestureEventFilter filter = new GestureEventFilter();
+    filter.setGestures(gestures);
+    filter.setListener(ButtonWidget.GESTURE_LISTENER);
+    filter.prependTo(touchListener);
   }
 
   /**
@@ -833,7 +866,6 @@ public class Editor {
     return mLastEditableObjectType;
   }
 
-  private TouchEventGenerator mTouchEventGenerator;
   private UserEventManager mUserEventManager;
   private UserOperation mCutOper;
   private UserOperation mCopyOper;

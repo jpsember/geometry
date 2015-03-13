@@ -482,8 +482,7 @@ public class Polygon implements Iterable<Point>, Renderable {
 
   public void transformToFitRect(Rect rect, boolean preserveAspectRatio) {
     Rect bounds = bounds();
-    Matrix t = MyMath.calcRectFitRectTransform(bounds, rect,
-        preserveAspectRatio);
+    Matrix t = calcRectFitRectTransform(bounds, rect, preserveAspectRatio);
     apply(t);
   }
 

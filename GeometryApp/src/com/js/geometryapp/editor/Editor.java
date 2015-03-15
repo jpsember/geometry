@@ -1,6 +1,5 @@
 package com.js.geometryapp.editor;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,6 @@ import com.js.editor.UserEventSource;
 import com.js.editor.UserOperation;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.Disc;
-import com.js.basic.Files;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.geometry.Polygon;
@@ -143,13 +141,10 @@ public class Editor {
    *          listener to prepend the gesture filter to
    */
   private void prepareGestures(MyTouchListener touchListener) {
-    unimp("rename StrokeSetCollection -> GestureSet?");
-    unimp("make utility function for this read & parse json routine");
     GestureSet gestures = null;
     try {
-      InputStream stream = Editor.class.getResourceAsStream("gestures.json");
-      String json = Files.readString(stream);
-      gestures = GestureSet.parseJSON(json);
+      gestures = GestureSet
+          .readFromClassResource(Editor.class, "gestures.json");
     } catch (Exception e) {
       die(e);
     }

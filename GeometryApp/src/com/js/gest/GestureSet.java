@@ -1,5 +1,7 @@
 package com.js.gest;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -8,16 +10,24 @@ import java.util.TreeSet;
 
 import org.json.JSONException;
 
+import com.js.basic.Files;
+
 import static com.js.basic.Tools.*;
 
 public class GestureSet {
 
   public static GestureSet parseJSON(String script) throws JSONException {
-
     GestureSetParser p = new GestureSetParser();
     GestureSet collection = new GestureSet();
     p.parse(script, collection);
     return collection;
+  }
+
+  public static GestureSet readFromClassResource(Class klass, String filename)
+      throws IOException, JSONException {
+    InputStream stream = klass.getResourceAsStream(filename);
+    String json = Files.readString(stream);
+    return GestureSet.parseJSON(json);
   }
 
   /**

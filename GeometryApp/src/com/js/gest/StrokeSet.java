@@ -14,6 +14,7 @@ import com.js.basic.Freezable;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.basic.Rect;
+import com.js.gest.Stroke.DataPoint;
 
 import static com.js.basic.Tools.*;
 
@@ -22,6 +23,17 @@ import static com.js.basic.Tools.*;
  * gesture
  */
 public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
+
+  static final String KEY_NAME = "name";
+  static final String KEY_ALIAS = "alias";
+  static final String KEY_STROKES = "strokes";
+
+  public StrokeSet() {
+  }
+
+  public StrokeSet(String name) {
+    setName(name);
+  }
 
   /**
    * Normalize this stroke set to default length
@@ -61,12 +73,14 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     s.addPoint(eventTime - mInitialEventTime, pt);
   }
 
-  static StrokeSet buildFromStrokes(List<Stroke> strokes) {
+  public static StrokeSet buildFromStrokes(List<Stroke> strokes,
+      StrokeSet metaDataSource) {
     StrokeSet s = new StrokeSet();
+    if (metaDataSource != null)
+      s.inheritMetaDataFrom(metaDataSource);
     for (Stroke stroke : strokes) {
       s.mStrokes.add(stroke);
     }
-    s.freeze();
     return s;
   }
 
@@ -100,7 +114,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     // Calculate bounds, now that frozen
     mBounds = calculateBounds();
     if (mBounds == null)
-      throw new IllegalStateException("set has no points");
+      throw new IllegalStateException("set " + name() + " has no points");
     for (Stroke s : mStrokes)
       s.freeze();
     super.freeze();
@@ -120,37 +134,33 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     return mStrokes.isEmpty();
   }
 
-  public String toJSON(String name) throws JSONException {
-    return StrokeSetCollectionParser.strokeSetToJSON(this, name);
+  public String toJSON() throws JSONException {
+    assertNamed();
+    StringBuilder sb = new StringBuilder(",{");
+    quote(sb, KEY_NAME);
+    sb.append(':');
+    quote(sb, name());
+    sb.append(',');
+    if (hasAlias()) {
+      quote(sb, KEY_ALIAS);
+      sb.append(':');
+      quote(sb, aliasName());
+    }
+    quote(sb, KEY_STROKES);
+    sb.append(":[");
+    for (int i = 0; i < size(); i++) {
+      if (i != 0)
+        sb.append(',');
+      sb.append(get(i).toJSONArray());
+    }
+    sb.append("]}\n");
+    return sb.toString();
   }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder("StrokeSet\n");
-    for (int strokeIndex = 0; strokeIndex < mStrokes.size(); strokeIndex++) {
-      Stroke stroke = mStrokes.get(strokeIndex);
-
-      // Display which current id corresponds to this stroke, or '-' if none
-      String strokeIdString = "-";
-      for (int mapStrokeId : mStrokeIdToIndexMap.keySet()) {
-        int mapStrokeIndex = mStrokeIdToIndexMap.get(mapStrokeId);
-        if (mapStrokeIndex == strokeIndex) {
-          strokeIdString = "" + mapStrokeId;
-          break;
-        }
-      }
-      sb.append(" id:" + strokeIdString + " #:" + strokeIndex + " ");
-      for (int i = 0; i < stroke.size(); i++) {
-        StrokePoint pt = stroke.get(i);
-        sb.append(d((int) pt.getPoint().x, 4));
-        if (i > 16) {
-          sb.append("...");
-          break;
-        }
-      }
-      sb.append("\n");
-    }
-    return sb.toString();
+  private static void quote(StringBuilder sb, String text) {
+    sb.append('"');
+    sb.append(text);
+    sb.append('"');
   }
 
   public Iterator<Stroke> iterator() {
@@ -176,8 +186,9 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
 
   @Override
   public Freezable getMutableCopy() {
-    assertFrozen();
     StrokeSet s = new StrokeSet();
+    s.mName = mName;
+    s.mAliasName = mAliasName;
     for (Stroke st : mStrokes) {
       s.mStrokes.add(mutableCopyOf(st));
     }
@@ -192,7 +203,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   private Rect calculateBounds() {
     Rect r = null;
     for (Stroke s : mStrokes) {
-      for (StrokePoint spt : s) {
+      for (DataPoint spt : s) {
         Point pt = spt.getPoint();
         if (r == null)
           r = new Rect(pt, pt);
@@ -235,7 +246,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   public StrokeSet applyTransform(Matrix transform) {
     StrokeSet transformedSet = mutableCopyOf(this);
     for (Stroke stroke : transformedSet) {
-      for (StrokePoint strokePoint : stroke) {
+      for (DataPoint strokePoint : stroke) {
         strokePoint.getPoint().apply(transform);
       }
     }
@@ -243,10 +254,52 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     return transformedSet;
   }
 
+  public String name() {
+    return mName;
+  }
+
+  public void setName(String name) {
+    mutate();
+    mName = name;
+  }
+
+  public void setAliasName(String aliasName) {
+    mutate();
+    mAliasName = aliasName;
+  }
+
+  /**
+   * Get the name of the stroke set this one is an alias of; returns our name if
+   * we are not an alias
+   */
+  String aliasName() {
+    if (mAliasName == null)
+      return mName;
+    return mAliasName;
+  }
+
+  boolean hasAlias() {
+    return mAliasName != null;
+  }
+
+  public void assertNamed() {
+    if (mName == null)
+      throw new IllegalStateException();
+  }
+
+  public void inheritMetaDataFrom(StrokeSet source) {
+    mutate();
+    mName = source.mName;
+    mAliasName = source.mAliasName;
+  }
+
+  private String mAliasName;
+  private String mName;
   private ArrayList<Stroke> mStrokes = new ArrayList();
   private Rect mBounds;
 
   // Only used when mutable
   private float mInitialEventTime;
   private Map<Integer, Integer> mStrokeIdToIndexMap = new HashMap();
+
 }

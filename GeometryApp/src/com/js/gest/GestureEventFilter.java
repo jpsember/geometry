@@ -9,7 +9,7 @@ import com.js.android.UITools;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.basic.Tools;
-import com.js.gest.StrokeSetCollection.Match;
+import com.js.gest.GestureSet.Match;
 
 import android.os.Handler;
 import android.view.MotionEvent;
@@ -39,7 +39,7 @@ public class GestureEventFilter extends MyTouchListener {
     mListener = listener;
   }
 
-  public void setGestures(StrokeSetCollection c) {
+  public void setGestures(GestureSet c) {
     mStrokeSetCollection = c;
   }
 
@@ -296,17 +296,15 @@ public class GestureEventFilter extends MyTouchListener {
     set = set.fitToRect(null);
     set = set.normalize();
 
-    MatcherParameters p = new MatcherParameters();
-    ArrayList<StrokeSetCollection.Match> matches = new ArrayList();
-    Match match = mStrokeSetCollection.findMatch(set, matches, p);
+    ArrayList<GestureSet.Match> matches = new ArrayList();
+    Match match = mStrokeSetCollection.findMatch(set, null, matches);
     do {
       if (match == null)
         break;
-
       if (match.cost() >= 0.15f)
         break;
       mMatch = match;
-      mListener.processGesture(mMatch.setEntry().aliasName());
+      mListener.processGesture(mMatch.strokeSet().aliasName());
     } while (false);
   }
 
@@ -330,12 +328,10 @@ public class GestureEventFilter extends MyTouchListener {
   private long mStartEventTimeMillis;
 
   private static Handler sHandler = new Handler();
-  // private View mView;
-  // private MyTouchListener mTouchListener;
   private boolean mTraceActive;
   private Queue<MotionEvent> mEventQueue = new ArrayDeque();
   private boolean mPassingEventFlag;
   private int mState;
-  private StrokeSetCollection mStrokeSetCollection;
+  private GestureSet mStrokeSetCollection;
   private Match mMatch;
 }

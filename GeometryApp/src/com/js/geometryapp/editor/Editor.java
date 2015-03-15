@@ -42,7 +42,7 @@ import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.TextWidget;
 import com.js.gest.GestureEventFilter;
-import com.js.gest.StrokeSetCollection;
+import com.js.gest.GestureSet;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -145,11 +145,11 @@ public class Editor {
   private void prepareGestures(MyTouchListener touchListener) {
     unimp("rename StrokeSetCollection -> GestureSet?");
     unimp("make utility function for this read & parse json routine");
-    StrokeSetCollection gestures = null;
+    GestureSet gestures = null;
     try {
       InputStream stream = Editor.class.getResourceAsStream("gestures.json");
       String json = Files.readString(stream);
-      gestures = StrokeSetCollection.parseJSON(json);
+      gestures = GestureSet.parseJSON(json);
     } catch (Exception e) {
       die(e);
     }

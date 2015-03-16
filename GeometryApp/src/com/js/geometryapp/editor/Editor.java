@@ -150,6 +150,7 @@ public class Editor {
       die(e);
     }
     GestureEventFilter filter = new GestureEventFilter();
+    gestures.setTraceStatus(true);
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
       @Override

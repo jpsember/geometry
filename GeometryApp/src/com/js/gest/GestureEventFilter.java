@@ -35,7 +35,7 @@ public class GestureEventFilter extends MyTouchListener {
     // mTraceActive = true;
 
     // Enable this line to display gesture vs. non-gesture decision:
-    // mTracker = new DecisionTracker();
+    mTracker = new DecisionTracker();
   }
 
   public void setListener(Listener listener) {
@@ -325,9 +325,13 @@ public class GestureEventFilter extends MyTouchListener {
     do {
       if (match == null)
         break;
-      unimp("choose more sophisticated match decision");
-      if (match.cost() >= 1200)
-        break;
+      // If the match cost is significantly less than the second best, make a
+      // decision
+      if (matches.size() >= 2) {
+        Match match2 = matches.get(1);
+        if (match.cost() * 1.5f > match2.cost())
+          break;
+      }
       mMatch = match;
       mListener.processGesture(mMatch.strokeSet().aliasName());
     } while (false);

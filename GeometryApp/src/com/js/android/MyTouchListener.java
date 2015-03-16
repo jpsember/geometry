@@ -3,7 +3,6 @@ package com.js.android;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import static com.js.basic.Tools.*;
 
 /**
  * A wrapper for OnTouchListener() that supports chaining.
@@ -44,7 +43,6 @@ public class MyTouchListener implements OnTouchListener {
   }
 
   public void prependTo(MyTouchListener listener) {
-    pr(nameOf(this) + " prepend to " + nameOf(listener));
     if (listener == null)
       throw new IllegalArgumentException();
     if (listener.mView == null)

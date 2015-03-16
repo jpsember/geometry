@@ -9,9 +9,12 @@ import com.js.basic.Point;
 
 class StrokeSetMatcher {
 
-  public StrokeSetMatcher(StrokeSet a, StrokeSet b, MatcherParameters param) {
+  public void setArguments(StrokeSet a, StrokeSet b, MatcherParameters param) {
+    mSimilarityFound = false;
     mStrokeA = frozen(a);
     mStrokeB = frozen(b);
+    setMaximumCost(StrokeMatcher.INFINITE_COST);
+
     if (param == null)
       param = MatcherParameters.DEFAULT;
     mParam = param;
@@ -20,21 +23,38 @@ class StrokeSetMatcher {
           "Different number of strokes in each set");
   }
 
-  public float similarity() {
-    if (mSimilarity == null) {
+  /**
+   * Set upper bound on the cost. The algorithm will exit early if it determines
+   * the cost will exceed this bound
+   */
+  public void setMaximumCost(float maximumCost) {
+    mMaximumCost = maximumCost;
+  }
+
+  public float cost() {
+    if (!mSimilarityFound) {
       int[] bOrder = calcBestOrderForB();
       float totalCost = 0;
       int numberOfStrokes = mStrokeA.size();
       for (int i = 0; i < numberOfStrokes; i++) {
         Stroke sa = mStrokeA.get(i);
         Stroke sb = mStrokeB.get(bOrder[i]);
-        StrokeMatcher m = new StrokeMatcher(sa, sb, mParam);
-        float cost = m.similarity();
+        mStrokeMatcher.setArguments(sa, sb, mParam);
+        mStrokeMatcher.setMaximumCost(mMaximumCost);
+        float cost = mStrokeMatcher.cost();
         totalCost += cost;
       }
-      mSimilarity = totalCost / numberOfStrokes;
+      mSimilarity = Math.min(totalCost, StrokeMatcher.INFINITE_COST);
+      mSimilarityFound = true;
     }
     return mSimilarity;
+  }
+
+  /**
+   * Get the matcher used to compare individual strokes
+   */
+  StrokeMatcher strokeMatcher() {
+    return mStrokeMatcher;
   }
 
   private int[] calcBestOrderForB() {
@@ -114,10 +134,13 @@ class StrokeSetMatcher {
     }
   }
 
+  private StrokeMatcher mStrokeMatcher = new StrokeMatcher();
   private StrokeSet mStrokeA;
   private StrokeSet mStrokeB;
+  private float mMaximumCost = StrokeMatcher.INFINITE_COST;
   private MatcherParameters mParam;
-  private Float mSimilarity;
+  private boolean mSimilarityFound;
+  private float mSimilarity;
   private int[] mPermuteArray;
   private ArrayList<int[]> mPermutations;
 }

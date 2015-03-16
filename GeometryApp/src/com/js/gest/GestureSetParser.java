@@ -66,7 +66,7 @@ class GestureSetParser {
     String originalName = map.optString(StrokeSet.KEY_ALIAS);
     if (originalName.isEmpty())
       throw new JSONException("Entry has no name and is not an alias:\n" + map);
-    String name = "_" + mUniquePrefixIndex + "_" + originalName;
+    String name = "$" + mUniquePrefixIndex;
     mUniquePrefixIndex++;
     return name;
   }
@@ -77,8 +77,6 @@ class GestureSetParser {
    * "alias":["name", options,....] =>
    * 
    * "alias":"name", "uses":["name", options, ...]
-   * 
-   * @throws JSONException
    * 
    */
   private void preprocessEntry(JSONObject map) throws JSONException {

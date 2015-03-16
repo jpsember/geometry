@@ -66,6 +66,10 @@ public class GestureSet {
     mEntriesMap.put(set.name(), set);
   }
 
+  public void setTraceStatus(boolean trace) {
+    mTrace = trace;
+  }
+
   /**
    * Find a match for a gesture, if possible
    * 
@@ -80,26 +84,43 @@ public class GestureSet {
    */
   public Match findMatch(StrokeSet inputSet, MatcherParameters param,
       List<Match> resultsList) {
+    if (mTrace)
+      pr("GestureSet findMatch");
+    if (param == null)
+      param = MatcherParameters.DEFAULT;
     if (resultsList != null)
       resultsList.clear();
     TreeSet<Match> results = new TreeSet();
-    for (String setName : mEntriesMap.keySet()) {
-      StrokeSet set = mEntriesMap.get(setName);
-      if (set.size() != inputSet.size())
+    mMaximumCost = StrokeMatcher.INFINITE_COST;
+
+    prepareAliasLowCostMap();
+
+    for (String gestureName : mEntriesMap.keySet()) {
+      StrokeSet gesture = mEntriesMap.get(gestureName);
+      if (gesture.size() != inputSet.size())
         continue;
-      StrokeSetMatcher m = new StrokeSetMatcher(set, inputSet, param);
-      Match match = new Match(set, m.similarity());
+
+      mMatcher.setArguments(gesture, inputSet, param);
+      setMaximumCost(gesture);
+      Match match = new Match(gesture, mMatcher.cost());
       results.add(match);
-      // If second entry is an alias of the first, throw it out; there's no need
-      // to keep it, since it shouldn't affect a match decision
-      if (results.size() >= 2) {
-        Iterator<Match> iter = results.iterator();
-        Match m1 = iter.next();
-        Match m2 = iter.next();
-        if (m1.strokeSet().aliasName() == m2.strokeSet().aliasName()) {
-          results.remove(m2);
-        }
-      }
+
+      updateAliasLowCostMap(gesture);
+
+      // Update the cutoff value to be some small multiple of the smallest (raw)
+      // cost yet seen.
+      // Scale the raw cost by the number of strokes since the cost of the set
+      // is the sum of the costs of the individual strokes.
+      float newLimit = mMatcher.cost() / inputSet.size();
+      newLimit *= param.maximumCostRatio();
+      mMaximumCost = Math.min(newLimit, mMaximumCost);
+      if (mTrace)
+        pr(" gesture: " + d(gestureName, "15p") + " cost:"
+            + dumpCost(mMatcher.cost()) + " max:" + dumpCost(mMaximumCost)
+            + " cells %:"
+            + d((int) (100 * mMatcher.strokeMatcher().cellsExaminedRatio())));
+
+      removeExtraneousAliasFromResults(results);
 
       // Throw out all but top three
       while (results.size() > 3)
@@ -113,6 +134,71 @@ public class GestureSet {
     }
 
     return results.first();
+  }
+
+  /**
+   * If the first two (sorted) entries are alias of the same gesture, throw out
+   * the second one, since it cannot influence a match decision
+   * 
+   * @param sortedMatchSet
+   */
+  private void removeExtraneousAliasFromResults(TreeSet<Match> sortedMatchSet) {
+    if (sortedMatchSet.size() < 2)
+      return;
+    Iterator<Match> iter = sortedMatchSet.iterator();
+    Match m1 = iter.next();
+    Match m2 = iter.next();
+    if (m1.strokeSet().aliasName().equals(m2.strokeSet().aliasName())) {
+      sortedMatchSet.remove(m2);
+    }
+  }
+
+  /**
+   * Set the maximum cost bound prior to matching
+   * 
+   * @param gesture
+   *          candidate gesture
+   */
+  private void setMaximumCost(StrokeSet gesture) {
+    float maximumCost = mMaximumCost;
+
+    // If an alias of this gesture was previously examined, use that cost as a
+    // hard upper bound (i.e. without a maximumCostRatio multiplier)
+    Float aliasMinCost = mAliasLowCostMap.get(gesture.aliasName());
+    if (aliasMinCost != null)
+      maximumCost = Math.min(mMaximumCost, aliasMinCost);
+    mMatcher.setMaximumCost(maximumCost);
+  }
+
+  private void prepareAliasLowCostMap() {
+    mAliasLowCostMap.clear();
+  }
+
+  /**
+   * Update the alias low cost map according to match that has just occurred
+   */
+  private void updateAliasLowCostMap(StrokeSet gesture) {
+    float currentCost = mMatcher.cost();
+    if (currentCost >= StrokeMatcher.INFINITE_COST)
+      return;
+    Float currentLowCost = mAliasLowCostMap.get(gesture.aliasName());
+    if (currentLowCost == null || currentLowCost > currentCost) {
+      if (mTrace) {
+        if (currentLowCost != null)
+          pr(" updating low cost for alias " + gesture.aliasName() + " to "
+              + currentCost);
+      }
+      mAliasLowCostMap.put(gesture.aliasName(), currentCost);
+    }
+  }
+
+  /**
+   * Utility method for converting a (raw) cost value to a string
+   */
+  private static String dumpCost(float cost) {
+    if (cost >= StrokeMatcher.INFINITE_COST)
+      return " ********";
+    return d(((int) cost), 8);
   }
 
   public static class Match implements Comparable {
@@ -140,13 +226,6 @@ public class GestureSet {
       if (diff == 0) {
         diff = String.CASE_INSENSITIVE_ORDER.compare(this.strokeSet().name(), m
             .strokeSet().name());
-        if (diff != 0) {
-          warning("comparisons matched exactly, this is unlikely: "
-              + this.strokeSet().name()
-              + " / "
-              + m.strokeSet().name()
-              + "\n and may be indicative of a spelling mistake in the 'source' options");
-        }
       }
       return diff;
     }
@@ -154,7 +233,7 @@ public class GestureSet {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      sb.append(d(cost()).substring(4));
+      sb.append(d((int) cost()));
       sb.append(' ');
       sb.append(strokeSet().name());
       if (strokeSet().hasAlias())
@@ -179,5 +258,14 @@ public class GestureSet {
 
   private Map<String, StrokeSet> mEntriesMap = new HashMap();
   private int mStrokeLength;
+  private boolean mTrace;
 
+  // Current upper bound for match
+  private float mMaximumCost;
+
+  // Map to record the lowest costs found for any alias of a
+  // particular gesture (so we use that cost as an upper bound for subsequent
+  // comparisons)
+  private Map<String, Float> mAliasLowCostMap = new HashMap();
+  private StrokeSetMatcher mMatcher = new StrokeSetMatcher();
 }

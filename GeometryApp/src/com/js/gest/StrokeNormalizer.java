@@ -9,7 +9,7 @@ import com.js.gest.Stroke.DataPoint;
 
 class StrokeNormalizer {
 
-  public static final int DEFAULT_DESIRED_STROKE_LENGTH = 32;
+  public static final int DEFAULT_DESIRED_STROKE_LENGTH = 16;
 
   /**
    * Normalize a stroke set to default length

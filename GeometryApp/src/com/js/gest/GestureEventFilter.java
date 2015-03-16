@@ -2,7 +2,7 @@ package com.js.gest;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Queue;
+import java.util.Deque;
 
 import com.js.android.MyTouchListener;
 import com.js.android.UITools;
@@ -33,6 +33,7 @@ public class GestureEventFilter extends MyTouchListener {
 
   public GestureEventFilter() {
     // mTraceActive = true;
+    mTracker = new DecisionTracker();
   }
 
   public void setListener(Listener listener) {
@@ -159,21 +160,35 @@ public class GestureEventFilter extends MyTouchListener {
     }, (long) (BUFFERING_TIME_MS * 1.5));
   }
 
+  private static Point rawLocation(MotionEvent event) {
+    return new Point(event.getRawX(), event.getRawY());
+  }
+
+  private static float elapsedTime(MotionEvent event1, MotionEvent event2) {
+    return (event2.getEventTime() - event1.getEventTime()) / 1000.0f;
+  }
+
   private void processBufferingState(MotionEvent event) {
+
+    if (mTracker != null)
+      mTracker.addEvent(event);
 
     MotionEvent startEvent = mEventQueue.peek();
     // Has enough time elapsed since start event to make a decision about
     // whether it's a gesture event?
-    long elapsed = 0;
-    if (startEvent != null)
-      elapsed = event.getEventTime() - startEvent.getEventTime();
-    if (elapsed > BUFFERING_TIME_MS) {
-      Point pt0 = new Point(startEvent.getRawX(), startEvent.getRawY());
-      Point pt = new Point(event.getRawX(), event.getRawY());
+    if (startEvent != null
+        && elapsedTime(startEvent, event) > BUFFERING_TIME_MS / 1000.0f) {
+      Point pt0 = rawLocation(startEvent);
+      Point pt = rawLocation(event);
       float distance = MyMath.distanceBetween(pt0, pt);
       pr("  ...distance=" + d(distance));
+      boolean isGesture = (distance > MIN_GESTURE_DISTANCE);
+      if (mTracker != null) {
+        mTracker.setDecision(isGesture);
+
+      }
       unimp("use a distance that's proportional to the device density");
-      if (distance > MIN_GESTURE_DISTANCE) {
+      if (isGesture) {
         setState(STATE_RECORDING);
         processRecordingState(event);
       } else {
@@ -323,6 +338,47 @@ public class GestureEventFilter extends MyTouchListener {
     void processGesture(String gestureName);
   }
 
+  /**
+   * For diagnosing gesture filter decision
+   */
+  private class DecisionTracker {
+    public void clear() {
+      mBuffer.setLength(0);
+    }
+
+    public void setDecision(boolean isGesture) {
+      print(" is gesture: " + d(isGesture));
+
+      System.out.println("\n----------------");
+      System.out.println(mBuffer);
+      System.out.println("\n");
+    }
+
+    public void addEvent(MotionEvent event) {
+      MotionEvent startEvent = mEventQueue.peekFirst();
+      if (startEvent == null)
+        startEvent = event;
+      Point loc = rawLocation(event);
+      MotionEvent prevEvent = mEventQueue.peekLast();
+      if (prevEvent == null) {
+        clear();
+        print("Initial event: " + UITools.dump(event));
+        return;
+      }
+      float timeSincePrev = elapsedTime(prevEvent, event);
+      Point prevLoc = rawLocation(prevEvent);
+      float velocity = MyMath.distanceBetween(loc, prevLoc) / timeSincePrev;
+      print(" t:" + d(timeSincePrev) + " v:" + d(velocity));
+    }
+
+    private void print(String message) {
+      mBuffer.append(message);
+      mBuffer.append('\n');
+    }
+
+    private StringBuilder mBuffer = new StringBuilder();
+  }
+
   // Stroke set from user touch event
   private StrokeSet mTouchStrokeSet;
   private Listener mListener;
@@ -330,9 +386,10 @@ public class GestureEventFilter extends MyTouchListener {
 
   private static Handler sHandler = new Handler();
   private boolean mTraceActive;
-  private Queue<MotionEvent> mEventQueue = new ArrayDeque();
+  private Deque<MotionEvent> mEventQueue = new ArrayDeque();
   private boolean mPassingEventFlag;
   private int mState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
+  private DecisionTracker mTracker;
 }

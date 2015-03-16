@@ -41,6 +41,7 @@ import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.TextWidget;
 import com.js.gest.GestureEventFilter;
 import com.js.gest.GestureSet;
+import com.js.gest.StrokeSet;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -150,7 +151,22 @@ public class Editor {
     }
     GestureEventFilter filter = new GestureEventFilter();
     filter.setGestures(gestures);
-    filter.setListener(ButtonWidget.GESTURE_LISTENER);
+    filter.setListener(new GestureEventFilter.Listener() {
+      @Override
+      public void strokeSetExtended(StrokeSet strokeSet) {
+      }
+
+      @Override
+      public void processGesture(String gestureName) {
+        AbstractWidget widget = mOptions.findWidget(gestureName);
+        if (widget == null || !(widget instanceof ButtonWidget)) {
+          warning("no button widget found for gesture: " + gestureName);
+          return;
+        }
+        ButtonWidget button = (ButtonWidget) widget;
+        button.performClick();
+      }
+    });
     filter.prependTo(touchListener);
   }
 

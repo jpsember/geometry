@@ -4,8 +4,6 @@ import java.util.Map;
 
 import com.js.geometry.R;
 import com.js.geometryapp.AlgorithmOptions;
-import com.js.gest.GestureEventFilter;
-import com.js.gest.StrokeSet;
 
 import android.content.res.TypedArray;
 import android.view.View;
@@ -16,17 +14,6 @@ import android.widget.LinearLayout;
 import static com.js.basic.Tools.*;
 
 public class ButtonWidget extends AbstractWidget {
-
-  public static final GestureEventFilter.Listener GESTURE_LISTENER = new GestureEventFilter.Listener() {
-    @Override
-    public void strokeSetExtended(StrokeSet strokeSet) {
-    }
-
-    @Override
-    public void processGesture(String gestureName) {
-      pr("...ignoring gesture '" + gestureName + "'");
-    }
-  };
 
   public ButtonWidget(AlgorithmOptions options, Map attributes) {
     super(options, attributes);
@@ -94,6 +81,43 @@ public class ButtonWidget extends AbstractWidget {
       mImageButton.setEnabled(enabled);
     else
       mButton.setEnabled(enabled);
+  }
+
+  @Override
+  public boolean isEnabled() {
+    if (isIcon())
+      return mImageButton.isEnabled();
+    else
+      return mButton.isEnabled();
+  }
+
+  public void performClick() {
+    if (!isEnabled())
+      return;
+    final long UNPRESS_DELAY = 300;
+    if (isIcon()) {
+      final ImageButton button = mImageButton;
+      button.performClick();
+      button.setPressed(true);
+      button.invalidate();
+      button.postDelayed(new Runnable() {
+        public void run() {
+          button.setPressed(false);
+          button.invalidate();
+        }
+      }, UNPRESS_DELAY);
+    } else {
+      final Button button = mButton;
+      button.performClick();
+      button.setPressed(true);
+      button.invalidate();
+      button.postDelayed(new Runnable() {
+        public void run() {
+          button.setPressed(false);
+          button.invalidate();
+        }
+      }, UNPRESS_DELAY);
+    }
   }
 
   private boolean isIcon() {

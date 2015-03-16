@@ -230,6 +230,10 @@ public abstract class AbstractWidget {
 	public void setEnabled(boolean state) {
 	}
 
+  public boolean isEnabled() {
+    return true;
+  }
+
 	/**
 	 * Construct a label for this widget
 	 */

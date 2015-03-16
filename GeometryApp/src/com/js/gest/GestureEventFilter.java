@@ -301,7 +301,8 @@ public class GestureEventFilter extends MyTouchListener {
     do {
       if (match == null)
         break;
-      if (match.cost() >= 0.15f)
+      unimp("choose more sophisticated match decision");
+      if (match.cost() >= 1200)
         break;
       mMatch = match;
       mListener.processGesture(mMatch.strokeSet().aliasName());

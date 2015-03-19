@@ -152,7 +152,9 @@ public class Editor {
     }
     GestureEventFilter filter = new GestureEventFilter();
     gestures.setTraceStatus(true);
-    filter.setFloatingViewMode();
+    filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
+    mGesturePanel = filter.constructView(context());
+    filter.setView(mGesturePanel);
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
       @Override
@@ -170,7 +172,6 @@ public class Editor {
         button.performClick();
       }
     });
-    filter.prependTo(touchListener);
   }
 
   /**
@@ -269,14 +270,7 @@ public class Editor {
     }
     mOptions.popView();
 
-    // Add a gesture panel
-    {
-      unimp("make gesture panel functional");
-      View v3 = new View(context());
-      applyTestColor(v3, Color.RED);
-      LayoutParams p = layoutParams(false, 1);
-      mOptions.addView(v3, p);
-    }
+    mOptions.addView(mGesturePanel, layoutParams(false, 1));
 
     mOptions.popView();
     mOptions.popView();
@@ -933,4 +927,5 @@ public class Editor {
   private EditorState mState;
   // The most recent frozen snapshot of the editor state
   private EditorState mStateSnapshot;
+  private View mGesturePanel;
 }

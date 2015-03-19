@@ -14,7 +14,7 @@ import android.view.View;
 
 public class GesturePanel {
 
-  private static final float PADDING = 16.0f;
+  private static final float PADDING = 8.0f;
   private static final float MINIMIZED_HEIGHT = 32;
 
   /**
@@ -47,7 +47,7 @@ public class GesturePanel {
     // If no scaled version exists, create one
     StrokeSet scaledSet = mScaledStrokeSets.get(mDisplayedStrokeSet.name());
     Rect r = new Rect(getBounds());
-    final float STROKE_INSET = PADDING * 1.6f;
+    final float STROKE_INSET = PADDING * 1.8f;
     r.inset(STROKE_INSET, STROKE_INSET);
     if (scaledSet == null) {
       scaledSet = mDisplayedStrokeSet.fitToRect(r);

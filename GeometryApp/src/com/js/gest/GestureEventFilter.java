@@ -7,17 +7,23 @@ import java.util.Iterator;
 
 import com.js.android.MyActivity;
 import com.js.android.MyTouchListener;
-import com.js.android.UITools;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.os.Handler;
 import android.view.MotionEvent;
+import android.view.View;
 import static com.js.basic.Tools.*;
+import static com.js.android.UITools.*;
 
 public class GestureEventFilter extends MyTouchListener {
+
+  public static final int MODE_OWNVIEW = 1;
+  public static final int MODE_SHAREDVIEW = 2;
+  public static final int MODE_FLOATINGVIEW = 3;
 
   // User must move by a certain distance within this time in order to switch
   // from BUFFERING to RECORDING (instead of to FORWARDING)
@@ -40,17 +46,64 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   /**
-   * Have event filter operate in 'floating view' mode. A small translucent
-   * rectangle is drawn in the view, and gestures must be started within it
+   * Set mode of operation with respect to views.
+   * 
+   * 
+   * MODE_OWNVIEW:
+   * 
+   * The filter has its own view, dedicated to gestures
+   * 
+   * MODE_SHAREDVIEW:
+   * 
+   * The filter shares an existing view, and does its best to determine whether
+   * a touch sequence is a gesture or not
+   * 
+   * MODE_FLOATINGVIEW:
+   * 
+   * Operates in 'floating view' mode. A small translucent rectangle is drawn in
+   * the view, and gestures must be started within it
    */
-  public void setFloatingViewMode() {
-    if (floatingViewMode())
+  public void setViewMode(int mode) {
+    if (mViewMode != 0)
       throw new IllegalStateException();
-    mFloatingViewMode = true;
+    if (mode < MODE_OWNVIEW || mode > MODE_FLOATINGVIEW)
+      throw new IllegalArgumentException();
+    mViewMode = mode;
   }
 
-  private GesturePanel floatingPanel() {
-    if (!floatingViewMode())
+  /**
+   * Construct a view to be used for displaying the gesture panel (MODE_OWNVIEW
+   * only)
+   */
+  public View constructView(Context context) {
+    if (mConstructedView)
+      throw new IllegalStateException();
+    if (viewMode() != MODE_OWNVIEW)
+      throw new IllegalStateException();
+    View v = new OurView(context);
+    mConstructedView = true;
+    return v;
+  }
+
+  /**
+   * View subclass that calls draw() when onDraw is called (this will probably
+   * be refactored later, so that GesturePanel is a subclass of View)
+   */
+  private class OurView extends View {
+
+    public OurView(Context context) {
+      super(context);
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+      super.onDraw(canvas);
+      GestureEventFilter.this.draw(canvas);
+    }
+  }
+
+  private GesturePanel gesturePanel() {
+    if (sharedViewMode())
       throw new IllegalStateException();
     if (mGesturePanel == null) {
       mGesturePanel = new GesturePanel(getView());
@@ -58,10 +111,14 @@ public class GestureEventFilter extends MyTouchListener {
     return mGesturePanel;
   }
 
+  private boolean sharedViewMode() {
+    return viewMode() == MODE_SHAREDVIEW;
+  }
+
   public void draw(Canvas canvas) {
-    if (!floatingViewMode())
+    if (sharedViewMode())
       return;
-    floatingPanel().draw(canvas);
+    gesturePanel().draw(canvas);
   }
 
   public void setListener(Listener listener) {
@@ -78,6 +135,14 @@ public class GestureEventFilter extends MyTouchListener {
     if (state() != STATE_UNATTACHED)
       throw new IllegalStateException();
     super.prependTo(listener);
+    setState(STATE_DORMANT);
+  }
+
+  @Override
+  public void setView(View view) {
+    if (viewMode() != MODE_OWNVIEW)
+      throw new IllegalStateException();
+    super.setView(view);
     setState(STATE_DORMANT);
   }
 
@@ -167,13 +232,19 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
-  public boolean floatingViewMode() {
-    return mFloatingViewMode;
+  private int viewMode() {
+    if (mViewMode == 0)
+      throw new IllegalStateException("view mode undefined");
+    return mViewMode;
+  }
+
+  private boolean floatingViewMode() {
+    return viewMode() == MODE_FLOATINGVIEW;
   }
 
   private void processDormantState(MotionEvent event) {
     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-      if (!floatingViewMode()) {
+      if (sharedViewMode()) {
         // Post an event to switch to FORWARDING automatically in case user
         // doesn't trigger any further events for a while
         postForwardTestEvent();
@@ -216,15 +287,15 @@ public class GestureEventFilter extends MyTouchListener {
     if (mTracker != null)
       mTracker.addEvent(event);
 
-    if (floatingViewMode()) {
+    if (!sharedViewMode()) {
       if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
         Point touchLoc = new Point(event.getX(), event.getY());
-        if (floatingPanel().containsPoint(touchLoc)) {
+        if (gesturePanel().containsPoint(touchLoc)) {
 
           // If panel is minimized, maximize it, and ignore the rest of this
           // touch sequence
-          if (floatingPanel().isMinimized()) {
-            floatingPanel().setMinimized(false);
+          if (gesturePanel().isMinimized()) {
+            gesturePanel().setMinimized(false);
             setState(STATE_IGNORING);
           } else {
             setState(STATE_RECORDING);
@@ -333,10 +404,10 @@ public class GestureEventFilter extends MyTouchListener {
 
   @Override
   public boolean onTouch(MotionEvent event) {
-    trace("GestureEventFilter, onTouch event " + UITools.dump(event)
+    trace("GestureEventFilter, onTouch event " + dump(event)
         + ", passing events: " + d(mPassingEventFlag));
     if (event.getActionMasked() != MotionEvent.ACTION_MOVE)
-      trace("onTouch: " + UITools.dump(event) + " state " + stateName(state()));
+      trace("onTouch: " + dump(event) + " state " + stateName(state()));
 
     // If we're forwarding events to the original handler, do so
     if (mPassingEventFlag) {
@@ -391,10 +462,9 @@ public class GestureEventFilter extends MyTouchListener {
     if (mTouchStrokeSet.isTap()) {
       // If panel is maximized, minimize it
       if (floatingViewMode()) {
-        floatingPanel().setMinimized(true);
+        gesturePanel().setMinimized(true);
         return;
       }
-
       mListener.processGesture(GestureSet.GESTURE_TAP);
       return;
     }
@@ -416,8 +486,8 @@ public class GestureEventFilter extends MyTouchListener {
     }
     mMatch = match;
     mListener.processGesture(mMatch.strokeSet().aliasName());
-    if (floatingViewMode()) {
-      floatingPanel().setGesture(mMatch.strokeSet());
+    if (!sharedViewMode()) {
+      gesturePanel().setGesture(mMatch.strokeSet());
     }
   }
 
@@ -459,7 +529,7 @@ public class GestureEventFilter extends MyTouchListener {
       MotionEvent prevEvent = mEventQueue.peekLast();
       if (prevEvent == null) {
         clear();
-        print("Initial event: " + UITools.dump(event));
+        print("Initial event: " + dump(event));
         return;
       }
       float timeSincePrev = elapsedTime(prevEvent, event);
@@ -489,6 +559,7 @@ public class GestureEventFilter extends MyTouchListener {
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private DecisionTracker mTracker;
-  private boolean mFloatingViewMode;
   private GesturePanel mGesturePanel;
+  private int mViewMode;
+  private boolean mConstructedView;
 }

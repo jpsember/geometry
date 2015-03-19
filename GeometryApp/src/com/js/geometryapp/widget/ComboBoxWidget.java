@@ -40,7 +40,7 @@ public class ComboBoxWidget extends AbstractWidget {
 			mKeys.addAll((List) comboOptions);
 		}
 
-		getView().addView(buildLabelView(true));
+    getView().addView(buildLabelView(getLabel(true)));
     getView().addView(mSpinner, layoutParams(false, 0));
 	}
 

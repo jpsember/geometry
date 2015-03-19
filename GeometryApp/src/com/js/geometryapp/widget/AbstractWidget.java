@@ -9,11 +9,9 @@ import com.js.android.UITools;
 import com.js.geometryapp.AlgorithmOptions;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import static com.js.basic.Tools.*;
@@ -241,9 +239,8 @@ public abstract class AbstractWidget {
     if (!labelText.isEmpty()) {
       TextView label = new TextView(context());
       label.setText(labelText);
-      // label.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
-      // LayoutParams.MATCH_PARENT));
-      mPrimaryView.addView(label, layoutParams(mPrimaryView, 0));
+      mPrimaryView.addView(label, new LayoutParams(LayoutParams.MATCH_PARENT,
+          LayoutParams.MATCH_PARENT));
     }
   }
 
@@ -255,38 +252,29 @@ public abstract class AbstractWidget {
     throw new UnsupportedOperationException();
   }
 
-  public static View buildLabelView(Context context, String labelText) {
-
+  public View buildLabelView(String labelText) {
     // Place the label within a separate container, following an expanding
     // view to achieve right-justified text
-
-    TextView label = new TextView(context);
-    label.setText(labelText);
-
-    warning("fix up some of the alignment issues here by reverting");
-    LinearLayout container = new LinearLayout(context);
-    container.setOrientation(LinearLayout.VERTICAL);
-
-    LinearLayout.LayoutParams p = UITools.layoutParams(false, 0);
+    LinearLayout container = linearLayout(context(), false);
+    // Store the label container's parameters within it, so client doesn't have
+    // to construct one when adding
+    LinearLayout.LayoutParams p = UITools.layoutParams(container, 0);
     p.width = MyActivity.getResolutionInfo().inchesToPixelsUI(.8f);
-    p.gravity = Gravity.BOTTOM;
     container.setLayoutParams(p);
 
-    p = UITools.layoutParams(false, 1);
-    p.gravity = Gravity.BOTTOM;
-    container.addView(new FrameLayout(context), p);
-
-    p = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-        LayoutParams.WRAP_CONTENT);
-    p.gravity = Gravity.RIGHT;
-    container.addView(label, p);
-
+    {
+      p = layoutParams(container, 1.0f);
+      // Give fill a fixed but small height, otherwise it will explode in size
+      p.height = 1;
+      View filler = new View(context());
+      container.addView(filler, p);
+    }
+    {
+      TextView label = new TextView(context());
+      label.setText(labelText);
+      container.addView(label, layoutParams(container, 0));
+    }
     return container;
-  }
-
-  public View buildLabelView(boolean addColon) {
-    String labelText = getLabel(addColon);
-    return buildLabelView(context(), labelText);
   }
 
   public static interface Listener {

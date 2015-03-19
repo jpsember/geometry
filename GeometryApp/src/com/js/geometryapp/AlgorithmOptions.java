@@ -10,12 +10,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
-import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
 import com.js.basic.JSONTools;
 import com.js.geometryapp.editor.Editor;
@@ -171,16 +169,6 @@ public class AlgorithmOptions {
     TextWidget w = new TextWidget(this, attributes);
     addWidget(w);
     return w;
-  }
-
-  public void addLabel(String label) {
-    WidgetGroup w = currentWidgetGroup();
-    LinearLayout.LayoutParams p = layoutParams(false, 0);
-    p.width = MyActivity.getResolutionInfo().inchesToPixelsUI(.8f);
-    p.gravity = Gravity.BOTTOM;
-    // TODO: is vertical centering being attempted elsewhere, e.g., within
-    // buildLabelView?
-    w.addView(AbstractWidget.buildLabelView(getContext(), label), p);
   }
 
   public TextWidget addHeader(String content) {

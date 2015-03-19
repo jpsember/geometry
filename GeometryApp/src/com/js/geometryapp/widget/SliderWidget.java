@@ -41,7 +41,7 @@ public class SliderWidget extends AbstractWidget {
     });
 
     if (boolAttr(OPTION_HAS_LABEL, true))
-      getView().addView(buildLabelView(true));
+      getView().addView(buildLabelView(getLabel(true)));
 
     LinearLayout.LayoutParams p = layoutParams(getView(), 1);
     p.height = intAttr(OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT);

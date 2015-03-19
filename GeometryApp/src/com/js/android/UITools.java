@@ -44,6 +44,9 @@ public final class UITools {
       view.setBackgroundColor(debugColor());
   }
 
+  /**
+   * Apply a background color to a view, and print a warning
+   */
   public static void applyTestColor(View view, int color) {
     warning("applying test color to view " + nameOf(view));
     view.setBackgroundColor(color);

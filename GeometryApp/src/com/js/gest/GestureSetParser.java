@@ -18,6 +18,10 @@ import com.js.gest.Stroke.DataPoint;
 
 import static com.js.basic.Tools.*;
 
+import static com.js.gest.StrokeSet.KEY_ALIAS;
+import static com.js.gest.StrokeSet.KEY_NAME;
+import static com.js.gest.StrokeSet.KEY_STROKES;
+
 class GestureSetParser {
 
   /**
@@ -27,19 +31,47 @@ class GestureSetParser {
    * 
    * gesture_set := [ entry* ]
    * 
-   * Each entry is a map.  Each map contains exactly one of NAME or ALIAS,
+   * Each entry is a map.  
+   * 
+   * Each map contains exactly one of NAME or ALIAS,
    * and exactly one of STROKES or USES.
+   * 
+   * "name" :"x"    
+   *   assigns gesture the unique name "x"
+   * "alias" : "x"
+   *   assigns gesture a unique (random) name, and makes it an alias of gesture named "x"
+   * "strokes" : [ [...],[...]..]
+   *   defines the stroke set
+   * "uses" : "x"
+   *   makes the gesture use the same stroke as that of gesture with name "x"
+   *   (which must have a "strokes" mapping)
+   * "transform" : ["option"...]
+   *   specify which transformations, if any, are to be applied to the strokes;
+   *   options include "fliphorz","flipvert","flipboth","reverse"
+   * 
+   * These boolean mappings are also supported:
+   * 
+   * "fliphorz":true
+   * "flipvert":true
+   * "flipboth":true
+   * "reverse":true
+   * 
+   * If present, they each generate another gesture entry, an alias for this one (or for
+   * the one that this one is an alias of), with the particular transform added to this one's
+   * "transform" options
    * 
    * </pre>
    */
   private static final String KEY_USES = "uses";
+  private static final String KEY_TRANSFORM = "transform";
+  private static final boolean SHOW_PREPROCESSING = false;
 
   public void parse(String script, GestureSet collection) throws JSONException {
 
-    JSONArray array = JSONTools.parseArray(script);
+    mParsedArray = JSONTools.parseArray(script);
 
     // Pass 1: read all of the entries into our map
-    populateMapFromArray(array);
+    populateMapFromArray();
 
     // Pass 2: process all entries which contain actual strokes, instead of
     // referencing others
@@ -63,52 +95,176 @@ class GestureSetParser {
   }
 
   private String generateNameForAlias(JSONObject map) throws JSONException {
-    String originalName = map.optString(StrokeSet.KEY_ALIAS);
+    String originalName = map.optString(KEY_ALIAS);
     if (originalName.isEmpty())
       throw new JSONException("Entry has no name and is not an alias:\n" + map);
-    String name = "$" + mUniquePrefixIndex;
+    String name = "$" + mUniquePrefixIndex + "_" + originalName;
     mUniquePrefixIndex++;
     return name;
   }
 
-  /**
-   * Perform preprocessing on a gesture entry, if appropriate
-   * 
-   * "alias":["name", options,....] =>
-   * 
-   * "alias":"name", "uses":["name", options, ...]
-   * 
-   */
-  private void preprocessEntry(JSONObject map) throws JSONException {
-    Object aliasObject = map.opt(StrokeSet.KEY_ALIAS);
-    if (aliasObject != null) {
-      if (aliasObject instanceof JSONArray) {
-        JSONArray array = (JSONArray) aliasObject;
-        String originalName = array.getString(0);
-        map.put(StrokeSet.KEY_ALIAS, originalName);
-        map.put(KEY_USES, array);
+  private void preprocessUnpackAliasList(JSONObject map) throws JSONException {
+    // Unpack alias list?
+    Object aliasObject = map.opt(KEY_ALIAS);
+    if (aliasObject == null)
+      return;
+    if (!(aliasObject instanceof JSONArray))
+      return;
+    if (SHOW_PREPROCESSING)
+      pr("Unpacking alias list: " + map);
+    JSONArray array = (JSONArray) aliasObject;
+    String originalName = array.getString(0);
+    map.put(KEY_ALIAS, originalName);
+    map.put(KEY_USES, originalName);
+    JSONArray transform = (JSONArray) map.optJSONArray(KEY_TRANSFORM);
+    if (transform == null) {
+      transform = new JSONArray();
+      map.put(KEY_TRANSFORM, transform);
+    }
+    for (int i = 1; i < array.length(); i++)
+      transform.put(array.getString(i));
+    if (SHOW_PREPROCESSING)
+      pr(" result: " + map);
+  }
+
+  private void preprocessUnpackUsesList(JSONObject map) throws JSONException {
+    // Unpack uses list?
+    Object usesObject = map.opt(KEY_USES);
+    if (usesObject == null)
+      return;
+    if (!(usesObject instanceof JSONArray))
+      return;
+    if (SHOW_PREPROCESSING)
+      pr("Unpacking uses list: " + map);
+    JSONArray array = (JSONArray) usesObject;
+    String sourceName = array.getString(0);
+    map.put(KEY_USES, sourceName);
+    JSONArray transform = (JSONArray) map.optJSONArray(KEY_TRANSFORM);
+    if (transform == null) {
+      transform = new JSONArray();
+      map.put(KEY_TRANSFORM, transform);
+    }
+    for (int i = 1; i < array.length(); i++)
+      transform.put(array.getString(i));
+    if (SHOW_PREPROCESSING)
+      pr(" result: " + map);
+  }
+
+  private static String[] sTransformOptions = { "reverse", "fliphorz",
+      "flipvert", "flipboth" };
+
+  private void preprocessTransformedVersions(JSONObject originalMap)
+      throws JSONException {
+    for (String transformOption : sTransformOptions) {
+      if (!originalMap.optBoolean(transformOption))
+        continue;
+      if (SHOW_PREPROCESSING)
+        pr("Generating transformed version for " + transformOption + ": "
+            + originalMap);
+
+      // Remove this mapping from the original
+      originalMap.remove(transformOption);
+
+      /*
+       * If present, they each generate another gesture entry, an alias for this
+       * one (or for the one that this one is an alias of), with the particular
+       * transform added to this one's "transform" options
+       */
+      String aliasName = originalMap.optString(KEY_ALIAS);
+      if (aliasName.isEmpty()) {
+        aliasName = originalMap.optString(KEY_NAME);
+        if (aliasName.isEmpty())
+          throw new JSONException("missing name");
       }
+
+      JSONObject newMap = new JSONObject();
+
+      newMap.put(KEY_ALIAS, aliasName);
+
+      JSONArray array = originalMap.optJSONArray(KEY_STROKES);
+      if (array != null) {
+        // Note: we are storing multiple references to a single array here; we
+        // will assume it's immutable
+        newMap.put(KEY_STROKES, array);
+      } else {
+        String usesName = originalMap.optString(KEY_USES);
+        if (usesName.isEmpty())
+          if (usesName.isEmpty())
+            throw new JSONException("missing 'uses'");
+        newMap.put(KEY_USES, usesName);
+      }
+
+      // Make a copy of the existing transform values (or an empty list, if
+      // there are none)
+      JSONArray originalTransformOptions = (JSONArray) originalMap
+          .optJSONArray(KEY_TRANSFORM);
+      if (originalTransformOptions == null) {
+        originalTransformOptions = new JSONArray();
+      }
+      JSONArray newTransformOptions = new JSONArray();
+      for (int i = 0; i < originalTransformOptions.length(); i++)
+        newTransformOptions.put(originalTransformOptions.get(i));
+
+      // Add this transform to the list
+      newTransformOptions.put(transformOption);
+
+      newMap.put(KEY_TRANSFORM, newTransformOptions);
+      if (SHOW_PREPROCESSING)
+        pr(" result: " + newMap);
+
+      mParsedArray.put(newMap);
     }
   }
 
-  private void populateMapFromArray(JSONArray array) throws JSONException {
+  /**
+   * Perform preprocessing on a gesture entry, if appropriate. These are
+   * rewritings that allow the user more flexibility in the JSON representation
+   * of a gesture.
+   * 
+   * <pre>
+   * 
+   * Unpack alias list 
+   * --------------------------
+   * "alias":["NAME", options...] =>
+   *      "alias":"NAME", "uses":"NAME", "transform":[options...]
+   * 
+   * Unpack uses list
+   * --------------------------
+   * "uses":["NAME", options...] =>
+   *      "uses":"NAME", "transform":[options...]
+   *      
+   * Add transformed aliases
+   * --------------------------
+   * { "name":"NAME", "reverse":true, "transform":[existing...] ... } =>
+   *    { "name":"NAME", ... },
+   *    { "alias":"NAME", "uses":"NAME", "transform":[existing... "reverse"] ... }
+   * 
+   * </pre>
+   */
+  private void preprocessEntry(JSONObject map) throws JSONException {
+    preprocessUnpackAliasList(map);
+    preprocessUnpackUsesList(map);
+    preprocessTransformedVersions(map);
+  }
+
+  private void populateMapFromArray() throws JSONException {
 
     mNamedSets = new HashMap();
 
-    for (int i = 0; i < array.length(); i++) {
-      JSONObject map = array.getJSONObject(i);
-
+    // The array may grow as we perform rewritings, so avoid using an iterator
+    for (int i = 0; i < mParsedArray.length(); i++) {
+      JSONObject map = mParsedArray.getJSONObject(i);
       preprocessEntry(map);
 
       // If it has a NAME entry, use it; otherwise, it must have an alias; take
       // the name of the alias and prepend a unique prefix, and store that as
       // the name
-      String name = map.optString(StrokeSet.KEY_NAME);
+      String name = map.optString(KEY_NAME);
       if (name.isEmpty()) {
         name = generateNameForAlias(map);
       } else {
-        if (map.has(StrokeSet.KEY_ALIAS))
-          throw new JSONException("Entry has both a name and an alias");
+        if (map.has(KEY_ALIAS))
+          throw new JSONException("Entry has both a name and an alias: " + map);
       }
 
       if (mNamedSets.containsKey(name))
@@ -121,10 +277,12 @@ class GestureSetParser {
   private void processStrokes() throws JSONException {
     for (String name : mNamedSets.keySet()) {
       ParseEntry entry = mNamedSets.get(name);
-      JSONArray strokes = entry.map().optJSONArray(StrokeSet.KEY_STROKES);
+      JSONArray strokes = entry.map().optJSONArray(KEY_STROKES);
       if (strokes == null)
         continue;
       StrokeSet strokeSet = parseStrokeSet(entry.strokeSet(), strokes);
+      strokeSet = modifyExistingStrokeSet(strokeSet, strokeSet, entry.map()
+          .optJSONArray(KEY_TRANSFORM));
       entry.setStrokeSet(strokeSet);
     }
   }
@@ -132,18 +290,10 @@ class GestureSetParser {
   private void processStrokeReferences() throws JSONException {
     for (String name : mNamedSets.keySet()) {
       ParseEntry parseEntry = mNamedSets.get(name);
-
-      Set<String> options = new HashSet();
-      String usesName = null;
-
-      JSONArray usesList = parseEntry.map().optJSONArray(KEY_USES);
-      if (usesList == null)
+      JSONObject entryMap = parseEntry.map();
+      String usesName = entryMap.optString(KEY_USES);
+      if (usesName.isEmpty())
         continue;
-      if (usesList.length() == 0)
-        throw new JSONException("no uses name found: " + name);
-      usesName = usesList.getString(0);
-      for (int i = 1; i < usesList.length(); i++)
-        options.add(usesList.getString(i));
 
       ParseEntry usesEntry = mNamedSets.get(usesName);
       if (usesEntry == null)
@@ -152,16 +302,20 @@ class GestureSetParser {
       if (usesSet == null)
         throw new JSONException("No strokes found for: " + usesName);
 
-      StrokeSet strokeSet2 = modifyExistingStrokeSet(parseEntry.strokeSet(),
-          usesSet, options);
-      parseEntry.setStrokeSet(strokeSet2);
+      StrokeSet set = parseEntry.strokeSet();
+      set = modifyExistingStrokeSet(set, usesSet,
+          entryMap.optJSONArray(KEY_TRANSFORM));
+      parseEntry.setStrokeSet(set);
     }
   }
 
+  /**
+   * Set alias fields for any entries that have been declared as such
+   */
   private void processAliases() throws JSONException {
     for (String name : mNamedSets.keySet()) {
       ParseEntry entry = mNamedSets.get(name);
-      String aliasName = entry.map().optString(StrokeSet.KEY_ALIAS);
+      String aliasName = entry.map().optString(KEY_ALIAS);
       if (aliasName.isEmpty())
         continue;
       ParseEntry targetEntry = mNamedSets.get(aliasName);
@@ -184,8 +338,9 @@ class GestureSetParser {
       Stroke stroke = Stroke.parseJSONArray(strokeArray);
       strokes.add(stroke);
     }
-    set = StrokeSet.buildFromStrokes(strokes, set);
-    return normalizeStrokeSet(set);
+    StrokeSet set2 = StrokeSet.buildFromStrokes(strokes);
+    set2.inheritMetaDataFrom(set);
+    return normalizeStrokeSet(set2);
   }
 
   private static StrokeSet normalizeStrokeSet(StrokeSet set) {
@@ -199,35 +354,26 @@ class GestureSetParser {
     return normalizedSet;
   }
 
-  private static Set<String> sLegalOptions;
-
   /**
    * Modify an existing stroke set according to some options
    * 
-   * Options can include:
-   * 
-   * 'reverse' : reverse the time sequence of the stroke points
-   * 
-   * 'fliphorz' : flip around y axis
-   * 
-   * 'flipvert' : flip around x axis
-   * 
+   * @param transformOptions
+   *          if not null, list of transformation options
    */
   private StrokeSet modifyExistingStrokeSet(StrokeSet set, StrokeSet usesSet,
-      Set<String> options) {
-    if (sLegalOptions == null) {
-      sLegalOptions = new HashSet();
-      sLegalOptions.add("reverse");
-      sLegalOptions.add("fliphorz");
-      sLegalOptions.add("flipvert");
+      JSONArray transformOptions) throws JSONException {
+    Set<String> transformations = new HashSet();
+    if (transformOptions != null) {
+      for (int i = 0; i < transformOptions.length(); i++) {
+        String opt = transformOptions.getString(i);
+        transformations.add(opt);
+      }
     }
-    if (!sLegalOptions.containsAll(options))
-      throw new IllegalArgumentException("illegal options for " + set.name()
-          + ": " + d(options));
-
-    boolean reverse = options.contains("reverse");
-    boolean flipHorz = options.contains("fliphorz");
-    boolean flipVert = options.contains("flipvert");
+    boolean reverse = transformations.contains("reverse");
+    boolean flipHorz = transformations.contains("fliphorz")
+        || transformations.contains("flipboth");
+    boolean flipVert = transformations.contains("flipvert")
+        || transformations.contains("flipboth");
 
     List<Stroke> modifiedStrokes = new ArrayList();
     List<DataPoint> workList = new ArrayList();
@@ -252,12 +398,14 @@ class GestureSetParser {
       for (DataPoint pt : workList)
         modifiedStroke.addPoint(pt);
     }
-    set = StrokeSet.buildFromStrokes(modifiedStrokes, set);
-    return set;
+    StrokeSet set2 = StrokeSet.buildFromStrokes(modifiedStrokes);
+    set2.inheritMetaDataFrom(set);
+    return set2;
   }
 
   private Map<String, ParseEntry> mNamedSets;
   private int mUniquePrefixIndex;
+  private JSONArray mParsedArray;
 
   private static class ParseEntry {
     public ParseEntry(String name, JSONObject jsonMap) {

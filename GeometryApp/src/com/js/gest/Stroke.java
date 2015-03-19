@@ -12,7 +12,8 @@ import com.js.basic.Freezable;
 import static com.js.basic.Tools.*;
 
 /**
- * A Stroke is a sequence of StrokePoints, with strictly increasing times.
+ * A Stroke is a sequence of StrokePoints, with strictly increasing times,
+ * starting from zero
  * 
  * It represents a user's touch/drag/release action, for a single finger.
  */
@@ -21,7 +22,6 @@ public class Stroke extends Freezable.Mutable implements
 
   public Stroke() {
     mPoints = new ArrayList();
-    mStartTime = -1;
   }
 
   @Override
@@ -55,10 +55,6 @@ public class Stroke extends Freezable.Mutable implements
     return get(i).getPoint();
   }
 
-  DataPoint last() {
-    return com.js.basic.Tools.last(mPoints);
-  }
-
   public boolean isEmpty() {
     return mPoints.isEmpty();
   }
@@ -67,20 +63,27 @@ public class Stroke extends Freezable.Mutable implements
     addPoint(point.getTime(), point.getPoint());
   }
 
+  /**
+   * Add a new point to this (mutable) stroke
+   * 
+   * @param time
+   *          time, in seconds, of point; the time of the first point will be
+   *          subtracted from this one, so that the resulting sequence starts at
+   *          time zero
+   * @param location
+   */
   public void addPoint(float time, Point location) {
     mutate();
+    float shiftedTime = 0;
     if (isEmpty()) {
       mStartTime = time;
     } else {
-      DataPoint elem = last();
-      float lastTime = elem.getTime() + mStartTime;
-      float elapsedTime = time - lastTime;
-      // Make sure time is strictly increasing
-      if (elapsedTime <= 0) {
-        time = lastTime + 0.001f;
-      }
+      shiftedTime = time - mStartTime;
+      DataPoint elem = last(mPoints);
+      if (shiftedTime <= elem.getTime())
+        throw new IllegalArgumentException("time must be strictly increasing");
     }
-    DataPoint pt = new DataPoint(time - mStartTime, location);
+    DataPoint pt = new DataPoint(shiftedTime, location);
     mPoints.add(pt);
   }
 
@@ -137,7 +140,7 @@ public class Stroke extends Freezable.Mutable implements
   public float totalTime() {
     float time = 0;
     if (!mPoints.isEmpty())
-      time = last().getTime();
+      time = last(mPoints).getTime();
     return time;
   }
 

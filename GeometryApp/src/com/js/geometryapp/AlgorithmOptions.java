@@ -12,13 +12,11 @@ import org.json.JSONObject;
 import android.content.Context;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.LinearLayout;
 
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
 import com.js.android.QuiescentDelayOperation;
-import com.js.android.UITools;
 import com.js.basic.JSONTools;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.widget.AbstractWidget;
@@ -31,6 +29,7 @@ import com.js.geometryapp.widget.TextWidget;
 
 import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
+import static com.js.android.UITools.*;
 
 public class AlgorithmOptions {
 
@@ -63,10 +62,11 @@ public class AlgorithmOptions {
    * @param containingView
    *          the view into which the option views should be placed
    */
-  void prepareViews(ViewGroup containingView) {
+  void prepareViews(LinearLayout containingView) {
     mContainingView = containingView;
     mPrimaryWidgetGroup = new WidgetGroup(getContext(), false);
-    mContainingView.addView(mPrimaryWidgetGroup.getOuterContainer());
+    mContainingView.addView(mPrimaryWidgetGroup.getOuterContainer(),
+        layoutParams(mContainingView, 0));
   }
 
   private void addPrimaryWidgets() {
@@ -175,7 +175,7 @@ public class AlgorithmOptions {
 
   public void addLabel(String label) {
     WidgetGroup w = currentWidgetGroup();
-    LinearLayout.LayoutParams p = w.layoutParamsForCurrentContainer();
+    LinearLayout.LayoutParams p = layoutParams(false, 0);
     p.width = MyActivity.getResolutionInfo().inchesToPixelsUI(.8f);
     p.gravity = Gravity.BOTTOM;
     // TODO: is vertical centering being attempted elsewhere, e.g., within
@@ -277,16 +277,13 @@ public class AlgorithmOptions {
    *          true if layout is to have vertical orientation
    */
   public LinearLayout addView(boolean vertical) {
-    LinearLayout newContainer = UITools.linearLayout(mContext, vertical);
-    addView(newContainer);
+    LinearLayout newContainer = linearLayout(mContext, vertical);
+    addView(newContainer, layoutParams(newContainer, 0));
     return newContainer;
   }
 
-  /**
-   * Add a view to the widget container
-   */
-  private void addView(View view) {
-    currentWidgetGroup().addView(view);
+  public void addView(View view, LinearLayout.LayoutParams params) {
+    currentWidgetGroup().addView(view, params);
   }
 
   /**
@@ -664,7 +661,7 @@ public class AlgorithmOptions {
   }
 
   private ConcreteStepper mStepper;
-  private ViewGroup mContainingView;
+  private LinearLayout mContainingView;
   // Until this flag is true, no listeners are sent messages about widget
   // value changes
   private boolean mPrepared;

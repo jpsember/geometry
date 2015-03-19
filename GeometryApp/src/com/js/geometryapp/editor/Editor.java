@@ -14,7 +14,6 @@ import com.js.android.MyActivity;
 import com.js.android.MyTouchListener;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.TouchEventGenerator;
-import com.js.android.UITools;
 import com.js.basic.JSONTools;
 import com.js.editor.Command;
 import com.js.editor.UserEvent;
@@ -48,9 +47,11 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
+import static com.js.android.UITools.*;
 
 /**
  * Class that encapsulates editing geometric objects. It includes a view, which
@@ -151,6 +152,7 @@ public class Editor {
     }
     GestureEventFilter filter = new GestureEventFilter();
     gestures.setTraceStatus(true);
+    filter.setFloatingViewMode();
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
       @Override
@@ -181,6 +183,16 @@ public class Editor {
     // Place these controls in the aux controls view
     mOptions.pushView(getAuxControlsView());
 
+    // Add a horizontal layout to house the buttons + gesture panel.
+    mOptions.pushView(mOptions.addView(false));
+
+    // Buttons go in a vertical panel
+    {
+      LinearLayout buttonContainer = linearLayout(context(), true);
+      LayoutParams p = layoutParams(buttonContainer, 0);
+      mOptions.addView(buttonContainer, p);
+      mOptions.pushView(buttonContainer);
+    }
     // Add a horizontal row of buttons
     {
       mOptions.pushView(mOptions.addView(false));
@@ -255,6 +267,18 @@ public class Editor {
 
       mOptions.popView();
     }
+    mOptions.popView();
+
+    // Add a gesture panel
+    {
+      unimp("make gesture panel functional");
+      View v3 = new View(context());
+      applyTestColor(v3, Color.RED);
+      LayoutParams p = layoutParams(false, 1);
+      mOptions.addView(v3, p);
+    }
+
+    mOptions.popView();
     mOptions.popView();
 
     // put additional controls in the options window
@@ -773,7 +797,7 @@ public class Editor {
 
   public LinearLayout getAuxControlsView() {
     if (mAuxView == null) {
-      mAuxView = UITools.linearLayout(context(), true);
+      mAuxView = linearLayout(context(), true);
     }
     return mAuxView;
   }

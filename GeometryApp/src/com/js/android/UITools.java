@@ -44,111 +44,78 @@ public final class UITools {
       view.setBackgroundColor(debugColor());
   }
 
+  public static void applyTestColor(View view, int color) {
+    warning("applying test color to view " + nameOf(view));
+    view.setBackgroundColor(color);
+  }
+
   /**
    * Construct a LinearLayout
    * 
-   * @param context
-   * @param vertical
+   * @param verticalOrientation
    *          true if it is to have a vertical orientation
    */
-  public static LinearLayout linearLayout(Context context, boolean vertical) {
+  public static LinearLayout linearLayout(Context context,
+      boolean verticalOrientation) {
     LinearLayout view = new LinearLayout(context);
-    view.setOrientation(vertical ? LinearLayout.VERTICAL
+    view.setOrientation(verticalOrientation ? LinearLayout.VERTICAL
         : LinearLayout.HORIZONTAL);
-    // Give view a minimum size in each dimension, so we are more likely to
-    // detect problems with the layout (e.g. views not showing up)
-    view.setMinimumWidth(15);
-    view.setMinimumHeight(15);
-    UITools.applyDebugColors(view);
+    applyDebugColors(view);
     return view;
   }
 
   /**
-   * Construct LayoutParams for child views of a LinearLayout container with a
-   * particular orientation
+   * Construct LayoutParams for child views of a LinearLayout container.
    * 
-   * @param forHorizontalLayout
-   *          if true, constructs params for a containing LinearLayout with
-   *          horizontal orientation: width wraps content, height matches
-   *          container's. If false, width matches container's, height wraps
-   *          content
+   * The conventions being followed are:
+   * 
+   * If the container has horizontal orientation, then the 'matched' dimension
+   * is height, and the 'variable' dimension is width. Otherwise, matched =
+   * width and variable = height.
+   * 
+   * A view is either 'stretchable' or 'fixed' in its variable dimension. If
+   * it's fixed, it is assumed that the view has some content, e.g. so that
+   * setting WRAP_CONTENT works properly (it won't for Views that have no
+   * content; see issue #5).
+   * 
+   * Setting the weight parameter to zero indicates that the view is
+   * stretchable, whereas a positive weight indicates that it's fixed.
+   * 
+   * The LayoutParams constructed will have
+   * 
+   * a) MATCH_PARENT in their matched dimension;
+   * 
+   * b) either zero (if the view is stretchable) or WRAP_CONTENT (if it is
+   * fixed) in its variable dimension
+   * 
+   * c) weight in its weight field
+   * 
+   * @param verticalOrientation
+   *          true iff the containing LinearLayout has vertical orientation
+   * @return LayoutParams appropriate to the container's orientation
    */
   public static LinearLayout.LayoutParams layoutParams(
-      boolean forHorizontalLayout) {
-    LinearLayout.LayoutParams params;
-    if (forHorizontalLayout)
-      params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
-          LayoutParams.MATCH_PARENT);
-    else
-      params = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
-          LayoutParams.WRAP_CONTENT);
+      boolean verticalOrientation, float weight) {
+
+    int width, height;
+    int variableSize = (weight != 0) ? 0 : LayoutParams.WRAP_CONTENT;
+    if (!verticalOrientation) {
+      width = variableSize;
+      height = LayoutParams.MATCH_PARENT;
+    } else {
+      width = LayoutParams.MATCH_PARENT;
+      height = variableSize;
+    }
+    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width,
+        height);
+    params.weight = weight;
     return params;
   }
 
-  /**
-   * Construct LayoutParams for child views of a LinearLayout container
-   * 
-   * @param container
-   * @return LayoutParams appropriate to the container's orientation
-   */
-  public static LinearLayout.LayoutParams layoutParams(LinearLayout container) {
-    return layoutParams(container.getOrientation() == LinearLayout.HORIZONTAL);
-  }
-
-  /**
-   * A subclass of View that doesn't try to take over its container if
-   * LayoutParams.WRAP_CONTENT is given (see issue #5)
-   */
-  public static class OurBaseView extends View {
-
-    public OurBaseView(Context context) {
-      super(context);
-      UITools.applyDebugColors(this);
-    }
-
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-      // Get the width measurement
-      int widthSize = getMeasurement(widthMeasureSpec, 0);
-      // Get the height measurement
-      int heightSize = getMeasurement(heightMeasureSpec, 0);
-      // MUST call this to store the measurements
-      setMeasuredDimension(widthSize, heightSize);
-    }
-
-    /**
-     * Utility to return a view's standard measurement. Uses the supplied size
-     * when constraints are given. Attempts to hold to the desired size unless
-     * it conflicts with provided constraints.
-     * 
-     * @param measureSpec
-     *          Constraints imposed by the parent
-     * @param contentSize
-     *          Desired size for the view
-     * @return The size the view should be.
-     */
-    public static int getMeasurement(int measureSpec, int contentSize) {
-      int specMode = View.MeasureSpec.getMode(measureSpec);
-      int specSize = View.MeasureSpec.getSize(measureSpec);
-      int resultSize = 0;
-      switch (specMode) {
-      case View.MeasureSpec.UNSPECIFIED:
-        // Big as we want to be
-        resultSize = contentSize;
-        break;
-      case View.MeasureSpec.AT_MOST:
-        // Big as we want to be, up to the spec
-        resultSize = Math.min(contentSize, specSize);
-        break;
-      case View.MeasureSpec.EXACTLY:
-        // Must be the spec size
-        resultSize = specSize;
-        break;
-      }
-
-      return resultSize;
-    }
-
+  public static LinearLayout.LayoutParams layoutParams(LinearLayout container,
+      float weight) {
+    return layoutParams(container.getOrientation() == LinearLayout.VERTICAL,
+        weight);
   }
 
   /**
@@ -187,6 +154,28 @@ public final class UITools {
     case MotionEvent.ACTION_POINTER_UP:
       sb.append("UP(" + index + ")");
       break;
+    }
+    return sb.toString();
+  }
+
+  private static String layoutElement(int n) {
+    switch (n) {
+    case LayoutParams.MATCH_PARENT:
+      return "MATCH_PARENT";
+    case LayoutParams.WRAP_CONTENT:
+      return "WRAP_CONTENT";
+    default:
+      return d(n, 11);
+    }
+  }
+
+  public static String dump(android.view.ViewGroup.LayoutParams p) {
+    StringBuilder sb = new StringBuilder("LayoutParams");
+    sb.append(" width:" + layoutElement(p.width));
+    sb.append(" height:" + layoutElement(p.height));
+    if (p instanceof LinearLayout.LayoutParams) {
+      LinearLayout.LayoutParams p2 = (LinearLayout.LayoutParams) p;
+      sb.append(" weight:" + com.js.basic.Tools.d(p2.weight));
     }
     return sb.toString();
   }

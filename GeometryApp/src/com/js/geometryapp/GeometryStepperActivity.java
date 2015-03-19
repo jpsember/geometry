@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import com.js.android.AppPreferences;
-import com.js.android.UITools;
 import com.js.basic.Files;
 import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
@@ -24,6 +23,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
+import static com.js.android.UITools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
@@ -107,12 +107,8 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
 
     // Build a view that will contain the GLSurfaceView and a stepper
     // control panel
-    LinearLayout mainView = new LinearLayout(this);
+    LinearLayout mainView = linearLayout(this, true);
     {
-      mainView.setOrientation(LinearLayout.VERTICAL);
-      LinearLayout.LayoutParams p = UITools.layoutParams(false);
-      p.weight = 1;
-
       // Wrap the GLSurfaceView within another container, so we can
       // overlay it with an editing toolbar
       mEditor.prepare(surfaceView);
@@ -121,29 +117,25 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
       // Place editor view within a container with a black background
       // to emphasize boundary between the editor and the neighbors
       {
-        LinearLayout borderView = UITools.linearLayout(this, true);
+        LinearLayout borderView = linearLayout(this, true);
         borderView.setPadding(2, 2, 2, 2);
         borderView.setBackgroundColor(Color.rgb(128, 128, 128));
-        borderView.addView(editorView);
+        borderView.addView(editorView, layoutParams(borderView, 1));
         editorView = borderView;
       }
+      LinearLayout.LayoutParams p = layoutParams(mainView, 1);
       mainView.addView(editorView, p);
     }
 
-    buildAuxilliaryView();
-    mainView.addView(mAuxView);
-
     // Add the stepper control panel to this container
-    mainView.addView(mStepper.buildControllerView());
+    View stepperControllerView = mStepper.buildControllerView();
+    LinearLayout.LayoutParams p = layoutParams(mainView, 0);
+    mainView.addView(stepperControllerView, p);
 
     // Make the container the main view of a TwinViewContainer
     TwinViewContainer twinViews = new TwinViewContainer(this, mainView);
     mOptions.prepareViews(twinViews.getAuxilliaryView());
     return twinViews.getContainer();
-  }
-
-  private void buildAuxilliaryView() {
-    mAuxView = new LinearLayout(this);
   }
 
   private static String dumpIntent(Intent intent) {
@@ -297,5 +289,4 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
   private AlgorithmRenderer mRenderer;
   private Editor mEditor;
   private GLSurfaceView mGLView;
-  private LinearLayout mAuxView;
 }

@@ -209,12 +209,8 @@ public class StrokeMatcher {
     Point posA = elemA.getPoint();
     Point posB = elemB.getPoint();
     mActualCellsExamined++;
-    float dist;
-    dist = MyMath.squaredDistanceBetween(posA, posB);
-    if (dist < mParameters.zeroDistanceThreshold()
-        * mParameters.zeroDistanceThreshold())
-      dist = 0;
-    dist *= mCostNormalizationFactor;
+    float dist = MyMath.squaredDistanceBetween(posA, posB)
+        * mCostNormalizationFactor;
     return dist;
   }
 

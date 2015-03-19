@@ -24,6 +24,7 @@ import com.js.geometry.Renderable;
 import com.js.geometry.Segment;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.widget.AbstractWidget;
+import static com.js.android.UITools.*;
 
 public class ConcreteStepper extends AlgorithmStepper {
 
@@ -371,9 +372,7 @@ public class ConcreteStepper extends AlgorithmStepper {
       currentContent = mAuxView.getChildAt(0);
     if (currentContent != content) {
       mAuxView.removeAllViews();
-      // Set layout parameters assuming we're adding at the bottom of a
-      // vertical list
-      mAuxView.addView(content, UITools.layoutParams(false));
+      mAuxView.addView(content, layoutParams(mAuxView, 0));
     }
   }
 

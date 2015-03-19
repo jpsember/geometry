@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.js.android.UITools;
 import com.js.basic.MyMath;
 import com.js.geometryapp.AlgorithmOptions;
 
@@ -16,6 +15,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
+import static com.js.android.UITools.*;
 
 public class ComboBoxWidget extends AbstractWidget {
 
@@ -41,7 +41,7 @@ public class ComboBoxWidget extends AbstractWidget {
 		}
 
 		getView().addView(buildLabelView(true));
-		getView().addView(mSpinner, UITools.layoutParams(false));
+    getView().addView(mSpinner, layoutParams(false, 0));
 	}
 
 	public ComboBoxWidget addItem(Object item) {

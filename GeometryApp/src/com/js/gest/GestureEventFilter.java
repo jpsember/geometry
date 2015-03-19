@@ -10,9 +10,9 @@ import com.js.android.MyTouchListener;
 import com.js.android.UITools;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
-import com.js.basic.Tools;
 import com.js.gest.GestureSet.Match;
 
+import android.graphics.Canvas;
 import android.os.Handler;
 import android.view.MotionEvent;
 import static com.js.basic.Tools.*;
@@ -28,14 +28,40 @@ public class GestureEventFilter extends MyTouchListener {
   private static final int STATE_BUFFERING = 2;
   private static final int STATE_RECORDING = 3;
   private static final int STATE_FORWARDING = 4;
-  private static final int STATE_STOPPED = 5;
+  private static final int STATE_IGNORING = 5;
+  private static final int STATE_STOPPED = 6;
 
   public GestureEventFilter() {
     // Enable this line to print diagnostic information:
     // mTraceActive = true;
 
     // Enable this line to display gesture vs. non-gesture decision:
-    mTracker = new DecisionTracker();
+    // mTracker = new DecisionTracker();
+  }
+
+  /**
+   * Have event filter operate in 'floating view' mode. A small translucent
+   * rectangle is drawn in the view, and gestures must be started within it
+   */
+  public void setFloatingViewMode() {
+    if (floatingViewMode())
+      throw new IllegalStateException();
+    mFloatingViewMode = true;
+  }
+
+  private GesturePanel floatingPanel() {
+    if (!floatingViewMode())
+      throw new IllegalStateException();
+    if (mGesturePanel == null) {
+      mGesturePanel = new GesturePanel(getView());
+    }
+    return mGesturePanel;
+  }
+
+  public void draw(Canvas canvas) {
+    if (!floatingViewMode())
+      return;
+    floatingPanel().draw(canvas);
   }
 
   public void setListener(Listener listener) {
@@ -65,13 +91,13 @@ public class GestureEventFilter extends MyTouchListener {
     mListener = null;
   }
 
-  private void pr(Object message) {
+  private void trace(Object message) {
     if (mTraceActive)
-      Tools.pr(message);
+      pr(message);
   }
 
   private final static String[] sStateNames = { "UNATTACHED", "DORMANT",
-      "BUFFERING", "RECORDING", "FORWARDING", "STOPPED" };
+      "BUFFERING", "RECORDING", "FORWARDING", "IGNORING", "STOPPED" };
 
   private static String stateName(int state) {
     return sStateNames[state];
@@ -82,7 +108,7 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   private void setState(int s) {
-    pr("Set state from " + stateName(mState) + " to " + stateName(s));
+    trace("Set state from " + stateName(mState) + " to " + stateName(s));
     mState = s;
   }
 
@@ -106,7 +132,7 @@ public class GestureEventFilter extends MyTouchListener {
     // original handler
     mPassingEventFlag = true;
     if (mEventQueue.size() > 1)
-      pr("    flushing " + mEventQueue.size() + " buffered events");
+      trace("    flushing " + mEventQueue.size() + " buffered events");
     while (true) {
       MotionEvent event = mEventQueue.poll();
       if (event == null)
@@ -122,7 +148,7 @@ public class GestureEventFilter extends MyTouchListener {
    */
   private void flushGestureEvents() {
     if (mEventQueue.size() > 1)
-      pr("    processing " + mEventQueue.size() + " gesture events");
+      trace("    processing " + mEventQueue.size() + " gesture events");
     while (true) {
       MotionEvent event = mEventQueue.poll();
       if (event == null)
@@ -132,11 +158,26 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
+  private void disposeBufferedEvents() {
+    while (true) {
+      MotionEvent event = mEventQueue.poll();
+      if (event == null)
+        break;
+      event.recycle();
+    }
+  }
+
+  public boolean floatingViewMode() {
+    return mFloatingViewMode;
+  }
+
   private void processDormantState(MotionEvent event) {
     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-      // Post an event to switch to FORWARDING automatically in case user
-      // doesn't trigger any further events for a while
-      postForwardTestEvent();
+      if (!floatingViewMode()) {
+        // Post an event to switch to FORWARDING automatically in case user
+        // doesn't trigger any further events for a while
+        postForwardTestEvent();
+      }
       setState(STATE_BUFFERING);
       processBufferingState(event);
     } else {
@@ -153,7 +194,7 @@ public class GestureEventFilter extends MyTouchListener {
     sHandler.postDelayed(new Runnable() {
       @Override
       public void run() {
-        pr("Timer task fired, state= " + stateName(state()));
+        trace("Timer task fired, state= " + stateName(state()));
         if (state() == STATE_BUFFERING) {
           setState(STATE_FORWARDING);
           flushBufferedEvents();
@@ -175,36 +216,59 @@ public class GestureEventFilter extends MyTouchListener {
     if (mTracker != null)
       mTracker.addEvent(event);
 
-    // Attempt to decide whether it's a gesture or not
-    final int MIN_STEPS = 3;
-    if (mEventQueue.size() >= 1 + MIN_STEPS) {
-      Iterator<MotionEvent> iter = mEventQueue.iterator();
-      MotionEvent prevEvent = iter.next();
-      float totalVelocity = 0;
-      for (int i = 0; i < MIN_STEPS; i++) {
-        MotionEvent currEvent = iter.next();
-        float time = elapsedTime(prevEvent, currEvent);
-        float distance = MyMath.distanceBetween(rawLocation(prevEvent),
-            rawLocation(currEvent));
-        float distanceInInches = distance
-            / MyActivity.getResolutionInfo().inchesToPixelsUI(1);
-        totalVelocity += distanceInInches / time;
-        prevEvent = currEvent;
+    if (floatingViewMode()) {
+      if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        Point touchLoc = new Point(event.getX(), event.getY());
+        if (floatingPanel().containsPoint(touchLoc)) {
+
+          // If panel is minimized, maximize it, and ignore the rest of this
+          // touch sequence
+          if (floatingPanel().isMinimized()) {
+            floatingPanel().setMinimized(false);
+            setState(STATE_IGNORING);
+          } else {
+            setState(STATE_RECORDING);
+            processRecordingState(event);
+          }
+        } else {
+          setState(STATE_FORWARDING);
+          processForwardingState(event);
+        }
+        return;
       }
-      float avgVelocity = totalVelocity / MIN_STEPS;
-      boolean isGesture = (avgVelocity > 1.2f);
-      if (mTracker != null) {
-        mTracker.print(" avg velocity (inches/sec): " + d(avgVelocity));
-        mTracker.setDecision(isGesture);
+    } else {
+
+      // Attempt to decide whether it's a gesture or not
+      final int MIN_STEPS = 3;
+      if (mEventQueue.size() >= 1 + MIN_STEPS) {
+        Iterator<MotionEvent> iter = mEventQueue.iterator();
+        MotionEvent prevEvent = iter.next();
+        float totalVelocity = 0;
+        for (int i = 0; i < MIN_STEPS; i++) {
+          MotionEvent currEvent = iter.next();
+          float time = elapsedTime(prevEvent, currEvent);
+          float distance = MyMath.distanceBetween(rawLocation(prevEvent),
+              rawLocation(currEvent));
+          float distanceInInches = distance
+              / MyActivity.getResolutionInfo().inchesToPixelsUI(1);
+          totalVelocity += distanceInInches / time;
+          prevEvent = currEvent;
+        }
+        float avgVelocity = totalVelocity / MIN_STEPS;
+        boolean isGesture = (avgVelocity > 1.2f);
+        if (mTracker != null) {
+          mTracker.print(" avg velocity (inches/sec): " + d(avgVelocity));
+          mTracker.setDecision(isGesture);
+        }
+        if (isGesture) {
+          setState(STATE_RECORDING);
+          processRecordingState(event);
+        } else {
+          setState(STATE_FORWARDING);
+          processForwardingState(event);
+        }
+        return;
       }
-      if (isGesture) {
-        setState(STATE_RECORDING);
-        processRecordingState(event);
-      } else {
-        setState(STATE_FORWARDING);
-        processForwardingState(event);
-      }
-      return;
     }
 
     if (event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -231,6 +295,13 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
+  private void processIgnoringState(MotionEvent event) {
+    disposeBufferedEvents();
+    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+      setState(STATE_DORMANT);
+    }
+  }
+
   private void processStoppedState(MotionEvent event) {
     bufferEvent(event);
     flushBufferedEvents();
@@ -250,6 +321,9 @@ public class GestureEventFilter extends MyTouchListener {
     case STATE_FORWARDING:
       processForwardingState(event);
       break;
+    case STATE_IGNORING:
+      processIgnoringState(event);
+      break;
     case STATE_STOPPED:
       processStoppedState(event);
       break;
@@ -259,10 +333,10 @@ public class GestureEventFilter extends MyTouchListener {
 
   @Override
   public boolean onTouch(MotionEvent event) {
-    pr("GestureEventFilter, onTouch event " + UITools.dump(event)
+    trace("GestureEventFilter, onTouch event " + UITools.dump(event)
         + ", passing events: " + d(mPassingEventFlag));
     if (event.getActionMasked() != MotionEvent.ACTION_MOVE)
-      pr("onTouch: " + UITools.dump(event) + " state " + stateName(state()));
+      trace("onTouch: " + UITools.dump(event) + " state " + stateName(state()));
 
     // If we're forwarding events to the original handler, do so
     if (mPassingEventFlag) {
@@ -301,7 +375,6 @@ public class GestureEventFilter extends MyTouchListener {
       mTouchStrokeSet.stopStroke(activeId);
       if (!mTouchStrokeSet.areStrokesActive()) {
         mTouchStrokeSet.freeze();
-
         if (mListener != null) {
           mListener.strokeSetExtended(mTouchStrokeSet);
           if (mStrokeSetCollection == null)
@@ -315,6 +388,17 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   private void performMatch() {
+    if (mTouchStrokeSet.isTap()) {
+      // If panel is maximized, minimize it
+      if (floatingViewMode()) {
+        floatingPanel().setMinimized(true);
+        return;
+      }
+
+      mListener.processGesture(GestureSet.GESTURE_TAP);
+      return;
+    }
+
     mMatch = null;
     StrokeSet set = mTouchStrokeSet;
     set = set.fitToRect(null);
@@ -322,19 +406,19 @@ public class GestureEventFilter extends MyTouchListener {
 
     ArrayList<GestureSet.Match> matches = new ArrayList();
     Match match = mStrokeSetCollection.findMatch(set, null, matches);
-    do {
-      if (match == null)
-        break;
-      // If the match cost is significantly less than the second best, make a
-      // decision
-      if (matches.size() >= 2) {
-        Match match2 = matches.get(1);
-        if (match.cost() * 1.5f > match2.cost())
-          break;
-      }
-      mMatch = match;
-      mListener.processGesture(mMatch.strokeSet().aliasName());
-    } while (false);
+    if (match == null)
+      return;
+    // If the match cost is significantly less than the second best, use it
+    if (matches.size() >= 2) {
+      Match match2 = matches.get(1);
+      if (match.cost() * 1.5f > match2.cost())
+        return;
+    }
+    mMatch = match;
+    mListener.processGesture(mMatch.strokeSet().aliasName());
+    if (floatingViewMode()) {
+      floatingPanel().setGesture(mMatch.strokeSet());
+    }
   }
 
   public static interface Listener {
@@ -405,4 +489,6 @@ public class GestureEventFilter extends MyTouchListener {
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private DecisionTracker mTracker;
+  private boolean mFloatingViewMode;
+  private GesturePanel mGesturePanel;
 }

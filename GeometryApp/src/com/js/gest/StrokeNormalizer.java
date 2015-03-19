@@ -59,8 +59,8 @@ class StrokeNormalizer {
         Stroke normalized = normalizeStroke(s);
         normalizedList.add(normalized);
       }
-      mNormalizedStrokeSet = StrokeSet.buildFromStrokes(normalizedList,
-          mOriginalStrokeSet);
+      mNormalizedStrokeSet = StrokeSet.buildFromStrokes(normalizedList);
+      mNormalizedStrokeSet.inheritMetaDataFrom(mOriginalStrokeSet);
       mNormalizedStrokeSet.freeze();
     }
     return mNormalizedStrokeSet;
@@ -133,7 +133,7 @@ class StrokeNormalizer {
       }
     }
     // Add fragment's end point
-    normalizedStroke.addPoint(originalStroke.last());
+    normalizedStroke.addPoint(originalStroke.get(originalStroke.size() - 1));
     return normalizedStroke;
   }
 

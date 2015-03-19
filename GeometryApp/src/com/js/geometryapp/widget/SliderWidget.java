@@ -10,85 +10,88 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import static com.js.android.UITools.*;
+import static com.js.basic.Tools.*;
 
 public class SliderWidget extends AbstractWidget {
 
-	public SliderWidget(AlgorithmOptions options, Map attributes) {
-		super(options, attributes);
+  public SliderWidget(AlgorithmOptions options, Map attributes) {
+    super(options, attributes);
+    doNothing();
 
-		mSeekBar = new SeekBar(options.getContext());
-		mSeekBar.setMax(maxValue() - minValue());
-		int initialValue = intAttr(OPTION_VALUE, minValue());
-		setValue(initialValue);
+    mSeekBar = new SeekBar(options.getContext());
+    mSeekBar.setMax(maxValue() - minValue());
+    int initialValue = intAttr(OPTION_VALUE, minValue());
+    setValue(initialValue);
 
-		mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
+    mSeekBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+      @Override
+      public void onStopTrackingTouch(SeekBar seekBar) {
+      }
 
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+      @Override
+      public void onStartTrackingTouch(SeekBar seekBar) {
+      }
 
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress,
-					boolean fromUser) {
-				setValue(Integer.toString(progress + minValue()));
-			}
-		});
+      @Override
+      public void onProgressChanged(SeekBar seekBar, int progress,
+          boolean fromUser) {
+        setValue(Integer.toString(progress + minValue()));
+      }
+    });
 
-		if (boolAttr(OPTION_HAS_LABEL, true))
-			getView().addView(buildLabelView(true));
+    if (boolAttr(OPTION_HAS_LABEL, true))
+      getView().addView(buildLabelView(true));
 
-		LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-				LayoutParams.MATCH_PARENT, intAttr(OPTION_LAYOUT_HEIGHT,
-						LayoutParams.WRAP_CONTENT));
-		p.gravity = Gravity.CENTER;
-		getView().addView(mSeekBar, p);
-	}
+    LinearLayout.LayoutParams p = layoutParams(getView(), 1);
+    p.height = intAttr(OPTION_LAYOUT_HEIGHT, LayoutParams.WRAP_CONTENT);
 
-	public void setMaxValue(int maxValue) {
-		setAttribute("max", maxValue);
-		int internalMax = maxValue() - minValue();
-		mSeekBar.setMax(internalMax);
-	}
+    p.gravity = Gravity.CENTER;
+    getView().addView(mSeekBar, p);
+  }
 
-	private int minValue() {
-		return intAttr("min", 0);
-	}
+  public void setMaxValue(int maxValue) {
+    setAttribute("max", maxValue);
+    int internalMax = maxValue() - minValue();
+    mSeekBar.setMax(internalMax);
+  }
 
-	private int maxValue() {
-		return intAttr("max", 1000000);
-	}
+  private int minValue() {
+    return intAttr("min", 0);
+  }
 
-	@Override
-	public void updateUserValue(String internalValue) {
-		int sliderValue = Integer.parseInt(internalValue);
-		int min = minValue();
+  private int maxValue() {
+    return intAttr("max", 1000000);
+  }
 
-		int max = maxValue();
-		int userIntValue = MyMath.clamp(sliderValue, min, max);
-		int progress = userIntValue - min;
+  @Override
+  public void updateUserValue(String internalValue) {
+    int sliderValue = Integer.parseInt(internalValue);
+    int min = minValue();
 
-		mSeekBar.setProgress(progress);
-	}
+    int max = maxValue();
+    int userIntValue = MyMath.clamp(sliderValue, min, max);
+    int progress = userIntValue - min;
 
-	public void setValue(int progress) {
-		setValue(Integer.toString(progress));
-	}
+    mSeekBar.setProgress(progress);
+  }
 
-	@Override
-	public String parseUserValue() {
-		int progress = mSeekBar.getProgress();
-		int min = minValue();
-		int userIntValue = progress + min;
-		return Integer.toString(userIntValue);
-	}
+  public void setValue(int progress) {
+    setValue(Integer.toString(progress));
+  }
 
-	@Override
-	public void setEnabled(boolean enabled) {
-		mSeekBar.setEnabled(enabled);
-	}
+  @Override
+  public String parseUserValue() {
+    int progress = mSeekBar.getProgress();
+    int min = minValue();
+    int userIntValue = progress + min;
+    return Integer.toString(userIntValue);
+  }
 
-	private SeekBar mSeekBar;
+  @Override
+  public void setEnabled(boolean enabled) {
+    mSeekBar.setEnabled(enabled);
+  }
+
+  private SeekBar mSeekBar;
 }

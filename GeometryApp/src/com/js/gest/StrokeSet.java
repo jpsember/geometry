@@ -73,11 +73,8 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     s.addPoint(eventTime - mInitialEventTime, pt);
   }
 
-  public static StrokeSet buildFromStrokes(List<Stroke> strokes,
-      StrokeSet metaDataSource) {
+  public static StrokeSet buildFromStrokes(List<Stroke> strokes) {
     StrokeSet s = new StrokeSet();
-    if (metaDataSource != null)
-      s.inheritMetaDataFrom(metaDataSource);
     for (Stroke stroke : strokes) {
       s.mStrokes.add(stroke);
     }
@@ -101,6 +98,14 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     if (isFrozen())
       return false;
     return !mStrokeIdToIndexMap.isEmpty();
+  }
+
+  /**
+   * Determine if this set represents a single tap
+   */
+  public boolean isTap() {
+    assertFrozen();
+    return size() == 1 && length() <= 2;
   }
 
   @Override

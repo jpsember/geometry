@@ -35,10 +35,8 @@ public final class Tools {
   /**
    * A do-nothing method that can be called to avoid 'unused import' warnings
    * related to this class
-   * 
-   * @deprecated
    */
-  public static void doNothing() {
+  public final static void doNothing() {
   }
 
   /**

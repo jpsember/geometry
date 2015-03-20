@@ -304,6 +304,14 @@ public abstract class AbstractWidget {
     mOptions.processWidgetValue(this, this.mListeners);
   }
 
+  /**
+   * Have the gesture set, if one exists, display the gesture corresponding to
+   * this widget (if there is one) within its panel
+   */
+  protected void displayGestureForWidget() {
+    mOptions.displayGestureWithName(getId());
+  }
+
   // View representing this widget. It probably contains subviews that include
   // one or more Android gadgets (e.g. CheckBox, TextView)
   private LinearLayout mPrimaryView;

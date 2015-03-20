@@ -26,6 +26,7 @@ public class ButtonWidget extends AbstractWidget {
       b.setOnClickListener(new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
+          displayGestureForWidget();
           notifyListeners();
         }
       });
@@ -42,6 +43,7 @@ public class ButtonWidget extends AbstractWidget {
       b.setOnClickListener(new Button.OnClickListener() {
         @Override
         public void onClick(View v) {
+          displayGestureForWidget();
           notifyListeners();
         }
       });

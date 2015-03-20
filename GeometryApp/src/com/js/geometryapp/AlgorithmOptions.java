@@ -24,6 +24,7 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 import com.js.geometryapp.widget.SliderWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.TextWidget;
+import com.js.gest.GestureEventFilter;
 
 import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
@@ -648,6 +649,16 @@ public class AlgorithmOptions {
     return mContext;
   }
 
+  public void setGestureEventFilter(GestureEventFilter filter) {
+    mGestureEventFilter = filter;
+  }
+
+  public void displayGestureWithName(String id) {
+    if (mGestureEventFilter == null)
+      return;
+    mGestureEventFilter.setDisplayedGesture(id);
+  }
+
   private ConcreteStepper mStepper;
   private LinearLayout mContainingView;
   // Until this flag is true, no listeners are sent messages about widget
@@ -668,5 +679,6 @@ public class AlgorithmOptions {
   private int mPreviousTextIndex;
   private Editor mEditor;
   private List<LinearLayout> mWidgetContainerStack = new ArrayList();
+  private GestureEventFilter mGestureEventFilter;
 
 }

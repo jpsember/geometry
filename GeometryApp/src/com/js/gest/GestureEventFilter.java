@@ -476,6 +476,15 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
+  public void setDisplayedGesture(String gestureName) {
+    if (sharedViewMode())
+      return;
+    StrokeSet set = mStrokeSetCollection.get(gestureName);
+    if (set == null)
+      return;
+    gesturePanel().setGesture(set);
+  }
+
   public static interface Listener {
     /**
      * For development purposes only: called when the gesture being constructed

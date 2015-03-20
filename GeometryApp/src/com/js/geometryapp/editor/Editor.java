@@ -151,7 +151,7 @@ public class Editor {
       die(e);
     }
     GestureEventFilter filter = new GestureEventFilter();
-    gestures.setTraceStatus(true);
+    mOptions.setGestureEventFilter(filter);
     filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
     mGesturePanel = filter.constructGesturePanel(context());
     filter.setGestures(gestures);

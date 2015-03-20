@@ -183,8 +183,13 @@ public class DefaultUserOperation extends UserOperation {
     SlotList hlPickSet = getSelectedObjects(pickSet);
 
     if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
+      // Use the frontmost item of the new pick set
       hlPickSet = new SlotList(pickSet.last());
+    } else {
+      // Use the original selected objects in their entirety
+      hlPickSet = state.getSelectedSlots();
     }
+
     if (!hlPickSet.isEmpty()) {
       startCommand("move", null);
       state.getObjects().setSelected(hlPickSet);

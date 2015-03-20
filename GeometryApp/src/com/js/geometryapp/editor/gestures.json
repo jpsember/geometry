@@ -1,7 +1,8 @@
 [
- {"name":"Undo","strokes": [[0,1,0, 1,0,1]]}
+ {"name":"Undo","directed":true,"strokes": [[0,1,0, 1,0,1]]}
 
-,{"name":"Redo","uses":["Undo","fliphorz","flipvert"]}
+
+,{"name":"Redo","directed":true,"uses":["Undo","fliphorz","flipvert"]}
 
 ,{"name":"Copy", "reverse":true, "strokes":[[0,254,194,4,247,200,8,231,210,12,210,219,16,164,228,20,111,225,24,63,202,28,26,169,32,4,129,36,4,89,40,31,51,44,76,28,48,140,25,52,197,39,56,241,72,60,246,77]]}
 

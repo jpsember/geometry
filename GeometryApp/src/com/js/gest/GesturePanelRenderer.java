@@ -57,7 +57,7 @@ class GesturePanelRenderer {
 
     Paint paint = new Paint();
     paint.setStyle(Paint.Style.STROKE);
-    paint.setColor(0x40505050);
+    paint.setColor(scaledSet.isDirected() ? 0x40ff5050 : 0x40505050);
     paint.setStrokeWidth(8f);
 
     Path path = mPath;

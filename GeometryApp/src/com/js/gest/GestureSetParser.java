@@ -330,12 +330,13 @@ class GestureSetParser {
   }
 
   private void processFlags() throws JSONException {
-    final String KEY_UNUSED = "unused";
     for (String name : mNamedSets.keySet()) {
       ParseEntry entry = mNamedSets.get(name);
       JSONObject map = entry.map();
-      if (map.optBoolean(KEY_UNUSED))
+      if (map.optBoolean(StrokeSet.KEY_UNUSED))
         entry.strokeSet().setUnused(true);
+      if (map.optBoolean(StrokeSet.KEY_DIRECTED))
+        entry.strokeSet().setDirected(true);
     }
   }
 

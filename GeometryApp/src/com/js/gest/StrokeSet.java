@@ -28,6 +28,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   static final String KEY_ALIAS = "alias";
   static final String KEY_STROKES = "strokes";
   static final String KEY_UNUSED = "unused";
+  static final String KEY_DIRECTED = "directed";
 
   public StrokeSet() {
   }
@@ -158,6 +159,12 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
       sb.append("true");
       sb.append(',');
     }
+    if (isDirected()) {
+      quote(sb, KEY_DIRECTED);
+      sb.append(':');
+      sb.append("true");
+      sb.append(',');
+    }
     quote(sb, KEY_STROKES);
     sb.append(":[");
     for (int i = 0; i < size(); i++) {
@@ -282,14 +289,34 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   }
 
   private static final int FLAG_UNUSED = (1 << 0);
+  private static final int FLAG_DIRECTED = (1 << 1);
+
+  private void setFlag(int flag, boolean state) {
+    mutate();
+    if (state)
+      mFlags |= flag;
+    else
+      mFlags &= ~flag;
+  }
+
+  private boolean hasFlag(int flag) {
+    return 0 != (mFlags & flag);
+  }
 
   public void setUnused(boolean b) {
-    mutate();
-    mFlags |= FLAG_UNUSED;
+    setFlag(FLAG_UNUSED, b);
+  }
+
+  public void setDirected(boolean b) {
+    setFlag(FLAG_DIRECTED, b);
   }
 
   public boolean isUnused() {
-    return 0 != (mFlags & FLAG_UNUSED);
+    return hasFlag(FLAG_UNUSED);
+  }
+
+  public boolean isDirected() {
+    return hasFlag(FLAG_DIRECTED);
   }
 
   /**

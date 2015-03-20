@@ -27,6 +27,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   static final String KEY_NAME = "name";
   static final String KEY_ALIAS = "alias";
   static final String KEY_STROKES = "strokes";
+  static final String KEY_UNUSED = "unused";
 
   public StrokeSet() {
   }
@@ -151,6 +152,12 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
       sb.append(':');
       quote(sb, aliasName());
     }
+    if (isUnused()) {
+      quote(sb, KEY_UNUSED);
+      sb.append(':');
+      sb.append("true");
+      sb.append(',');
+    }
     quote(sb, KEY_STROKES);
     sb.append(":[");
     for (int i = 0; i < size(); i++) {
@@ -194,6 +201,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     StrokeSet s = new StrokeSet();
     s.mName = mName;
     s.mAliasName = mAliasName;
+    s.mFlags = mFlags;
     for (Stroke st : mStrokes) {
       s.mStrokes.add(mutableCopyOf(st));
     }
@@ -273,6 +281,17 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     mAliasName = aliasName;
   }
 
+  private static final int FLAG_UNUSED = (1 << 0);
+
+  public void setUnused(boolean b) {
+    mutate();
+    mFlags |= FLAG_UNUSED;
+  }
+
+  public boolean isUnused() {
+    return 0 != (mFlags & FLAG_UNUSED);
+  }
+
   /**
    * Get the name of the stroke set this one is an alias of; returns our name if
    * we are not an alias
@@ -302,6 +321,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   private String mName;
   private ArrayList<Stroke> mStrokes = new ArrayList();
   private Rect mBounds;
+  private int mFlags;
 
   // Only used when mutable
   private float mInitialEventTime;

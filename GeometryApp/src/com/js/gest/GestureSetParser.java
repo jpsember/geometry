@@ -70,10 +70,10 @@ class GestureSetParser {
 
     mParsedArray = JSONTools.parseArray(script);
 
-    // Pass 1: read all of the entries into our map
+    // Read all of the entries into our map
     populateMapFromArray();
 
-    // Pass 2: process all entries which contain actual strokes, instead of
+    // Process all entries which contain actual strokes, instead of
     // referencing others
     processStrokes();
 
@@ -81,6 +81,8 @@ class GestureSetParser {
     processStrokeReferences();
 
     processAliases();
+
+    processFlags();
 
     populateOutputSet(collection);
   }
@@ -324,6 +326,16 @@ class GestureSetParser {
       StrokeSet set = mutableCopyOf(entry.strokeSet());
       set.setAliasName(aliasName);
       entry.setStrokeSet(set);
+    }
+  }
+
+  private void processFlags() throws JSONException {
+    final String KEY_UNUSED = "unused";
+    for (String name : mNamedSets.keySet()) {
+      ParseEntry entry = mNamedSets.get(name);
+      JSONObject map = entry.map();
+      if (map.optBoolean(KEY_UNUSED))
+        entry.strokeSet().setUnused(true);
     }
   }
 

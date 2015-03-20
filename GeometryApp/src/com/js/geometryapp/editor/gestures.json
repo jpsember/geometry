@@ -19,4 +19,12 @@
 
 ,{"name":"Disc","fliphorz":true,"flipvert":true,"flipboth":true,"strokes":[[0,121,254,3,100,248,6,61,217,10,27,155,13,27,79,16,75,15,20,156,10,23,218,65,27,232,143,30,201,216,33,162,246,37,133,252]]}
 
+,{"name":"up","unused":true,"strokes": [[0,0,0, 1,0,1]]}
+
+,{"name":"down","unused":true,"uses":["up","reverse"]}
+
+,{"name":"left","unused":true,"strokes": [[0,1,0, 1,0,0]]}
+
+,{"name":"right","unused":true,"uses":["left","reverse"]}
+
 ]

@@ -89,9 +89,11 @@ public class DefaultUserOperation extends UserOperation {
     for (int slot = 0; slot < srcObjects.size(); slot++) {
       EdObject src = srcObjects.get(slot);
       float dist = src.distFrom(location);
-      if (srcObjects.isSlotSelected(slot))
-        pickRadius *= 2f;
-      if (dist > pickRadius)
+      float pickRadiusMultiplier = 1f;
+      if (srcObjects.isSlotSelected(slot)) {
+        pickRadiusMultiplier = 2f;
+      }
+      if (dist > pickRadius * pickRadiusMultiplier)
         continue;
       slots.add(slot);
     }
@@ -185,7 +187,7 @@ public class DefaultUserOperation extends UserOperation {
     if (hlPickSet.isEmpty() && !pickSet.isEmpty()) {
       // Use the frontmost item of the new pick set
       hlPickSet = new SlotList(pickSet.last());
-    } else {
+    } else if (!hlPickSet.isEmpty()) {
       // Use the original selected objects in their entirety
       hlPickSet = state.getSelectedSlots();
     }

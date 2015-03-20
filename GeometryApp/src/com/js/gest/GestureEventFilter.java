@@ -471,17 +471,31 @@ public class GestureEventFilter extends MyTouchListener {
     }
     mMatch = match;
     mListener.processGesture(mMatch.strokeSet().aliasName());
-    if (!sharedViewMode()) {
-      gesturePanel().setGesture(mMatch.strokeSet());
-    }
+    setDisplayedGesture(mMatch.strokeSet().name(), true);
   }
 
-  public void setDisplayedGesture(String gestureName) {
+  /**
+   * Set which gesture is displayed; does nothing if in shared view mode
+   * 
+   * @param gestureName
+   *          name to display, or null; if no such gesture exists, removes any
+   *          existing gesture
+   * @param substituteAlias
+   *          if true, and named gesture has an alias, displays the alias
+   *          instead
+   */
+  public void setDisplayedGesture(String gestureName, boolean substituteAlias) {
     if (sharedViewMode())
       return;
-    StrokeSet set = mStrokeSetCollection.get(gestureName);
-    if (set == null)
-      return;
+    StrokeSet set = null;
+    if (gestureName != null) {
+      set = mStrokeSetCollection.get(gestureName);
+      if (set != null) {
+        if (substituteAlias && set.hasAlias()) {
+          set = mStrokeSetCollection.get(set.aliasName());
+        }
+      }
+    }
     gesturePanel().setGesture(set);
   }
 

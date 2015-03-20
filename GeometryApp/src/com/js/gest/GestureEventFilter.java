@@ -73,42 +73,27 @@ public class GestureEventFilter extends MyTouchListener {
 
   /**
    * Construct a view to be used for displaying the gesture panel (MODE_OWNVIEW
-   * only)
+   * only). Also calls setView() to make the view this touch listener's view
    */
-  public View constructView(Context context) {
+  public View constructGesturePanel(Context context) {
     if (mConstructedView)
       throw new IllegalStateException();
     if (viewMode() != MODE_OWNVIEW)
       throw new IllegalStateException();
-    View v = new OurView(context);
+    View view = new GesturePanelView(context, this);
     mConstructedView = true;
-    return v;
+    setView(view);
+    return view;
   }
 
-  /**
-   * View subclass that calls draw() when onDraw is called (this will probably
-   * be refactored later, so that GesturePanel is a subclass of View)
-   */
-  private class OurView extends View {
-
-    public OurView(Context context) {
-      super(context);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-      super.onDraw(canvas);
-      GestureEventFilter.this.draw(canvas);
-    }
-  }
-
-  private GesturePanel gesturePanel() {
+  private GesturePanelRenderer gesturePanel() {
     if (sharedViewMode())
       throw new IllegalStateException();
-    if (mGesturePanel == null) {
-      mGesturePanel = new GesturePanel(getView());
+    if (mGesturePanelRenderer == null) {
+      mGesturePanelRenderer = new GesturePanelRenderer(getView(),
+          viewMode() == MODE_FLOATINGVIEW);
     }
-    return mGesturePanel;
+    return mGesturePanelRenderer;
   }
 
   private boolean sharedViewMode() {
@@ -559,7 +544,7 @@ public class GestureEventFilter extends MyTouchListener {
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private DecisionTracker mTracker;
-  private GesturePanel mGesturePanel;
+  private GesturePanelRenderer mGesturePanelRenderer;
   private int mViewMode;
   private boolean mConstructedView;
 }

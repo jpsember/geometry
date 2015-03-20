@@ -153,8 +153,7 @@ public class Editor {
     GestureEventFilter filter = new GestureEventFilter();
     gestures.setTraceStatus(true);
     filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
-    mGesturePanel = filter.constructView(context());
-    filter.setView(mGesturePanel);
+    mGesturePanel = filter.constructGesturePanel(context());
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
       @Override

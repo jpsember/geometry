@@ -14,7 +14,9 @@ import android.graphics.Color;
 import android.opengl.GLSurfaceView;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 
+import com.js.android.MyActivity;
 import com.js.android.UITools;
 import com.js.geometry.AlgorithmStepper;
 import com.js.basic.MyMath;
@@ -372,7 +374,11 @@ public class ConcreteStepper extends AlgorithmStepper {
       currentContent = mAuxView.getChildAt(0);
     if (currentContent != content) {
       mAuxView.removeAllViews();
-      mAuxView.addView(content, layoutParams(mAuxView, 0));
+      // Set the height of the auxilliary view large enough
+      // to make gesture entering convenient
+      LayoutParams p = layoutParams(true, 0);
+      p.height = MyActivity.getResolutionInfo().inchesToPixelsUI(1f);
+      mAuxView.addView(content, p);
     }
   }
 

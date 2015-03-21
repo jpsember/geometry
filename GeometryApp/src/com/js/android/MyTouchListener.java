@@ -42,15 +42,6 @@ public class MyTouchListener implements OnTouchListener {
     return false;
   }
 
-  public void prependTo(MyTouchListener listener) {
-    if (listener == null)
-      throw new IllegalArgumentException();
-    if (listener.mView == null)
-      throw new IllegalStateException("next listener has no view");
-    mNextListener = listener;
-    setViewAux(listener.mView);
-  }
-
   /**
    * Set view for listener chain. Must be called before chain grows beyond a
    * single listener

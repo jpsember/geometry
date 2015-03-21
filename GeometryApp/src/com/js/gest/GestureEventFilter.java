@@ -16,13 +16,12 @@ import static com.js.android.UITools.*;
 
 public class GestureEventFilter extends MyTouchListener {
 
-  private static final int STATE_UNATTACHED = 0;
-  private static final int STATE_DORMANT = 1;
-  private static final int STATE_BUFFERING = 2;
-  private static final int STATE_RECORDING = 3;
-  private static final int STATE_FORWARDING = 4;
-  private static final int STATE_IGNORING = 5;
-  private static final int STATE_STOPPED = 6;
+  private static final int STATE_DORMANT = 0;
+  private static final int STATE_BUFFERING = 1;
+  private static final int STATE_RECORDING = 2;
+  private static final int STATE_FORWARDING = 3;
+  private static final int STATE_IGNORING = 4;
+  private static final int STATE_STOPPED = 5;
 
   public GestureEventFilter() {
     // Enable this line to print diagnostic information:
@@ -51,15 +50,6 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   @Override
-  public void prependTo(MyTouchListener listener) {
-    unimp("eliminate UNATTACHED state and this method");
-    if (state() != STATE_UNATTACHED)
-      throw new IllegalStateException();
-    super.prependTo(listener);
-    setState(STATE_DORMANT);
-  }
-
-  @Override
   public void setView(View view) {
     if (!(view instanceof GesturePanel))
       throw new IllegalArgumentException("must be GesturePanel");
@@ -82,8 +72,8 @@ public class GestureEventFilter extends MyTouchListener {
       pr(message);
   }
 
-  private final static String[] sStateNames = { "UNATTACHED", "DORMANT",
-      "BUFFERING", "RECORDING", "FORWARDING", "IGNORING", "STOPPED" };
+  private final static String[] sStateNames = { "DORMANT", "BUFFERING",
+      "RECORDING", "FORWARDING", "IGNORING", "STOPPED" };
 
   private static String stateName(int state) {
     return sStateNames[state];

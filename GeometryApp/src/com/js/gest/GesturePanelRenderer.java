@@ -3,6 +3,7 @@ package com.js.gest;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.basic.Rect;
 
@@ -11,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Handler;
 import android.view.View;
+import static com.js.basic.Tools.*;
 
 class GesturePanelRenderer {
 
@@ -26,6 +28,7 @@ class GesturePanelRenderer {
   public GesturePanelRenderer(View container, boolean floating) {
     mContainer = container;
     mFloating = floating;
+    doNothing();
   }
 
   /**
@@ -34,11 +37,22 @@ class GesturePanelRenderer {
   public void draw(Canvas canvas) {
     Rect r = getBounds();
     Paint paint = new Paint();
-    paint.setColor(0x40808080);
+    paint.setColor(0xffe0e0e0);
     paint.setStrokeWidth(1.2f);
 
     fillRoundedRect(canvas, r, 16.0f, paint);
     drawStrokeSet(canvas);
+  }
+
+  /**
+   * Transform a stroke point from its coordinate system (origin bottom left) to
+   * Android's (origin top left) by flipping the y coordinate
+   * 
+   * @param bounds
+   * @param pt
+   */
+  private Point flipVertically(Rect bounds, Point pt) {
+    return new Point(pt.x, bounds.endY() - pt.y + bounds.y);
   }
 
   private void drawStrokeSet(Canvas canvas) {
@@ -57,28 +71,43 @@ class GesturePanelRenderer {
 
     Paint paint = new Paint();
     paint.setStyle(Paint.Style.STROKE);
-    paint.setColor(scaledSet.isDirected() ? 0x40ff5050 : 0x40505050);
+    paint.setColor(0xffa0a0a0);
     paint.setStrokeWidth(8f);
 
     for (Stroke s : scaledSet) {
       Path path = mPath;
       path.reset();
-      Point ptPrev = null;
+      Point ptPrev1 = null;
+      Point ptPrev2 = null;
       for (int i = 0; i < s.size(); i++) {
         Point pt = s.getPoint(i);
-        // Flip the stroke from its coordinate system to Android's
-        pt = new Point(pt.x, r.endY() - pt.y + r.y);
+        pt = flipVertically(r, pt);
         if (i == 0) {
           path.moveTo(pt.x, pt.y);
         } else if (i < s.size() - 1) {
-          path.quadTo(ptPrev.x, ptPrev.y, (ptPrev.x + pt.x) / 2,
-              (ptPrev.y + pt.y) / 2);
+          ptPrev1 = new Point((ptPrev2.x + pt.x) / 2, (ptPrev2.y + pt.y) / 2);
+          path.quadTo(ptPrev2.x, ptPrev2.y, ptPrev1.x, ptPrev1.y);
         } else {
           path.lineTo(pt.x, pt.y);
         }
-        ptPrev = pt;
+        ptPrev2 = pt;
       }
       canvas.drawPath(path, paint);
+
+      if (scaledSet.isDirected() && ptPrev1 != null) {
+        float angle = MyMath.polarAngleOfSegment(ptPrev1, ptPrev2) + MyMath.PI;
+        float arrowheadLength = r.maxDim() * .08f;
+        final float ARROWHEAD_ANGLE = MyMath.M_DEG * 22;
+        Point rightFlange = MyMath.pointOnCircle(ptPrev2, angle
+            - ARROWHEAD_ANGLE, arrowheadLength);
+        Point leftFlange = MyMath.pointOnCircle(ptPrev2, angle
+            + ARROWHEAD_ANGLE, arrowheadLength);
+        path.reset();
+        path.moveTo(rightFlange.x, rightFlange.y);
+        path.lineTo(ptPrev2.x, ptPrev2.y);
+        path.lineTo(leftFlange.x, leftFlange.y);
+        canvas.drawPath(path, paint);
+      }
     }
   }
 

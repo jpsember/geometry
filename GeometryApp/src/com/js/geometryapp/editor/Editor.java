@@ -72,11 +72,12 @@ public class Editor {
 
   public void setDependencies(GeometryStepperActivity activity,
       ConcreteStepper stepper, AlgorithmOptions options,
-      AlgorithmRenderer renderer) {
+      AlgorithmRenderer renderer, GestureEventFilter gestureEventFilter) {
     mActivity = activity;
     mStepper = stepper;
     mOptions = options;
     mRenderer = renderer;
+    mGestureEventFilter = gestureEventFilter;
   }
 
   public AlgorithmStepper stepper() {
@@ -150,10 +151,17 @@ public class Editor {
     } catch (Exception e) {
       die(e);
     }
-    GestureEventFilter filter = new GestureEventFilter();
-    mOptions.setGestureEventFilter(filter);
-    filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
-    mGesturePanel = filter.constructGesturePanel(context());
+    GestureEventFilter filter = mGestureEventFilter;
+
+    if (GeometryStepperActivity.FLOATING) {
+      filter.setViewMode(GestureEventFilter.MODE_FLOATINGVIEW);
+      filter.prependTo(touchListener);
+      filter.prepareFloatingView();
+    } else {
+      filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
+      filter.constructGesturePanel(context());
+    }
+
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
       @Override
@@ -183,8 +191,11 @@ public class Editor {
     // Place these controls in the aux controls view
     mOptions.pushView(getAuxControlsView());
 
-    // Add a horizontal layout to house the buttons + gesture panel.
-    mOptions.pushView(mOptions.addView(false));
+    boolean floating = GeometryStepperActivity.FLOATING;
+    if (!floating) {
+      // Add a horizontal layout to house the buttons + gesture panel.
+      mOptions.pushView(mOptions.addView(false));
+    }
 
     // Buttons go in a vertical panel
     {
@@ -267,9 +278,12 @@ public class Editor {
 
       mOptions.popView();
     }
-    mOptions.popView();
 
-    mOptions.addView(mGesturePanel, layoutParams(false, 1));
+    if (!floating) {
+      mOptions.popView();
+      if (mGestureEventFilter.isOwnViewMode())
+        mOptions.addView(mGestureEventFilter.getView(), layoutParams(false, 1));
+    }
 
     mOptions.popView();
     mOptions.popView();
@@ -925,5 +939,5 @@ public class Editor {
   private EditorState mState;
   // The most recent frozen snapshot of the editor state
   private EditorState mStateSnapshot;
-  private View mGesturePanel;
+  private GestureEventFilter mGestureEventFilter;
 }

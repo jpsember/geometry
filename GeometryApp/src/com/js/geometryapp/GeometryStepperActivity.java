@@ -11,6 +11,7 @@ import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorTools;
+import com.js.gest.GestureEventFilter;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
@@ -27,6 +29,7 @@ import static com.js.android.UITools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
+  public static final boolean FLOATING = true;
   public static final String PERSIST_KEY_OPTIONS = "_widget_values";
   public static final String PERSIST_KEY_EDITOR = "_editor";
   private static final int REQUEST_SHARE_GEOM_FILE = 1000;
@@ -48,11 +51,13 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
     mStepper = new ConcreteStepper();
     mOptions = new AlgorithmOptions(this);
     mRenderer = new AlgorithmRenderer(this);
+    mGestureEventFilter = new GestureEventFilter();
 
     // Stage 2: establish dependencies
-    mEditor.setDependencies(this, mStepper, mOptions, mRenderer);
+    mEditor.setDependencies(this, mStepper, mOptions, mRenderer,
+        mGestureEventFilter);
     mStepper.setDependencies(mOptions, mEditor);
-    mOptions.setDependencies(mEditor, mStepper);
+    mOptions.setDependencies(mEditor, mStepper, mGestureEventFilter);
     mRenderer.setDependencies(mEditor, mStepper);
   }
 
@@ -109,9 +114,20 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
     // control panel
     LinearLayout mainView = linearLayout(this, true);
     {
+      View contentView = surfaceView;
+      if (FLOATING) {
+        RelativeLayout layout = new RelativeLayout(this);
+        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.MATCH_PARENT,
+            RelativeLayout.LayoutParams.MATCH_PARENT);
+        layout.addView(surfaceView, p);
+        mGestureEventFilter.setFloatingViewContainer(layout);
+        contentView = layout;
+      }
+
       // Wrap the GLSurfaceView within another container, so we can
       // overlay it with an editing toolbar
-      mEditor.prepare(surfaceView);
+      mEditor.prepare(contentView);
 
       View editorView = mEditor.getView();
       // Place editor view within a container with a black background
@@ -289,4 +305,5 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
   private AlgorithmRenderer mRenderer;
   private Editor mEditor;
   private GLSurfaceView mGLView;
+  private GestureEventFilter mGestureEventFilter;
 }

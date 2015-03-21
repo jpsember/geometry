@@ -3,41 +3,53 @@ package com.js.gest;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.basic.Rect;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Handler;
 import android.view.View;
 
-public class GesturePanel {
+public class GesturePanel extends View {
 
   private static final float PADDING = 8.0f;
   private static final float MINIMIZED_HEIGHT = 32;
 
   /**
    * Constructor
-   * 
-   * @param container
-   *          the View to contain the panel
    */
-  public GesturePanel(View container) {
-    mContainer = container;
+  public GesturePanel(Context context) {
+    super(context);
   }
 
-  /**
-   * Draw the panel to a canvas; should be called by a View's onDraw() method
-   */
-  public void draw(Canvas canvas) {
-    Rect r = getBounds();
+  @Override
+  protected void onDraw(Canvas canvas) {
+    super.onDraw(canvas);
+    onDrawAux(canvas);
+  }
+
+  private void onDrawAux(Canvas canvas) {
+    Rect r = getActiveBounds();
     Paint paint = new Paint();
     paint.setColor(0x40808080);
     paint.setStrokeWidth(1.2f);
-
     fillRoundedRect(canvas, r, 16.0f, paint);
     drawStrokeSet(canvas);
+  }
+
+  /**
+   * Transform a stroke point from its coordinate system (origin bottom left) to
+   * Android's (origin top left) by flipping the y coordinate
+   * 
+   * @param bounds
+   * @param pt
+   */
+  private Point flipVertically(Rect bounds, Point pt) {
+    return new Point(pt.x, bounds.endY() - pt.y + bounds.y);
   }
 
   private void drawStrokeSet(Canvas canvas) {
@@ -46,7 +58,7 @@ public class GesturePanel {
 
     // If no scaled version exists, create one
     StrokeSet scaledSet = mScaledStrokeSets.get(mDisplayedStrokeSet.name());
-    Rect r = new Rect(getBounds());
+    Rect r = new Rect(getActiveBounds());
     final float STROKE_INSET = PADDING * 1.8f;
     r.inset(STROKE_INSET, STROKE_INSET);
     if (scaledSet == null) {
@@ -56,36 +68,51 @@ public class GesturePanel {
 
     Paint paint = new Paint();
     paint.setStyle(Paint.Style.STROKE);
-    paint.setColor(0x40505050);
+    paint.setColor(0xffa0a0a0);
     paint.setStrokeWidth(8f);
 
-    Path path = mPath;
-    path.reset();
     for (Stroke s : scaledSet) {
-      Point ptPrev = null;
+      Path path = mPath;
+      path.reset();
+      Point ptPrev1 = null;
+      Point ptPrev2 = null;
       for (int i = 0; i < s.size(); i++) {
         Point pt = s.getPoint(i);
-        // Flip the stroke from its coordinate system to Android's
-        pt = new Point(pt.x, r.endY() - pt.y + r.y);
+        pt = flipVertically(r, pt);
         if (i == 0) {
           path.moveTo(pt.x, pt.y);
         } else if (i < s.size() - 1) {
-          path.quadTo(ptPrev.x, ptPrev.y, (ptPrev.x + pt.x) / 2,
-              (ptPrev.y + pt.y) / 2);
+          ptPrev1 = new Point((ptPrev2.x + pt.x) / 2, (ptPrev2.y + pt.y) / 2);
+          path.quadTo(ptPrev2.x, ptPrev2.y, ptPrev1.x, ptPrev1.y);
         } else {
           path.lineTo(pt.x, pt.y);
         }
-        ptPrev = pt;
+        ptPrev2 = pt;
+      }
+      canvas.drawPath(path, paint);
+
+      if (scaledSet.isDirected() && ptPrev1 != null) {
+        float angle = MyMath.polarAngleOfSegment(ptPrev1, ptPrev2) + MyMath.PI;
+        float arrowheadLength = r.maxDim() * .08f;
+        final float ARROWHEAD_ANGLE = MyMath.M_DEG * 22;
+        Point rightFlange = MyMath.pointOnCircle(ptPrev2, angle
+            - ARROWHEAD_ANGLE, arrowheadLength);
+        Point leftFlange = MyMath.pointOnCircle(ptPrev2, angle
+            + ARROWHEAD_ANGLE, arrowheadLength);
+        path.reset();
+        path.moveTo(rightFlange.x, rightFlange.y);
+        path.lineTo(ptPrev2.x, ptPrev2.y);
+        path.lineTo(leftFlange.x, leftFlange.y);
+        canvas.drawPath(path, paint);
       }
     }
-    canvas.drawPath(path, paint);
   }
 
   /**
    * Determine if the panel contains a point
    */
   public boolean containsPoint(Point point) {
-    Rect r = getBounds();
+    Rect r = getActiveBounds();
     return r.contains(point);
   }
 
@@ -105,26 +132,18 @@ public class GesturePanel {
     canvas.drawPath(path, paint);
   }
 
-  private Rect getBounds() {
-    if (mViewBoundsNormal == null) {
-      View view = mContainer;
+  private Rect getActiveBounds() {
 
-      float minWidth = 340;
-      float minHeight = 240;
+    float width = getWidth();
+    float height = getHeight();
 
-      float width = Math.min(view.getWidth(), minWidth);
-      float height = Math.min(view.getHeight(), minHeight);
+    Rect rect = new Rect(0, 0, width, height);
+    rect.inset(PADDING, PADDING);
 
-      Rect rect = new Rect(view.getWidth() - width, view.getHeight() - height,
-          width, height);
-
-      rect.inset(PADDING, PADDING);
-      mViewBoundsNormal = rect;
-
-      mViewBoundsMinimized = new Rect(rect.x, rect.endY() - MINIMIZED_HEIGHT,
-          rect.width, MINIMIZED_HEIGHT);
-    }
-    return isMinimized() ? mViewBoundsMinimized : mViewBoundsNormal;
+    if (isMinimized())
+      rect = new Rect(rect.x, rect.endY() - MINIMIZED_HEIGHT, rect.width,
+          MINIMIZED_HEIGHT);
+    return rect;
   }
 
   public boolean isMinimized() {
@@ -136,7 +155,7 @@ public class GesturePanel {
       return;
 
     mMinimized = state;
-    mContainer.invalidate();
+    invalidate();
     if (mMinimized) {
       mDisplayedStrokeSet = null;
     }
@@ -150,7 +169,7 @@ public class GesturePanel {
     mUniqueGestureNumber++;
     mDisplayedStrokeSet = strokeSet;
     if (!isMinimized()) {
-      mContainer.invalidate();
+      invalidate();
 
       // If we've set a gesture, set timer to erase it after a second or two
       if (strokeSet != null) {
@@ -170,9 +189,6 @@ public class GesturePanel {
   }
 
   private Path mPath = new Path();
-  private Rect mViewBoundsNormal;
-  private Rect mViewBoundsMinimized;
-  private View mContainer;
   private boolean mMinimized;
   private StrokeSet mDisplayedStrokeSet;
   private Map<String, StrokeSet> mScaledStrokeSets = new HashMap();

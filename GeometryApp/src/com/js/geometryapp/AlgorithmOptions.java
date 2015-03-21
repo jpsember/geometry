@@ -50,9 +50,11 @@ public class AlgorithmOptions {
     mContext = context;
   }
 
-  void setDependencies(Editor editor, ConcreteStepper stepper) {
+  void setDependencies(Editor editor, ConcreteStepper stepper,
+      GestureEventFilter gestureEventFilter) {
     mEditor = editor;
     mStepper = stepper;
+    mGestureEventFilter = gestureEventFilter;
   }
 
   /**
@@ -647,10 +649,6 @@ public class AlgorithmOptions {
    */
   public Context getContext() {
     return mContext;
-  }
-
-  public void setGestureEventFilter(GestureEventFilter filter) {
-    mGestureEventFilter = filter;
   }
 
   public void displayGestureWithName(String id) {

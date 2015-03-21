@@ -374,10 +374,12 @@ public class ConcreteStepper extends AlgorithmStepper {
       currentContent = mAuxView.getChildAt(0);
     if (currentContent != content) {
       mAuxView.removeAllViews();
-      // Set the height of the auxilliary view large enough
-      // to make gesture entering convenient
       LayoutParams p = layoutParams(true, 0);
-      p.height = MyActivity.getResolutionInfo().inchesToPixelsUI(1f);
+      if (!GeometryStepperActivity.FLOATING) {
+        // Set the height of the auxilliary view large enough
+        // to make gesture entering convenient
+        p.height = MyActivity.getResolutionInfo().inchesToPixelsUI(1f);
+      }
       mAuxView.addView(content, p);
     }
   }

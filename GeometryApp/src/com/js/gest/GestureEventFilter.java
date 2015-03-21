@@ -12,10 +12,10 @@ import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
 
 import android.content.Context;
-import android.graphics.Canvas;
 import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.RelativeLayout;
 import static com.js.basic.Tools.*;
 import static com.js.android.UITools.*;
 
@@ -71,6 +71,31 @@ public class GestureEventFilter extends MyTouchListener {
     mViewMode = mode;
   }
 
+  public void setFloatingViewContainer(RelativeLayout layout) {
+    mFloatingViewContainer = layout;
+  }
+
+  public void prepareFloatingView() {
+    if (!floatingViewMode())
+      throw new IllegalStateException();
+    if (mFloatingViewContainer == null)
+      throw new IllegalStateException("no container for floating view defined");
+    mFloatingGesturePanel = new GesturePanel(getView().getContext());
+    // Make this view transparent
+    mFloatingGesturePanel.setBackgroundColor(0x00000000);
+
+    float size = MyActivity.getResolutionInfo().inchesToPixelsUI(1.6f);
+    float width = size;
+    float height = size * .6f;
+    RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
+        (int) width, (int) height);
+
+    p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+    p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+    p.setMargins(12, 12, 12, 12);
+    mFloatingViewContainer.addView(mFloatingGesturePanel, p);
+  }
+
   /**
    * Construct a view to be used for displaying the gesture panel (MODE_OWNVIEW
    * only). Also calls setView() to make the view this touch listener's view
@@ -78,32 +103,20 @@ public class GestureEventFilter extends MyTouchListener {
   public View constructGesturePanel(Context context) {
     if (mConstructedView)
       throw new IllegalStateException();
-    if (viewMode() != MODE_OWNVIEW)
+    if (!isOwnViewMode())
       throw new IllegalStateException();
-    View view = new GesturePanelView(context, this);
+    View view = new GesturePanel(context);
     mConstructedView = true;
     setView(view);
     return view;
   }
 
-  private GesturePanelRenderer gesturePanel() {
-    if (sharedViewMode())
-      throw new IllegalStateException();
-    if (mGesturePanelRenderer == null) {
-      mGesturePanelRenderer = new GesturePanelRenderer(getView(),
-          viewMode() == MODE_FLOATINGVIEW);
-    }
-    return mGesturePanelRenderer;
-  }
-
-  private boolean sharedViewMode() {
+  public boolean sharedViewMode() {
     return viewMode() == MODE_SHAREDVIEW;
   }
 
-  public void draw(Canvas canvas) {
-    if (sharedViewMode())
-      return;
-    gesturePanel().draw(canvas);
+  public boolean isOwnViewMode() {
+    return viewMode() == MODE_OWNVIEW;
   }
 
   public void setListener(Listener listener) {
@@ -125,8 +138,10 @@ public class GestureEventFilter extends MyTouchListener {
 
   @Override
   public void setView(View view) {
-    if (viewMode() != MODE_OWNVIEW)
+    if (!isOwnViewMode())
       throw new IllegalStateException();
+    if (!(view instanceof GesturePanel))
+      throw new IllegalArgumentException("must be GesturePanel");
     super.setView(view);
     setState(STATE_DORMANT);
   }
@@ -267,20 +282,42 @@ public class GestureEventFilter extends MyTouchListener {
     return (event2.getEventTime() - event1.getEventTime()) / 1000.0f;
   }
 
+  private GesturePanel gesturePanel() {
+    if (floatingViewMode()) {
+      if (mFloatingGesturePanel == null)
+        throw new IllegalStateException("no gesture panel defined");
+      return mFloatingGesturePanel;
+    }
+    return (GesturePanel) getView();
+  }
+
   private void processBufferingState(MotionEvent event) {
 
     if (mTracker != null)
       mTracker.addEvent(event);
 
     if (!sharedViewMode()) {
+      GesturePanel panel = gesturePanel();
       if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
         Point touchLoc = new Point(event.getX(), event.getY());
-        if (gesturePanel().containsPoint(touchLoc)) {
+
+        // If it's a floating panel, get event coordinates relative to floating
+        // panel origin
+        if (floatingViewMode()) {
+          int[] outerViewOrigin = new int[2];
+          int[] floatingViewOrigin = new int[2];
+          mFloatingViewContainer.getLocationOnScreen(outerViewOrigin);
+          panel.getLocationOnScreen(floatingViewOrigin);
+          touchLoc.x -= (floatingViewOrigin[0] - outerViewOrigin[0]);
+          touchLoc.y -= (floatingViewOrigin[1] - outerViewOrigin[1]);
+        }
+
+        if (panel.containsPoint(touchLoc)) {
 
           // If panel is minimized, maximize it, and ignore the rest of this
           // touch sequence
-          if (gesturePanel().isMinimized()) {
-            gesturePanel().setMinimized(false);
+          if (panel.isMinimized()) {
+            panel.setMinimized(false);
             setState(STATE_IGNORING);
           } else {
             setState(STATE_RECORDING);
@@ -567,7 +604,8 @@ public class GestureEventFilter extends MyTouchListener {
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private DecisionTracker mTracker;
-  private GesturePanelRenderer mGesturePanelRenderer;
   private int mViewMode;
   private boolean mConstructedView;
+  private RelativeLayout mFloatingViewContainer;
+  private GesturePanel mFloatingGesturePanel;
 }

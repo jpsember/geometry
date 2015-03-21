@@ -21,7 +21,6 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 import static com.js.basic.Tools.*;
 import static com.js.android.Tools.*;
@@ -29,7 +28,6 @@ import static com.js.android.UITools.*;
 
 public abstract class GeometryStepperActivity extends GeometryActivity {
 
-  public static final boolean FLOATING = true;
   public static final String PERSIST_KEY_OPTIONS = "_widget_values";
   public static final String PERSIST_KEY_EDITOR = "_editor";
   private static final int REQUEST_SHARE_GEOM_FILE = 1000;
@@ -114,20 +112,9 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
     // control panel
     LinearLayout mainView = linearLayout(this, true);
     {
-      View contentView = surfaceView;
-      if (FLOATING) {
-        RelativeLayout layout = new RelativeLayout(this);
-        RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
-            RelativeLayout.LayoutParams.MATCH_PARENT,
-            RelativeLayout.LayoutParams.MATCH_PARENT);
-        layout.addView(surfaceView, p);
-        mGestureEventFilter.setFloatingViewContainer(layout);
-        contentView = layout;
-      }
-
       // Wrap the GLSurfaceView within another container, so we can
       // overlay it with an editing toolbar
-      mEditor.prepare(contentView);
+      mEditor.prepare(surfaceView);
 
       View editorView = mEditor.getView();
       // Place editor view within a container with a black background

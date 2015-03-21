@@ -3,31 +3,18 @@ package com.js.gest;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
-import java.util.Iterator;
 
-import com.js.android.MyActivity;
 import com.js.android.MyTouchListener;
-import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
 
 import android.content.Context;
-import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.RelativeLayout;
 import static com.js.basic.Tools.*;
 import static com.js.android.UITools.*;
 
 public class GestureEventFilter extends MyTouchListener {
-
-  public static final int MODE_OWNVIEW = 1;
-  public static final int MODE_SHAREDVIEW = 2;
-  public static final int MODE_FLOATINGVIEW = 3;
-
-  // User must move by a certain distance within this time in order to switch
-  // from BUFFERING to RECORDING (instead of to FORWARDING)
-  private static final int BUFFERING_TIME_MS = 200;
 
   private static final int STATE_UNATTACHED = 0;
   private static final int STATE_DORMANT = 1;
@@ -40,83 +27,19 @@ public class GestureEventFilter extends MyTouchListener {
   public GestureEventFilter() {
     // Enable this line to print diagnostic information:
     // mTraceActive = true;
-
-    // Enable this line to display gesture vs. non-gesture decision:
-    // mTracker = new DecisionTracker();
   }
 
   /**
-   * Set mode of operation with respect to views.
-   * 
-   * 
-   * MODE_OWNVIEW:
-   * 
-   * The filter has its own view, dedicated to gestures
-   * 
-   * MODE_SHAREDVIEW:
-   * 
-   * The filter shares an existing view, and does its best to determine whether
-   * a touch sequence is a gesture or not
-   * 
-   * MODE_FLOATINGVIEW:
-   * 
-   * Operates in 'floating view' mode. A small translucent rectangle is drawn in
-   * the view, and gestures must be started within it
-   */
-  public void setViewMode(int mode) {
-    if (mViewMode != 0)
-      throw new IllegalStateException();
-    if (mode < MODE_OWNVIEW || mode > MODE_FLOATINGVIEW)
-      throw new IllegalArgumentException();
-    mViewMode = mode;
-  }
-
-  public void setFloatingViewContainer(RelativeLayout layout) {
-    mFloatingViewContainer = layout;
-  }
-
-  public void prepareFloatingView() {
-    if (!floatingViewMode())
-      throw new IllegalStateException();
-    if (mFloatingViewContainer == null)
-      throw new IllegalStateException("no container for floating view defined");
-    mFloatingGesturePanel = new GesturePanel(getView().getContext());
-    // Make this view transparent
-    mFloatingGesturePanel.setBackgroundColor(0x00000000);
-
-    float size = MyActivity.getResolutionInfo().inchesToPixelsUI(1.6f);
-    float width = size;
-    float height = size * .6f;
-    RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(
-        (int) width, (int) height);
-
-    p.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-    p.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-    p.setMargins(12, 12, 12, 12);
-    mFloatingViewContainer.addView(mFloatingGesturePanel, p);
-  }
-
-  /**
-   * Construct a view to be used for displaying the gesture panel (MODE_OWNVIEW
-   * only). Also calls setView() to make the view this touch listener's view
+   * Construct a view to be used for displaying the gesture panel. Also calls
+   * setView() to make the view this touch listener's view
    */
   public View constructGesturePanel(Context context) {
     if (mConstructedView)
-      throw new IllegalStateException();
-    if (!isOwnViewMode())
       throw new IllegalStateException();
     View view = new GesturePanel(context);
     mConstructedView = true;
     setView(view);
     return view;
-  }
-
-  public boolean sharedViewMode() {
-    return viewMode() == MODE_SHAREDVIEW;
-  }
-
-  public boolean isOwnViewMode() {
-    return viewMode() == MODE_OWNVIEW;
   }
 
   public void setListener(Listener listener) {
@@ -138,8 +61,6 @@ public class GestureEventFilter extends MyTouchListener {
 
   @Override
   public void setView(View view) {
-    if (!isOwnViewMode())
-      throw new IllegalStateException();
     if (!(view instanceof GesturePanel))
       throw new IllegalArgumentException("must be GesturePanel");
     super.setView(view);
@@ -232,23 +153,8 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
-  private int viewMode() {
-    if (mViewMode == 0)
-      throw new IllegalStateException("view mode undefined");
-    return mViewMode;
-  }
-
-  private boolean floatingViewMode() {
-    return viewMode() == MODE_FLOATINGVIEW;
-  }
-
   private void processDormantState(MotionEvent event) {
     if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-      if (sharedViewMode()) {
-        // Post an event to switch to FORWARDING automatically in case user
-        // doesn't trigger any further events for a while
-        postForwardTestEvent();
-      }
       setState(STATE_BUFFERING);
       processBufferingState(event);
     } else {
@@ -256,112 +162,16 @@ public class GestureEventFilter extends MyTouchListener {
     }
   }
 
-  /**
-   * Post an event to switch to FORWARDING automatically in case user doesn't
-   * trigger any further events for a while, to give the state machine a chance
-   * to make the RECORDING vs FORWARDING decision
-   */
-  private void postForwardTestEvent() {
-    sHandler.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        trace("Timer task fired, state= " + stateName(state()));
-        if (state() == STATE_BUFFERING) {
-          setState(STATE_FORWARDING);
-          flushBufferedEvents();
-        }
-      }
-    }, (long) (BUFFERING_TIME_MS * 1.5));
-  }
-
-  private static Point rawLocation(MotionEvent event) {
-    return new Point(event.getRawX(), event.getRawY());
-  }
-
-  private static float elapsedTime(MotionEvent event1, MotionEvent event2) {
-    return (event2.getEventTime() - event1.getEventTime()) / 1000.0f;
-  }
-
   private GesturePanel gesturePanel() {
-    if (floatingViewMode()) {
-      if (mFloatingGesturePanel == null)
-        throw new IllegalStateException("no gesture panel defined");
-      return mFloatingGesturePanel;
-    }
     return (GesturePanel) getView();
   }
 
   private void processBufferingState(MotionEvent event) {
 
-    if (mTracker != null)
-      mTracker.addEvent(event);
-
-    if (!sharedViewMode()) {
-      GesturePanel panel = gesturePanel();
-      if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-        Point touchLoc = new Point(event.getX(), event.getY());
-
-        // If it's a floating panel, get event coordinates relative to floating
-        // panel origin
-        if (floatingViewMode()) {
-          int[] outerViewOrigin = new int[2];
-          int[] floatingViewOrigin = new int[2];
-          mFloatingViewContainer.getLocationOnScreen(outerViewOrigin);
-          panel.getLocationOnScreen(floatingViewOrigin);
-          touchLoc.x -= (floatingViewOrigin[0] - outerViewOrigin[0]);
-          touchLoc.y -= (floatingViewOrigin[1] - outerViewOrigin[1]);
-        }
-
-        if (panel.containsPoint(touchLoc)) {
-
-          // If panel is minimized, maximize it, and ignore the rest of this
-          // touch sequence
-          if (panel.isMinimized()) {
-            panel.setMinimized(false);
-            setState(STATE_IGNORING);
-          } else {
-            setState(STATE_RECORDING);
-            processRecordingState(event);
-          }
-        } else {
-          setState(STATE_FORWARDING);
-          processForwardingState(event);
-        }
-        return;
-      }
-    } else {
-
-      // Attempt to decide whether it's a gesture or not
-      final int MIN_STEPS = 3;
-      if (mEventQueue.size() >= 1 + MIN_STEPS) {
-        Iterator<MotionEvent> iter = mEventQueue.iterator();
-        MotionEvent prevEvent = iter.next();
-        float totalVelocity = 0;
-        for (int i = 0; i < MIN_STEPS; i++) {
-          MotionEvent currEvent = iter.next();
-          float time = elapsedTime(prevEvent, currEvent);
-          float distance = MyMath.distanceBetween(rawLocation(prevEvent),
-              rawLocation(currEvent));
-          float distanceInInches = distance
-              / MyActivity.getResolutionInfo().inchesToPixelsUI(1);
-          totalVelocity += distanceInInches / time;
-          prevEvent = currEvent;
-        }
-        float avgVelocity = totalVelocity / MIN_STEPS;
-        boolean isGesture = (avgVelocity > 1.2f);
-        if (mTracker != null) {
-          mTracker.print(" avg velocity (inches/sec): " + d(avgVelocity));
-          mTracker.setDecision(isGesture);
-        }
-        if (isGesture) {
-          setState(STATE_RECORDING);
-          processRecordingState(event);
-        } else {
-          setState(STATE_FORWARDING);
-          processForwardingState(event);
-        }
-        return;
-      }
+    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+      setState(STATE_RECORDING);
+      processRecordingState(event);
+      return;
     }
 
     if (event.getActionMasked() == MotionEvent.ACTION_UP) {
@@ -482,11 +292,6 @@ public class GestureEventFilter extends MyTouchListener {
 
   private void performMatch() {
     if (mTouchStrokeSet.isTap()) {
-      // If panel is maximized, minimize it
-      if (floatingViewMode()) {
-        gesturePanel().setMinimized(true);
-        return;
-      }
       mListener.processGesture(GestureSet.GESTURE_TAP);
       return;
     }
@@ -522,8 +327,6 @@ public class GestureEventFilter extends MyTouchListener {
    *          instead
    */
   public void setDisplayedGesture(String gestureName, boolean substituteAlias) {
-    if (sharedViewMode())
-      return;
     StrokeSet set = null;
     if (gestureName != null) {
       set = mStrokeSetCollection.get(gestureName);
@@ -550,62 +353,16 @@ public class GestureEventFilter extends MyTouchListener {
     void processGesture(String gestureName);
   }
 
-  /**
-   * For diagnosing gesture filter decision
-   */
-  private class DecisionTracker {
-    public void clear() {
-      mBuffer.setLength(0);
-    }
-
-    public void setDecision(boolean isGesture) {
-      print(" is gesture: " + d(isGesture));
-
-      System.out.println("\n----------------");
-      System.out.println(mBuffer);
-      System.out.println("\n");
-    }
-
-    public void addEvent(MotionEvent event) {
-      MotionEvent startEvent = mEventQueue.peekFirst();
-      if (startEvent == null)
-        startEvent = event;
-      Point loc = rawLocation(event);
-      MotionEvent prevEvent = mEventQueue.peekLast();
-      if (prevEvent == null) {
-        clear();
-        print("Initial event: " + dump(event));
-        return;
-      }
-      float timeSincePrev = elapsedTime(prevEvent, event);
-      Point prevLoc = rawLocation(prevEvent);
-      float velocity = MyMath.distanceBetween(loc, prevLoc) / timeSincePrev;
-      print(" t:" + d(timeSincePrev) + " v:" + d(velocity));
-    }
-
-    private void print(String message) {
-      mBuffer.append(message);
-      mBuffer.append('\n');
-    }
-
-    private StringBuilder mBuffer = new StringBuilder();
-  }
-
   // Stroke set from user touch event
   private StrokeSet mTouchStrokeSet;
   private Listener mListener;
   private long mStartEventTimeMillis;
 
-  private static Handler sHandler = new Handler();
   private boolean mTraceActive;
   private Deque<MotionEvent> mEventQueue = new ArrayDeque();
   private boolean mPassingEventFlag;
   private int mState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
-  private DecisionTracker mTracker;
-  private int mViewMode;
   private boolean mConstructedView;
-  private RelativeLayout mFloatingViewContainer;
-  private GesturePanel mFloatingGesturePanel;
 }

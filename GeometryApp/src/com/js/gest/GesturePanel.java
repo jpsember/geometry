@@ -17,7 +17,6 @@ import android.view.View;
 public class GesturePanel extends View {
 
   private static final float PADDING = 8.0f;
-  private static final float MINIMIZED_HEIGHT = 32;
 
   /**
    * Constructor
@@ -140,25 +139,7 @@ public class GesturePanel extends View {
     Rect rect = new Rect(0, 0, width, height);
     rect.inset(PADDING, PADDING);
 
-    if (isMinimized())
-      rect = new Rect(rect.x, rect.endY() - MINIMIZED_HEIGHT, rect.width,
-          MINIMIZED_HEIGHT);
     return rect;
-  }
-
-  public boolean isMinimized() {
-    return mMinimized;
-  }
-
-  public void setMinimized(boolean state) {
-    if (mMinimized == state)
-      return;
-
-    mMinimized = state;
-    invalidate();
-    if (mMinimized) {
-      mDisplayedStrokeSet = null;
-    }
   }
 
   public void setGesture(StrokeSet strokeSet) {
@@ -168,28 +149,25 @@ public class GesturePanel extends View {
       return;
     mUniqueGestureNumber++;
     mDisplayedStrokeSet = strokeSet;
-    if (!isMinimized()) {
-      invalidate();
+    invalidate();
 
-      // If we've set a gesture, set timer to erase it after a second or two
-      if (strokeSet != null) {
-        // Don't erase a more recently plotted gesture!
-        // Make sure this task corresponds to the unique instance we
-        // want to erase.
-        final int gestureToErase = mUniqueGestureNumber;
-        mHandler.postDelayed(new Runnable() {
-          public void run() {
-            if (mUniqueGestureNumber == gestureToErase) {
-              setGesture(null);
-            }
+    // If we've set a gesture, set timer to erase it after a second or two
+    if (strokeSet != null) {
+      // Don't erase a more recently plotted gesture!
+      // Make sure this task corresponds to the unique instance we
+      // want to erase.
+      final int gestureToErase = mUniqueGestureNumber;
+      mHandler.postDelayed(new Runnable() {
+        public void run() {
+          if (mUniqueGestureNumber == gestureToErase) {
+            setGesture(null);
           }
-        }, (long) (ERASE_GESTURE_DELAY * 1000));
-      }
+        }
+      }, (long) (ERASE_GESTURE_DELAY * 1000));
     }
   }
 
   private Path mPath = new Path();
-  private boolean mMinimized;
   private StrokeSet mDisplayedStrokeSet;
   private Map<String, StrokeSet> mScaledStrokeSets = new HashMap();
   private Handler mHandler = new Handler();

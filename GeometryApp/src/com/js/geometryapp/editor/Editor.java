@@ -153,14 +153,7 @@ public class Editor {
     }
     GestureEventFilter filter = mGestureEventFilter;
 
-    if (GeometryStepperActivity.FLOATING) {
-      filter.setViewMode(GestureEventFilter.MODE_FLOATINGVIEW);
-      filter.prependTo(touchListener);
-      filter.prepareFloatingView();
-    } else {
-      filter.setViewMode(GestureEventFilter.MODE_OWNVIEW);
-      filter.constructGesturePanel(context());
-    }
+    filter.constructGesturePanel(context());
 
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
@@ -191,11 +184,8 @@ public class Editor {
     // Place these controls in the aux controls view
     mOptions.pushView(getAuxControlsView());
 
-    boolean floating = GeometryStepperActivity.FLOATING;
-    if (!floating) {
-      // Add a horizontal layout to house the buttons + gesture panel.
-      mOptions.pushView(mOptions.addView(false));
-    }
+    // Add a horizontal layout to house the buttons + gesture panel.
+    mOptions.pushView(mOptions.addView(false));
 
     // Buttons go in a vertical panel
     {
@@ -279,11 +269,8 @@ public class Editor {
       mOptions.popView();
     }
 
-    if (!floating) {
-      mOptions.popView();
-      if (mGestureEventFilter.isOwnViewMode())
-        mOptions.addView(mGestureEventFilter.getView(), layoutParams(false, 1));
-    }
+    mOptions.popView();
+    mOptions.addView(mGestureEventFilter.getView(), layoutParams(false, 1));
 
     mOptions.popView();
     mOptions.popView();

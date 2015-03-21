@@ -24,6 +24,12 @@ public class GesturePanel extends View {
   public GesturePanel(Context context) {
     super(context);
     mFilter = new GestureEventFilter(this);
+    this.setOnTouchListener(mFilter);
+  }
+
+  @Override
+  public boolean performClick() {
+    return super.performClick();
   }
 
   public GestureEventFilter getFilter() {
@@ -48,12 +54,9 @@ public class GesturePanel extends View {
   /**
    * Transform a stroke point from its coordinate system (origin bottom left) to
    * Android's (origin top left) by flipping the y coordinate
-   * 
-   * @param bounds
-   * @param pt
    */
-  private Point flipVertically(Rect bounds, Point pt) {
-    return new Point(pt.x, bounds.endY() - pt.y + bounds.y);
+  public Point flipVertically(Point pt) {
+    return new Point(pt.x, getHeight() - pt.y);
   }
 
   private void drawStrokeSet(Canvas canvas) {
@@ -81,8 +84,7 @@ public class GesturePanel extends View {
       Point ptPrev1 = null;
       Point ptPrev2 = null;
       for (int i = 0; i < s.size(); i++) {
-        Point pt = s.getPoint(i);
-        pt = flipVertically(r, pt);
+        Point pt = flipVertically(s.getPoint(i));
         if (i == 0) {
           path.moveTo(pt.x, pt.y);
         } else if (i < s.size() - 1) {

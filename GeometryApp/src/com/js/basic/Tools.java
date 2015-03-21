@@ -929,6 +929,10 @@ public final class Tools {
     return sIsAndroid;
   }
 
+  public static boolean alwaysFalse() {
+    return false;
+  }
+
   /**
    * Add spaces to a StringBuilder until its length is at some value. Sort of a
    * 'tab' feature, useful for aligning output.

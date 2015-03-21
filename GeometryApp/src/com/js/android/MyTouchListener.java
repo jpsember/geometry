@@ -3,12 +3,15 @@ package com.js.android;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import static com.js.basic.Tools.*;
 
 /**
  * A wrapper for OnTouchListener() that supports chaining.
  * 
  * Subclasses should override onTouch(MotionEvent), instead of
  * onTouch(View,MotionEvent)
+ * 
+ * @deprecated
  */
 public class MyTouchListener implements OnTouchListener {
 
@@ -30,7 +33,7 @@ public class MyTouchListener implements OnTouchListener {
   @Override
   public boolean onTouch(View view, MotionEvent event) {
     // Eclipse generates warnings if we don't call performClick() at some point
-    if (sAlwaysFalse)
+    if (alwaysFalse())
       view.performClick();
 
     MyTouchListener listener = this;
@@ -57,7 +60,6 @@ public class MyTouchListener implements OnTouchListener {
     view.setOnTouchListener(this);
   }
 
-  private static boolean sAlwaysFalse = false;
   private MyTouchListener mNextListener;
   private View mView;
 }

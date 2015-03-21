@@ -4,15 +4,16 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 
-import com.js.android.MyTouchListener;
 import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
 
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
 import static com.js.basic.Tools.*;
 import static com.js.android.UITools.*;
 
-public class GestureEventFilter extends MyTouchListener {
+public class GestureEventFilter implements OnTouchListener {
 
   private static final int STATE_DORMANT = 0;
   private static final int STATE_BUFFERING = 1;
@@ -24,7 +25,7 @@ public class GestureEventFilter extends MyTouchListener {
   GestureEventFilter(GesturePanel panel) {
     // Enable this line to print diagnostic information:
     // mTraceActive = true;
-    setView(panel);
+    mGesturePanel = panel;
   }
 
   public void setListener(Listener listener) {
@@ -91,7 +92,7 @@ public class GestureEventFilter extends MyTouchListener {
       MotionEvent event = mEventQueue.poll();
       if (event == null)
         break;
-      getView().dispatchTouchEvent(event);
+      mGesturePanel.dispatchTouchEvent(event);
       event.recycle();
     }
     mPassingEventFlag = false;
@@ -131,7 +132,7 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   private GesturePanel gesturePanel() {
-    return (GesturePanel) getView();
+    return mGesturePanel;
   }
 
   private void processBufferingState(MotionEvent event) {
@@ -203,7 +204,11 @@ public class GestureEventFilter extends MyTouchListener {
   }
 
   @Override
-  public boolean onTouch(MotionEvent event) {
+  public boolean onTouch(View view, MotionEvent event) {
+    // Avoid Eclipse warnings:
+    if (alwaysFalse())
+      view.performClick();
+
     trace("GestureEventFilter, onTouch event " + dump(event)
         + ", passing events: " + d(mPassingEventFlag));
     if (event.getActionMasked() != MotionEvent.ACTION_MOVE)
@@ -231,8 +236,7 @@ public class GestureEventFilter extends MyTouchListener {
     for (int i = 0; i < event.getPointerCount(); i++) {
       int ptrId = event.getPointerId(i);
       event.getPointerCoords(i, mCoord);
-      Point pt = new Point(mCoord.x, mCoord.y);
-      pt.y = getView().getHeight() - mCoord.y;
+      Point pt = mGesturePanel.flipVertically(new Point(mCoord.x, mCoord.y));
       mTouchStrokeSet.addPoint(eventTime, ptrId, pt);
     }
 
@@ -332,4 +336,5 @@ public class GestureEventFilter extends MyTouchListener {
   private int mState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
+  private GesturePanel mGesturePanel;
 }

@@ -23,6 +23,11 @@ public class GesturePanel extends View {
    */
   public GesturePanel(Context context) {
     super(context);
+    mFilter = new GestureEventFilter(this);
+  }
+
+  public GestureEventFilter getFilter() {
+    return mFilter;
   }
 
   @Override
@@ -172,4 +177,5 @@ public class GesturePanel extends View {
   private Map<String, StrokeSet> mScaledStrokeSets = new HashMap();
   private Handler mHandler = new Handler();
   private int mUniqueGestureNumber;
+  private GestureEventFilter mFilter;
 }

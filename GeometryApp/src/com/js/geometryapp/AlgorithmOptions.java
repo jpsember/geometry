@@ -24,7 +24,7 @@ import com.js.geometryapp.widget.ComboBoxWidget;
 import com.js.geometryapp.widget.SliderWidget;
 import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.TextWidget;
-import com.js.gest.GestureEventFilter;
+import com.js.gest.GesturePanel;
 
 import static com.js.android.Tools.*;
 import static com.js.basic.Tools.*;
@@ -50,11 +50,13 @@ public class AlgorithmOptions {
     mContext = context;
   }
 
-  void setDependencies(Editor editor, ConcreteStepper stepper,
-      GestureEventFilter gestureEventFilter) {
+  void setDependencies(Editor editor, ConcreteStepper stepper) {
     mEditor = editor;
     mStepper = stepper;
-    mGestureEventFilter = gestureEventFilter;
+  }
+
+  void setGesturePanel(GesturePanel gesturePanel) {
+    mGesturePanel = gesturePanel;
   }
 
   /**
@@ -652,9 +654,9 @@ public class AlgorithmOptions {
   }
 
   public void displayGestureWithName(String id) {
-    if (mGestureEventFilter == null)
+    if (mGesturePanel == null)
       return;
-    mGestureEventFilter.setDisplayedGesture(id, true);
+    mGesturePanel.getFilter().setDisplayedGesture(id, true);
   }
 
   private ConcreteStepper mStepper;
@@ -677,6 +679,6 @@ public class AlgorithmOptions {
   private int mPreviousTextIndex;
   private Editor mEditor;
   private List<LinearLayout> mWidgetContainerStack = new ArrayList();
-  private GestureEventFilter mGestureEventFilter;
+  private GesturePanel mGesturePanel;
 
 }

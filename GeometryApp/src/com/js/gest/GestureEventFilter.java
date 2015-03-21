@@ -8,9 +8,7 @@ import com.js.android.MyTouchListener;
 import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
 
-import android.content.Context;
 import android.view.MotionEvent;
-import android.view.View;
 import static com.js.basic.Tools.*;
 import static com.js.android.UITools.*;
 
@@ -23,22 +21,10 @@ public class GestureEventFilter extends MyTouchListener {
   private static final int STATE_IGNORING = 4;
   private static final int STATE_STOPPED = 5;
 
-  public GestureEventFilter() {
+  GestureEventFilter(GesturePanel panel) {
     // Enable this line to print diagnostic information:
     // mTraceActive = true;
-  }
-
-  /**
-   * Construct a view to be used for displaying the gesture panel. Also calls
-   * setView() to make the view this touch listener's view
-   */
-  public View constructGesturePanel(Context context) {
-    if (mConstructedView)
-      throw new IllegalStateException();
-    View view = new GesturePanel(context);
-    mConstructedView = true;
-    setView(view);
-    return view;
+    setView(panel);
   }
 
   public void setListener(Listener listener) {
@@ -47,14 +33,6 @@ public class GestureEventFilter extends MyTouchListener {
 
   public void setGestures(GestureSet c) {
     mStrokeSetCollection = c;
-  }
-
-  @Override
-  public void setView(View view) {
-    if (!(view instanceof GesturePanel))
-      throw new IllegalArgumentException("must be GesturePanel");
-    super.setView(view);
-    setState(STATE_DORMANT);
   }
 
   public void detach() {
@@ -354,5 +332,4 @@ public class GestureEventFilter extends MyTouchListener {
   private int mState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
-  private boolean mConstructedView;
 }

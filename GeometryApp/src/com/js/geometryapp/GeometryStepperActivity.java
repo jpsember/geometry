@@ -11,7 +11,7 @@ import com.js.geometry.AlgorithmStepper;
 import com.js.geometry.R;
 import com.js.geometryapp.editor.Editor;
 import com.js.geometryapp.editor.EditorTools;
-import com.js.gest.GestureEventFilter;
+import com.js.gest.GesturePanel;
 
 import android.content.ContentResolver;
 import android.content.Intent;
@@ -49,13 +49,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
     mStepper = new ConcreteStepper();
     mOptions = new AlgorithmOptions(this);
     mRenderer = new AlgorithmRenderer(this);
-    mGestureEventFilter = new GestureEventFilter();
 
     // Stage 2: establish dependencies
-    mEditor.setDependencies(this, mStepper, mOptions, mRenderer,
-        mGestureEventFilter);
+    mEditor.setDependencies(this, mStepper, mOptions, mRenderer);
     mStepper.setDependencies(mOptions, mEditor);
-    mOptions.setDependencies(mEditor, mStepper, mGestureEventFilter);
+    mOptions.setDependencies(mEditor, mStepper);
     mRenderer.setDependencies(mEditor, mStepper);
   }
 
@@ -64,7 +62,11 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
     // Set the theme to appply to the entire application.
     // AppTheme is defined in res/values/styles.xml:
     setTheme(R.style.AppTheme);
+    GesturePanel gesturePanel = new GesturePanel(this);
+    mEditor.setGesturePanel(gesturePanel);
+    mOptions.setGesturePanel(gesturePanel);
     super.onCreate(savedInstanceState);
+
     addAlgorithms(mStepper);
     mStepper.begin();
     restoreEditorPreferences();
@@ -292,5 +294,4 @@ public abstract class GeometryStepperActivity extends GeometryActivity {
   private AlgorithmRenderer mRenderer;
   private Editor mEditor;
   private GLSurfaceView mGLView;
-  private GestureEventFilter mGestureEventFilter;
 }

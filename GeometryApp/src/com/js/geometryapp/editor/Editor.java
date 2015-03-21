@@ -39,6 +39,7 @@ import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.TextWidget;
 import com.js.gest.GestureEventFilter;
+import com.js.gest.GesturePanel;
 import com.js.gest.GestureSet;
 import com.js.gest.StrokeSet;
 
@@ -72,12 +73,15 @@ public class Editor {
 
   public void setDependencies(GeometryStepperActivity activity,
       ConcreteStepper stepper, AlgorithmOptions options,
-      AlgorithmRenderer renderer, GestureEventFilter gestureEventFilter) {
+      AlgorithmRenderer renderer) {
     mActivity = activity;
     mStepper = stepper;
     mOptions = options;
     mRenderer = renderer;
-    mGestureEventFilter = gestureEventFilter;
+  }
+
+  public void setGesturePanel(GesturePanel gesturePanel) {
+    mGesturePanel = gesturePanel;
   }
 
   public AlgorithmStepper stepper() {
@@ -151,9 +155,7 @@ public class Editor {
     } catch (Exception e) {
       die(e);
     }
-    GestureEventFilter filter = mGestureEventFilter;
-
-    filter.constructGesturePanel(context());
+    GestureEventFilter filter = mGesturePanel.getFilter();
 
     filter.setGestures(gestures);
     filter.setListener(new GestureEventFilter.Listener() {
@@ -270,7 +272,7 @@ public class Editor {
     }
 
     mOptions.popView();
-    mOptions.addView(mGestureEventFilter.getView(), layoutParams(false, 1));
+    mOptions.addView(mGesturePanel, layoutParams(false, 1));
 
     mOptions.popView();
     mOptions.popView();
@@ -926,5 +928,5 @@ public class Editor {
   private EditorState mState;
   // The most recent frozen snapshot of the editor state
   private EditorState mStateSnapshot;
-  private GestureEventFilter mGestureEventFilter;
+  private GesturePanel mGesturePanel;
 }

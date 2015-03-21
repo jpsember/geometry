@@ -60,9 +60,9 @@ class GesturePanelRenderer {
     paint.setColor(scaledSet.isDirected() ? 0x40ff5050 : 0x40505050);
     paint.setStrokeWidth(8f);
 
-    Path path = mPath;
-    path.reset();
     for (Stroke s : scaledSet) {
+      Path path = mPath;
+      path.reset();
       Point ptPrev = null;
       for (int i = 0; i < s.size(); i++) {
         Point pt = s.getPoint(i);
@@ -78,8 +78,8 @@ class GesturePanelRenderer {
         }
         ptPrev = pt;
       }
+      canvas.drawPath(path, paint);
     }
-    canvas.drawPath(path, paint);
   }
 
   /**

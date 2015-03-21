@@ -640,7 +640,6 @@ public class Editor {
     }
     mCommandHistoryCursor--;
     Command command = mCommandHistory.get(mCommandHistoryCursor);
-    pr("undoing " + command);
     command.getReverse().perform();
   }
 

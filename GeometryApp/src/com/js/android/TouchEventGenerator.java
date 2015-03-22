@@ -41,7 +41,8 @@ public class TouchEventGenerator extends MyTouchListener {
   }
 
   private void sendEvent(int type, IPoint viewPoint, int modifierFlags) {
-    UserEvent event = new UserEvent(type, mUserEventSource, viewPoint, modifierFlags);
+    UserEvent event = new UserEvent(type, mUserEventSource, viewPoint,
+        modifierFlags);
     event.getManager().processUserEvent(event);
   }
 

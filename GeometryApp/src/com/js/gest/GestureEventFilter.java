@@ -1,8 +1,6 @@
 package com.js.gest;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 
 import com.js.basic.Point;
 import com.js.gest.GestureSet.Match;
@@ -11,20 +9,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import static com.js.basic.Tools.*;
-import static com.js.android.UITools.*;
 
 public class GestureEventFilter implements OnTouchListener {
 
-  private static final int STATE_DORMANT = 0;
-  private static final int STATE_BUFFERING = 1;
-  private static final int STATE_RECORDING = 2;
-  private static final int STATE_FORWARDING = 3;
-  private static final int STATE_IGNORING = 4;
-  private static final int STATE_STOPPED = 5;
-
   GestureEventFilter(GesturePanel panel) {
-    // Enable this line to print diagnostic information:
-    // mTraceActive = true;
     mGesturePanel = panel;
   }
 
@@ -36,171 +24,8 @@ public class GestureEventFilter implements OnTouchListener {
     mStrokeSetCollection = c;
   }
 
-  public void detach() {
-    if (state() == STATE_STOPPED)
-      return;
-    setState(STATE_STOPPED);
-    unimp("remove listener from view?");
-    // this.remove();
-    // mView.setOnTouchListener(null);
-    mListener = null;
-  }
-
-  private void trace(Object message) {
-    if (mTraceActive)
-      pr(message);
-  }
-
-  private final static String[] sStateNames = { "DORMANT", "BUFFERING",
-      "RECORDING", "FORWARDING", "IGNORING", "STOPPED" };
-
-  private static String stateName(int state) {
-    return sStateNames[state];
-  }
-
-  private int state() {
-    return mState;
-  }
-
-  private void setState(int s) {
-    trace("Set state from " + stateName(mState) + " to " + stateName(s));
-    mState = s;
-  }
-
-  /**
-   * Push a copy of an event onto our queue for delayed processing
-   * 
-   * @param event
-   * @return the copy that was pushed a copy of the event
-   */
-  private MotionEvent bufferEvent(MotionEvent event) {
-    MotionEvent eventCopy = MotionEvent.obtain(event);
-    mEventQueue.add(eventCopy);
-    return eventCopy;
-  }
-
-  /**
-   * Send any previously buffered events to the view
-   */
-  private void flushBufferedEvents() {
-    // Set flag instructing our filter to pass the event through to the view's
-    // original handler
-    mPassingEventFlag = true;
-    if (mEventQueue.size() > 1)
-      trace("    flushing " + mEventQueue.size() + " buffered events");
-    while (true) {
-      MotionEvent event = mEventQueue.poll();
-      if (event == null)
-        break;
-      mGesturePanel.dispatchTouchEvent(event);
-      event.recycle();
-    }
-    mPassingEventFlag = false;
-  }
-
-  /**
-   * Send any previously buffered events to the gesture recording logic
-   */
-  private void flushGestureEvents() {
-    if (mEventQueue.size() > 1)
-      trace("    processing " + mEventQueue.size() + " gesture events");
-    while (true) {
-      MotionEvent event = mEventQueue.poll();
-      if (event == null)
-        break;
-      processGestureEvent(event);
-      event.recycle();
-    }
-  }
-
-  private void disposeBufferedEvents() {
-    while (true) {
-      MotionEvent event = mEventQueue.poll();
-      if (event == null)
-        break;
-      event.recycle();
-    }
-  }
-
-  private void processDormantState(MotionEvent event) {
-    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-      setState(STATE_BUFFERING);
-      processBufferingState(event);
-    } else {
-      flushBufferedEvents();
-    }
-  }
-
   private GesturePanel gesturePanel() {
     return mGesturePanel;
-  }
-
-  private void processBufferingState(MotionEvent event) {
-
-    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-      setState(STATE_RECORDING);
-      processRecordingState(event);
-      return;
-    }
-
-    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-      setState(STATE_FORWARDING);
-      processForwardingState(event);
-    } else {
-      bufferEvent(event);
-    }
-  }
-
-  private void processRecordingState(MotionEvent event) {
-    event = bufferEvent(event);
-    flushGestureEvents();
-    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-      setState(STATE_DORMANT);
-    }
-  }
-
-  private void processForwardingState(MotionEvent event) {
-    event = bufferEvent(event);
-    flushBufferedEvents();
-    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-      setState(STATE_DORMANT);
-    }
-  }
-
-  private void processIgnoringState(MotionEvent event) {
-    disposeBufferedEvents();
-    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
-      setState(STATE_DORMANT);
-    }
-  }
-
-  private void processStoppedState(MotionEvent event) {
-    bufferEvent(event);
-    flushBufferedEvents();
-  }
-
-  private boolean onTouchAux(MotionEvent event) {
-    switch (state()) {
-    case STATE_DORMANT:
-      processDormantState(event);
-      break;
-    case STATE_BUFFERING:
-      processBufferingState(event);
-      break;
-    case STATE_RECORDING:
-      processRecordingState(event);
-      break;
-    case STATE_FORWARDING:
-      processForwardingState(event);
-      break;
-    case STATE_IGNORING:
-      processIgnoringState(event);
-      break;
-    case STATE_STOPPED:
-      processStoppedState(event);
-      break;
-    }
-    return true;
   }
 
   @Override
@@ -208,18 +33,17 @@ public class GestureEventFilter implements OnTouchListener {
     // Avoid Eclipse warnings:
     if (alwaysFalse())
       view.performClick();
-
-    trace("GestureEventFilter, onTouch event " + dump(event)
-        + ", passing events: " + d(mPassingEventFlag));
-    if (event.getActionMasked() != MotionEvent.ACTION_MOVE)
-      trace("onTouch: " + dump(event) + " state " + stateName(state()));
-
-    // If we're forwarding events to the original handler, do so
-    if (mPassingEventFlag) {
-      return false;
+    if (!mReceivingGesture
+        && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+      mReceivingGesture = true;
     }
-
-    return onTouchAux(event);
+    if (mReceivingGesture) {
+      processGestureEvent(event);
+      if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+        mReceivingGesture = false;
+      }
+    }
+    return true;
   }
 
   private void processGestureEvent(MotionEvent event) {
@@ -259,7 +83,6 @@ public class GestureEventFilter implements OnTouchListener {
         }
       }
     }
-
   }
 
   private void performMatch() {
@@ -329,12 +152,9 @@ public class GestureEventFilter implements OnTouchListener {
   private StrokeSet mTouchStrokeSet;
   private Listener mListener;
   private long mStartEventTimeMillis;
-
-  private boolean mTraceActive;
-  private Deque<MotionEvent> mEventQueue = new ArrayDeque();
-  private boolean mPassingEventFlag;
-  private int mState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private GesturePanel mGesturePanel;
+  private boolean mReceivingGesture;
+
 }

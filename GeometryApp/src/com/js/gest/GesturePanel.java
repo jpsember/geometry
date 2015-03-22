@@ -16,6 +16,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.os.Handler;
+import android.view.MotionEvent;
 import android.view.View;
 
 public class GesturePanel extends View {
@@ -27,12 +28,11 @@ public class GesturePanel extends View {
    */
   public GesturePanel(Context context) {
     super(context);
-    this.setOnTouchListener(new GestureEventFilter());
+    this.setOnTouchListener(new OurTouchListener());
   }
 
-  @Override
-  public boolean performClick() {
-    return super.performClick();
+  public void setListener(Listener listener) {
+    mListener = listener;
   }
 
   public void setGestures(GestureSet c) {
@@ -63,6 +63,11 @@ public class GesturePanel extends View {
   }
 
   @Override
+  public boolean performClick() {
+    return super.performClick();
+  }
+
+  @Override
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     onDrawAux(canvas);
@@ -81,7 +86,7 @@ public class GesturePanel extends View {
    * Transform a stroke point from its coordinate system (origin bottom left) to
    * Android's (origin top left) by flipping the y coordinate
    */
-  Point flipVertically(Point pt) {
+  private Point flipVertically(Point pt) {
     return new Point(pt.x, getHeight() - pt.y);
   }
 
@@ -192,15 +197,11 @@ public class GesturePanel extends View {
     }
   }
 
-  Listener getListener() {
+  private Listener getListener() {
     return mListener;
   }
 
-  public void setListener(Listener listener) {
-    mListener = listener;
-  }
-
-  void performMatch(StrokeSet userStrokeSet) {
+  private void performMatch(StrokeSet userStrokeSet) {
     if (mStrokeSetCollection == null) {
       warning("no stroke collection defined");
       return;
@@ -259,6 +260,67 @@ public class GesturePanel extends View {
       warning("No GesturePanel Listener defined");
     }
   };
+
+  /**
+   * TouchListener for the GesturePanel
+   */
+  private class OurTouchListener implements OnTouchListener {
+
+    @Override
+    public boolean onTouch(View view, MotionEvent event) {
+      // Avoid Eclipse warnings:
+      if (alwaysFalse())
+        view.performClick();
+      if (!mReceivingGesture
+          && event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+        mReceivingGesture = true;
+      }
+      if (mReceivingGesture) {
+        processGestureEvent(event);
+        if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+          mReceivingGesture = false;
+        }
+      }
+      return true;
+    }
+
+    private void processGestureEvent(MotionEvent event) {
+      int actionMasked = event.getActionMasked();
+      if (actionMasked == MotionEvent.ACTION_DOWN) {
+        mStartEventTimeMillis = event.getEventTime();
+        mTouchStrokeSet = new StrokeSet();
+      }
+
+      float eventTime = ((event.getEventTime() - mStartEventTimeMillis) / 1000.0f);
+
+      int activeId = event.getPointerId(event.getActionIndex());
+      MotionEvent.PointerCoords mCoord = new MotionEvent.PointerCoords();
+      for (int i = 0; i < event.getPointerCount(); i++) {
+        int ptrId = event.getPointerId(i);
+        event.getPointerCoords(i, mCoord);
+        Point pt = flipVertically(new Point(mCoord.x, mCoord.y));
+        mTouchStrokeSet.addPoint(eventTime, ptrId, pt);
+      }
+
+      GesturePanel.Listener listener = getListener();
+      listener.strokeSetExtended(mTouchStrokeSet);
+
+      if (actionMasked == MotionEvent.ACTION_UP
+          || actionMasked == MotionEvent.ACTION_POINTER_UP) {
+        mTouchStrokeSet.stopStroke(activeId);
+        if (!mTouchStrokeSet.areStrokesActive()) {
+          mTouchStrokeSet.freeze();
+          listener.strokeSetExtended(mTouchStrokeSet);
+          performMatch(mTouchStrokeSet);
+        }
+      }
+    }
+
+    // Stroke set from user touch event
+    private StrokeSet mTouchStrokeSet;
+    private long mStartEventTimeMillis;
+    private boolean mReceivingGesture;
+  }
 
   private Listener mListener = DO_NOTHING_LISTENER;
   private Path mPath = new Path();

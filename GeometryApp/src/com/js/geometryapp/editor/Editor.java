@@ -11,7 +11,6 @@ import org.json.JSONObject;
 
 import com.js.android.AppPreferences;
 import com.js.android.MyActivity;
-import com.js.android.MyTouchListener;
 import com.js.android.QuiescentDelayOperation;
 import com.js.android.TouchEventGenerator;
 import com.js.basic.JSONTools;
@@ -126,8 +125,8 @@ public class Editor {
     };
 
     TouchEventGenerator eventGenerator = new TouchEventGenerator(eventSource);
-    eventGenerator.setView(mEditorView);
-    prepareGestures(eventGenerator);
+    mEditorView.setOnTouchListener(eventGenerator);
+    prepareGestures();
 
     mUserEventManager.setListener(new UserEvent.Listener() {
       @Override
@@ -141,13 +140,10 @@ public class Editor {
   }
 
   /**
-   * Attach an event filter to intercept gestures and send them to an
-   * appropriate button widget
-   * 
-   * @param touchListener
-   *          listener to prepend the gesture filter to
+   * Prepare the gesture panel; load the gesture file and set up gestuer
+   * listener
    */
-  private void prepareGestures(MyTouchListener touchListener) {
+  private void prepareGestures() {
     GestureSet gestures = null;
     try {
       gestures = GestureSet

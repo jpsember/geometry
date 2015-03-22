@@ -2,6 +2,8 @@ package com.js.android;
 
 import android.os.Handler;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.View.OnTouchListener;
 
 import com.js.editor.UserEvent;
 import com.js.editor.UserEventSource;
@@ -12,7 +14,7 @@ import static com.js.basic.Tools.*;
 /**
  * Listens to mouse events within a View, and generates corresponding UserEvents
  */
-public class TouchEventGenerator extends MyTouchListener {
+public class TouchEventGenerator implements OnTouchListener {
 
   /**
    * State machine representing our filter on Android touch events. It imposes a
@@ -47,7 +49,9 @@ public class TouchEventGenerator extends MyTouchListener {
   }
 
   @Override
-  public boolean onTouch(MotionEvent e) {
+  public boolean onTouch(View view, MotionEvent e) {
+    if (alwaysFalse())
+      view.performClick();
     IPoint viewPoint = new IPoint(e.getX(), e.getY());
 
     mCurrentTouchLocation = viewPoint;

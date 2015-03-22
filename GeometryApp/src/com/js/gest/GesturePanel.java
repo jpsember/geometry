@@ -1,11 +1,15 @@
 package com.js.gest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.basic.Rect;
+import com.js.gest.GestureSet.Match;
+
+import static com.js.basic.Tools.*;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -23,8 +27,7 @@ public class GesturePanel extends View {
    */
   public GesturePanel(Context context) {
     super(context);
-    mFilter = new GestureEventFilter(this);
-    this.setOnTouchListener(mFilter);
+    this.setOnTouchListener(new GestureEventFilter());
   }
 
   @Override
@@ -32,8 +35,31 @@ public class GesturePanel extends View {
     return super.performClick();
   }
 
-  public GestureEventFilter getFilter() {
-    return mFilter;
+  public void setGestures(GestureSet c) {
+    mStrokeSetCollection = c;
+  }
+
+  /**
+   * Set which gesture is displayed; does nothing if in shared view mode
+   * 
+   * @param gestureName
+   *          name to display, or null; if no such gesture exists, removes any
+   *          existing gesture
+   * @param substituteAlias
+   *          if true, and named gesture has an alias, displays the alias
+   *          instead
+   */
+  public void setDisplayedGesture(String gestureName, boolean substituteAlias) {
+    StrokeSet set = null;
+    if (gestureName != null) {
+      set = mStrokeSetCollection.get(gestureName);
+      if (set != null) {
+        if (substituteAlias && set.hasAlias()) {
+          set = mStrokeSetCollection.get(set.aliasName());
+        }
+      }
+    }
+    setGesture(set);
   }
 
   @Override
@@ -55,7 +81,7 @@ public class GesturePanel extends View {
    * Transform a stroke point from its coordinate system (origin bottom left) to
    * Android's (origin top left) by flipping the y coordinate
    */
-  public Point flipVertically(Point pt) {
+  Point flipVertically(Point pt) {
     return new Point(pt.x, getHeight() - pt.y);
   }
 
@@ -114,14 +140,6 @@ public class GesturePanel extends View {
     }
   }
 
-  /**
-   * Determine if the panel contains a point
-   */
-  public boolean containsPoint(Point point) {
-    Rect r = getActiveBounds();
-    return r.contains(point);
-  }
-
   private void fillRoundedRect(Canvas canvas, Rect rect, float radius,
       Paint paint) {
     Path path = mPath;
@@ -149,7 +167,7 @@ public class GesturePanel extends View {
     return rect;
   }
 
-  public void setGesture(StrokeSet strokeSet) {
+  private void setGesture(StrokeSet strokeSet) {
     final float ERASE_GESTURE_DELAY = 1.2f;
 
     if (mDisplayedStrokeSet == strokeSet)
@@ -174,10 +192,80 @@ public class GesturePanel extends View {
     }
   }
 
+  Listener getListener() {
+    return mListener;
+  }
+
+  public void setListener(Listener listener) {
+    mListener = listener;
+  }
+
+  void performMatch(StrokeSet userStrokeSet) {
+    if (mStrokeSetCollection == null) {
+      warning("no stroke collection defined");
+      return;
+    }
+    if (userStrokeSet.isTap()) {
+      if (mListener != null)
+        mListener.processGesture(GestureSet.GESTURE_TAP);
+      return;
+    }
+
+    mMatch = null;
+    StrokeSet set = userStrokeSet;
+    set = set.fitToRect(null);
+    set = set.normalize();
+
+    ArrayList<GestureSet.Match> matches = new ArrayList();
+    Match match = mStrokeSetCollection.findMatch(set, null, matches);
+    if (match == null)
+      return;
+    // If the match cost is significantly less than the second best, use it
+    if (matches.size() >= 2) {
+      Match match2 = matches.get(1);
+      if (match.cost() * 1.5f > match2.cost())
+        return;
+    }
+    mMatch = match;
+    mListener.processGesture(mMatch.strokeSet().aliasName());
+    setDisplayedGesture(mMatch.strokeSet().name(), true);
+  }
+
+  public static interface Listener {
+    /**
+     * For development purposes only: called when the gesture being constructed
+     * by the user has been changed. If it is frozen, it is complete
+     */
+    void strokeSetExtended(StrokeSet strokeSet);
+
+    /**
+     * In normal use, this is the only method that has to do anything; the
+     * client should handle the recognized gesture
+     */
+    void processGesture(String gestureName);
+  }
+
+  /**
+   * Define a default Listener that does nothing, in case user hasn't specified
+   * one
+   */
+  private static Listener DO_NOTHING_LISTENER = new Listener() {
+    @Override
+    public void strokeSetExtended(StrokeSet strokeSet) {
+    }
+
+    @Override
+    public void processGesture(String gestureName) {
+      warning("No GesturePanel Listener defined");
+    }
+  };
+
+  private Listener mListener = DO_NOTHING_LISTENER;
   private Path mPath = new Path();
   private StrokeSet mDisplayedStrokeSet;
   private Map<String, StrokeSet> mScaledStrokeSets = new HashMap();
   private Handler mHandler = new Handler();
   private int mUniqueGestureNumber;
-  private GestureEventFilter mFilter;
+  private GestureSet mStrokeSetCollection;
+  private Match mMatch;
 }

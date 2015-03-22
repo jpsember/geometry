@@ -37,7 +37,6 @@ import com.js.geometryapp.widget.AbstractWidget.Listener;
 import com.js.geometryapp.widget.ButtonWidget;
 import com.js.geometryapp.widget.CheckBoxWidget;
 import com.js.geometryapp.widget.TextWidget;
-import com.js.gest.GestureEventFilter;
 import com.js.gest.GesturePanel;
 import com.js.gest.GestureSet;
 import com.js.gest.StrokeSet;
@@ -151,10 +150,9 @@ public class Editor {
     } catch (Exception e) {
       die(e);
     }
-    GestureEventFilter filter = mGesturePanel.getFilter();
 
-    filter.setGestures(gestures);
-    filter.setListener(new GestureEventFilter.Listener() {
+    mGesturePanel.setGestures(gestures);
+    mGesturePanel.setListener(new GesturePanel.Listener() {
       @Override
       public void strokeSetExtended(StrokeSet strokeSet) {
       }

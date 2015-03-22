@@ -656,7 +656,7 @@ public class AlgorithmOptions {
   public void displayGestureWithName(String id) {
     if (mGesturePanel == null)
       return;
-    mGesturePanel.getFilter().setDisplayedGesture(id, true);
+    mGesturePanel.setDisplayedGesture(id, true);
   }
 
   private ConcreteStepper mStepper;

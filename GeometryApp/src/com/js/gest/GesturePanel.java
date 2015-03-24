@@ -76,7 +76,7 @@ public class GesturePanel extends View {
   private void onDrawAux(Canvas canvas) {
     Rect r = getActiveBounds();
     Paint paint = new Paint();
-    paint.setColor(0x40808080);
+    paint.setColor(0xffe0e0e0);
     paint.setStrokeWidth(1.2f);
     fillRoundedRect(canvas, r, 16.0f, paint);
     drawStrokeSet(canvas);
@@ -197,10 +197,6 @@ public class GesturePanel extends View {
     }
   }
 
-  private Listener getListener() {
-    return mListener;
-  }
-
   private void performMatch(StrokeSet userStrokeSet) {
     if (mStrokeSetCollection == null) {
       warning("no stroke collection defined");
@@ -233,17 +229,22 @@ public class GesturePanel extends View {
   }
 
   public static interface Listener {
-    /**
-     * For development purposes only: called when the gesture being constructed
-     * by the user has been changed. If it is frozen, it is complete
-     */
-    void strokeSetExtended(StrokeSet strokeSet);
 
     /**
      * In normal use, this is the only method that has to do anything; the
      * client should handle the recognized gesture
      */
     void processGesture(String gestureName);
+
+    /**
+     * For development purposes only: called when stroke set has been received
+     * from user, but before any matching has occurred
+     * 
+     * @param set
+     *          a frozen, normalized stroke set
+     */
+    void processStrokeSet(StrokeSet set);
+
   }
 
   /**
@@ -252,14 +253,23 @@ public class GesturePanel extends View {
    */
   private static Listener DO_NOTHING_LISTENER = new Listener() {
     @Override
-    public void strokeSetExtended(StrokeSet strokeSet) {
+    public void processGesture(String gestureName) {
     }
 
     @Override
-    public void processGesture(String gestureName) {
+    public void processStrokeSet(StrokeSet set) {
       warning("No GesturePanel Listener defined");
     }
   };
+
+  /**
+   * Act as if user entered a particular stroke set
+   */
+  public void setEnteredStrokeSet(StrokeSet set) {
+    set.freeze();
+    mListener.processStrokeSet(set);
+    performMatch(set);
+  }
 
   /**
    * TouchListener for the GesturePanel
@@ -302,16 +312,11 @@ public class GesturePanel extends View {
         mTouchStrokeSet.addPoint(eventTime, ptrId, pt);
       }
 
-      GesturePanel.Listener listener = getListener();
-      listener.strokeSetExtended(mTouchStrokeSet);
-
       if (actionMasked == MotionEvent.ACTION_UP
           || actionMasked == MotionEvent.ACTION_POINTER_UP) {
         mTouchStrokeSet.stopStroke(activeId);
         if (!mTouchStrokeSet.areStrokesActive()) {
-          mTouchStrokeSet.freeze();
-          listener.strokeSetExtended(mTouchStrokeSet);
-          performMatch(mTouchStrokeSet);
+          setEnteredStrokeSet(mTouchStrokeSet);
         }
       }
     }

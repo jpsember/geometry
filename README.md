@@ -21,3 +21,10 @@ Here's a video showing the editor component of the framework:
 
 [![ScreenShot](docs/polygonediting.jpg)](http://youtu.be/Mea1nwqbuT8)
 
+---
+
+Here's a video showing the new gesture panel, which allows a user to enter gestures
+within the rounded rectangle which are mapped to particular buttons:
+
+[![ScreenShot](docs/gestures.png)](http://youtu.be/KmWHvPytH3w)
+

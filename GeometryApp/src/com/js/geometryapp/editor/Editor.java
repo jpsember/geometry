@@ -151,10 +151,11 @@ public class Editor {
       die(e);
     }
 
+    //gestures.setTraceStatus(true);
     mGesturePanel.setGestures(gestures);
     mGesturePanel.setListener(new GesturePanel.Listener() {
       @Override
-      public void strokeSetExtended(StrokeSet strokeSet) {
+      public void processStrokeSet(StrokeSet set) {
       }
 
       @Override
@@ -246,6 +247,7 @@ public class Editor {
           "Seg", EdSegment.FACTORY, //
           "Disc", EdDisc.FACTORY,//
           "Poly", EdPolyline.FACTORY);
+
 
       mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
           new Listener() {

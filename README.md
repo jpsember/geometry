@@ -26,5 +26,5 @@ Here's a video showing the editor component of the framework:
 Here's a video showing the new gesture panel, which allows a user to enter gestures
 within the rounded rectangle which are mapped to particular buttons:
 
-[![ScreenShot](docs/gestures.png)](http://youtu.be/KmWHvPytH3w)
+[![ScreenShot](docs/gestures.jpg)](http://youtu.be/JTiER_O2Yfc)
 

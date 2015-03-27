@@ -172,7 +172,7 @@ public class GesturePanel extends View {
     return rect;
   }
 
-  private void invokeDisplay(final StrokeSet gestureToDisplay, float delay) {
+  private void displayGestureWithDelay(final StrokeSet gestureToDisplay, float delay) {
     final int originalState = mGestureState;
     mHandler.postDelayed(new Runnable() {
       public void run() {
@@ -197,18 +197,18 @@ public class GesturePanel extends View {
     if (mDisplayedStrokeSet == null) {
       if (strokeSet != null) {
         // Showing a gesture, none currently showing
-        invokeDisplay(strokeSet, 0);
-        invokeDisplay(null, GESTURE_DELAY_LONG);
+        displayGestureWithDelay(strokeSet, 0);
+        displayGestureWithDelay(null, GESTURE_DELAY_LONG);
       }
     } else {
       if (strokeSet != null) {
         // Replacing one gesture with another (possibly the same one)
-        invokeDisplay(null, 0);
-        invokeDisplay(strokeSet, GESTURE_DELAY_SHORT);
-        invokeDisplay(null, GESTURE_DELAY_SHORT + GESTURE_DELAY_LONG);
+        displayGestureWithDelay(null, 0);
+        displayGestureWithDelay(strokeSet, GESTURE_DELAY_SHORT);
+        displayGestureWithDelay(null, GESTURE_DELAY_SHORT + GESTURE_DELAY_LONG);
       } else {
         // Removing an existing gesture
-        invokeDisplay(null, 0);
+        displayGestureWithDelay(null, 0);
       }
     }
   }

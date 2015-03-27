@@ -29,6 +29,7 @@ public class GesturePanel extends View {
    */
   public GesturePanel(Context context) {
     super(context);
+    mMatcherParameters = new MatcherParameters();
     setOnTouchListener(new OurTouchListener());
     loadInternalGestureSet();
   }
@@ -252,7 +253,7 @@ public class GesturePanel extends View {
     // If the match cost is significantly less than the second best, use it
     if (matches.size() >= 2) {
       Match match2 = matches.get(1);
-      if (match.cost() * 1.5f > match2.cost())
+      if (match.cost() * mMatcherParameters.maximumCostRatio() > match2.cost())
         return false;
     }
     mMatch = match;
@@ -370,4 +371,5 @@ public class GesturePanel extends View {
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
   private GestureSet mInternalGestures;
+  private MatcherParameters mMatcherParameters;
 }

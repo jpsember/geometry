@@ -355,6 +355,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     mutate();
     mName = source.mName;
     mAliasName = source.mAliasName;
+    mFlags = source.mFlags;
   }
 
   private String mAliasName;

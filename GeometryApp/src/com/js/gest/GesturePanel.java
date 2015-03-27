@@ -172,28 +172,44 @@ public class GesturePanel extends View {
     return rect;
   }
 
-  private void setGesture(StrokeSet strokeSet) {
-    final float ERASE_GESTURE_DELAY = 1.2f;
-
-    if (mDisplayedStrokeSet == strokeSet)
-      return;
-    mUniqueGestureNumber++;
-    mDisplayedStrokeSet = strokeSet;
-    invalidate();
-
-    // If we've set a gesture, set timer to erase it after a second or two
-    if (strokeSet != null) {
-      // Don't erase a more recently plotted gesture!
-      // Make sure this task corresponds to the unique instance we
-      // want to erase.
-      final int gestureToErase = mUniqueGestureNumber;
-      mHandler.postDelayed(new Runnable() {
-        public void run() {
-          if (mUniqueGestureNumber == gestureToErase) {
-            setGesture(null);
-          }
+  private void invokeDisplay(final StrokeSet gestureToDisplay, float delay) {
+    final int originalState = mGestureState;
+    mHandler.postDelayed(new Runnable() {
+      public void run() {
+        if (mGestureState != originalState) {
+          return;
         }
-      }, (long) (ERASE_GESTURE_DELAY * 1000));
+        mDisplayedStrokeSet = gestureToDisplay;
+        invalidate();
+      }
+    }, (long) (delay * 1000));
+  }
+
+  private void setGesture(StrokeSet strokeSet) {
+    // Let CURR = current gesture, NEW = requested gesture.
+    // We increment the gesture state; this effectively cancels any pending
+    // display events.
+
+    final float GESTURE_DELAY_LONG = 1.2f;
+    final float GESTURE_DELAY_SHORT = .14f;
+
+    mGestureState++;
+    if (mDisplayedStrokeSet == null) {
+      if (strokeSet != null) {
+        // Showing a gesture, none currently showing
+        invokeDisplay(strokeSet, 0);
+        invokeDisplay(null, GESTURE_DELAY_LONG);
+      }
+    } else {
+      if (strokeSet != null) {
+        // Replacing one gesture with another (possibly the same one)
+        invokeDisplay(null, 0);
+        invokeDisplay(strokeSet, GESTURE_DELAY_SHORT);
+        invokeDisplay(null, GESTURE_DELAY_SHORT + GESTURE_DELAY_LONG);
+      } else {
+        // Removing an existing gesture
+        invokeDisplay(null, 0);
+      }
     }
   }
 
@@ -332,7 +348,7 @@ public class GesturePanel extends View {
   private StrokeSet mDisplayedStrokeSet;
   private Map<String, StrokeSet> mScaledStrokeSets = new HashMap();
   private Handler mHandler = new Handler();
-  private int mUniqueGestureNumber;
+  private int mGestureState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
 }

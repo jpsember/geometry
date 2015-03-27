@@ -91,6 +91,7 @@ class GestureSetParser {
     for (String name : mNamedSets.keySet()) {
       ParseEntry parseEntry = mNamedSets.get(name);
       StrokeSet entry = parseEntry.strokeSet();
+      entry = normalizeStrokeSet(entry);
       entry.freeze();
       collection.add(entry);
     }
@@ -353,17 +354,14 @@ class GestureSetParser {
     }
     StrokeSet set2 = StrokeSet.buildFromStrokes(strokes);
     set2.inheritMetaDataFrom(set);
-    return normalizeStrokeSet(set2);
+    return set2;
   }
 
   private static StrokeSet normalizeStrokeSet(StrokeSet set) {
-    final boolean withNormalizing = true;
     StrokeSet smoothedSet = frozen(set);
     smoothedSet = smoothedSet.fitToRect(null);
     StrokeSet normalizedSet = smoothedSet;
-    if (withNormalizing) {
-      normalizedSet = StrokeNormalizer.normalize(normalizedSet);
-    }
+    normalizedSet = normalizedSet.normalize();
     return normalizedSet;
   }
 

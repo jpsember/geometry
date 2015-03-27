@@ -16,6 +16,7 @@ import com.js.basic.Point;
 import com.js.basic.Rect;
 import com.js.gest.Stroke.DataPoint;
 
+import static com.js.basic.MyMath.*;
 import static com.js.basic.Tools.*;
 
 /**
@@ -172,7 +173,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
         sb.append(',');
       sb.append(get(i).toJSONArray());
     }
-    sb.append("]}\n");
+    sb.append("]}");
     return sb.toString();
   }
 
@@ -274,6 +275,18 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     return transformedSet;
   }
 
+  public static Matrix buildRotateSkewTransform(float rotationAngle,
+      float skewMax) {
+    Matrix matrix = new Matrix();
+
+    float origin = StrokeSet.STANDARD_WIDTH * .5f;
+    matrix.setTranslate(-origin, -origin);
+    matrix.postSkew(skewMax, 0);
+    matrix.postRotate(rotationAngle / M_DEG);
+    matrix.postTranslate(origin, origin);
+    return matrix;
+  }
+
   public String name() {
     return mName;
   }
@@ -323,7 +336,7 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
    * Get the name of the stroke set this one is an alias of; returns our name if
    * we are not an alias
    */
-  String aliasName() {
+  public String aliasName() {
     if (mAliasName == null)
       return mName;
     return mAliasName;

@@ -6,6 +6,7 @@ import java.util.List;
 import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.gest.Stroke.DataPoint;
+import static com.js.basic.Tools.*;
 
 class StrokeNormalizer {
 
@@ -37,6 +38,7 @@ class StrokeNormalizer {
    * @param strokeSet
    */
   private StrokeNormalizer(StrokeSet strokeSet) {
+    doNothing();
     mOriginalStrokeSet = strokeSet;
     mDesiredStrokeSize = DEFAULT_DESIRED_STROKE_LENGTH;
   }

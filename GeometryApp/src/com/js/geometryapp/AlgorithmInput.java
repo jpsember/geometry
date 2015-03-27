@@ -1,10 +1,10 @@
 package com.js.geometryapp;
 
 import com.js.geometry.Disc;
-import com.js.basic.MyMath;
 import com.js.basic.Point;
 import com.js.geometry.Polygon;
 import com.js.basic.Rect;
+import static com.js.basic.Tools.*;
 
 /**
  * Instances of this class should be considered immutable (once constructed by
@@ -37,7 +37,7 @@ public class AlgorithmInput {
 	public Polygon getPolygon(int index, Polygon defaultIfNone) {
 		if (polygons.length == 0)
 			return defaultIfNone;
-		return polygons[MyMath.myMod(index, polygons.length)];
+    return polygons[myMod(index, polygons.length)];
 	}
 
 	/**
@@ -61,7 +61,7 @@ public class AlgorithmInput {
 	public Point getPoint(int index, Point defaultIfNone) {
 		if (points.length == 0)
 			return defaultIfNone;
-		return points[MyMath.myMod(index, points.length)];
+    return points[myMod(index, points.length)];
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class AlgorithmInput {
 	public Disc getDisc(int index, Disc defaultIfNone) {
 		if (discs.length == 0)
 			return defaultIfNone;
-		return discs[MyMath.myMod(index, discs.length)];
+    return discs[myMod(index, discs.length)];
 	}
 
 	public Rect algorithmRect;

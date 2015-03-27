@@ -56,17 +56,6 @@ public final class MyMath {
     }
   }
 
-  public static int myMod(int value, int divisor) {
-    if (divisor <= 0)
-      throw new IllegalArgumentException();
-    int k = value % divisor;
-    if (value < 0) {
-      if (k != 0)
-        k = divisor + k;
-    }
-    return k;
-  }
-
   public static float myMod(float value, float divisor) {
     if (divisor <= 0)
       throw new IllegalArgumentException();

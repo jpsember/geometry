@@ -1,7 +1,5 @@
 package com.js.android;
 
-import com.js.basic.MyMath;
-
 import android.content.Context;
 import android.graphics.Color;
 import android.view.MotionEvent;
@@ -34,7 +32,7 @@ public final class UITools {
   }
 
   public static int debugColor(int index) {
-    index = MyMath.myMod(index, debugColors.length / 3) * 3;
+    index = myMod(index, debugColors.length / 3) * 3;
     return Color.argb(255, debugColors[index], debugColors[index + 1],
         debugColors[index + 2]);
   }

@@ -2,13 +2,18 @@ package com.js.gest;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.json.JSONException;
+
+import android.graphics.Matrix;
 
 import com.js.basic.Files;
 
@@ -30,6 +35,13 @@ public class GestureSet {
     InputStream stream = klass.getResourceAsStream(filename);
     String json = Files.readString(stream);
     return GestureSet.parseJSON(json);
+  }
+
+  /**
+   * Get the set of gesture names
+   */
+  public Set<String> getNames() {
+    return Collections.unmodifiableSet(mEntriesMap.keySet());
   }
 
   /**
@@ -90,12 +102,14 @@ public class GestureSet {
       pr("GestureSet findMatch");
     if (param == null)
       param = MatcherParameters.DEFAULT;
+    mParam = param;
     if (resultsList != null)
       resultsList.clear();
     TreeSet<Match> results = new TreeSet();
     mMaximumCost = StrokeMatcher.INFINITE_COST;
 
-    prepareAliasLowCostMap();
+    if (param.performAliasCutoff())
+      prepareAliasLowCostMap();
 
     for (String gestureName : mEntriesMap.keySet()) {
       StrokeSet gesture = mEntriesMap.get(gestureName);
@@ -107,7 +121,8 @@ public class GestureSet {
       Match match = new Match(gesture, mMatcher.cost());
       results.add(match);
 
-      updateAliasLowCostMap(gesture);
+      if (param.performAliasCutoff())
+        updateAliasLowCostMap(gesture);
 
       // Update the cutoff value to be some small multiple of the smallest (raw)
       // cost yet seen.
@@ -123,12 +138,17 @@ public class GestureSet {
             + d((int) (100 * mMatcher.strokeMatcher().cellsExaminedRatio())));
       }
 
-      removeExtraneousAliasFromResults(results);
-
-      // Throw out all but top three
-      while (results.size() > 3)
+      // Throw out all but top k results
+      while (results.size() > param.maxResults())
         results.pollLast();
     }
+
+    if (param.hasRotateOption() || param.hasSkewOption()) {
+      processRotateAndSkewOptions(inputSet, param, results);
+    }
+
+    if (param.performAliasCutoff())
+      removeExtraneousAliasFromResults(results);
 
     if (results.isEmpty())
       return null;
@@ -141,6 +161,66 @@ public class GestureSet {
     }
 
     return results.first();
+  }
+
+  /**
+   * Build a sequence of values from -m...0...m
+   * 
+   * @param maxValue
+   *          m
+   * @param steps
+   *          the number of values to appear to each side of zero
+   * @return an array of 1+2*steps values, with the middle value equal to 0
+   */
+  private static float[] buildParameterSteps(float maxValue, int steps) {
+    int totalValues = steps * 2 + 1;
+    float[] values = new float[totalValues];
+    float interval = maxValue / steps;
+    for (int i = 0; i < totalValues; i++)
+      values[i] = (i - steps) * interval;
+    // Avoid precision problem by setting middle value to 0 explicitly
+    values[steps] = 0;
+    return values;
+  }
+
+  private void processRotateAndSkewOptions(StrokeSet inputSet,
+      MatcherParameters param, TreeSet<Match> results) {
+
+    // Construct rotated and skewed versions of the input set
+    ArrayList<StrokeSet> transformedSets = new ArrayList();
+    float[] skewFactors = buildParameterSteps(param.skewXMax(),
+        param.skewSteps());
+    float[] rotAngles = buildParameterSteps(param.alignmentAngle(),
+        param.alignmentAngleSteps());
+
+    Matrix matrix = new Matrix();
+    for (float skewFactor : skewFactors) {
+      for (float rotAngle : rotAngles) {
+        if (skewFactor == 0 && rotAngle == 0)
+          continue;
+        matrix = StrokeSet.buildRotateSkewTransform(rotAngle, skewFactor);
+        transformedSets.add(inputSet.applyTransform(matrix));
+      }
+    }
+
+    ArrayList<Match> originalResults = new ArrayList();
+    originalResults.addAll(results);
+
+    for (Match originalMatch : originalResults) {
+      StrokeSet gesture = originalMatch.strokeSet();
+      for (StrokeSet rotatedSet : transformedSets) {
+        mMatcher.setArguments(gesture, rotatedSet, param);
+        setMaximumCost(gesture);
+        Match rotatedMatch = new Match(gesture, mMatcher.cost());
+        results.add(rotatedMatch);
+
+        // Throw out all but top k results
+        while (results.size() > param.maxResults())
+          results.pollLast();
+      }
+
+    }
+
   }
 
   /**
@@ -168,12 +248,13 @@ public class GestureSet {
    */
   private void setMaximumCost(StrokeSet gesture) {
     float maximumCost = mMaximumCost;
-
-    // If an alias of this gesture was previously examined, use that cost as a
-    // hard upper bound (i.e. without a maximumCostRatio multiplier)
-    Float aliasMinCost = mAliasLowCostMap.get(gesture.aliasName());
-    if (aliasMinCost != null)
-      maximumCost = Math.min(mMaximumCost, aliasMinCost);
+    if (mParam.performAliasCutoff()) {
+      // If an alias of this gesture was previously examined, use that cost as a
+      // hard upper bound (i.e. without a maximumCostRatio multiplier)
+      Float aliasMinCost = mAliasLowCostMap.get(gesture.aliasName());
+      if (aliasMinCost != null)
+        maximumCost = Math.min(mMaximumCost, aliasMinCost);
+    }
     mMatcher.setMaximumCost(maximumCost);
   }
 
@@ -264,6 +345,7 @@ public class GestureSet {
   private Map<String, StrokeSet> mEntriesMap = new HashMap();
   private int mStrokeLength;
   private boolean mTrace;
+  private MatcherParameters mParam;
 
   // Current upper bound for match
   private float mMaximumCost;

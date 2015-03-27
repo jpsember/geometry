@@ -144,7 +144,7 @@ public class DefaultUserOperation extends UserOperation {
       if (mEditor.objects().isSlotSelected(pickSet.get(i)))
         highestIndex = i;
     }
-    int nextSelectedIndex = MyMath.myMod(highestIndex - 1, pickSet.size());
+    int nextSelectedIndex = myMod(highestIndex - 1, pickSet.size());
     int slot = pickSet.get(nextSelectedIndex);
 
     mEditor.performSelectObjectsCommand(new SlotList(slot), null);

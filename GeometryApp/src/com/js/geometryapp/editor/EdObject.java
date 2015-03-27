@@ -168,7 +168,7 @@ public abstract class EdObject extends Freezable.Mutable {
    * @return location
    */
   public Point getPointMod(int ptIndex) {
-    return getPoint(MyMath.myMod(ptIndex, nPoints()));
+    return getPoint(myMod(ptIndex, nPoints()));
   }
 
   /**

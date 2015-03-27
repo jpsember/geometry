@@ -84,6 +84,10 @@ public class StrokeMatcher {
       int tableCells = mTableSize * mTableSize;
       mTable = new float[tableCells];
       mCostNormalizationFactor = 1.0f / (2 * mTableSize);
+      if (mParameters.hasFeaturePoints()) {
+        mFeaturePointPenalty = StrokeSet.STANDARD_WIDTH
+            * mParameters.featurePointPenalty();
+      }
     }
     if (mWindowSize != mParameters.windowSize()) {
       mWindowSize = mParameters.windowSize();
@@ -209,8 +213,12 @@ public class StrokeMatcher {
     Point posA = elemA.getPoint();
     Point posB = elemB.getPoint();
     mActualCellsExamined++;
-    float dist = MyMath.squaredDistanceBetween(posA, posB)
-        * mCostNormalizationFactor;
+    float dist = MyMath.squaredDistanceBetween(posA, posB);
+    if (mFeaturePointPenalty != 0) {
+      if (mStrokeA.isFeaturePoint(aIndex) != mStrokeB.isFeaturePoint(bIndex))
+        dist = dist + mFeaturePointPenalty;
+    }
+    dist *= mCostNormalizationFactor;
     return dist;
   }
 
@@ -225,6 +233,7 @@ public class StrokeMatcher {
   // of entire path is normalized
   private float mCostNormalizationFactor;
   private float mMaximumCost;
+  private float mFeaturePointPenalty;
   private int mActualCellsExamined;
   private int mTotalCellCount;
   private int mWindowSize;

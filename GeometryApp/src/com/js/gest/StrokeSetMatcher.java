@@ -119,7 +119,6 @@ class StrokeSetMatcher {
     return mPermutations;
   }
 
-
   private void generate(int n) {
     n--;
     if (n == 0) {

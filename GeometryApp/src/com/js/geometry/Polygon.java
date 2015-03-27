@@ -286,7 +286,7 @@ public class Polygon implements Iterable<Point>, Renderable {
   }
 
   private int modSize(int index) {
-    return MyMath.myMod(index, numVertices());
+    return myMod(index, numVertices());
   }
 
   // Get vertex; index is taken modulo the current size

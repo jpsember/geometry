@@ -271,8 +271,8 @@ public class EdPolyline extends EdObject {
    *          position of cursor vertex after shift
    */
   private void rotateVertexPositions(int newCursorPosition) {
-    newCursorPosition = MyMath.myMod(newCursorPosition, nPoints());
-    int delta = MyMath.myMod(newCursorPosition - cursor(), nPoints());
+    newCursorPosition = myMod(newCursorPosition, nPoints());
+    int delta = myMod(newCursorPosition - cursor(), nPoints());
     if (delta == 0)
       return;
     List<Point> v = new ArrayList();
@@ -504,7 +504,7 @@ public class EdPolyline extends EdObject {
       Point cp = p.getPoint(p.cursor());
       for (int pass = 0; pass < 2; pass++) {
         int delta = (pass == 0) ? -1 : 1;
-        int neighbor = MyMath.myMod(p.cursor() + delta, p.nPoints());
+        int neighbor = myMod(p.cursor() + delta, p.nPoints());
         Point c2 = p.getPoint(neighbor);
         float dist = MyMath.distanceBetween(cp, c2);
         // If we just split a closed polyline, don't assume he wants to

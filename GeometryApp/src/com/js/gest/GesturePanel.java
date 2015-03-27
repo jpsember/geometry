@@ -22,13 +22,24 @@ import android.view.View;
 public class GesturePanel extends View {
 
   private static final float PADDING = 8.0f;
+  private static final String INTERNAL_NAME_UNKNOWN = "**unknown**";
 
   /**
    * Constructor
    */
   public GesturePanel(Context context) {
     super(context);
-    this.setOnTouchListener(new OurTouchListener());
+    setOnTouchListener(new OurTouchListener());
+    loadInternalGestureSet();
+  }
+
+  private void loadInternalGestureSet() {
+    try {
+      mInternalGestures = GestureSet.readFromClassResource(getClass(),
+          "internal_gestures.json");
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to load internal gestures file", e);
+    }
   }
 
   public void setListener(Listener listener) {
@@ -106,7 +117,11 @@ public class GesturePanel extends View {
 
     Paint paint = new Paint();
     paint.setStyle(Paint.Style.STROKE);
-    paint.setColor(0xffa0a0a0);
+    int color = 0xffa0a0a0;
+    if (mDisplayedStrokeSet.aliasName().equals(INTERNAL_NAME_UNKNOWN))
+      color = 0xffff4040;
+
+    paint.setColor(color);
     paint.setStrokeWidth(8f);
 
     for (Stroke s : scaledSet) {
@@ -172,7 +187,8 @@ public class GesturePanel extends View {
     return rect;
   }
 
-  private void displayGestureWithDelay(final StrokeSet gestureToDisplay, float delay) {
+  private void displayGestureWithDelay(final StrokeSet gestureToDisplay,
+      float delay) {
     final int originalState = mGestureState;
     mHandler.postDelayed(new Runnable() {
       public void run() {
@@ -213,15 +229,15 @@ public class GesturePanel extends View {
     }
   }
 
-  private void performMatch(StrokeSet userStrokeSet) {
+  private boolean performMatch(StrokeSet userStrokeSet) {
     if (mStrokeSetCollection == null) {
       warning("no stroke collection defined");
-      return;
+      return false;
     }
     if (userStrokeSet.isTap()) {
       if (mListener != null)
         mListener.processGesture(GestureSet.GESTURE_TAP);
-      return;
+      return false;
     }
 
     mMatch = null;
@@ -232,16 +248,17 @@ public class GesturePanel extends View {
     ArrayList<GestureSet.Match> matches = new ArrayList();
     Match match = mStrokeSetCollection.findMatch(set, null, matches);
     if (match == null)
-      return;
+      return false;
     // If the match cost is significantly less than the second best, use it
     if (matches.size() >= 2) {
       Match match2 = matches.get(1);
       if (match.cost() * 1.5f > match2.cost())
-        return;
+        return false;
     }
     mMatch = match;
     mListener.processGesture(mMatch.strokeSet().aliasName());
     setDisplayedGesture(mMatch.strokeSet().name(), true);
+    return true;
   }
 
   public static interface Listener {
@@ -284,7 +301,8 @@ public class GesturePanel extends View {
   public void setEnteredStrokeSet(StrokeSet set) {
     set.freeze();
     mListener.processStrokeSet(set);
-    performMatch(set);
+    if (!performMatch(set))
+      setGesture(mInternalGestures.get(INTERNAL_NAME_UNKNOWN));
   }
 
   /**
@@ -351,4 +369,5 @@ public class GesturePanel extends View {
   private int mGestureState;
   private GestureSet mStrokeSetCollection;
   private Match mMatch;
+  private GestureSet mInternalGestures;
 }

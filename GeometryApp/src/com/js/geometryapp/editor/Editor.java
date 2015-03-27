@@ -151,7 +151,10 @@ public class Editor {
       die(e);
     }
 
-    //gestures.setTraceStatus(true);
+    if (false) {
+      warning("Enabling gesture tracing");
+      gestures.setTraceStatus(true);
+    }
     mGesturePanel.setGestures(gestures);
     mGesturePanel.setListener(new GesturePanel.Listener() {
       @Override
@@ -247,7 +250,6 @@ public class Editor {
           "Seg", EdSegment.FACTORY, //
           "Disc", EdDisc.FACTORY,//
           "Poly", EdPolyline.FACTORY);
-
 
       mOptions.addButton("Scale", "icon", R.raw.scaleicon).addListener(
           new Listener() {

@@ -131,7 +131,7 @@ public class GestureSet {
       float newLimit = mMatcher.cost() / inputSet.size();
       newLimit *= param.maximumCostRatio();
       mMaximumCost = Math.min(newLimit, mMaximumCost);
-      if (mTrace) {
+      if (mTrace && mMatcher.cost() < 20000) {
         pr(" gesture: " + d(gestureName, "15p") + " cost:"
             + dumpCost(mMatcher.cost()) + " max:" + dumpCost(mMaximumCost)
             + " cells %:"

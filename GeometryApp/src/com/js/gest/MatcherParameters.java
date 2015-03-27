@@ -10,7 +10,7 @@ public class MatcherParameters extends Freezable.Mutable {
   private static final int FLAG_ALIASCUTOFF = 1 << 0;
 
   public MatcherParameters() {
-    setMaximumCostRatio(1.6f);
+    setMaximumCostRatio(1.3f);
     setWindowSize(Math
         .round(StrokeNormalizer.DEFAULT_DESIRED_STROKE_LENGTH * .20f));
     setPerformAliasCutoff(true);

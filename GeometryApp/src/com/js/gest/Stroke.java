@@ -173,27 +173,7 @@ public class Stroke extends Freezable.Mutable implements
     private float mTime;
   }
 
-  public boolean isFeaturePoint(int pointIndex) {
-    assertFrozen();
-    // Reading/writing a reference is always an atomic action, hence
-    // synchronization can be done after (1); see
-    // http://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html)
-    //
-    // We DO mark mFeaturePoints as volatile, since it may be changed by another
-    // thread between (1) and (2) below
-    //
-    if (mFeaturePoints == null) { // (1)
-      synchronized (this) {
-        if (mFeaturePoints == null) // (2)
-          mFeaturePoints = FeaturePointList.constructFor(this);
-      }
-    }
-    return mFeaturePoints.contains(pointIndex);
-  }
-
   private ArrayList<DataPoint> mPoints;
   private float mStartTime;
-  // Lazy-initialized, thread-safe reference to list of feature points
-  private volatile FeaturePointList mFeaturePoints;
 
 }

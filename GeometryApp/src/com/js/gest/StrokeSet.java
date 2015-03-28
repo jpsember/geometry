@@ -24,12 +24,14 @@ import static com.js.basic.Tools.*;
  * gesture
  */
 public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
-
   static final String KEY_NAME = "name";
   static final String KEY_ALIAS = "alias";
   static final String KEY_STROKES = "strokes";
   static final String KEY_UNUSED = "unused";
   static final String KEY_DIRECTED = "directed";
+
+  private static final int MAX_STROKES = 5;
+  private static final int MAX_STROKE_LENGTH = 100;
 
   public StrokeSet() {
   }
@@ -73,6 +75,11 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     if (isEmpty())
       mInitialEventTime = eventTime;
     Stroke s = strokeForId(pointerId);
+    if (s == null)
+      return;
+    if (s.size() >= MAX_STROKE_LENGTH) {
+      return;
+    }
     s.addPoint(eventTime - mInitialEventTime, pt);
   }
 
@@ -128,9 +135,15 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
     super.freeze();
   }
 
+  /**
+   * Get stroke; returns null if too many strokes added
+   */
   private Stroke strokeForId(int pointerId) {
     Integer strokeIndex = mStrokeIdToIndexMap.get(pointerId);
     if (strokeIndex == null) {
+      if (mStrokes.size() == MAX_STROKES) {
+        return null;
+      }
       strokeIndex = mStrokes.size();
       mStrokes.add(new Stroke());
       mStrokeIdToIndexMap.put(pointerId, strokeIndex);

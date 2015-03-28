@@ -9,11 +9,14 @@ import com.js.basic.Point;
 
 class StrokeSetMatcher {
 
+  public StrokeSetMatcher(AlgorithmStats stats) {
+    mStrokeMatcher = new StrokeMatcher(stats);
+  }
+
   public void setArguments(StrokeSet a, StrokeSet b, MatcherParameters param) {
     mSimilarityFound = false;
     mStrokeA = frozen(a);
     mStrokeB = frozen(b);
-    setMaximumCost(StrokeMatcher.INFINITE_COST);
 
     if (param == null)
       param = MatcherParameters.DEFAULT;
@@ -28,7 +31,11 @@ class StrokeSetMatcher {
    * the cost will exceed this bound
    */
   public void setMaximumCost(float maximumCost) {
-    mMaximumCost = maximumCost;
+    mStrokeMatcher.setMaximumCost(maximumCost);
+  }
+
+  public float getMaximumCost() {
+    return mStrokeMatcher.getMaximumCost();
   }
 
   public float cost() {
@@ -40,7 +47,6 @@ class StrokeSetMatcher {
         Stroke sa = mStrokeA.get(i);
         Stroke sb = mStrokeB.get(bOrder[i]);
         mStrokeMatcher.setArguments(sa, sb, mParam);
-        mStrokeMatcher.setMaximumCost(mMaximumCost);
         float cost = mStrokeMatcher.cost();
         totalCost += cost;
       }
@@ -134,10 +140,9 @@ class StrokeSetMatcher {
     }
   }
 
-  private StrokeMatcher mStrokeMatcher = new StrokeMatcher();
+  private StrokeMatcher mStrokeMatcher;
   private StrokeSet mStrokeA;
   private StrokeSet mStrokeB;
-  private float mMaximumCost = StrokeMatcher.INFINITE_COST;
   private MatcherParameters mParam;
   private boolean mSimilarityFound;
   private float mSimilarity;

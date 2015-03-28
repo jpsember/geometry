@@ -17,6 +17,10 @@ import com.js.gest.Stroke.DataPoint;
  */
 public class StrokeMatcher {
 
+  public StrokeMatcher(AlgorithmStats stats) {
+    mStats = stats;
+  }
+
   /**
    * A value representing 'infinite' cost. It should not be so large that it
    * can't be safely doubled or tripled without overflowing
@@ -43,7 +47,6 @@ public class StrokeMatcher {
     if (mParameters.windowSize() <= 0)
       throw new IllegalArgumentException("bad window size");
     prepareTable();
-    setMaximumCost(INFINITE_COST);
     mCostCalculated = false;
   }
 
@@ -53,6 +56,10 @@ public class StrokeMatcher {
    */
   public void setMaximumCost(float maximumCost) {
     mMaximumCost = maximumCost;
+  }
+
+  public float getMaximumCost() {
+    return mMaximumCost;
   }
 
   /**
@@ -67,16 +74,6 @@ public class StrokeMatcher {
     return mCost;
   }
 
-  /**
-   * For diagnostic / test purposes, calculate the ratio of actual cells
-   * examined to the potential total cells examined by this matcher
-   */
-  public float cellsExaminedRatio() {
-    if (mTotalCellCount == 0)
-      return 0;
-    return ((float) mActualCellsExamined) / mTotalCellCount;
-  }
-
   private void prepareTable() {
     if (mTableSize != mStrokeA.size()) {
       mWindowSize = -1;
@@ -84,10 +81,6 @@ public class StrokeMatcher {
       int tableCells = mTableSize * mTableSize;
       mTable = new float[tableCells];
       mCostNormalizationFactor = 1.0f / (2 * mTableSize);
-      if (mParameters.hasFeaturePoints()) {
-        mFeaturePointPenalty = StrokeSet.STANDARD_WIDTH
-            * mParameters.featurePointPenalty();
-      }
     }
     if (mWindowSize != mParameters.windowSize()) {
       mWindowSize = mParameters.windowSize();
@@ -122,7 +115,8 @@ public class StrokeMatcher {
    * where possible moves are from (x-1,y), (x-1,y-1), or (x,y-1).
    */
   private void performAlgorithm() {
-    mTotalCellCount += mMaxCellsExamined;
+    mStats.incrementExecutionCount();
+    mStats.adjustTotalCellCount(mMaxCellsExamined);
 
     // Multiply bottom left cost by 2, for symmetric weighting, since it
     // conceptually represents advancement to the first point in both A and B
@@ -212,12 +206,8 @@ public class StrokeMatcher {
     DataPoint elemB = mStrokeB.get(bIndex);
     Point posA = elemA.getPoint();
     Point posB = elemB.getPoint();
-    mActualCellsExamined++;
+    mStats.incrementCellsExamined();
     float dist = MyMath.squaredDistanceBetween(posA, posB);
-    if (mFeaturePointPenalty != 0) {
-      if (mStrokeA.isFeaturePoint(aIndex) != mStrokeB.isFeaturePoint(bIndex))
-        dist = dist + mFeaturePointPenalty;
-    }
     dist *= mCostNormalizationFactor;
     return dist;
   }
@@ -233,9 +223,7 @@ public class StrokeMatcher {
   // of entire path is normalized
   private float mCostNormalizationFactor;
   private float mMaximumCost;
-  private float mFeaturePointPenalty;
-  private int mActualCellsExamined;
-  private int mTotalCellCount;
   private int mWindowSize;
   private int mMaxCellsExamined;
+  private AlgorithmStats mStats;
 }

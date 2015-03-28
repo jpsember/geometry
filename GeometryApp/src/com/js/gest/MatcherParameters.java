@@ -6,18 +6,20 @@ import com.js.basic.Freezable;
 
 public class MatcherParameters extends Freezable.Mutable {
 
+  private static final int FLAG_RANDOM_TEST_ORDER = (1 << 0);
+  private static final int FLAG_RECENT_GESTURES_SET = (1 << 1);
+
   public static final MatcherParameters DEFAULT = frozen(new MatcherParameters());
-  private static final int FLAG_ALIASCUTOFF = 1 << 0;
 
   public MatcherParameters() {
     setMaximumCostRatio(1.3f);
     setWindowSize(Math
         .round(StrokeNormalizer.DEFAULT_DESIRED_STROKE_LENGTH * .20f));
-    setPerformAliasCutoff(true);
+    setRandomTestOrder(true);
+    setRecentGesturesList(true);
+    setMaxResults(3);
     // setSkewMax(.2f, 1);
     // setAlignmentAngle(MyMath.M_DEG * 20, 1);
-    setMaxResults(3);
-    // setFeaturePointPenalty(10);
   }
 
   /**
@@ -27,14 +29,6 @@ public class MatcherParameters extends Freezable.Mutable {
    */
   public float maximumCostRatio() {
     return mMaximumCostRatio;
-  }
-
-  public void setPerformAliasCutoff(boolean state) {
-    setFlag(FLAG_ALIASCUTOFF, state);
-  }
-
-  public boolean performAliasCutoff() {
-    return hasFlag(FLAG_ALIASCUTOFF);
   }
 
   public void setMaximumCostRatio(float ratio) {
@@ -99,27 +93,14 @@ public class MatcherParameters extends Freezable.Mutable {
   @Override
   public Freezable getMutableCopy() {
     MatcherParameters m = new MatcherParameters();
+    m.mFlags = mFlags;
+    m.mRandomSeed = mRandomSeed;
     m.setMaximumCostRatio(maximumCostRatio());
     m.setWindowSize(windowSize());
     m.setAlignmentAngle(alignmentAngle(), alignmentAngleSteps());
     m.setSkewMax(skewXMax(), skewSteps());
-    m.mFlags = mFlags;
     m.setMaxResults(maxResults());
-    m.setFeaturePointPenalty(featurePointPenalty());
     return m;
-  }
-
-  public void setFeaturePointPenalty(float featurePointPenalty) {
-    mutate();
-    mFeaturePointPenalty = featurePointPenalty;
-  }
-
-  public boolean hasFeaturePoints() {
-    return mFeaturePointPenalty != 0;
-  }
-
-  public float featurePointPenalty() {
-    return mFeaturePointPenalty;
   }
 
   @Override
@@ -128,6 +109,31 @@ public class MatcherParameters extends Freezable.Mutable {
     sb.append("\n max cost ratio: " + d(maximumCostRatio()));
     sb.append("\n    window size: " + d(windowSize()));
     return sb.toString();
+  }
+
+  public void setRandomTestOrder(boolean state) {
+    setFlag(FLAG_RANDOM_TEST_ORDER, state);
+  }
+
+  public boolean hasRandomTestOrder() {
+    return hasFlag(FLAG_RANDOM_TEST_ORDER);
+  }
+
+  public void setRecentGesturesList(boolean state) {
+    setFlag(FLAG_RECENT_GESTURES_SET, state);
+  }
+
+  public boolean hasRecentGesturesList() {
+    return hasFlag(FLAG_RECENT_GESTURES_SET);
+  }
+
+  public void setRandomSeed(int seed) {
+    mutate();
+    mRandomSeed = seed;
+  }
+
+  public int randomSeed() {
+    return mRandomSeed;
   }
 
   private void setFlag(int flag, boolean state) {
@@ -150,6 +156,5 @@ public class MatcherParameters extends Freezable.Mutable {
   private int mSkewSteps;
   private int mFlags;
   private int mMaxResults;
-  private float mFeaturePointPenalty;
-
+  private int mRandomSeed;
 }

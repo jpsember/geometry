@@ -126,10 +126,6 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
       throw new IllegalStateException();
     // Throw out unnecessary resources
     mStrokeIdToIndexMap = null;
-    // Calculate bounds, now that frozen
-    mBounds = calculateBounds();
-    if (mBounds == null)
-      throw new IllegalStateException("set " + name() + " has no points");
     for (Stroke s : mStrokes)
       s.freeze();
     super.freeze();
@@ -231,20 +227,32 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
 
   public Rect getBounds() {
     assertFrozen();
-    return mBounds;
-  }
 
-  private Rect calculateBounds() {
-    Rect r = null;
-    for (Stroke s : mStrokes) {
-      for (DataPoint spt : s) {
-        Point pt = spt.getPoint();
-        if (r == null)
-          r = new Rect(pt, pt);
-        r.include(pt);
+    // Reading/writing a reference is always an atomic action, hence no
+    // synchronization is necessary with writing to the instance variable
+    // mBounds; see
+    // http://docs.oracle.com/javase/tutorial/essential/concurrency/atomic.html)
+    //
+    // We DO mark the instance variable as volatile.
+    //
+    // It is possible that two different threads end up calculating the bounds,
+    // which is harmless; the newer bounds will overwrite the old.
+    //
+    if (mBounds == null) {
+      Rect r = null;
+      for (Stroke s : mStrokes) {
+        for (DataPoint spt : s) {
+          Point pt = spt.getPoint();
+          if (r == null)
+            r = new Rect(pt, pt);
+          r.include(pt);
+        }
       }
+      if (r == null)
+        throw new IllegalStateException("set " + name() + " has no points");
+      mBounds = r;
     }
-    return r;
+    return mBounds;
   }
 
   public static final int STANDARD_WIDTH = 256;
@@ -374,11 +382,11 @@ public class StrokeSet extends Freezable.Mutable implements Iterable<Stroke> {
   private String mAliasName;
   private String mName;
   private ArrayList<Stroke> mStrokes = new ArrayList();
-  private Rect mBounds;
   private int mFlags;
 
   // Only used when mutable
   private float mInitialEventTime;
   private Map<Integer, Integer> mStrokeIdToIndexMap = new HashMap();
-
+  // Lazy-initialized, frozen attribute
+  private volatile Rect mBounds;
 }

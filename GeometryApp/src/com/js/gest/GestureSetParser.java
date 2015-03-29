@@ -66,7 +66,7 @@ class GestureSetParser {
   private static final String KEY_TRANSFORM = "transform";
   private static final boolean SHOW_PREPROCESSING = false;
 
-  public void parse(String script, GestureSet collection) throws JSONException {
+  public List<StrokeSet> parse(String script) throws JSONException {
 
     mParsedArray = JSONTools.parseArray(script);
 
@@ -84,17 +84,19 @@ class GestureSetParser {
 
     processFlags();
 
-    populateOutputSet(collection);
+    return populateOutputSet();
   }
 
-  private void populateOutputSet(GestureSet collection) {
+  private List<StrokeSet> populateOutputSet() {
+    List<StrokeSet> strokes = new ArrayList();
     for (String name : mNamedSets.keySet()) {
       ParseEntry parseEntry = mNamedSets.get(name);
       StrokeSet entry = parseEntry.strokeSet();
       entry = normalizeStrokeSet(entry);
       entry.freeze();
-      collection.add(entry);
+      strokes.add(entry);
     }
+    return strokes;
   }
 
   private String generateNameForAlias(JSONObject map) throws JSONException {
